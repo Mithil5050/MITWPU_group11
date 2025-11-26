@@ -33,7 +33,21 @@ class UploadConfirmationViewController: UIViewController {
         updateUI()
     }
     
-        private func setupUI() {
+    // Matches the storyboard connection "DoneTapped:"
+    @IBAction func DoneTapped(_ sender: Any) {
+        // Validate that we actually have a name to proceed with
+        if uploadedContentName == nil || uploadedContentName?.isEmpty == true {
+            let alert = UIAlertController(title: "No Content", message: "Please add a source before continuing.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            return
+        }
+
+        // Trigger the segue using the identifier set in the Storyboard
+        performSegue(withIdentifier: "showGenerationScreen", sender: self)
+    }
+    
+    private func setupUI() {
         view.addSubview(nameLabel)
         
         let guide = view.safeAreaLayoutGuide
@@ -58,7 +72,7 @@ class UploadConfirmationViewController: UIViewController {
 //        // Pass data to next screen if needed.
 //    }
 //    */
-//}
+
 
 //import UIKit
 //
@@ -124,11 +138,6 @@ class UploadConfirmationViewController: UIViewController {
 //    // MARK: - Dismissal Logic
 //    
 //    @objc func doneButtonTapped() {
-//        // Since the UploadContentViewController was pushed, and this ConfirmationVC was pushed
-//        // after it, popping to the root view controller dismisses both VCs simultaneously,
-//        // returning the user cleanly to the HomeCollectionViewController.
-//        
-//        // This is the correct way to dismiss a multi-step flow within a Navigation Controller.
 //        self.navigationController?.popToRootViewController(animated: true)
 //    }
 //}
