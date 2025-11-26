@@ -23,8 +23,8 @@ class HomeCollectionViewController: UICollectionViewController {
         // Do any additional setup after loading the view.
     }
 
-    @IBAction func plusButtontapped(_ sender: UIButton) {
-        performSegue(withIdentifier: "showUploadContent", sender: sender)
+    @IBAction func plusButtonTapped(_ sender: UIButton) {
+            performSegue(withIdentifier: "showUploadContent", sender: sender)
     }
     
     /*
