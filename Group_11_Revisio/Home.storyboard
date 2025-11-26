@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="4ZY-0A-Wo4">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -9,155 +10,30 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Collection View Controller-->
-        <scene sceneID="I3l-Mx-7eN">
+        <!--Home-->
+        <scene sceneID="tYZ-Br-z2I">
             <objects>
-                <collectionViewController id="VyH-ZI-qIM" sceneMemberID="viewController">
-                    <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" id="fRV-Pz-yLc">
+                <viewController id="4ZY-0A-Wo4" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="QFp-Kk-Ioy">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="Mmv-XB-dLg">
-                            <size key="itemSize" width="256" height="211"/>
-                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                        </collectionViewFlowLayout>
-                        <cells>
-                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="GjI-aa-B2p">
-                                <rect key="frame" x="68.666666666666671" y="0.0" width="256" height="211"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="DhA-1P-enn">
-                                    <rect key="frame" x="0.0" y="0.0" width="256" height="211"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <subviews>
-                                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Txk-Ke-4Mz">
-                                            <rect key="frame" x="105" y="103" width="47" height="35"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                            <state key="normal" title="Button"/>
-                                            <buttonConfiguration key="configuration" style="filled" image="plus" catalog="system"/>
-                                            <connections>
-                                                <segue destination="Y6W-OH-hqX" kind="show" id="dTT-6c-9eq"/>
-                                            </connections>
-                                        </button>
-                                    </subviews>
-                                </collectionViewCellContentView>
-                                <size key="customSize" width="256" height="211"/>
-                            </collectionViewCell>
-                        </cells>
-                        <connections>
-                            <outlet property="dataSource" destination="VyH-ZI-qIM" id="Pbg-sw-srx"/>
-                            <outlet property="delegate" destination="VyH-ZI-qIM" id="9Qg-jh-5Ua"/>
-                        </connections>
-                    </collectionView>
-                    <navigationItem key="navigationItem" id="NNY-wB-IqE"/>
-                </collectionViewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="O84-2Z-VYD" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="900" y="130.98591549295776"/>
-        </scene>
-        <!--Upload Content-->
-        <scene sceneID="s0d-6b-0kx">
-            <objects>
-                <viewController id="Y6W-OH-hqX" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="5EZ-qb-Rvc">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" axis="vertical" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="OjP-QP-zKQ">
-                                <rect key="frame" x="20" y="290" width="353" height="296"/>
-                                <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Z22-0a-LMs">
-                                        <rect key="frame" x="0.0" y="0.0" width="353" height="56"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="56" id="G8O-9K-kZI"/>
-                                        </constraints>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="filled" image="document" catalog="system" title="  Document">
-                                            <color key="baseForegroundColor" systemColor="labelColor"/>
-                                            <color key="baseBackgroundColor" systemColor="systemGray3Color"/>
-                                        </buttonConfiguration>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EdF-JY-VD0">
-                                        <rect key="frame" x="0.0" y="80" width="353" height="56"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="56" id="kOz-Hv-zo1"/>
-                                        </constraints>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="filled" image="photo" catalog="system" title="  Media">
-                                            <color key="baseForegroundColor" systemColor="labelColor"/>
-                                            <color key="baseBackgroundColor" systemColor="systemGray3Color"/>
-                                        </buttonConfiguration>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EY3-MD-5KU">
-                                        <rect key="frame" x="0.0" y="160" width="353" height="56"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="56" id="4mB-PA-M7k"/>
-                                        </constraints>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="filled" image="link" catalog="system" title="  Link">
-                                            <color key="baseForegroundColor" systemColor="labelColor"/>
-                                            <color key="baseBackgroundColor" systemColor="systemGray3Color"/>
-                                        </buttonConfiguration>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gJg-zr-RnG">
-                                        <rect key="frame" x="0.0" y="240" width="353" height="56"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="56" id="OQJ-V3-FYm"/>
-                                        </constraints>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="filled" image="textformat" catalog="system" title="  Text">
-                                            <color key="baseForegroundColor" systemColor="labelColor"/>
-                                            <color key="baseBackgroundColor" systemColor="systemGray3Color"/>
-                                        </buttonConfiguration>
-                                    </button>
-                                </subviews>
-                            </stackView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
+                        <viewLayoutGuide key="safeArea" id="yyJ-lR-hc6"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="OjP-QP-zKQ" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="20" id="02X-hv-5QW"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="OjP-QP-zKQ" secondAttribute="trailing" constant="20" id="QLW-4V-oZd"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Upload Content" id="ihG-ZZ-RB1">
-                        <barButtonItem key="rightBarButtonItem" image="checkmark" catalog="system" id="NJa-8a-Npz"/>
-                    </navigationItem>
+                    <tabBarItem key="tabBarItem" title="Home" image="house" catalog="system" id="U91-Pp-S9c"/>
+                    <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="S36-4S-LDv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1991.6030534351144" y="130.98591549295776"/>
-        </scene>
-        <!--Navigation Controller-->
-        <scene sceneID="Kck-Bm-us0">
-            <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="8XN-MV-Z71" sceneMemberID="viewController">
-                    <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="Udo-f8-iSR">
-                        <rect key="frame" x="0.0" y="118" width="393" height="54"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </navigationBar>
-                    <nil name="viewControllers"/>
-                    <connections>
-                        <segue destination="VyH-ZI-qIM" kind="relationship" relationship="rootViewController" id="J07-pi-JZs"/>
-                    </connections>
-                </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Ny1-9S-i7q" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-26.717557251908396" y="130.98591549295776"/>
+            <point key="canvasLocation" x="-439" y="-926"/>
         </scene>
     </scenes>
     <resources>
-        <image name="checkmark" catalog="system" width="128" height="114"/>
-        <image name="document" catalog="system" width="115" height="128"/>
-        <image name="link" catalog="system" width="128" height="124"/>
-        <image name="photo" catalog="system" width="128" height="93"/>
-        <image name="plus" catalog="system" width="128" height="113"/>
-        <image name="textformat" catalog="system" width="128" height="78"/>
-        <systemColor name="labelColor">
-            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
+        <image name="house" catalog="system" width="128" height="104"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
