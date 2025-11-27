@@ -12,6 +12,7 @@ class UploadConfirmationViewController: UIViewController {
     
     // This property will be set by UploadContentViewController before navigation.
     var uploadedContentName: String?
+    var uploadedMaterials: [StudyContent] = []
     
     // Simple UI to display the uploaded content name.
     private let nameLabel: UILabel = {
@@ -36,12 +37,12 @@ class UploadConfirmationViewController: UIViewController {
     // Matches the storyboard connection "DoneTapped:"
     @IBAction func DoneTapped(_ sender: Any) {
         // Validate that we actually have a name to proceed with
-        if uploadedContentName == nil || uploadedContentName?.isEmpty == true {
-            let alert = UIAlertController(title: "No Content", message: "Please add a source before continuing.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
-            return
-        }
+//        if uploadedContentName == nil || uploadedContentName?.isEmpty == true {
+//            let alert = UIAlertController(title: "No Content", message: "Please add a source before continuing.", preferredStyle: .alert)
+//            alert.addAction(UIAlertAction(title: "OK", style: .default))
+//            present(alert, animated: true)
+//            return
+//        }
 
         // Trigger the segue using the identifier set in the Storyboard
         performSegue(withIdentifier: "showGenerationScreen", sender: self)

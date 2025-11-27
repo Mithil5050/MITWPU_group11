@@ -2,126 +2,179 @@
 //  GenerationViewController.swift
 //  Group_11_Revisio
 //
-//  Created by Mithil on 26/11/25.
+//  Created by Mithil on 27/11/25.
 //
 
 import UIKit
 
+enum GenerationType {
+    case quiz
+    case flashcards
+    case notes
+    case cheatsheet
+    case none // Default state
+}
+
 class GenerationViewController: UIViewController {
+    
+    var currentGenerationType: GenerationType = .none
+    
+    @IBOutlet weak var generateButton: UIButton!
+    
 
-    private var currentChildVC: UIViewController?
+    // Settings container views
+    @IBOutlet weak var QuizSettingsView: UIView!
+    @IBOutlet weak var FlashcardSettingsView: UIView!
     
+    @IBOutlet weak var emptySettingsPlaceholder: UIView!
     
-    @IBOutlet weak var settingsContainerView: UIView!
-  
-    @IBOutlet weak var QuizButton: UIButton!
+    // Top tab buttons (connect these in Interface Builder)
+    @IBOutlet weak var quizButton: UIButton!
+    @IBOutlet weak var flashcardsButton: UIButton!
+    @IBOutlet weak var notesButton: UIButton!
+    @IBOutlet weak var cheatsheetButton: UIButton!
     
-    @IBOutlet weak var FlashcardsButton: UIButton!
-    
-    @IBOutlet weak var NotesButton: UIButton!
-    
-    @IBOutlet weak var CheatsheetButton: UIButton!
-    
-    // Tracks the currently displayed settings child VC
+    override func viewDidLoad() {
+        super.viewDidLoad()
         
-        // The placeholder view where the settings panels will be displayed
-        // Connect this Outlet to the Container View in the Storyboard
-
-        override func viewDidLoad() {
-            super.viewDidLoad()
-            // Initialize with the Quiz settings panel visible (optional)
-            displaySettings(forIdentifier: "QuizSettingsID")
-            updateButtonHighlight(selectedButton: QuizButton)
-        }
-
-        // MARK: - Action Handlers for the 4 Buttons
-        
-        // Connect this action to the 'Touch Up Inside' event of the Quiz button
-        @IBAction func quizButtonTapped(_ sender: UIButton) {
-            displaySettings(forIdentifier: "QuizSettingsID")
-            updateButtonHighlight(selectedButton: sender)
-        }
-        
-        // Connect this action to the 'Touch Up Inside' event of the FlashCards button
-        @IBAction func flashCardsButtonTapped(_ sender: UIButton) {
-            displaySettings(forIdentifier: "FlashCardSettingsID")
-            updateButtonHighlight(selectedButton: sender)
-        }
-        
-    
-    @IBAction func notesButtonTapped(_ sender: Any) {
-        updateButtonHighlight(selectedButton: sender as! UIButton)
+        // Show Quiz settings by default
+        showSettingsView(QuizSettingsView)
+        updateButtonHighlight(selectedButton: quizButton)
+        generateButton.isEnabled = false
+                generateButton.alpha = 0.5
+        // Ensure only Quiz is visible initially
+//        QuizSettingsView.isHidden = false
+//        FlashcardSettingsView.isHidden = true
     }
     
-    @IBAction func CheatsheetButtonTapped(_ sender: Any) {
-        updateButtonHighlight(selectedButton: sender as! UIButton)
+    private func showSettingsView(_ viewToShow: UIView) {
+        // 1. Create an array of all settings views
+        let allSettingsViews: [UIView?] = [
+            QuizSettingsView,
+            FlashcardSettingsView,
+            emptySettingsPlaceholder
+        ]
+        
+        // 2. Hide all views
+        for view in allSettingsViews {
+            view?.isHidden = true
+        }
+        
+        // 3. Show the selected view
+        viewToShow.isHidden = false
     }
     
-    // Implement similar actions for Notes and Cheat Sheet
-
-        // MARK: - Swapping Logic (The Core Implementation)
+    private func updateGenerateButton(for type: GenerationType) {
+        self.currentGenerationType = type
         
-        private func displaySettings(forIdentifier identifier: String) {
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            
-            // 1. Instantiate the new child view controller with correct expected type
-            let newVC: UIViewController
-            switch identifier {
-            case "QuizSettingsID":
-                guard let vc = storyboard.instantiateViewController(withIdentifier: identifier) as? QuizSettingsViewController else {
-                    print("Error: Could not instantiate QuizSettingsViewController with identifier \(identifier). Check Storyboard ID and class.")
-                    return
-                }
-                newVC = vc
-            case "FlashCardSettingsID":
-                guard let vc = storyboard.instantiateViewController(withIdentifier: identifier) as? FlashCardSettingsViewController else {
-                    print("Error: Could not instantiate FlashCardSettingsViewController with identifier \(identifier). Check Storyboard ID and class.")
-                    return
-                }
-                newVC = vc
-            default:
-                // If you add Notes/Cheatsheet later, add cases above. For now, fall back to a generic VC.
-                newVC = storyboard.instantiateViewController(withIdentifier: identifier)
-            }
-            
-            // Remove the old view controller and its view
-            currentChildVC?.willMove(toParent: nil)
-            currentChildVC?.view.removeFromSuperview()
-            currentChildVC?.removeFromParent()
-            
-            // 2. Add the new view controller as a child
-            self.addChild(newVC)
-            
-            // 3. Configure the new view to fill the container
-            newVC.view.frame = settingsContainerView.bounds
-            newVC.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            settingsContainerView.addSubview(newVC.view)
-            
-            // 4. Finalize the child addition
-            newVC.didMove(toParent: self)
-            currentChildVC = newVC // Update the tracking variable
+        // Update button text and state
+        let title: String
+        if type == .none {
+            title = "Generate"
+            generateButton.isEnabled = false
+            generateButton.alpha = 0.5
+        } else {
+            title = "Generate \(String(describing: type).capitalized)"
+            generateButton.isEnabled = true
+            generateButton.alpha = 1.0
         }
+        generateButton.setTitle(title, for: .normal)
+    }
+    // Updates visual state for the tab buttons
     private func updateButtonHighlight(selectedButton: UIButton) {
-            // Reset all buttons to the default unselected state
-            let allButtons = [QuizButton, FlashcardsButton, NotesButton, CheatsheetButton]
-            let defaultColor = UIColor.systemGray5 // A subtle, unselected background
-            let selectedColor = UIColor.systemGray3 // A slightly darker selected background
+        let allButtons: [UIButton?] = [
+            quizButton,
+            flashcardsButton,
+            notesButton,
+            cheatsheetButton
+        ]
+        
+        // --- Define the Gray Aesthetic Colors ---
+        let unselectedBackground = UIColor.systemGray6 // Very light gray card
+        let selectedBackground = UIColor.systemGray4   // Medium gray for subtle highlight
+        let unselectedTitleColor = UIColor.darkGray    // Dark text for contrast
+        let selectedTitleColor = UIColor.black         // Black text/icon for selected state
+        let unselectedIconTint = UIColor.darkGray      // Dark gray icon color
+        let selectedIconTint = UIColor.black           // Black icon color
+        
+        for button in allButtons {
+            let isSelected = (button === selectedButton)
             
-            allButtons.forEach { button in
-                button?.backgroundColor = defaultColor
-                // You can add more visual changes here (e.g., text color, border)
+            if isSelected {
+                // SELECTED STATE: Medium gray background, black text/icon.
+                button?.backgroundColor = selectedBackground
+                button?.setTitleColor(selectedTitleColor, for: .normal)
+                button?.tintColor = selectedIconTint // Use tintColor to control the icon color
+            } else {
+                // UNSELECTED STATE: Very light gray background, dark gray text/icon.
+                button?.backgroundColor = unselectedBackground
+                button?.setTitleColor(unselectedTitleColor, for: .normal)
+                button?.tintColor = unselectedIconTint
             }
             
-            // Highlight the selected button
-            selectedButton.backgroundColor = selectedColor
+            // Optional: Add corner radius if not set in Storyboard (recommended for cards)
+            button?.layer.cornerRadius = 12
         }
     }
-/*
-    // MARK: - Navigation
+    // MARK: - Action Handlers
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    @IBAction func quizButtonTapped(_ sender: UIButton) {
+        showSettingsView(QuizSettingsView) // Show Quiz view
+        updateButtonHighlight(selectedButton: sender)
+        updateGenerateButton(for: .quiz) // ⬅️ NEW
     }
-    */
+            
+    @IBAction func flashCardsButtonTapped(_ sender: UIButton) {
+        showSettingsView(FlashcardSettingsView) // Show Flashcard view
+        updateButtonHighlight(selectedButton: sender)
+        updateGenerateButton(for: .flashcards) // ⬅️ NEW
+    }
+            
+    @IBAction func notesButtonTapped(_ sender: UIButton) {
+         showSettingsView(emptySettingsPlaceholder) // Add when you have a Notes view
+        updateButtonHighlight(selectedButton: sender)
+        updateGenerateButton(for: .notes) // ⬅️ NEW
+    }
+            
+    @IBAction func cheatsheetButtonTapped(_ sender: UIButton) {
+         showSettingsView(emptySettingsPlaceholder) // Add when you have a Cheat Sheet view
+        updateButtonHighlight(selectedButton: sender)
+        updateGenerateButton(for: .cheatsheet) // ⬅️ NEW
+    }
+    @IBAction func generateButtonTapped(_ sender: UIButton) {
+        
+        switch currentGenerationType {
+        case .quiz:
+            print("Initiating Quiz Generation...")
+            // TODO: Gather settings from sliders and perform segue to Quiz Results Screen
+            break
+            
+        case .flashcards:
+            print("Initiating Flashcard Generation...")
+            // TODO: Gather settings and perform segue to Flashcard Deck Screen
+            break
+            
+        case .notes:
+            print("Initiating Summary Notes Generation...")
+            // TODO: Perform segue to Notes Summary Screen
+            break
+            
+        case .cheatsheet:
+            print("Initiating Cheat Sheet Generation...")
+            // TODO: Perform segue to Cheat Sheet View
+            break
+            
+        case .none:
+            // Should be disabled, but acts as a fallback
+            print("Error: No generation type selected.")
+            break
+        }
+        
+        // Example: performSegue(withIdentifier: "ShowLoadingScreen", sender: self)
+    }
+
+    
+}
+
+ 
+   

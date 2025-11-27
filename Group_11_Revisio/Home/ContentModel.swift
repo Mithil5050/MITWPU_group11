@@ -7,13 +7,23 @@
 
 import Foundation
 
-// Defines the structure for a single uploaded item.
-struct UploadedContent: Identifiable {
-    // Required to conform to Identifiable for modern UI like SwiftUI or Diffable Data Sources
-    let id = UUID()
+// ContentModel.swift
+
+struct StudyContent {
+    let id = UUID() // Unique identifier for tracking
+    let filename: String
+    let fileType: String // e.g., "Document", "Text Input", "Image"
+    let data: Data // Use Data to hold file contents or encoded text
     
-    let type: String       // e.g., "Document", "Media", "Link"
-    let title: String      // The display name (e.g., "MyResume.pdf" or "Quick Note")
-    let timestamp: Date    // When the content was created/uploaded
-    let url: URL?          // Optional: file path or link URL
+    // Initializer for text input
+    init(text: String) {
+        self.filename = "Direct Text \(StudyContent.textCount + 1)"
+        self.fileType = "Text Input"
+        // Encode the string to Data
+        self.data = text.data(using: .utf8) ?? Data()
+        StudyContent.textCount += 1
+    }
+    
+    // Simple counter to uniquely name text inputs
+    static var textCount = 0
 }

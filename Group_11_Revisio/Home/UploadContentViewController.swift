@@ -8,8 +8,12 @@ class UploadContentViewController: UIViewController,
                                      UIImagePickerControllerDelegate,
                                    UINavigationControllerDelegate {
     
-    // MARK: - Lifecycle Methods
+    // MARK: - Properties
     
+    // Holds any StudyContent created/selected in this VC
+    var selectedContent: [StudyContent] = []
+    
+    // MARK: - Lifecycle Methods
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -17,7 +21,7 @@ class UploadContentViewController: UIViewController,
     }
     
     @IBAction func doneButtontapped(_ sender: UIBarButtonItem) {
-        performSegue(withIdentifier: "showUploadedContent", sender: sender)
+        performSegue(withIdentifier: "ShowUploadedContent", sender: sender)
     }
     // MARK: - 📄 Document Button Action (Files)
     
@@ -147,18 +151,6 @@ class UploadContentViewController: UIViewController,
             textField.autocapitalizationType = .none
         }
         
-//        let confirmAction = UIAlertAction(title: "Confirm", style: .default) { [weak self] _ in
-//            guard let urlString = alertController.textFields?.first?.text, !urlString.isEmpty else { return }
-//            
-//            // Basic validation
-//            if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
-//                print("Confirmed URL: \(urlString)")
-//                // TO DO: Save and prepare link content for upload
-//            } else {
-//                self?.showInvalidLinkAlert()
-//            }
-//        }
-        
         let confirmAction = UIAlertAction(title: "Confirm", style: .default) { [weak self] _ in
                 guard let urlString = alertController.textFields?.first?.text, !urlString.isEmpty else { return }
                 
@@ -193,30 +185,34 @@ class UploadContentViewController: UIViewController,
                                                 message: "Enter or paste your text here. This alert is best for short notes.",
                                                 preferredStyle: .alert)
         
-        // Add the Text Field for single-line input
+        // Add the Text Field
         alertController.addTextField { textField in
             textField.placeholder = "Start typing your note..."
             textField.keyboardType = .default
-            textField.autocapitalizationType = .sentences // Recommended for text input
+            textField.autocapitalizationType = .sentences
         }
         
-        // Add "Confirm" Action
-//        let confirmAction = UIAlertAction(title: "Confirm", style: .default) { _ in
-//            guard let textContent = alertController.textFields?.first?.text, !textContent.isEmpty else { return }
-//            
-//            print("Confirmed Text Content: \(textContent)")
-//            // TO DO: Save the text content for upload
-//        }
+        // ⬇️ UPDATED CONFIRM ACTION ⬇️
         let confirmAction = UIAlertAction(title: "Confirm", style: .default) { [weak self] _ in
-                guard let textContent = alertController.textFields?.first?.text, !textContent.isEmpty else { return }
-                
-                print("Confirmed Text Content: \(textContent)")
-                // Pass a truncated version of the text as the name
-                let preview = textContent.prefix(25) + (textContent.count > 25 ? "..." : "")
-                self?.navigateToConfirmation(with: String(preview))
+            // 1. Safely extract text content
+            guard let textContent = alertController.textFields?.first?.text, !textContent.isEmpty else {
+                return // Do nothing if text is empty
             }
+            
+            // 2. Create the StudyContent model (using the custom initializer)
+            let newContent = StudyContent(text: textContent)
+            
+            // 3. Store the model in the array
+            self?.selectedContent.append(newContent)
+            
+            print("Stored Text Content: \(newContent.filename)")
+            
+            // 4. Trigger the Storyboard Segue to Screen 2
+            // Ensure you have a 'ShowReviewContentSegue' identifier set on the segue in Storyboard
+            self?.performSegue(withIdentifier: "ShowUploadedContent", sender: self)
+        }
+        // ⬆️ END UPDATED CONFIRM ACTION ⬆️
         
-        // Add "Cancel" Action
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
         
         alertController.addAction(confirmAction)
@@ -224,4 +220,17 @@ class UploadContentViewController: UIViewController,
         
         present(alertController, animated: true)
     }
+    
+    // MARK: - Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowUploadedContent" {
+            if let destinationVC = segue.destination as? UploadConfirmationViewController {
+                destinationVC.uploadedMaterials = self.selectedContent
+            }
+        }
+    }
 }
+// AddContentViewController.swift (Continued)
+
+// The global prepare(...) that was here has been removed because it must be
+// inside the class or an extension to access `self`.
