@@ -6,8 +6,10 @@
 //
 
 import Foundation
+// Topic.swift
+
 struct Topic {
     let name: String
     let lastAccessed: String
-    let iconSystemName: String // SF Symbol name
+    let materialType: String
 }

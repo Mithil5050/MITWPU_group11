@@ -19,7 +19,11 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <navigationItem key="navigationItem" title="Study" id="xHE-Yi-L3e">
-                        <barButtonItem key="rightBarButtonItem" image="folder.badge.plus" catalog="system" id="PfC-GO-6aN"/>
+                        <barButtonItem key="rightBarButtonItem" image="folder.badge.plus" catalog="system" id="PfC-GO-6aN">
+                            <connections>
+                                <segue destination="dSw-TS-777" kind="presentation" modalPresentationStyle="automatic" id="FAP-Kt-XQf"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
@@ -44,23 +48,26 @@
                                     <segment title="Materials"/>
                                     <segment title="Sources"/>
                                 </segments>
+                                <connections>
+                                    <action selector="segmentControlTapped:" destination="afG-iH-vMM" eventType="valueChanged" id="GfR-UC-sbi"/>
+                                </connections>
                             </segmentedControl>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="dOn-cc-IvK">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="dOn-cc-IvK">
                                 <rect key="frame" x="0.0" y="281" width="393" height="454"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="TopicCardCell" rowHeight="100" id="98g-Sv-JR7" customClass="TopicCardCell" customModule="Group_11_Revisio" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="50" width="393" height="100"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="TopicCardCell" rowHeight="94" id="98g-Sv-JR7" customClass="TopicCardCell" customModule="Group_11_Revisio" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="50" width="393" height="94"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="98g-Sv-JR7" id="xd9-o5-Y4K">
-                                            <rect key="frame" x="0.0" y="0.0" width="393" height="100"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="393" height="94"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hmb-FY-7bG">
-                                                    <rect key="frame" x="20" y="10" width="353" height="100"/>
+                                                    <rect key="frame" x="20" y="10" width="353" height="94"/>
                                                     <subviews>
                                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" image="folder.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="WL3-Js-FIP">
-                                                            <rect key="frame" x="15" y="39.666666666666664" width="24" height="21"/>
+                                                            <rect key="frame" x="15" y="21.666666666666664" width="24" height="21.000000000000007"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="width" constant="24" id="cV1-Yk-vdW"/>
                                                                 <constraint firstAttribute="height" constant="24" id="vRl-q9-l0c"/>
@@ -73,7 +80,7 @@
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0fa-lY-NrO">
-                                                            <rect key="frame" x="51" y="41.333333333333336" width="35.333333333333343" height="17.333333333333336"/>
+                                                            <rect key="frame" x="51" y="42" width="35.333333333333343" height="11.333333333333336"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                             <color key="textColor" systemColor="secondaryLabelColor"/>
                                                             <nil key="highlightedColor"/>
@@ -82,8 +89,8 @@
                                                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                     <constraints>
                                                         <constraint firstItem="WL3-Js-FIP" firstAttribute="leading" secondItem="hmb-FY-7bG" secondAttribute="leading" constant="15" id="CDG-rD-YmQ"/>
-                                                        <constraint firstItem="WL3-Js-FIP" firstAttribute="centerY" secondItem="hmb-FY-7bG" secondAttribute="centerY" id="ESD-Hf-geS"/>
                                                         <constraint firstItem="Wrq-sU-yeA" firstAttribute="leading" secondItem="WL3-Js-FIP" secondAttribute="trailing" constant="12" id="Viz-1d-wKs"/>
+                                                        <constraint firstItem="WL3-Js-FIP" firstAttribute="centerY" secondItem="Wrq-sU-yeA" secondAttribute="centerY" constant="5" id="fVC-Q7-dP0"/>
                                                         <constraint firstAttribute="trailing" secondItem="Wrq-sU-yeA" secondAttribute="trailing" constant="20" id="iLV-3Q-0HN"/>
                                                         <constraint firstItem="0fa-lY-NrO" firstAttribute="centerY" secondItem="hmb-FY-7bG" secondAttribute="centerY" id="jGA-2A-kVb"/>
                                                         <constraint firstItem="0fa-lY-NrO" firstAttribute="leading" secondItem="Wrq-sU-yeA" secondAttribute="leading" id="jbb-qd-mae"/>
@@ -135,6 +142,51 @@
             </objects>
             <point key="canvasLocation" x="1701.5267175572519" y="-178.16901408450704"/>
         </scene>
+        <!--New Folder-->
+        <scene sceneID="eUA-NK-maQ">
+            <objects>
+                <viewController id="hV7-08-Nua" customClass="CreateFolderViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="ksY-s3-Sk6">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="793"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter Folder Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="uVP-8C-eC8">
+                                <rect key="frame" x="20" y="90" width="353" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="V1W-ti-2V3"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="9a7-j3-acY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="uVP-8C-eC8" firstAttribute="leading" secondItem="9a7-j3-acY" secondAttribute="leading" constant="20" id="H1w-CJ-1t3"/>
+                            <constraint firstItem="uVP-8C-eC8" firstAttribute="top" secondItem="9a7-j3-acY" secondAttribute="top" constant="20" id="aqn-Rj-48Y"/>
+                            <constraint firstItem="9a7-j3-acY" firstAttribute="trailing" secondItem="uVP-8C-eC8" secondAttribute="trailing" constant="20" id="m8x-WS-4Uw"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="New Folder" id="Ers-o8-oNW">
+                        <barButtonItem key="leftBarButtonItem" title="Item" image="xmark" catalog="system" id="rLe-cq-Ycv">
+                            <connections>
+                                <action selector="cancelTapped:" destination="hV7-08-Nua" id="9ka-1w-ZGn"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="Item" image="checkmark" catalog="system" id="Zt3-jI-U2V">
+                            <connections>
+                                <action selector="saveTapped:" destination="hV7-08-Nua" id="ftf-zs-Eby"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="folderNameTextField" destination="uVP-8C-eC8" id="ONJ-Pm-MPE"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="jcr-0w-eDy" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3437.4045801526718" y="-176.05633802816902"/>
+        </scene>
         <!--Study-->
         <scene sceneID="tyH-2s-EUw">
             <objects>
@@ -154,11 +206,31 @@
             </objects>
             <point key="canvasLocation" x="-19.083969465648853" y="-178.16901408450704"/>
         </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="uIB-ll-Izl">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="dSw-TS-777" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="DsK-49-wNB">
+                        <rect key="frame" x="0.0" y="16" width="393" height="54"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="hV7-08-Nua" kind="relationship" relationship="rootViewController" id="PAo-Ce-H36"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="FeQ-22-ooL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2510.6870229007632" y="-176.05633802816902"/>
+        </scene>
     </scenes>
     <resources>
         <image name="book" catalog="system" width="128" height="99"/>
+        <image name="checkmark" catalog="system" width="128" height="114"/>
         <image name="folder.badge.plus" catalog="system" width="128" height="93"/>
         <image name="folder.fill" catalog="system" width="128" height="96"/>
+        <image name="xmark" catalog="system" width="128" height="113"/>
         <systemColor name="secondaryLabelColor">
             <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
