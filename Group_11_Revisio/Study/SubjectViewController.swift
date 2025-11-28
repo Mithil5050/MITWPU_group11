@@ -13,10 +13,19 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     var selectedSubject: String?
    
     var currentContent: [Any] = []
+    var currentFilterType: String = "All"
+    var filteredContent: [Any] = []
+    
+    // Define available filter options for Materials
+    // These should match Topic.materialType values plus "All"
+    private let filterOptions: [String] = ["All", "Flashcards", "Quiz", "Cheatsheet", "Notes"]
     
     @IBOutlet var materialsSegmentedControl: UISegmentedControl!
     @IBOutlet var topicsTableView: UITableView!
     
+    // If this is connected in Interface Builder, we will ignore its primary-action property
+    // and replace it with a custom UIButton-backed bar button item to support iOS 14+.
+    @IBOutlet var filterButton: UIBarButtonItem!
     let searchController = UISearchController(searchResultsController: nil)
     
     override func viewDidLoad() {
@@ -28,7 +37,11 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             setupTableView()
             setupSearchController()
             loadContentForSubject(selectedSubject, segmentIndex: 0)
+            setupFilterMenu()
         }
+        topicsTableView.layer.cornerRadius = 12.0
+        topicsTableView.clipsToBounds = true
+        topicsTableView.backgroundColor = .systemBackground
 
         // Do any additional setup after loading the view.
         view.backgroundColor = .systemBackground
@@ -115,7 +128,9 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             self.currentContent = []
             print("Content array is missing for segment: \(key).")
         }
-        
+        // After self.currentContent = content is set in loadContentForSubject:
+        self.currentFilterType = "All" // Reset filter on segment change
+        self.applyFilterAndReload()
         // 4. Update the Table View to reflect the new data
         topicsTableView.reloadData()
     }
@@ -123,46 +138,50 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: - UITableViewDataSource
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return currentContent.count
+        return filteredContent.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: "TopicCardCell", for: indexPath) as? TopicCardCell else {
-                return UITableViewCell()
-            }
-            
-            // --- KEY FIX: Access the content item from the unified array ---
-            let contentItem = currentContent[indexPath.row]
-            
-            // Type checking logic to display content correctly
-            if let topic = contentItem as? Topic {
-                // CASE 1: MATERIALS (Topic objects)
-                let visuals = getMaterialVisuals(for: topic.materialType)
-                let separator = " • "
-                
-                cell.titleLabel.text = topic.name
-                cell.subtitleLabel.text = topic.materialType + separator + "Last Accessed: \(topic.lastAccessed)"
-                cell.iconImageView.image = UIImage(systemName: visuals.symbolName)
-                cell.iconImageView.tintColor = visuals.color
-                
-            } else if let source = contentItem as? Source {
-                // CASE 2: SOURCES (Source objects)
-                let visuals = getSourceVisuals(for: source.fileType)
-                
-                cell.titleLabel.text = source.name
-                cell.subtitleLabel.text = "\(source.fileType) • \(source.size)"
-                cell.iconImageView.image = UIImage(systemName: visuals.symbolName)
-                cell.iconImageView.tintColor = visuals.color
-                
-            } else {
-                // Fallback for unknown type
-                cell.titleLabel.text = "Error: Unknown Content"
-                cell.subtitleLabel.text = ""
-                cell.iconImageView.image = UIImage(systemName: "xmark.octagon.fill")
-            }
-            
-            return cell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "TopicCardCell", for: indexPath) as? TopicCardCell else {
+            return UITableViewCell()
         }
+        
+        // CRITICAL CHANGE: Access the item from the filteredContent array.
+        // This array holds the result of the filtering logic.
+        let contentItem = filteredContent[indexPath.row]
+        
+        // Type checking logic remains the same, but uses contentItem from the filtered array.
+        if let topic = contentItem as? Topic {
+            // CASE 1: MATERIALS (Topic objects)
+            let visuals = getMaterialVisuals(for: topic.materialType)
+            let separator = " • "
+            
+            cell.titleLabel.text = topic.name
+            cell.subtitleLabel.text = topic.materialType + separator + "Last Accessed: \(topic.lastAccessed)"
+            cell.iconImageView.image = UIImage(systemName: visuals.symbolName)
+            cell.iconImageView.tintColor = visuals.color
+            
+        } else if let source = contentItem as? Source {
+            // CASE 2: SOURCES (Source objects)
+            let visuals = getSourceVisuals(for: source.fileType)
+            
+            cell.titleLabel.text = source.name
+            cell.subtitleLabel.text = "\(source.fileType) • \(source.size)"
+            cell.iconImageView.image = UIImage(systemName: visuals.symbolName)
+            cell.iconImageView.tintColor = visuals.color
+            
+        } else {
+            // Fallback for unknown type
+            cell.titleLabel.text = "Error: Unknown Content"
+            cell.subtitleLabel.text = ""
+            cell.iconImageView.image = UIImage(systemName: "xmark.octagon.fill")
+        }
+        
+        return cell
+    }
+    // SubjectViewController.swift (Inside the class or extension)
+
+   
     
     func getMaterialVisuals(for type: String) -> (symbolName: String, color: UIColor) {
         switch type {
@@ -196,7 +215,74 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         tableView.deselectRow(at: indexPath, animated: true)
         // Handle topic selection if needed
     }
-    
+    // SubjectViewController.swift (Inside the class)
+
+    // SubjectViewController.swift (Inside the class)
+
+    func setupFilterMenu() {
+        
+        let actions: [UIAction] = filterOptions.map { filterName in
+            
+            let action = UIAction(title: filterName, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                // 1. Update the filter state
+                self.currentFilterType = action.title
+                
+                // 2. Re-filter and reload the table view
+                self.applyFilterAndReload()
+                
+                // 3. IMPORTANT: Recreate the menu to update the checkmark state
+                self.setupFilterMenu()
+            })
+            
+            // Add the checkmark to the currently active filter
+            action.state = (filterName == currentFilterType) ? .on : .off
+            
+            return action
+        }
+        
+        // Assign the UIMenu to the filterButton outlet
+        let menu = UIMenu(title: "Filter by Type", children: actions)
+        filterButton.menu = menu // This line should resolve the menu attachment
+        
+        // Remove conflicting line that caused the error.
+        // NOTE: On modern iOS, the system often handles menu display automatically
+        // when a menu property is assigned to a bar button item.
+        
+        // Fallback: If the menu doesn't show up on tap, we would use an older target-action
+        // to present the menu manually, but try running it with just the .menu assignment first.
+    }
+    // SubjectViewController.swift (Inside the class)
+
+    func applyFilterAndReload() {
+        
+        // 1. Start with all content from the currently active segment (Materials OR Sources)
+        let contentToFilter = currentContent
+        
+        if currentFilterType == "All" {
+            // If "All" is selected, show everything.
+            filteredContent = contentToFilter
+        } else {
+            // 2. Filter logic
+            filteredContent = contentToFilter.filter { item in
+                
+                // Only apply the filter if the item is a Topic (Sources do not have materialType)
+                if let topic = item as? Topic {
+                    return topic.materialType == currentFilterType
+                }
+                
+                // If the filter is active but the item is a Source, it's excluded.
+                return false
+            }
+        }
+        
+        // 3. Reload the table view with the new filtered data
+        topicsTableView.reloadData()
+        
+        // CRITICAL NOTE: If a segment (like Sources) is active, the filter will only show
+        // the "All" option effectively, as Source objects are not Topic objects.
+    }
 
     /*
     // MARK: - Navigation
