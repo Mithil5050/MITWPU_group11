@@ -32,6 +32,8 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
         view.addSubview(studyTableView)
             
         studyTableView.translatesAutoresizingMaskIntoConstraints = false
+        studyTableView.layer.cornerRadius = 12.0
+        studyTableView.clipsToBounds = true
             
         studyTableView.dataSource = self
         studyTableView.delegate = self
