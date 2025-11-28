@@ -67,33 +67,39 @@
                                                     <rect key="frame" x="20" y="6" width="353" height="103.66666666666667"/>
                                                     <subviews>
                                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" image="folder.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="WL3-Js-FIP">
-                                                            <rect key="frame" x="15" y="41.666666666666664" width="24" height="21"/>
+                                                            <rect key="frame" x="15" y="40.666666666666664" width="26" height="23"/>
                                                             <constraints>
-                                                                <constraint firstAttribute="width" constant="24" id="cV1-Yk-vdW"/>
-                                                                <constraint firstAttribute="height" constant="24" id="vRl-q9-l0c"/>
+                                                                <constraint firstAttribute="width" constant="26" id="cV1-Yk-vdW"/>
+                                                                <constraint firstAttribute="height" constant="26" id="vRl-q9-l0c"/>
                                                             </constraints>
                                                         </imageView>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0fa-lY-NrO">
-                                                            <rect key="frame" x="51" y="61" width="35.333333333333343" height="17"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                            <color key="textColor" systemColor="secondaryLabelColor"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wrq-sU-yeA">
-                                                            <rect key="frame" x="51" y="36.666666666666664" width="282" height="20.333333333333336"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                            <nil key="textColor"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
+                                                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="top" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="8Hf-ma-OEU">
+                                                            <rect key="frame" x="53" y="19.999999999999996" width="41.333333333333343" height="63.666666666666657"/>
+                                                            <subviews>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wrq-sU-yeA">
+                                                                    <rect key="frame" x="0.0" y="0.0" width="41.333333333333336" height="30"/>
+                                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                                    <nil key="textColor"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0fa-lY-NrO">
+                                                                    <rect key="frame" x="0.0" y="34" width="35.333333333333336" height="29.666666666666671"/>
+                                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                                    <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                            </subviews>
+                                                        </stackView>
                                                     </subviews>
                                                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                     <constraints>
+                                                        <constraint firstItem="8Hf-ma-OEU" firstAttribute="leading" secondItem="WL3-Js-FIP" secondAttribute="trailing" constant="12" id="BLk-lA-g5v"/>
                                                         <constraint firstItem="WL3-Js-FIP" firstAttribute="leading" secondItem="hmb-FY-7bG" secondAttribute="leading" constant="15" id="CDG-rD-YmQ"/>
-                                                        <constraint firstItem="Wrq-sU-yeA" firstAttribute="leading" secondItem="WL3-Js-FIP" secondAttribute="trailing" constant="12" id="Viz-1d-wKs"/>
-                                                        <constraint firstItem="WL3-Js-FIP" firstAttribute="centerY" secondItem="Wrq-sU-yeA" secondAttribute="centerY" constant="5" id="fVC-Q7-dP0"/>
-                                                        <constraint firstAttribute="trailing" secondItem="Wrq-sU-yeA" secondAttribute="trailing" constant="20" id="iLV-3Q-0HN"/>
-                                                        <constraint firstItem="0fa-lY-NrO" firstAttribute="leading" secondItem="Wrq-sU-yeA" secondAttribute="leading" id="jbb-qd-mae"/>
-                                                        <constraint firstItem="0fa-lY-NrO" firstAttribute="top" secondItem="hmb-FY-7bG" secondAttribute="top" constant="61" id="pWA-ML-tJL"/>
+                                                        <constraint firstItem="8Hf-ma-OEU" firstAttribute="top" secondItem="hmb-FY-7bG" secondAttribute="top" constant="20" id="GXS-7J-g7l"/>
+                                                        <constraint firstAttribute="height" constant="80" id="GpA-Zc-fCj"/>
+                                                        <constraint firstItem="WL3-Js-FIP" firstAttribute="centerY" secondItem="hmb-FY-7bG" secondAttribute="centerY" id="Hwk-18-F0f"/>
+                                                        <constraint firstItem="8Hf-ma-OEU" firstAttribute="centerY" secondItem="hmb-FY-7bG" secondAttribute="centerY" id="JXc-7d-bMg"/>
+                                                        <constraint firstAttribute="bottom" secondItem="8Hf-ma-OEU" secondAttribute="bottom" constant="20" id="kc7-m8-Hm1"/>
                                                         <constraint firstItem="WL3-Js-FIP" firstAttribute="centerY" secondItem="hmb-FY-7bG" secondAttribute="centerY" id="reX-VC-iMf"/>
                                                     </constraints>
                                                 </view>
@@ -132,13 +138,17 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="Fvb-cG-3sZ">
-                        <barButtonItem key="rightBarButtonItem" title="Item" image="line.3.horizontal.decrease.circle" catalog="system" id="JHL-ad-q7r">
-                            <color key="tintColor" systemColor="labelColor"/>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem title="Item" image="ellipsis.circle" catalog="system" id="Fjm-WG-ha9"/>
+                            <barButtonItem title="Item" image="line.3.horizontal.decrease.circle" catalog="system" id="JHL-ad-q7r">
+                                <color key="tintColor" systemColor="labelColor"/>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <outlet property="filterButton" destination="JHL-ad-q7r" id="cWI-n4-hKl"/>
                         <outlet property="materialsSegmentedControl" destination="wud-o2-bGe" id="FGL-uv-pW6"/>
+                        <outlet property="optionsButton" destination="Fjm-WG-ha9" id="QGt-ob-6Ob"/>
                         <outlet property="topicsTableView" destination="dOn-cc-IvK" id="8jU-RW-Zap"/>
                     </connections>
                 </viewController>
@@ -232,6 +242,7 @@
     <resources>
         <image name="book" catalog="system" width="128" height="99"/>
         <image name="checkmark" catalog="system" width="128" height="114"/>
+        <image name="ellipsis.circle" catalog="system" width="128" height="123"/>
         <image name="folder.badge.plus" catalog="system" width="128" height="93"/>
         <image name="folder.fill" catalog="system" width="128" height="96"/>
         <image name="line.3.horizontal.decrease.circle" catalog="system" width="128" height="123"/>
