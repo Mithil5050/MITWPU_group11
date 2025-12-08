@@ -140,17 +140,16 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         // Reset segmented control on screen entry
         materialsSegmentedControl.selectedSegmentIndex = 0
         
-        // CRITICAL: Ensure the Tab Bar is visible when the view appears normally (i.e., not in Select mode)
-        // The Tab Bar is managed by the root view controller, accessed via tabBarController.
+        // Ensure the Tab Bar is visible when the view appears normally
         self.tabBarController?.tabBar.isHidden = false
         
-        // CRITICAL: Ensure the Navigation Toolbar is HIDDEN by default.
-        // It will only be shown when the user explicitly taps "Select."
+        // Ensure the Navigation Toolbar is HIDDEN by default
         self.navigationController?.setToolbarHidden(true, animated: animated)
         
+        // Observer is added here to catch data updates/renames from other views
         NotificationCenter.default.addObserver(self, selector: #selector(handleDataUpdate), name: .didUpdateStudyMaterials, object: nil)
         
-        // Initial data load uses the current segment selection
+        // Initial data load uses the current segment selection (ensures content is reloaded)
         if let subject = selectedSubject {
             loadContentForSubject(subject, segmentIndex: materialsSegmentedControl.selectedSegmentIndex)
         }
@@ -170,7 +169,9 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     @objc func handleDataUpdate() {
-        // Reload data if the current subject has updated content, using the active segment
+        // Reload data if the current subject has updated content, using the active segment.
+        // This is crucial for syncing the view if the subject's contents change
+        // or if the subject itself was renamed (which fixes the name persistence issue).
         if let subject = selectedSubject {
             loadContentForSubject(subject, segmentIndex: materialsSegmentedControl.selectedSegmentIndex)
         }
@@ -337,17 +338,29 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
+        // Ensure the row is deselected immediately
+        tableView.deselectRow(at: indexPath, animated: true)
+        
         if tableView.isEditing {
-            // In select mode, register selection and refresh toolbar
+            // In select mode, handle selection/deselection and refresh toolbar.
             print("Item at \(indexPath.row) selected.")
-            // --- ADD THIS LINE ---
             updateToolbarForSelection()
         } else {
-            // In normal mode, deselect and handle the detail navigation.
-            tableView.deselectRow(at: indexPath, animated: true)
-            print("Item tapped for detail view/launch.")
+            // In normal mode, navigate to the detail view only for Topic items.
+            
+            let contentItem = filteredContent[indexPath.row]
+            
+            if let topic = contentItem as? Topic {
+                // Perform the Segue, passing the Topic object as the sender.
+                // This relies on the "ShowMaterialDetail" identifier being set in the Storyboard.
+                performSegue(withIdentifier: "ShowMaterialDetail", sender: topic)
+            } else {
+                // Handle taps on non-material items (Sources) if necessary, maybe launch an external link.
+                print("Source files must be launched externally or handled differently.")
+            }
         }
     }
+    
 
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         
@@ -498,28 +511,23 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         return menu
     }
     // SubjectViewController.swift (Inside the class)
+    // SubjectViewController.swift
 
     @objc func renameCurrentSubject() {
         guard let oldName = selectedSubject else { return }
         
-        // Call the reusable function defined in the UIViewController extension
         presentRenameAlert(for: oldName) { [weak self] newName in
             guard let self = self else { return }
             
-            // 1. Data Logic (Simulated): Call your DataManager to update the key
-            // DataManager.shared.renameSubject(oldName: oldName, newName: newName)
             
-            // 2. UI Update: Update the local property and screen title
+            DataManager.shared.renameSubject(oldName: oldName, newName: newName)
+            
             self.selectedSubject = newName
             self.title = newName
+            self.setupSearchController()
             
-            // 3. Notification: Notify the StudyFolderViewController (parent) to reload its subject list.
-            NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
-            
-            // 4. CRITICAL ADDITION: Reload the content on the current screen using the new name.
-            // This prevents the current view from crashing or failing to display if it tries
-            // to access data using the old 'selectedSubject' key during its lifecycle.
             self.loadContentForSubject(newName, segmentIndex: self.materialsSegmentedControl.selectedSegmentIndex)
+            NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
         }
     }
     // SubjectViewController.swift (Add these two methods)
@@ -554,7 +562,22 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         // NOTE: Delete the old setupOptionsMenu() call from viewDidLoad.
         // You only need to call this function inside the @objc showOptionsMenu()
     }
+    // SubjectViewController.swift (Add this method)
 
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowMaterialDetail" {
+            if let detailVC = segue.destination as? MaterialDetailViewController,
+               let topic = sender as? Topic {
+                
+                // Pass the data to the detail screen
+                detailVC.materialName = topic.name
+                detailVC.contentData = topic
+                
+                // If the detailVC needs the current subject name, pass that too:
+                // detailVC.parentSubjectName = selectedSubject
+            }
+        }
+    }
     /*
     // MARK: - Navigation
 
