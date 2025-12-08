@@ -8,6 +8,79 @@
 import UIKit
 
 class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    // SubjectViewController.swift (Inside the class)
+
+    var activeSegmentTitle: String {
+        return materialsSegmentedControl.titleForSegment(at: materialsSegmentedControl.selectedSegmentIndex) ?? "Materials"
+    }
+
+    func updateToolbarForSelection() {
+        
+        // Check selection state
+        let selectedCount = topicsTableView.indexPathsForSelectedRows?.count ?? 0
+        let isSelectionActive = selectedCount > 0
+        
+        // --- 1. Tool Visibility Check ---
+        // If we are NOT in editing mode, always ensure the toolbar is hidden.
+        if !topicsTableView.isEditing {
+            self.navigationController?.setToolbarHidden(true, animated: true)
+            return
+        }
+        
+        // --- 2. Toolbar Button Definitions (SF Symbols) ---
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        
+        // Primary Action (Dynamic Share/Generate)
+        let primaryAction: UIBarButtonItem
+        if activeSegmentTitle == "Sources" {
+            primaryAction = UIBarButtonItem(title: "Generate", style: .plain, target: self, action: #selector(generateAction))
+            primaryAction.image = UIImage(systemName: "wand.and.stars")
+            primaryAction.tintColor = .systemBlue
+        } else {
+            primaryAction = UIBarButtonItem(title: "Share", style: .plain, target: self, action: #selector(shareAction))
+            primaryAction.image = UIImage(systemName: "square.and.arrow.up")
+            primaryAction.tintColor = .systemBlue
+        }
+
+        // General Actions (Delete/Move)
+        let deleteButton = UIBarButtonItem(title: "Delete", image: UIImage(systemName: "trash"), target: self, action: #selector(deleteSelectionAction))
+        deleteButton.tintColor = .systemRed
+
+        let moveButton = UIBarButtonItem(title: "Move", image: UIImage(systemName: "arrowshape.turn.up.right"), target: self, action: #selector(moveSelectionAction))
+
+        // --- 3. CRITICAL FIX: Disabling Logic ---
+        let buttons = [deleteButton, moveButton, primaryAction]
+        for button in buttons {
+            // Disable all buttons if isSelectionActive is false (i.e., selection count is zero)
+            button.isEnabled = isSelectionActive
+        }
+        
+        // 4. Set Toolbar Items and Show
+        self.toolbarItems = [deleteButton, flexibleSpace, moveButton, flexibleSpace, primaryAction]
+        
+        // Since we are inside the isEditing block, ensure the toolbar is shown.
+        self.navigationController?.setToolbarHidden(false, animated: true)
+    }
+    @objc func generateAction() {
+        print("Action: Generating from selected sources.")
+    }
+    @objc func shareAction() {
+        print("Action: Sharing selected materials.")
+    }
+    @objc func moveSelectionAction() {
+        print("Action: Moving selected items.")
+    }
+    @objc func deleteSelectionAction() {
+        print("Action: Deleting selected items.")
+    }
+
+    @objc func moveAllContent() {
+        print("Action: Initiating Move All Content operation for subject \(selectedSubject ?? "current").")
+    }
+
+    @objc func deleteAllContent() {
+        print("Action: Initiating Delete All Content operation for subject \(selectedSubject ?? "current").")
+    }
     
     // This property is set by StudyFolderViewController in prepare(for:sender:)
     var selectedSubject: String?
@@ -19,6 +92,8 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     // Define available filter options for Materials
     // These should match Topic.materialType values plus "All"
     private let filterOptions: [String] = ["All", "Flashcards", "Quiz", "Cheatsheet", "Notes"]
+    // SubjectViewController.swift (Inside the class body)
+
     
     @IBOutlet var materialsSegmentedControl: UISegmentedControl!
     @IBOutlet var topicsTableView: UITableView!
@@ -34,6 +109,14 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        // --- CRITICAL FIX: Ensure Toolbar Items Array is EMPTY at startup ---
+        // This prevents the plain "Delete" and "Move" text placeholders from flashing or appearing incorrectly.
+        // The self.toolbarItems array will be populated entirely by updateToolbarForSelection()
+        // when the user taps 'Select'.
+        self.toolbarItems = []
+        // --- END CRITICAL FIX ---
+
+
         // Configure the UI using the selected subject if available
         if let selectedSubject {
             title = selectedSubject
@@ -42,23 +125,28 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             loadContentForSubject(selectedSubject, segmentIndex: 0)
             setupFilterMenu()
             optionsButton.menu = setupOptionsMenu()
-            configureEditingToolbar()
         }
+        
         topicsTableView.layer.cornerRadius = 12.0
         topicsTableView.clipsToBounds = true
         topicsTableView.backgroundColor = .systemBackground
 
         // Do any additional setup after loading the view.
         view.backgroundColor = .systemBackground
-        self.navigationController?.setToolbarHidden(false, animated: false)
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
         // Reset segmented control on screen entry
         materialsSegmentedControl.selectedSegmentIndex = 0
-        // CRITICAL: Ensure the navigation bar's toolbar is visible on this screen
-            self.navigationController?.setToolbarHidden(false, animated: animated)
-       
+        
+        // CRITICAL: Ensure the Tab Bar is visible when the view appears normally (i.e., not in Select mode)
+        // The Tab Bar is managed by the root view controller, accessed via tabBarController.
+        self.tabBarController?.tabBar.isHidden = false
+        
+        // CRITICAL: Ensure the Navigation Toolbar is HIDDEN by default.
+        // It will only be shown when the user explicitly taps "Select."
+        self.navigationController?.setToolbarHidden(true, animated: animated)
         
         NotificationCenter.default.addObserver(self, selector: #selector(handleDataUpdate), name: .didUpdateStudyMaterials, object: nil)
         
@@ -94,33 +182,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     // SubjectViewController.swift (Inside the class)
 
-    func configureEditingToolbar() {
-        
-        // 1. Delete All Button (Red, on the right)
-        let deleteAllButton = UIBarButtonItem(title: "Delete All", style: .plain, target: self, action: #selector(deleteAllTapped))
-        deleteAllButton.tintColor = .systemRed // Make it destructive
-        
-        // 2. Move All Button (Blue/Default, on the left)
-        let moveAllButton = UIBarButtonItem(title: "Move All", style: .plain, target: self, action: #selector(moveAllTapped))
-        
-        // 3. Flexible Space to push buttons to the sides
-        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        
-        // CRITICAL: Set the toolbar items array
-        self.toolbarItems = [moveAllButton, flexibleSpace, deleteAllButton]
-    }
-    @objc func moveAllTapped() {
-        // Implement logic to move ALL selected items (or all filtered items)
-        print("Action: Initiating Move All operation.")
-        // Logic: Collect selected items (topicsTableView.indexPathsForSelectedRows)
-        // and present a folder selection modal.
-    }
-
-    @objc func deleteAllTapped() {
-        // Implement logic to delete ALL selected items (or all filtered items)
-        print("Action: Initiating Delete All operation.")
-        // Logic: Confirm deletion, then delete the selected data from DataManager.
-    }
+    
     
     func setupTableView() {
         // Assign protocols
@@ -142,22 +204,22 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
 
     // SubjectViewController.swift (Inside viewDidLayoutSubviews)
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
-        let toolbarHeight = self.navigationController?.toolbar.frame.height ?? 0
-        let safeAreaBottom = view.safeAreaInsets.bottom
-        
-        // Calculation: Add Toolbar height to the system's safe area clearance
-        let requiredInset = toolbarHeight + safeAreaBottom
-        
-        let finalInset = UIEdgeInsets(top: 0, left: 0, bottom: requiredInset, right: 0)
-        
-        if topicsTableView.contentInset != finalInset {
-            topicsTableView.contentInset = finalInset
-            topicsTableView.scrollIndicatorInsets = finalInset
-        }
-    }
+//    override func viewDidLayoutSubviews() {
+//        super.viewDidLayoutSubviews()
+//        
+//        let toolbarHeight = self.navigationController?.toolbar.frame.height ?? 0
+//        let safeAreaBottom = view.safeAreaInsets.bottom
+//        
+//        // Calculation: Add Toolbar height to the system's safe area clearance
+//        let requiredInset = toolbarHeight + safeAreaBottom
+//        
+//        let finalInset = UIEdgeInsets(top: 0, left: 0, bottom: requiredInset, right: 0)
+//        
+//        if topicsTableView.contentInset != finalInset {
+//            topicsTableView.contentInset = finalInset
+//            topicsTableView.scrollIndicatorInsets = finalInset
+//        }
+//    }
     func setupSearchController() {
         searchController.searchBar.placeholder = "Search in \(selectedSubject ?? "this subject")"
         navigationItem.searchController = searchController
@@ -269,9 +331,32 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
       
     // MARK: - UITableViewDelegate
     
+    // SubjectViewController.swift (Inside the class or extension)
+
+    // SubjectViewController.swift (Inside the class or extension)
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        // Handle topic selection if needed
+        
+        if tableView.isEditing {
+            // In select mode, register selection and refresh toolbar
+            print("Item at \(indexPath.row) selected.")
+            // --- ADD THIS LINE ---
+            updateToolbarForSelection()
+        } else {
+            // In normal mode, deselect and handle the detail navigation.
+            tableView.deselectRow(at: indexPath, animated: true)
+            print("Item tapped for detail view/launch.")
+        }
+    }
+
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        
+        if tableView.isEditing {
+            // In select mode, register deselection and refresh toolbar
+            print("Item at \(indexPath.row) deselected.")
+            // --- ADD THIS LINE ---
+            updateToolbarForSelection()
+        }
     }
     // SubjectViewController.swift (Inside the class)
 
@@ -349,39 +434,52 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
 
     // SubjectViewController.swift (Inside the class)
 
+    // SubjectViewController.swift (Inside the class)
+    // SubjectViewController.swift (Inside the class, replace the current placeholders if they exist)
+
+   
+
     func setupOptionsMenu() -> UIMenu {
         
-        // 1. Determine the current state of the "Select" option
         let isSelectModeActive = topicsTableView.isEditing
         
-        // 2. Define the Select Action
         let selectAction = UIAction(title: "Select",
                                     image: UIImage(systemName: "checkmark.circle"),
                                     handler: { [weak self] action in
             guard let self = self else { return }
             
-            // Toggle the editing state (this shows/hides the row selection circles)
             self.topicsTableView.isEditing.toggle()
             let isNowEditing = self.topicsTableView.isEditing
             
-            // CRITICAL: Toggle the custom bottom toolbar visibility
-            self.navigationController?.setToolbarHidden(!isNowEditing, animated: true)
+            if isNowEditing {
+                self.updateToolbarForSelection()
+            } else {
+                self.navigationController?.setToolbarHidden(true, animated: true)
+            }
             
-            // FIX: Force layout update *after* the toolbar visibility change animates.
-            // This ensures viewDidLayoutSubviews runs with the final toolbar height.
+            self.tabBarController?.tabBar.isHidden = isNowEditing
+            
             DispatchQueue.main.async {
-                self.view.setNeedsLayout()
-                self.view.layoutIfNeeded()
-                
-                // Rebuild the menu to refresh the checkmark state after the layout is finalized
                 self.optionsButton.menu = self.setupOptionsMenu()
             }
         })
         
-        // 3. Apply the checkmark state based on the current editing status
         selectAction.state = isSelectModeActive ? .on : .off
         
-        // 4. Define the remaining actions (View as, Sort By)
+        let renameAction = UIAction(title: "Rename Subject", image: UIImage(systemName: "pencil")) { [weak self] _ in
+            self?.renameCurrentSubject()
+        }
+        
+        let moveAllAction = UIAction(title: "Move All Content", image: UIImage(systemName: "arrow.turn.forward"), handler: { [weak self] _ in
+            self?.moveAllContent()
+        })
+        
+        let deleteAllAction = UIAction(title: "Delete All Content", image: UIImage(systemName: "trash"), attributes: .destructive, handler: { [weak self] _ in
+            self?.deleteAllContent()
+        })
+        
+        let globalActionsMenu = UIMenu(title: "Management", children: [moveAllAction, deleteAllAction])
+        
         let viewAsAction = UIAction(title: "View as", image: UIImage(systemName: "list.bullet.indent"), handler: { _ in
             print("Action: View as triggered.")
         })
@@ -390,15 +488,47 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             print("Action: Sort By triggered.")
         })
         
-        // 5. Assemble the UIMenu
         let menu = UIMenu(title: "Option", children: [
             selectAction,
+            renameAction,
+            globalActionsMenu,
             UIMenu(title: "Display Options", options: .displayInline, children: [viewAsAction, sortByAction])
         ])
         
         return menu
     }
+    // SubjectViewController.swift (Inside the class)
+
+    @objc func renameCurrentSubject() {
+        guard let oldName = selectedSubject else { return }
+        
+        // Call the reusable function defined in the UIViewController extension
+        presentRenameAlert(for: oldName) { [weak self] newName in
+            guard let self = self else { return }
+            
+            // 1. Data Logic (Simulated): Call your DataManager to update the key
+            // DataManager.shared.renameSubject(oldName: oldName, newName: newName)
+            
+            // 2. UI Update: Update the local property and screen title
+            self.selectedSubject = newName
+            self.title = newName
+            
+            // 3. Notification: Notify the StudyFolderViewController (parent) to reload its subject list.
+            NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+            
+            // 4. CRITICAL ADDITION: Reload the content on the current screen using the new name.
+            // This prevents the current view from crashing or failing to display if it tries
+            // to access data using the old 'selectedSubject' key during its lifecycle.
+            self.loadContentForSubject(newName, segmentIndex: self.materialsSegmentedControl.selectedSegmentIndex)
+        }
+    }
+    // SubjectViewController.swift (Add these two methods)
+
+   
     // SubjectViewController.swift (Inside the class or extension)
+    // SubjectViewController.swift (Inside the class or extension)
+
+    
 
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
         // CRITICAL FIX: Return .none to suppress the red delete icon
