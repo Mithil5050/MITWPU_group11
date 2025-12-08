@@ -150,6 +150,7 @@
                         <outlet property="materialsSegmentedControl" destination="wud-o2-bGe" id="FGL-uv-pW6"/>
                         <outlet property="optionsButton" destination="Fjm-WG-ha9" id="QGt-ob-6Ob"/>
                         <outlet property="topicsTableView" destination="dOn-cc-IvK" id="8jU-RW-Zap"/>
+                        <segue destination="gBa-Vc-8cR" kind="show" identifier="ShowMaterialDetail" id="L0f-JZ-E0N"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="YjQ-mL-6iv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -201,20 +202,21 @@
             </objects>
             <point key="canvasLocation" x="3437.4045801526718" y="-176.05633802816902"/>
         </scene>
-        <!--View Controller-->
+        <!--Material Detail View Controller-->
         <scene sceneID="YIl-ul-29e">
             <objects>
-                <viewController id="gBa-Vc-8cR" sceneMemberID="viewController">
+                <viewController id="gBa-Vc-8cR" customClass="MaterialDetailViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ilt-9B-GiG">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <viewLayoutGuide key="safeArea" id="ltj-lc-7CD"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
+                    <navigationItem key="navigationItem" id="Xeu-5C-KHG"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="3W6-uO-kAv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4212" y="-184"/>
+            <point key="canvasLocation" x="1702" y="545"/>
         </scene>
         <!--Study-->
         <scene sceneID="tyH-2s-EUw">
@@ -266,7 +268,7 @@
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

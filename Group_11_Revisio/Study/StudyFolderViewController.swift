@@ -143,12 +143,16 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
                 
                 self.presentRenameAlert(for: folderName) { newName in
                     
-                    // DataManager.shared.renameSubject(oldName: folderName, newName: newName)
+                    
+                    DataManager.shared.renameSubject(oldName: folderName, newName: newName)
                     
                     // Post notification for other view controllers (like SubjectViewController) to update.
+                    // This triggers the SubjectViewController to update its title and reload its content.
                     NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
                     
-                    // CRITICAL FIX: Reload the table view to instantly display the new name on this screen.
+                    
+                    // This ensures the new name appears instantly on the Study Folder screen.
+                    self.fetchFolderNames() // Re-fetches the list of subjects from DataManager
                     tableView.reloadData()
                 }
             }
@@ -193,30 +197,73 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
     
     // MARK: - Delete Handling
 
-    func handleDeleteFolder(at indexPath: IndexPath) {
-        let subjectNameToDelete = self.subjectNames[indexPath.row]
-        self.subjectNames.remove(at: indexPath.row)
-        
-        studyTableView.beginUpdates()
-        studyTableView.deleteRows(at: [indexPath], with: .automatic)
-        studyTableView.endUpdates()
-        
-        DataManager.shared.deleteSubjectFolder(name: subjectNameToDelete)
-    }
+   
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, completionHandler) in
+        
+        let subjectToDelete = self.subjectNames[indexPath.row]
+        
+        // 1. Define the Delete Action (This button appears after the swipe)
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (action, view, completionHandler) in
+            
             guard let self = self else {
                 completionHandler(false)
                 return
             }
-            self.handleDeleteFolder(at: indexPath)
-            completionHandler(true)
+            
+            // 2. Present the Confirmation Alert
+            let alert = UIAlertController(
+                title: "Delete '\(subjectToDelete)'?",
+                message: "Are you sure you want to permanently delete this subject and all its materials?",
+                preferredStyle: .alert
+            )
+            
+            // Action 3a: Confirmation (Execute Deletion)
+            let confirmAction = UIAlertAction(title: "Delete", style: .destructive) { _ in
+                
+                // Execute the deletion logic (deletes from data and UI)
+                self.executeDeletion(at: indexPath)
+                
+                // Indicate that the action was performed successfully
+                completionHandler(true)
+            }
+            
+            // Action 3b: Cancel (Do not delete, hide swipe button)
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                // Indicate that the action was NOT performed (hides the swipe menu)
+                completionHandler(false)
+            }
+            
+            alert.addAction(cancelAction)
+            alert.addAction(confirmAction)
+            
+            self.present(alert, animated: true, completion: nil)
         }
         
+        deleteAction.image = UIImage(systemName: "trash")
+        
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        // You can set this to false if you don't want the full swipe to trigger the alert immediately
         configuration.performsFirstActionWithFullSwipe = true
+        
         return configuration
+    }
+    func executeDeletion(at indexPath: IndexPath) {
+        let subjectToDelete = self.subjectNames[indexPath.row]
+        
+        // 1. Data Logic: Delete the subject from your data manager
+        // DataManager.shared.deleteSubject(name: subjectToDelete) // Assuming DataManager has this method
+        
+        // 2. UI Data Update: Remove the item from the local array
+        self.subjectNames.remove(at: indexPath.row)
+        
+        // 3. UI Update: Animate the row deletion
+        self.studyTableView.deleteRows(at: [indexPath], with: .fade)
+        
+        // 4. Notify other screens (like SubjectViewController) that the data has changed
+        NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+        
+        print("Subject deleted: \(subjectToDelete)")
     }
         
     // MARK: - UITableViewDelegate (Accessory / Segue)

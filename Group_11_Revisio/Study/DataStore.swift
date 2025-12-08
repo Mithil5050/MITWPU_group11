@@ -133,6 +133,20 @@ class DataManager {
         // 2. Notify any listeners (like the main Study tab if it were visible) that the folder list has changed
         NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
     }
+    func renameSubject(oldName: String, newName: String) {
+        guard oldName != newName else { return }
+        guard let data = savedMaterials[oldName] else { return }
+        // Save data under the new key
+        savedMaterials[newName] = data
+        // Remove data under the old key
+        savedMaterials.removeValue(forKey: oldName)
+        
+        // TODO: Persist changes to disk if needed
+        // saveToDisk()
+        
+        // Notify listeners that folder names changed
+        NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
+    }
 
     // REMOVED: The old addMaterial function is replaced by the more powerful saveContent
 }
@@ -146,4 +160,4 @@ class DataManager {
         // Ensure this is also correct if you have implemented folder creation logic:
         static let didUpdateStudyFolders = Notification.Name("didUpdateStudyFolders")
     }
-
+// DataManager.swift (Conceptual)
