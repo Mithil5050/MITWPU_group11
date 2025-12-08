@@ -10,73 +10,85 @@ import UIKit
 class StudyFolderViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     let studyTableView = UITableView(frame: .zero, style: .plain)
-    private var subjectNames: [String] = [ "Calculus",
-                                                  "Big Data",
-                                                   "MMA",
-                                                 "Swift Fundamentals",
-                                                "Computer Networks"]
-        
-//    private let studyMaterials: [String] = [
-//        "Calculus",
-//        "Big Data",
-//        "MMA",
-//        "Swift Fundamentals",
-//        "Computer Networks"
-//    ]
+    private var subjectNames: [String] = [
+        "Calculus",
+        "Big Data",
+        "MMA",
+        "Swift Fundamentals",
+        "Computer Networks"
+    ]
         
     override func viewDidLoad() {
         super.viewDidLoad()
-            
+        
         view.backgroundColor = .systemBackground
-            
         view.addSubview(studyTableView)
-            
+        
         studyTableView.translatesAutoresizingMaskIntoConstraints = false
         studyTableView.layer.cornerRadius = 12.0
         studyTableView.clipsToBounds = true
-            
+        
         studyTableView.dataSource = self
         studyTableView.delegate = self
-            
+        // studyTableView.allowsMultipleSelectionDuringEditing = false
+        
         studyTableView.register(UITableViewCell.self, forCellReuseIdentifier: "StudyCell")
-            
+        
         if #available(iOS 11.0, *) {
             studyTableView.contentInsetAdjustmentBehavior = .never
         } else {
             automaticallyAdjustsScrollViewInsets = false
         }
-            
+        
+        // --- CRITICAL ADDITION: Setup Notification Observer ---
+        // This listener ensures that when any subject is renamed/deleted elsewhere in the app,
+        // this table view is notified to reload its data.
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleDataUpdate),
+                                               name: .didUpdateStudyMaterials,
+                                               object: nil)
+        // --- END ADDITION ---
+
         setupConstraints()
         fetchFolderNames()
     }
+    @objc func handleDataUpdate() {
+        // Re-fetch the list of subject names from your data manager
+        fetchFolderNames()
+        // Reload the table view to display the updated names/list
+        studyTableView.reloadData()
+    }
+    
+    
+  
+
+    
     
     // MARK: - Navigation Data Transfer
     override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            
-            // ADD OBSERVER: Listen for the signal that a new folder was created
-            NotificationCenter.default.addObserver(self,
-                selector: #selector(refreshFolderList),
-                name: .didUpdateStudyFolders,
-                object: nil)
-            
-            // Reload data just in case the view was pulled down and content changed
-            fetchFolderNames()
-        }
+        super.viewWillAppear(animated)
+        
+        // ADD OBSERVER: Listen for the signal that a new folder was created
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(refreshFolderList),
+            name: .didUpdateStudyFolders,
+            object: nil)
+        
+        // Reload data just in case the view was pulled down and content changed
+        fetchFolderNames()
+    }
 
-        override func viewWillDisappear(_ animated: Bool) {
-            super.viewWillDisappear(animated)
-            
-            // REMOVE OBSERVER: Clean up when the view is dismissed
-            NotificationCenter.default.removeObserver(self,
-                name: .didUpdateStudyFolders,
-                object: nil)
-        }
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        // Clean up the observer using the correct notification name for subject data updates.
+        NotificationCenter.default.removeObserver(self,
+            name: .didUpdateStudyMaterials, // Assuming this is the name used for renames/data changes
+            object: nil)
+    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ShowSubjectDetailProgrammatic" {
-            // NOTE: Assuming your detail view controller is named SubjectDetailViewController,
-            // I've corrected SubjectViewController to the standard naming convention used earlier.
             if let detailVC = segue.destination as? SubjectViewController {
                 if let selectedSubject = sender as? String {
                     detailVC.selectedSubject = selectedSubject
@@ -84,11 +96,12 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
             }
         }
     }
+    
     func fetchFolderNames() {
-            // Fetch all current folder names (keys) from the DataManager
-            self.subjectNames = Array(DataManager.shared.savedMaterials.keys).sorted()
-            studyTableView.reloadData()
-        }
+        // Fetch all current folder names (keys) from the DataManager
+        self.subjectNames = Array(DataManager.shared.savedMaterials.keys).sorted()
+        studyTableView.reloadData()
+    }
         
     func setupConstraints() {
         let safeArea = view.safeAreaLayoutGuide
@@ -100,85 +113,125 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
             studyTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
+    
     @objc func refreshFolderList() {
-            // This is called when the notification arrives from the CreateFolderViewController
-            fetchFolderNames()
-            // Reload is already included in fetchFolderNames(), but calling it here ensures the latest data.
-        }
+        // This is called when the notification arrives from the CreateFolderViewController
+        fetchFolderNames()
+        // Reload is already included in fetchFolderNames(), but calling it here ensures the latest data.
+    }
+    
     // MARK: - UITableViewDataSource
         
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return subjectNames.count
     }
+
+    // Context menu for rows
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        
+        let folderName = self.subjectNames[indexPath.row]
+        let identifier = folderName as NSString
+        
+        return UIContextMenuConfiguration(identifier: identifier, previewProvider: nil) { [weak self] _ in
+            guard let self = self else { return nil }
+            
+            let shareFolderAction = UIAction(title: "Share Folder", image: UIImage(systemName: "person.crop.circle.badge.plus")) { _ in
+                print("Action: Sharing folder \(folderName)")
+            }
+            
+            let renameAction = UIAction(title: "Rename", image: UIImage(systemName: "pencil")) { _ in
+                
+                self.presentRenameAlert(for: folderName) { newName in
+                    
+                    // DataManager.shared.renameSubject(oldName: folderName, newName: newName)
+                    
+                    // Post notification for other view controllers (like SubjectViewController) to update.
+                    NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+                    
+                    // CRITICAL FIX: Reload the table view to instantly display the new name on this screen.
+                    tableView.reloadData()
+                }
+            }
+            
+            let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                print("Action: Deleting folder \(folderName)")
+            }
+            
+            let primaryActions = UIMenu(title: "", options: .displayInline, children: [renameAction, shareFolderAction])
+            let destructiveActions = UIMenu(title: "", options: .displayInline, children: [deleteAction])
+            
+            return UIMenu(title: "", children: [primaryActions, destructiveActions])
+        }
+    }
         
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: "StudyCell", for: indexPath)
-            
+        
+        // Set the content: Folder name, icon, and color
         cell.textLabel?.text = subjectNames[indexPath.row]
         cell.imageView?.image = UIImage(systemName: "folder")
         cell.imageView?.tintColor = UIColor.systemBlue
+        
+        // Set the default accessory type for non-editing mode (the right arrow)
         cell.accessoryType = .disclosureIndicator
-            
+        
+        // Ensure the selection style doesn't interfere
+        cell.selectionStyle = .default
+        
+        // Note: Folder management actions (Rename/Share) are handled by the long-press Context Menu.
+        
         return cell
     }
         
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         if section == 0 {
-            // Using a plain style table view, this provides the "Your Materials" header
             return "Your Materials"
         }
         return nil
     }
     
-    // StudyFolderViewController.swift
+    // MARK: - Delete Handling
 
     func handleDeleteFolder(at indexPath: IndexPath) {
-            
-            // 1. Get the name needed for the DataManager update
-            let subjectNameToDelete = self.subjectNames[indexPath.row]
-            
-            // 2. CRITICAL FIX: Remove the name from the local array FIRST.
-            // This synchronizes the local data source count with the UI animation count.
-            self.subjectNames.remove(at: indexPath.row)
-            
-            // 3. Animate the UI deletion. This must complete without interruptions.
-            studyTableView.beginUpdates()
-            studyTableView.deleteRows(at: [indexPath], with: .automatic)
-            studyTableView.endUpdates()
-            
-            // 4. Update the DataManager LAST. This posts the notification, but the UI is already updated.
-            DataManager.shared.deleteSubjectFolder(name: subjectNameToDelete)
-        }
+        let subjectNameToDelete = self.subjectNames[indexPath.row]
+        self.subjectNames.remove(at: indexPath.row)
+        
+        studyTableView.beginUpdates()
+        studyTableView.deleteRows(at: [indexPath], with: .automatic)
+        studyTableView.endUpdates()
+        
+        DataManager.shared.deleteSubjectFolder(name: subjectNameToDelete)
+    }
+    
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-            
-            let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, completionHandler) in
-                
-                guard let self = self else {
-                    completionHandler(false)
-                    return
-                }
-                
-                self.handleDeleteFolder(at: indexPath)
-                completionHandler(true)
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, completionHandler) in
+            guard let self = self else {
+                completionHandler(false)
+                return
             }
-            
-            let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
-            configuration.performsFirstActionWithFullSwipe = true
-            
-            return configuration
+            self.handleDeleteFolder(at: indexPath)
+            completionHandler(true)
         }
         
-    // MARK: - UITableViewDelegate (Segue Trigger)
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        configuration.performsFirstActionWithFullSwipe = true
+        return configuration
+    }
+        
+    // MARK: - UITableViewDelegate (Accessory / Segue)
+
+    
+    
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // Deselect the row immediately for standard iOS behavior
+        
+        // Deselect the row immediately to remove the highlight effect
         tableView.deselectRow(at: indexPath, animated: true)
         
-        // 1. Get the subject data for the selected row
         let selectedSubjectName = subjectNames[indexPath.row]
         
-        // 2. Trigger the segue defined in the Storyboard
+        // Perform the segue to the SubjectViewController, passing the folder name
         performSegue(withIdentifier: "ShowSubjectDetailProgrammatic", sender: selectedSubjectName)
     }
-  
 }
