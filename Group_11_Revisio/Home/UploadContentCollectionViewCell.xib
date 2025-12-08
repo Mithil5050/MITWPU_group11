@@ -25,6 +25,9 @@
                         <rect key="frame" x="283" y="0.0" width="87" height="37"/>
                         <state key="normal" title="Button"/>
                         <buttonConfiguration key="configuration" style="filled" image="plus" catalog="system"/>
+                        <connections>
+                            <action selector="AddButtonTapped:" destination="gTV-IL-0wX" eventType="touchUpInside" id="DiX-Ws-DSN"/>
+                        </connections>
                     </button>
                 </subviews>
             </view>
@@ -39,6 +42,9 @@
                 <constraint firstAttribute="trailing" secondItem="YG3-Bf-DXS" secondAttribute="trailing" id="uqC-3i-que"/>
                 <constraint firstItem="rUl-rl-9nX" firstAttribute="top" secondItem="YG3-Bf-DXS" secondAttribute="bottom" id="znN-dG-Zo6"/>
             </constraints>
+            <connections>
+                <outlet property="tableView" destination="rUl-rl-9nX" id="sQx-oY-iPc"/>
+            </connections>
             <point key="canvasLocation" x="13.740458015267174" y="112.32394366197184"/>
         </collectionViewCell>
     </objects>

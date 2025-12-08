@@ -10,6 +10,37 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
+        <!--Profile-->
+        <scene sceneID="TUB-E4-WgM">
+            <objects>
+                <viewController id="app-ce-bSr" customClass="ProfileViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="U63-0e-cz1">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="drb-8W-jqy">
+                                <rect key="frame" x="0.0" y="172" width="393" height="563"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </tableView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="AFV-pm-182"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="drb-8W-jqy" firstAttribute="leading" secondItem="AFV-pm-182" secondAttribute="leading" id="CSu-hI-r5r"/>
+                            <constraint firstItem="AFV-pm-182" firstAttribute="bottom" secondItem="drb-8W-jqy" secondAttribute="bottom" id="Ojo-JQ-5UB"/>
+                            <constraint firstItem="AFV-pm-182" firstAttribute="trailing" secondItem="drb-8W-jqy" secondAttribute="trailing" id="Uq1-uL-U6i"/>
+                            <constraint firstItem="drb-8W-jqy" firstAttribute="top" secondItem="AFV-pm-182" secondAttribute="top" id="hQa-Xy-uW1"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Profile" id="SYR-sa-glz"/>
+                    <connections>
+                        <outlet property="tableView" destination="drb-8W-jqy" id="k6U-Tj-wdG"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="hg4-6t-r5H" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="710" y="-1639"/>
+        </scene>
         <!--Home View Controller-->
         <scene sceneID="tYZ-Br-z2I">
             <objects>
@@ -22,20 +53,20 @@
                                 <rect key="frame" x="0.0" y="172" width="393" height="563"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="PPl-pD-GRh">
-                                    <size key="itemSize" width="157" height="168"/>
+                                    <size key="itemSize" width="200" height="208"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="CtZ-CB-H94">
-                                        <rect key="frame" x="0.0" y="0.0" width="157" height="168"/>
+                                        <rect key="frame" x="96.666666666666671" y="0.0" width="200" height="208"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="rXC-hn-LZv">
-                                            <rect key="frame" x="0.0" y="0.0" width="157" height="168"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="200" height="208"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </collectionViewCellContentView>
-                                        <size key="customSize" width="157" height="168"/>
+                                        <size key="customSize" width="200" height="208"/>
                                     </collectionViewCell>
                                 </cells>
                             </collectionView>
@@ -49,11 +80,26 @@
                             <constraint firstItem="yyJ-lR-hc6" firstAttribute="trailing" secondItem="ufZ-rN-vt7" secondAttribute="trailing" id="CpB-f1-c4P"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="tKG-BV-Kfq"/>
+                    <navigationItem key="navigationItem" id="tKG-BV-Kfq">
+                        <barButtonItem key="rightBarButtonItem" title="Item" style="plain" id="C0W-sT-ErK">
+                            <button key="customView" opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="XFJ-Pq-MYR">
+                                <rect key="frame" x="325" y="4.6666666666666687" width="48" height="34.666666666666664"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" image="person" catalog="system"/>
+                                <connections>
+                                    <action selector="profileButtonTapped:" destination="4ZY-0A-Wo4" eventType="touchUpInside" id="ZsF-fw-9hi"/>
+                                </connections>
+                            </button>
+                            <connections>
+                                <segue destination="app-ce-bSr" kind="show" identifier="showProfileSegue" id="dvo-j4-Ai4"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="collectionView" destination="ufZ-rN-vt7" id="Da1-5d-QLO"/>
-                        <segue destination="ry9-kf-REg" kind="show" identifier="showUploadContent" id="HBb-AX-3ca"/>
+                        <segue destination="ry9-kf-REg" kind="show" identifier="ShowUploadCreation" id="HBb-AX-3ca"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="S36-4S-LDv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -63,7 +109,7 @@
         <!--Upload Content-->
         <scene sceneID="na4-Op-mpZ">
             <objects>
-                <viewController id="ry9-kf-REg" customClass="UploadContentViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="UploadContent" id="ry9-kf-REg" customClass="UploadContentViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eec-Sm-vQp">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -517,6 +563,7 @@
         <image name="house" catalog="system" width="128" height="104"/>
         <image name="link" catalog="system" width="128" height="124"/>
         <image name="list.bullet.clipboard" catalog="system" width="98" height="128"/>
+        <image name="person" catalog="system" width="128" height="121"/>
         <image name="photo" catalog="system" width="128" height="93"/>
         <image name="plus" catalog="system" width="128" height="113"/>
         <image name="rectangle.on.rectangle.angled" catalog="system" width="128" height="98"/>
@@ -529,13 +576,13 @@
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemGray3Color">
-            <color red="0.78039215689999997" green="0.78039215689999997" blue="0.80000000000000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.7803921568627451" green="0.7803921568627451" blue="0.80000000000000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGreenColor">
-            <color red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemRedColor">
-            <color red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.2196078431372549" blue="0.23529411764705882" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemYellowColor">
             <color red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

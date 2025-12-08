@@ -13,15 +13,20 @@
             <rect key="frame" x="0.0" y="0.0" width="320" height="50"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r2p-Ec-kBz">
-                    <rect key="frame" x="16" y="15" width="67" height="34"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r2p-Ec-kBz">
+                    <rect key="frame" x="0.0" y="5" width="320" height="6"/>
                     <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
             </subviews>
             <viewLayoutGuide key="safeArea" id="VXr-Tz-HHm"/>
+            <constraints>
+                <constraint firstItem="VXr-Tz-HHm" firstAttribute="bottom" secondItem="r2p-Ec-kBz" secondAttribute="bottom" constant="5" id="1SR-jx-byA"/>
+                <constraint firstItem="VXr-Tz-HHm" firstAttribute="trailing" secondItem="r2p-Ec-kBz" secondAttribute="trailing" id="ALh-Og-Hwe"/>
+                <constraint firstItem="r2p-Ec-kBz" firstAttribute="leading" secondItem="VXr-Tz-HHm" secondAttribute="leading" id="Xak-iZ-JLD"/>
+                <constraint firstItem="r2p-Ec-kBz" firstAttribute="top" secondItem="U6b-Vx-4bR" secondAttribute="top" constant="5" id="nct-o0-XVw"/>
+            </constraints>
             <connections>
                 <outlet property="TitleName" destination="r2p-Ec-kBz" id="n2d-Xl-1lm"/>
             </connections>
