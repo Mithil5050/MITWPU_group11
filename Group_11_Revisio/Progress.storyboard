@@ -5,6 +5,7 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="collection view cell content view" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -258,6 +259,10 @@
                                                                                         <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                                         <state key="normal" title="Button"/>
                                                                                         <buttonConfiguration key="configuration" style="plain" image="chevron.forward.circle.fill" catalog="system" title="" imagePadding="-20"/>
+                                                                                        <connections>
+                                                                                            <action selector="awardsButtonTapped:" destination="SZh-hW-Isu" eventType="touchUpInside" id="k8Q-7z-xeb"/>
+                                                                                            <segue destination="Iz6-9K-uFj" kind="show" identifier="ShowAwardsPage" id="tVh-Ci-Iy2"/>
+                                                                                        </connections>
                                                                                     </button>
                                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Awards" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DG0-yW-gCx">
                                                                                         <rect key="frame" x="7.9999999999999964" y="8" width="55.666666666666657" height="21"/>
@@ -392,6 +397,211 @@
             </objects>
             <point key="canvasLocation" x="-2532.06106870229" y="-1064.0845070422536"/>
         </scene>
+        <!--Awards-->
+        <scene sceneID="9Tg-UF-OHP">
+            <objects>
+                <viewController id="Iz6-9K-uFj" customClass="AwardsViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Dhk-g2-RtX">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="Ovs-PA-4BK">
+                                <rect key="frame" x="0.0" y="172" width="393" height="563"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="GfY-eX-tw2">
+                                    <size key="itemSize" width="128" height="128"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="MonthlyBadgeCell" id="0Bw-wY-HW9" customClass="MonthlyBadgeCollectionViewCell" customModule="Group_11_Revisio" customModuleProvider="target">
+                                        <rect key="frame" x="10" y="0.0" width="372.66666666666669" height="112"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="W33-dc-wGZ">
+                                            <rect key="frame" x="0.0" y="0.0" width="372.66666666666669" height="112"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <subviews>
+                                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="TkT-xY-ugF">
+                                                    <rect key="frame" x="8" y="0.0" width="356.66666666666669" height="112"/>
+                                                    <subviews>
+                                                        <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="IuI-lt-d9F">
+                                                            <rect key="frame" x="0.0" y="0.0" width="356.66666666666669" height="112"/>
+                                                            <subviews>
+                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="1X5-ab-Pz9">
+                                                                    <rect key="frame" x="0.0" y="6" width="100" height="100"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="height" constant="100" id="DCI-zq-zFf"/>
+                                                                        <constraint firstAttribute="width" constant="100" id="x59-bX-xmp"/>
+                                                                    </constraints>
+                                                                </imageView>
+                                                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="top" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uxT-Fi-XLD">
+                                                                    <rect key="frame" x="115.99999999999999" y="16" width="144.66666666666663" height="80"/>
+                                                                    <subviews>
+                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="g3T-5x-Tza">
+                                                                            <rect key="frame" x="0.0" y="0.0" width="72" height="36"/>
+                                                                            <attributedString key="attributedText">
+                                                                                <fragment content="Go For It ">
+                                                                                    <attributes>
+                                                                                        <font key="NSFont" size="17" name="SFPro-Regular"/>
+                                                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                                    </attributes>
+                                                                                </fragment>
+                                                                            </attributedString>
+                                                                            <nil key="highlightedColor"/>
+                                                                        </label>
+                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="107.3" translatesAutoresizingMaskIntoConstraints="NO" id="Wnn-om-xCA">
+                                                                            <rect key="frame" x="0.0" y="20.999999999999996" width="105.33333333333333" height="35.666666666666657"/>
+                                                                            <attributedString key="attributedText">
+                                                                                <fragment content="Monthly Challenge">
+                                                                                    <attributes>
+                                                                                        <font key="NSFont" metaFont="cellTitle"/>
+                                                                                        <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                                    </attributes>
+                                                                                </fragment>
+                                                                            </attributedString>
+                                                                            <nil key="highlightedColor"/>
+                                                                        </label>
+                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Upcoming Badge: Pace Setter" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tF3-aR-Bbq">
+                                                                            <rect key="frame" x="0.0" y="44" width="144.66666666666666" height="36"/>
+                                                                            <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                                                            <color key="textColor" systemColor="systemGrayColor"/>
+                                                                            <nil key="highlightedColor"/>
+                                                                        </label>
+                                                                    </subviews>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="height" constant="80" id="e9K-II-gAc"/>
+                                                                    </constraints>
+                                                                </stackView>
+                                                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="4NV-mx-sjv">
+                                                                    <rect key="frame" x="276.66666666666669" y="16" width="80" height="80"/>
+                                                                    <subviews>
+                                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="RuB-1H-MGE">
+                                                                            <rect key="frame" x="0.0" y="0.0" width="80" height="64"/>
+                                                                            <constraints>
+                                                                                <constraint firstAttribute="height" constant="64" id="RgC-gU-dGI"/>
+                                                                            </constraints>
+                                                                        </imageView>
+                                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="L1Q-8F-WYn">
+                                                                            <rect key="frame" x="0.0" y="64" width="80" height="16"/>
+                                                                            <state key="normal" title="Button"/>
+                                                                            <buttonConfiguration key="configuration" style="plain">
+                                                                                <attributedString key="attributedTitle">
+                                                                                    <fragment content="Show ">
+                                                                                        <attributes>
+                                                                                            <font key="NSFont" size="12" name="Helvetica"/>
+                                                                                            <font key="NSOriginalFont" size="12" name="Helvetica"/>
+                                                                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                                        </attributes>
+                                                                                    </fragment>
+                                                                                    <fragment content="A">
+                                                                                        <attributes>
+                                                                                            <font key="NSFont" size="12" name="Helvetica"/>
+                                                                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                                        </attributes>
+                                                                                    </fragment>
+                                                                                    <fragment content="ll">
+                                                                                        <attributes>
+                                                                                            <font key="NSFont" size="12" name="Helvetica"/>
+                                                                                            <font key="NSOriginalFont" size="12" name="Helvetica"/>
+                                                                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                                        </attributes>
+                                                                                    </fragment>
+                                                                                </attributedString>
+                                                                            </buttonConfiguration>
+                                                                        </button>
+                                                                    </subviews>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="height" constant="80" id="VyO-hT-dCD"/>
+                                                                        <constraint firstAttribute="width" constant="80" id="sIK-C8-W0H"/>
+                                                                    </constraints>
+                                                                </stackView>
+                                                            </subviews>
+                                                            <constraints>
+                                                                <constraint firstItem="4NV-mx-sjv" firstAttribute="top" secondItem="IuI-lt-d9F" secondAttribute="top" constant="16" id="Uc0-Uu-2Dl"/>
+                                                            </constraints>
+                                                        </stackView>
+                                                    </subviews>
+                                                </stackView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="bottom" secondItem="TkT-xY-ugF" secondAttribute="bottom" id="3Ud-9P-uD9"/>
+                                                <constraint firstItem="TkT-xY-ugF" firstAttribute="leading" secondItem="W33-dc-wGZ" secondAttribute="leading" constant="8" id="5cY-RV-4M2"/>
+                                                <constraint firstItem="TkT-xY-ugF" firstAttribute="top" secondItem="W33-dc-wGZ" secondAttribute="top" id="6jM-4R-nwP"/>
+                                                <constraint firstAttribute="trailing" secondItem="TkT-xY-ugF" secondAttribute="trailing" constant="8" id="XxF-OL-2fS"/>
+                                            </constraints>
+                                        </collectionViewCellContentView>
+                                        <connections>
+                                            <outlet property="allBadgesImageView" destination="RuB-1H-MGE" id="JIW-rl-TZb"/>
+                                            <outlet property="challengeNameLabel" destination="Wnn-om-xCA" id="gY5-8O-4NO"/>
+                                            <outlet property="mainTitleLabel" destination="g3T-5x-Tza" id="Skj-K2-aNw"/>
+                                            <outlet property="monthlyBadgeImageView" destination="1X5-ab-Pz9" id="VwU-vh-skX"/>
+                                            <outlet property="showAllButton" destination="L1Q-8F-WYn" id="47s-Yn-0IL"/>
+                                            <outlet property="subtitleLabel" destination="tF3-aR-Bbq" id="RkS-eF-avF"/>
+                                        </connections>
+                                    </collectionViewCell>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" reuseIdentifier="BadgeCell" id="DpB-76-lpf" customClass="BadgeCollectionViewCell" customModule="Group_11_Revisio" customModuleProvider="target">
+                                        <rect key="frame" x="116.66666666666667" y="122" width="160" height="155.33333333333337"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="Xq7-Qv-up3">
+                                            <rect key="frame" x="0.0" y="0.0" width="160" height="155.33333333333337"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <subviews>
+                                                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Vyz-Jb-r0v">
+                                                    <rect key="frame" x="16" y="8" width="128" height="139.33333333333334"/>
+                                                    <subviews>
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="aIT-Og-rRh">
+                                                            <rect key="frame" x="0.0" y="0.0" width="128" height="97"/>
+                                                        </imageView>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="y9K-KL-fsz">
+                                                            <rect key="frame" x="48.666666666666671" y="105" width="31" height="14.333333333333329"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                            <nil key="textColor"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vVg-bE-Sch">
+                                                            <rect key="frame" x="51.000000000000007" y="127.33333333333334" width="26.333333333333336" height="12"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                                            <nil key="textColor"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                    </subviews>
+                                                </stackView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="Vyz-Jb-r0v" firstAttribute="leading" secondItem="Xq7-Qv-up3" secondAttribute="leadingMargin" constant="8" id="HCK-OM-m9J"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="Vyz-Jb-r0v" secondAttribute="trailing" constant="8" id="Rha-1i-hvS"/>
+                                                <constraint firstItem="Vyz-Jb-r0v" firstAttribute="top" secondItem="Xq7-Qv-up3" secondAttribute="topMargin" id="WoY-Z5-lr9"/>
+                                                <constraint firstAttribute="bottomMargin" secondItem="Vyz-Jb-r0v" secondAttribute="bottom" id="hPa-T4-jQv"/>
+                                            </constraints>
+                                        </collectionViewCellContentView>
+                                        <connections>
+                                            <outlet property="badgeImageView" destination="aIT-Og-rRh" id="Txf-KT-QS0"/>
+                                            <outlet property="detailLabel" destination="vVg-bE-Sch" id="lv8-zd-GC8"/>
+                                            <outlet property="titleLabel" destination="y9K-KL-fsz" id="1ig-7m-6z9"/>
+                                        </connections>
+                                    </collectionViewCell>
+                                </cells>
+                            </collectionView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="SYr-kK-1ui"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="Ovs-PA-4BK" firstAttribute="top" secondItem="SYr-kK-1ui" secondAttribute="top" id="Mq4-vt-VcL"/>
+                            <constraint firstItem="SYr-kK-1ui" firstAttribute="bottom" secondItem="Ovs-PA-4BK" secondAttribute="bottom" id="Xch-0s-4ay"/>
+                            <constraint firstItem="SYr-kK-1ui" firstAttribute="trailing" secondItem="Ovs-PA-4BK" secondAttribute="trailing" id="gq2-YD-fib"/>
+                            <constraint firstItem="Ovs-PA-4BK" firstAttribute="leading" secondItem="SYr-kK-1ui" secondAttribute="leading" id="srW-ag-smX"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Awards" largeTitleDisplayMode="never" id="Iyy-EC-yI2" customClass="Badge"/>
+                    <connections>
+                        <outlet property="collectionView" destination="Ovs-PA-4BK" id="4lK-k1-zKa"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ONw-iS-NJn" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-645" y="-1050"/>
+        </scene>
     </scenes>
     <resources>
         <image name="awards_monthly_main" width="658" height="796"/>
@@ -402,13 +612,13 @@
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemGray6Color">
-            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGrayColor">
-            <color red="0.55686274509803924" green="0.55686274509803924" blue="0.57647058823529407" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemOrangeColor">
-            <color red="1" green="0.55294117647058827" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

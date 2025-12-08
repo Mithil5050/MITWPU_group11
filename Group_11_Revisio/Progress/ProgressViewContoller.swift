@@ -40,6 +40,11 @@ class ProgressViewContoller: UIViewController {
                chart.bottomAnchor.constraint(equalTo: hoursGraphView.bottomAnchor, constant: -12)
            ])
        }
+    
+    @IBAction func awardsButtonTapped(_ sender: UIButton) {
+        performSegue(withIdentifier: "ShowAwardsPage", sender: nil)
+    }
+    
 //       This actually places the chart inside the container.
     }
     
