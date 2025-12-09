@@ -7,11 +7,8 @@
 
 import UIKit
 
-class ProgressViewContoller: UIViewController {
+class ProgressViewContoller: UIViewController, LogStudyTimeDelegate {
     
-    
-
- 
     @IBOutlet weak var hoursGraphView: UIView!
     var chart = BarGraphView()
 
@@ -20,41 +17,48 @@ class ProgressViewContoller: UIViewController {
 
         // Do any additional setup after loading the view.
         // Set up chart
-           chart.translatesAutoresizingMaskIntoConstraints = false
-           chart.backgroundColor = .clear
-           chart.values = [4, 7, 6, 10, 5, 9]   // initial values
+        chart.translatesAutoresizingMaskIntoConstraints = false
+        chart.backgroundColor = .clear
+        chart.values = [4, 7, 6, 10, 5, 9]   // initial values
 
         hoursGraphView.addSubview(chart)
 
-           NSLayoutConstraint.activate([
-               chart.leadingAnchor.constraint(equalTo:hoursGraphView.leadingAnchor, constant: 12),
-               chart.trailingAnchor.constraint(equalTo: hoursGraphView.trailingAnchor, constant: -12),
-               chart.topAnchor.constraint(equalTo: hoursGraphView.topAnchor, constant: 12),
-               chart.bottomAnchor.constraint(equalTo: hoursGraphView.bottomAnchor, constant: -12)
-           ])
-       }
+        NSLayoutConstraint.activate([
+            chart.leadingAnchor.constraint(equalTo: hoursGraphView.leadingAnchor, constant: 12),
+            chart.trailingAnchor.constraint(equalTo: hoursGraphView.trailingAnchor, constant: -12),
+            chart.topAnchor.constraint(equalTo: hoursGraphView.topAnchor, constant: 12),
+            chart.bottomAnchor.constraint(equalTo: hoursGraphView.bottomAnchor, constant: -12)
+        ])
+    }
 
     @IBAction func segmentChanged(_ sender: UISegmentedControl) {
         if sender.selectedSegmentIndex == 0 {
             chart.values = [2, 4, 3, 6, 7, 5, 6]
         } else {
-                   chart.values = [4, 7, 6, 10, 5, 9, 8]
-               }
-           }
-    
+            chart.values = [4, 7, 6, 10, 5, 9, 8]
+        }
     }
-    
-//       This actually places the chart inside the container.
-    
 
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+        // 🚨 IMPORTANT: Replace "LogStudyTimeSegue" with the actual Identifier you set on your Storyboard Segue.
+        if segue.identifier == "LogStudyTimeSegue" {
+            // Check if the destination is a Navigation Controller (since you need the top bar UI)
+            if let navigationController = segue.destination as? UINavigationController,
+               let logStudyVC = navigationController.viewControllers.first as? LogStudyTimeViewController {
+                // ⭐️ Set the delegate to THIS view controller (ProgressViewContoller)
+                logStudyVC.delegate = self
+                // ⭐️ FIX for Blur Effect: Ensure the presentation style keeps the background visible
+                navigationController.modalPresentationStyle = .overCurrentContext
+            }
+        }
     }
-    */
 
-
+    // MARK: - Delegate Method (Receives Data from Modal)
+    func didLogStudyTime(hours: Double, date: Date, subject: String?) {
+        print("✅ Data received: \(hours) hours logged on \(date) for \(subject ?? "Unknown")")
+        // 1. Save this data to your database (Core Data, Realm, etc.)
+        // 2. Refresh your charts and achievement cards to reflect the new entry
+        // Example: If you have a chart outlet named 'barChart'
+        // self.barChart.reloadData()
+    }
+}

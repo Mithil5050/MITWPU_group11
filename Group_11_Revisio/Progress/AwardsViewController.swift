@@ -21,8 +21,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
     // Placeholder data array (replace with your actual ViewModel/data source)
     var badges: [Badge] = [
             // ... (Your badges array) ...
-        Badge(title: "Monthly Challenge", detail: "Upcoming Badge: Pace Setter", isLocked: false, imageAssetName: ""),
-                
+        Badge(title: "Monthly Challenge", detail: "Upcoming Badge: Pace Setter", isLocked: false, imageAssetName: "awards_monthly_main"),
                 // Indices 1 to N: Standard Grid Badges (Total 6 more)
                 Badge(title: "Squad MVP", detail: "Earned: 13/09/2025", isLocked: false, imageAssetName: "badge1_squad_mvp_"),
                 Badge(title: "Flash Genius", detail: "Earned: 18/09/2025", isLocked: false, imageAssetName: "badge2_flash_genuis"),
@@ -45,7 +44,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
                 layout.sectionInset = UIEdgeInsets(top: 16, left: 20, bottom: 16, right: 20)
             }
             
-            navigationItem.title = "Achievements"
+            navigationItem.title = "Awards"
         }
         
         // MARK: - UICollectionViewDataSource (Still inside the class)
@@ -60,7 +59,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
                 
                 if indexPath.item == 0 {
                     guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MonthlyBadgeCell", for: indexPath) as? MonthlyBadgeCollectionViewCell else { fatalError() }
-                    cell.configure(with: badge) // <-- UNCOMMENTED
+                 //   cell.configure(with: badge) // <-- UNCOMMENTED
                     return cell
                     
                 } else {

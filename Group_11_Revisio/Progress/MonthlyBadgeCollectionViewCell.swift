@@ -9,16 +9,20 @@ import UIKit
 
 class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
     
+    
+    
     @IBOutlet weak var monthlyBadgeImageView: UIImageView!
+    
     @IBOutlet weak var mainTitleLabel: UILabel!
     
     @IBOutlet weak var challengeNameLabel: UILabel!
     
     @IBOutlet weak var subtitleLabel: UILabel!
     
-    @IBOutlet weak var allBadgesImageView: UIImageView!
-
+    @IBOutlet weak var allBadgesImagesView: UIImageView!
+    
     @IBOutlet weak var showAllButton: UIButton!
+   
     override func awakeFromNib() {
             super.awakeFromNib()
             setupCardStyle()
