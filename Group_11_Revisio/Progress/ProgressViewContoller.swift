@@ -41,10 +41,10 @@ class ProgressViewContoller: UIViewController, LogStudyTimeDelegate {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // 🚨 IMPORTANT: Replace "LogStudyTimeSegue" with the actual Identifier you set on your Storyboard Segue.
-        if segue.identifier == "LogStudyTimeSegue" {
+        if segue.identifier == "LogStudyTime" {
             // Check if the destination is a Navigation Controller (since you need the top bar UI)
             if let navigationController = segue.destination as? UINavigationController,
-               let logStudyVC = navigationController.viewControllers.first as? LogStudyTimeViewController {
+               let logStudyVC = navigationController.viewControllers.first as? LogProgressViewController {
                 // ⭐️ Set the delegate to THIS view controller (ProgressViewContoller)
                 logStudyVC.delegate = self
                 // ⭐️ FIX for Blur Effect: Ensure the presentation style keeps the background visible
