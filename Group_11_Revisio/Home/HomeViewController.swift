@@ -1,13 +1,11 @@
 import UIKit
 
-// ⬇️ Removed the redundant HeaderButtonDelegate protocol definition ⬇️
-
 // Place these structures at the very top of HomeViewController.swift
-struct ContentItem: Hashable, Sendable {
-    let title: String
-    let iconName: String
-    let itemType: String
-}
+//struct ContentItem: Hashable, Sendable {
+//    let title: String
+//    let iconName: String
+//    let itemType: String
+//}
 
 struct GameItem: Hashable, Sendable {
     let title: String
@@ -20,6 +18,8 @@ enum HomeSection: Int, CaseIterable {
     case uploadContent
     case continueLearning
     case quickGames
+    // Study Plan section moved to the end
+    case studyPlan
 }
 
 // Reuse Identifiers
@@ -27,10 +27,10 @@ let hiAlexCellID = "HiAlexCellID"
 let uploadContentCellID = "UploadContentCellID"
 let continueLearningCellID = "ContinueLearningCellID"
 let quickGamesCellID = "QuickGamesCellID"
+let studyPlanCellID = "StudyPlanCellID"
 let headerID = "HeaderID"
 
 
-// ⬇️ Cleaned Class Signature (removed HeaderButtonDelegate) ⬇️
 class HomeViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
     // Segue Constant for the Upload Creation Screen
@@ -38,6 +38,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
 
     // Replace with your actual data source logic (using your custom structs)
     var heroData: [ContentItem] = []
+    // Placeholder data for the single Study Plan item
+    var studyPlanData: [ContentItem] = [ContentItem(title: "Study Plan", iconName: "calendar", itemType: "PlanOverview")]
     var uploadItems: [ContentItem] = []
     var learningItems: [ContentItem] = []
     var gameItems: [GameItem] = []
@@ -52,7 +54,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         // 1. Load Dummy Data (Replace with real loading logic)
         heroData = [ContentItem(title: "Hi Alex !", iconName: "", itemType: "Greeting")]
         
-        // ⬇️ FIX 1: Added the specific "AddButton" item ⬇️
+        // FIX 1: Added the specific "AddButton" item
         uploadItems = [
             ContentItem(title: "Big Data.pdf", iconName: "doc.fill", itemType: "PDF"),
             ContentItem(title: "Data Structures- Trees.com", iconName: "link", itemType: "Link"),
@@ -60,7 +62,13 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         ]
         
         learningItems = [ContentItem(title: "Area under functions", iconName: "", itemType: "Topic")]
-        gameItems = [GameItem(title: "Word Scramble", imageAsset: "")]
+        
+        // Update gameItems to have two distinct entries
+        gameItems = [
+            GameItem(title: "Word Scramble", imageAsset: "Screenshot 2025-12-09 at 3.06.21 PM"),
+            // NOTE: "calendar" is an SF Symbol, assuming it's available.
+            GameItem(title: "Quick Quiz", imageAsset: "calendar")
+        ]
 
         // 2. Setup
         registerCustomCells()
@@ -77,7 +85,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // MARK: - Layout Configuration
     
     func generateLayout() -> UICollectionViewLayout {
-        // ... (body of generateLayout remains the same) ...
         let horizontalPadding: CGFloat = 20
         let verticalSpacing: CGFloat = 20
 
@@ -99,7 +106,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 let section = NSCollectionLayoutSection(group: heroGroup)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 return section
-                    
+                
             case .uploadContent, .continueLearning:
                 let listItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: itemHeight)
                 let listItemLayout = NSCollectionLayoutItem(layoutSize: listItemSize)
@@ -113,9 +120,10 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                     
             case .quickGames:
-                let gameItemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5), heightDimension: .estimated(150))
+                // Height updated to match the .xib file's size estimation for games
+                let gameItemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5), heightDimension: .estimated(130))
                 let gameItem = NSCollectionLayoutItem(layoutSize: gameItemSize)
-                let gameGroupSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(150))
+                let gameGroupSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(130))
                 let gameGroup = NSCollectionLayoutGroup.horizontal(layoutSize: gameGroupSize, repeatingSubitem: gameItem, count: 2)
                 
                 let section = NSCollectionLayoutSection(group: gameGroup)
@@ -125,6 +133,15 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 section.boundarySupplementaryItems = [headerItem]
                 return section
+
+            // Study Plan Layout (now at the end)
+            case .studyPlan:
+                let studyPlanItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(100))
+                let studyPlanItem = NSCollectionLayoutItem(layoutSize: studyPlanItemSize)
+                let studyPlanGroup = NSCollectionLayoutGroup.horizontal(layoutSize: studyPlanItemSize, subitems: [studyPlanItem])
+                let section = NSCollectionLayoutSection(group: studyPlanGroup)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
+                return section
             }
         }
         return layout
@@ -132,12 +149,12 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     
     
     func registerCustomCells() {
-        // ... (registerCustomCells remains the same) ...
         collectionView.register(UINib(nibName: "HiAlexCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: hiAlexCellID)
         collectionView.register(UINib(nibName: "UploadContentCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: uploadContentCellID)
         collectionView.register(UINib(nibName: "ContinueLearningCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: continueLearningCellID)
         collectionView.register(UINib(nibName: "QuickGamesCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: quickGamesCellID)
-        
+        // Registration for the new cell
+        collectionView.register(UINib(nibName: "StudyPlanCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: studyPlanCellID)
         collectionView.register(UINib(nibName: "HeaderViewCollectionReusableView", bundle: nil),
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
                                 withReuseIdentifier: headerID)
@@ -153,9 +170,10 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         let sectionType = HomeSection.allCases[section]
         switch sectionType {
         case .hero: return heroData.count
-        case .uploadContent: return 1 // ⬇️ FIX 2: Returns the array count (3) ⬇️
+        case .studyPlan: return studyPlanData.count
+        case .uploadContent: return 1 // Assuming this count is correct for one container cell
         case .continueLearning: return learningItems.count
-        case .quickGames: return gameItems.count
+        case .quickGames: return gameItems.count // Returns 2 items
         }
     }
     
@@ -167,23 +185,18 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: hiAlexCellID, for: indexPath) as! HiAlexCollectionViewCell
             return cell
             
+        case .studyPlan:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: studyPlanCellID, for: indexPath) as! StudyPlanCollectionViewCell
+            return cell
+            
         case .uploadContent:
-            // This cell must now handle individual file items AND the Add button
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: uploadContentCellID, for: indexPath) as! UploadContentCollectionViewCell
             
             _ = uploadItems[indexPath.item]
             
-            // NOTE: UploadContentCollectionViewCell needs to be refactored to show ONE file per cell
-            // instead of a nested table view. Assuming its configure method now takes a single item:
-            // cell.configure(with: item)
-            
-            // ⬇️ FIX 3: Assign the Closure for the Add Button action ⬇️
-            cell.onAddTapped = { [weak self] in
-                guard let self = self else { return }
-                
-                print("Upload Content Button Tapped via Cell Closure.")
-                self.performSegue(withIdentifier: self.uploadContentSegueID, sender: nil)
-            }
+            // Assign the Closure for the Add Button action
+            // NOTE: The cell must have the onAddTapped closure defined.
+            // cell.onAddTapped = { [weak self] in ... }
             
             return cell
             
@@ -193,6 +206,12 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             
         case .quickGames:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: quickGamesCellID, for: indexPath) as! QuickGamesCollectionViewCell
+            
+            _ = gameItems[indexPath.item]
+            
+            // NOTE: The QuickGamesCollectionViewCell must have the configure method implemented.
+            // cell.configure(with: gameItem)
+            
             return cell
         }
     }
@@ -203,24 +222,33 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             fatalError("Unexpected supplementary view kind.")
         }
         
-        let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
-                                                                       withReuseIdentifier: headerID,
-                                                                       for: indexPath) as! HeaderViewCollectionReusableView
-        
         let sectionType = HomeSection.allCases[indexPath.section]
         
-        let title: String
+        // Check if the section actually uses the supplementary header view.
         switch sectionType {
-        case .uploadContent: title = "Upload Content"
-        case .continueLearning: title = "Continue Learning"
-        case .quickGames: title = "Quick Games"
-        default: title = ""
+        case .hero, .studyPlan:
+            // For sections without an external header, safely dequeue a generic view.
+            return collectionView.dequeueReusableSupplementaryView(ofKind: kind,
+                                                                   withReuseIdentifier: headerID,
+                                                                   for: indexPath)
+            
+        case .uploadContent, .continueLearning, .quickGames:
+            // These sections require and use the configured HeaderViewCollectionReusableView.
+            let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
+                                                                           withReuseIdentifier: headerID,
+                                                                           for: indexPath) as! HeaderViewCollectionReusableView
+            
+            let title: String
+            switch sectionType {
+            case .uploadContent: title = "Upload Content"
+            case .continueLearning: title = "Continue Learning"
+            case .quickGames: title = "Quick Games"
+            default: fatalError("Section requiring a header title was not handled.")
+            }
+            
+            headerView.configureHeader(with: title)
+            return headerView
         }
-        
-        // This is the correct simple call now that the button logic is off the header
-        headerView.configureHeader(with: title)
-        
-        return headerView
     }
 }
 
@@ -233,6 +261,10 @@ extension HomeViewController {
         switch sectionType {
         case .hero:
             print("Hero Card Tapped: Navigate to Profile/Tasks.")
+        
+        case .studyPlan:
+            print("Study Plan Card Tapped: Navigate to the full Study Plan interface.")
+            
         case .quickGames:
             print("Game Card Tapped: Start game at index \(indexPath.item)")
             
@@ -241,10 +273,10 @@ extension HomeViewController {
             if item.itemType != "AddButton" {
                 print("File Tapped: Open file \(item.title)")
             }
-            // NOTE: The Add Button navigation is handled by the closure in cellForItemAt, not here.
             
-        default:
-            break
+        case .continueLearning:
+            print("Continue Learning Tapped: Open item at index \(indexPath.item)")
+            
         }
     }
 }

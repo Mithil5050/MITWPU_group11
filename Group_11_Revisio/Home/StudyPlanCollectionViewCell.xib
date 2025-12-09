@@ -18,8 +18,8 @@
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Study Plan" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uCi-GY-VPc">
-                        <rect key="frame" x="0.0" y="0.0" width="130" height="34"/>
-                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
+                        <rect key="frame" x="0.0" y="-4" width="121.66666666666667" height="30"/>
+                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="25"/>
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
                     </label>
@@ -40,23 +40,22 @@
                                 </constraints>
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Lvg-nK-6kO">
-                                <rect key="frame" x="322" y="11" width="40" height="35"/>
+                                <rect key="frame" x="322.33333333333331" y="11" width="39.666666666666686" height="35"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" image="chevron.right" catalog="system"/>
                             </button>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <color key="backgroundColor" systemColor="systemGray5Color"/>
                         <constraints>
                             <constraint firstItem="RSc-GV-c8L" firstAttribute="top" secondItem="zBv-LR-KpA" secondAttribute="top" constant="8" id="2DF-Ew-Kfh"/>
                             <constraint firstAttribute="bottom" secondItem="Lvg-nK-6kO" secondAttribute="bottom" constant="14" id="3sx-5w-vBN"/>
                             <constraint firstItem="Lvg-nK-6kO" firstAttribute="top" secondItem="zBv-LR-KpA" secondAttribute="top" constant="11" id="4a8-pv-ndT"/>
                             <constraint firstItem="RSc-GV-c8L" firstAttribute="leading" secondItem="zBv-LR-KpA" secondAttribute="leading" constant="8" id="72C-wS-37e"/>
-                            <constraint firstItem="Lvg-nK-6kO" firstAttribute="leading" secondItem="DFy-bA-UFN" secondAttribute="trailing" constant="109" id="Nzm-hc-p0F"/>
                             <constraint firstAttribute="bottom" secondItem="RSc-GV-c8L" secondAttribute="bottom" constant="12" id="UnQ-b9-ws4"/>
                             <constraint firstItem="DFy-bA-UFN" firstAttribute="top" secondItem="zBv-LR-KpA" secondAttribute="top" constant="19" id="d59-Cc-Jlu"/>
-                            <constraint firstAttribute="trailing" secondItem="DFy-bA-UFN" secondAttribute="trailing" constant="157" id="fd2-O5-8W1"/>
                             <constraint firstAttribute="trailing" secondItem="Lvg-nK-6kO" secondAttribute="trailing" constant="8" id="hOW-pb-Z5u"/>
                             <constraint firstAttribute="bottom" secondItem="DFy-bA-UFN" secondAttribute="bottom" constant="20" id="pjd-R8-uHJ"/>
+                            <constraint firstItem="DFy-bA-UFN" firstAttribute="leading" secondItem="RSc-GV-c8L" secondAttribute="trailing" constant="8" symbolic="YES" id="qK3-AQ-3Gs"/>
                         </constraints>
                     </view>
                 </subviews>
@@ -67,16 +66,20 @@
                 <constraint firstItem="zBv-LR-KpA" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="EsE-MO-AcQ"/>
                 <constraint firstItem="uCi-GY-VPc" firstAttribute="leading" secondItem="zBv-LR-KpA" secondAttribute="leading" id="WQa-H0-T6T"/>
                 <constraint firstItem="zBv-LR-KpA" firstAttribute="top" secondItem="uCi-GY-VPc" secondAttribute="bottom" id="ogX-G7-c2g"/>
+                <constraint firstItem="zBv-LR-KpA" firstAttribute="top" secondItem="uCi-GY-VPc" secondAttribute="bottom" constant="8" id="tRd-v9-3Fy"/>
                 <constraint firstAttribute="bottom" secondItem="zBv-LR-KpA" secondAttribute="bottom" id="vGq-T1-tTm"/>
             </constraints>
-            <point key="canvasLocation" x="72" y="154"/>
+            <connections>
+                <outlet property="StudyPlan" destination="zBv-LR-KpA" id="szG-h3-cR0"/>
+            </connections>
+            <point key="canvasLocation" x="-27.480916030534349" y="158.45070422535213"/>
         </collectionViewCell>
     </objects>
     <resources>
         <image name="calendar" catalog="system" width="128" height="107"/>
         <image name="chevron.right" catalog="system" width="97" height="128"/>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        <systemColor name="systemGray5Color">
+            <color red="0.8980392157" green="0.8980392157" blue="0.91764705879999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

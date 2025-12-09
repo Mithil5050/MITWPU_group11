@@ -18,44 +18,56 @@
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UnI-iv-8GX">
-                        <rect key="frame" x="8" y="8" width="354" height="52"/>
+                        <rect key="frame" x="0.0" y="8" width="370" height="54"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="graduationcap.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="4q5-tv-hoX">
-                                <rect key="frame" x="0.0" y="8" width="37" height="37"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="graduationcap.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="4q5-tv-hoX">
+                                <rect key="frame" x="8" y="9" width="37" height="39"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="37" id="NvD-Wd-jEG"/>
+                                    <constraint firstAttribute="height" constant="37" id="nc3-pX-Be3"/>
+                                </constraints>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eU6-TD-rH0">
-                                <rect key="frame" x="45" y="13" width="42" height="21"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="LD8-sb-Gu4">
                                 <rect key="frame" x="325" y="15" width="20" height="20"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eU6-TD-rH0">
+                                <rect key="frame" x="53" y="16" width="42" height="23"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <color key="backgroundColor" systemColor="systemGray5Color"/>
+                        <constraints>
+                            <constraint firstItem="4q5-tv-hoX" firstAttribute="top" secondItem="UnI-iv-8GX" secondAttribute="top" constant="8" id="GsA-NX-yJ1"/>
+                            <constraint firstItem="4q5-tv-hoX" firstAttribute="leading" secondItem="UnI-iv-8GX" secondAttribute="leading" constant="8" id="MBd-eJ-RCJ"/>
+                            <constraint firstAttribute="bottom" secondItem="4q5-tv-hoX" secondAttribute="bottom" constant="9" id="Ngd-z2-tZZ"/>
+                            <constraint firstItem="eU6-TD-rH0" firstAttribute="leading" secondItem="4q5-tv-hoX" secondAttribute="trailing" constant="8" symbolic="YES" id="e5G-cu-kFp"/>
+                            <constraint firstAttribute="bottom" secondItem="eU6-TD-rH0" secondAttribute="bottom" constant="15" id="l4e-fe-K9q"/>
+                            <constraint firstItem="eU6-TD-rH0" firstAttribute="top" secondItem="UnI-iv-8GX" secondAttribute="top" constant="16" id="nzf-nh-uhF"/>
+                        </constraints>
                     </view>
                 </subviews>
             </view>
             <viewLayoutGuide key="safeArea" id="ZTg-uK-7eu"/>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="UnI-iv-8GX" secondAttribute="trailing" constant="8" id="1rx-mo-emX"/>
+                <constraint firstAttribute="trailing" secondItem="UnI-iv-8GX" secondAttribute="trailing" id="1rx-mo-emX"/>
                 <constraint firstItem="UnI-iv-8GX" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" constant="8" id="4lR-s5-Bx7"/>
-                <constraint firstItem="UnI-iv-8GX" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="8" id="wCt-OU-3Q0"/>
-                <constraint firstAttribute="bottom" secondItem="UnI-iv-8GX" secondAttribute="bottom" constant="8" id="yyw-Np-C1W"/>
+                <constraint firstItem="UnI-iv-8GX" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="wCt-OU-3Q0"/>
             </constraints>
             <size key="customSize" width="370" height="68"/>
+            <connections>
+                <outlet property="ContinueLearning" destination="UnI-iv-8GX" id="hKo-EL-tWG"/>
+            </connections>
             <point key="canvasLocation" x="138.93129770992365" y="119.01408450704226"/>
         </collectionViewCell>
     </objects>
     <resources>
         <image name="chevron.right" catalog="system" width="97" height="128"/>
         <image name="graduationcap.fill" catalog="system" width="128" height="108"/>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        <systemColor name="systemGray5Color">
+            <color red="0.8980392157" green="0.8980392157" blue="0.91764705879999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

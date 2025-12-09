@@ -15,8 +15,16 @@ class HeaderViewCollectionReusableView: UICollectionReusableView {
         // Initialization code
     }
     func configureHeader(with title: String) {
-            // Implement the logic to set the title text
-            TitleName.text = title.uppercased() // Using uppercased for prominence
+        // Implement the logic to set the title text
+        TitleName.text = title
+        // If you want the title to appear bold, set a bold font:
+        if let currentSize = TitleName?.font?.pointSize {
+            TitleName.font = UIFont.boldSystemFont(ofSize: currentSize)
+        } else {
+            TitleName.font = UIFont.boldSystemFont(ofSize: UIFont.labelFontSize)
         }
+        // If you also want it uppercased, uncomment the next line:
+        // TitleName.text = title.uppercased()
+    }
     
 }

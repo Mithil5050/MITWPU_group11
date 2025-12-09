@@ -149,7 +149,7 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
         switch section {
         case .userInfo: return 140 // Taller cell for the profile card
         case .settings, .actions: return 52 // Adds ~8 points of vertical space between settings rows
-        default: return 44
+        
         }
     }
 

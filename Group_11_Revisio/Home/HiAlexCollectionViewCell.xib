@@ -38,6 +38,12 @@
                                     <constraint firstAttribute="height" constant="174" id="pAN-2f-SKf"/>
                                 </constraints>
                             </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Home" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VfE-1x-w9M">
+                                <rect key="frame" x="0.0" y="8" width="95" height="42"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="35"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
@@ -45,10 +51,12 @@
                             <constraint firstAttribute="bottom" secondItem="Kfd-zb-NWZ" secondAttribute="bottom" id="6C9-zH-T59"/>
                             <constraint firstAttribute="bottom" secondItem="ow4-3r-GC1" secondAttribute="bottom" constant="77" id="7nh-IN-rQf"/>
                             <constraint firstAttribute="bottom" secondItem="k4o-IY-NIR" secondAttribute="bottom" id="Pn8-w0-Dt7"/>
+                            <constraint firstItem="VfE-1x-w9M" firstAttribute="top" secondItem="uAA-C9-8id" secondAttribute="top" constant="8" id="Yjm-dN-0jg"/>
                             <constraint firstItem="k4o-IY-NIR" firstAttribute="leading" secondItem="ow4-3r-GC1" secondAttribute="trailing" constant="110" id="Ztp-sm-Koj"/>
                             <constraint firstItem="k4o-IY-NIR" firstAttribute="top" secondItem="uAA-C9-8id" secondAttribute="top" id="cbo-gQ-fRl"/>
                             <constraint firstItem="Kfd-zb-NWZ" firstAttribute="leading" secondItem="uAA-C9-8id" secondAttribute="leading" constant="8" id="cqY-J6-uer"/>
                             <constraint firstAttribute="trailing" secondItem="Kfd-zb-NWZ" secondAttribute="trailing" constant="140" id="fLL-R8-1zP"/>
+                            <constraint firstItem="VfE-1x-w9M" firstAttribute="leading" secondItem="uAA-C9-8id" secondAttribute="leading" id="g2A-QA-cG6"/>
                             <constraint firstItem="k4o-IY-NIR" firstAttribute="leading" secondItem="ow4-3r-GC1" secondAttribute="trailing" constant="110" id="kUP-ji-cXX"/>
                             <constraint firstItem="Kfd-zb-NWZ" firstAttribute="top" secondItem="ow4-3r-GC1" secondAttribute="bottom" id="n9X-1e-Y24"/>
                             <constraint firstItem="ow4-3r-GC1" firstAttribute="leading" secondItem="uAA-C9-8id" secondAttribute="leading" constant="8" id="ssf-oB-sMv"/>
@@ -63,6 +71,9 @@
                 <constraint firstAttribute="bottom" secondItem="uAA-C9-8id" secondAttribute="bottom" id="o0J-T5-jju"/>
             </constraints>
             <size key="customSize" width="271" height="130"/>
+            <connections>
+                <outlet property="hiAlex" destination="uAA-C9-8id" id="qro-CL-0O6"/>
+            </connections>
             <point key="canvasLocation" x="187.78625954198472" y="140.49295774647888"/>
         </collectionViewCell>
     </objects>
