@@ -147,8 +147,83 @@ class DataManager {
         // Notify listeners that folder names changed
         NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
     }
+    
 
-    // REMOVED: The old addMaterial function is replaced by the more powerful saveContent
+    //the material detail view controller for the text these are the functions below
+    func getDetailedContent(for subjectName: String, topicName: String) -> String {
+        // Look up the material array
+        guard let subjectData = DataManager.shared.savedMaterials[subjectName],
+              let materials = subjectData[DataManager.materialsKey] else {
+            return "Material or Parent Subject not found."
+        }
+        
+        // Find the specific Topic object
+        if let topic = materials.first(where: { ($0 as? Topic)?.name == topicName }) as? Topic {
+            
+            // 1. CONTENT FOR CALCULUS
+            if subjectName == "Calculus" {
+                if topicName == "Limits" || topicName == "Multivariable Calculus" {
+                    return """
+                    Cheat Sheet for Limits:
+                    1. Separable (1st Order): dx/dy = f(x)g(y)
+                    Solution: \\(\\int g(y) dy = \\int f(x) dx + C\\)
+                    ... [Formulas and Definitions] ...
+                    """
+                } else if topicName == "Applications of derivatives" || topicName == "Series and Sequences" {
+                    return "NOTES for \(topicName):\n\nKey applications include finding extrema (maximum/minimum) and analyzing convergence properties."
+                } else {
+                    // Return fallback for a known Calculus topic (e.g., Indefinite integral, Area under functions)
+                    let baseMessage = "No custom detailed content is available for this item yet."
+                    return "\(baseMessage)\nTopic: \(topicName) in \(subjectName)"
+                }
+            }
+            
+            // 2. CONTENT FOR BIG DATA
+            if subjectName == "Big Data" {
+                if topicName == "Hadoop Fundamentals" {
+                    // This is the specific content for the item you clicked!
+                    return """
+                    Big Data Notes: HADOOP FUNDAMENTALS
+
+                    Hadoop is an open-source framework for storing and processing massive datasets. It is built on two core components:
+
+                    1. HDFS (Storage): For distributed file storage.
+                    2. MapReduce (Processing Model): For parallel data processing.
+                    """
+                }
+                // Add other Big Data topics here
+            }
+
+            // 3. CONTENT FOR SWIFT FUNDAMENTALS
+            if subjectName == "Swift Fundamentals" {
+                if topicName == "Concurrency with Async/Await" {
+                    return "Cheatsheet: Async/Await simplifies asynchronous code by making it look synchronous, improving readability and error handling."
+                }
+                // Add other Swift topics here
+            }
+            
+            // 4. Fallback for all other topics found in the list (e.g., MMA)
+            let baseMessage = "No custom detailed content is available for this item yet."
+            let detail = "\n\nMaterial Type: \(topic.materialType)\nSubject: \(subjectName)"
+            return "\(baseMessage)\nTopic: \(topicName)\n\(detail)"
+        }
+        
+        return "Topic '\(topicName)' not found in the materials list."
+    }
+    func updateTopicContent(subject: String, topicName: String, newText: String) {
+        
+        // or for you to use indices/map to replace the Topic struct (value type) in the array.
+        
+        // For now, we will simulate the save:
+        print("Content updated for Topic: \(topicName) in Subject: \(subject). New text: [\(newText.prefix(30))...]")
+        
+        // TODO: Implement the actual array modification and persistence to disk
+        // If Topic is a struct, you must find the index, modify the Topic, and replace it in the array.
+        
+        // Notify the app that content has changed (e.g., last modified date might update)
+        NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+    }
+    
 }
 
 // Define the notification name used across the app

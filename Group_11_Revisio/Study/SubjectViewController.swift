@@ -337,26 +337,33 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     // SubjectViewController.swift (Inside the class or extension)
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        // Ensure the row is deselected immediately
-        tableView.deselectRow(at: indexPath, animated: true)
+     
+        // When in editing mode, we must NOT deselect the row.
         
         if tableView.isEditing {
-            // In select mode, handle selection/deselection and refresh toolbar.
+            // In select mode, allow selection to persist and update toolbar
             print("Item at \(indexPath.row) selected.")
             updateToolbarForSelection()
         } else {
-            // In normal mode, navigate to the detail view only for Topic items.
+            // In normal mode, deselect and handle detail navigation.
+            
+            // Ensure the row is deselected immediately in normal mode
+            tableView.deselectRow(at: indexPath, animated: true)
             
             let contentItem = filteredContent[indexPath.row]
             
             if let topic = contentItem as? Topic {
-                // Perform the Segue, passing the Topic object as the sender.
-                // This relies on the "ShowMaterialDetail" identifier being set in the Storyboard.
-                performSegue(withIdentifier: "ShowMaterialDetail", sender: topic)
-            } else {
-                // Handle taps on non-material items (Sources) if necessary, maybe launch an external link.
-                print("Source files must be launched externally or handled differently.")
+                let viewableTypes = ["Notes", "Cheatsheet"] // Only allow these types to navigate
+
+                if viewableTypes.contains(topic.materialType) {
+                    performSegue(withIdentifier: "ShowMaterialDetail", sender: topic)
+                } else {
+                    // Handle Quiz and Flashcards differently
+                    print("Action: Opening dedicated view for \(topic.materialType)")
+                    let alert = UIAlertController(title: "Feature Coming Soon", message: "A dedicated view for \(topic.materialType) will be available shortly.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+                    self.present(alert, animated: true)
+                }
             }
         }
     }
@@ -569,12 +576,12 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             if let detailVC = segue.destination as? MaterialDetailViewController,
                let topic = sender as? Topic {
                 
-                // Pass the data to the detail screen
+                // Pass the Topic data
                 detailVC.materialName = topic.name
                 detailVC.contentData = topic
                 
-                // If the detailVC needs the current subject name, pass that too:
-                // detailVC.parentSubjectName = selectedSubject
+                
+                detailVC.parentSubjectName = selectedSubject
             }
         }
     }
