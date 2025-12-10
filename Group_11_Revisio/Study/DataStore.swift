@@ -148,7 +148,43 @@ class DataManager {
         NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
     }
     
+    // DataManager.swift (Add this function to the DataManager class)
 
+    func deleteItems(subjectName: String, items: [Any]) {
+        guard var subjectData = savedMaterials[subjectName] else {
+            print("DataManager Error: Subject '\(subjectName)' not found.")
+            return
+        }
+
+        // Get mutable copies of the content arrays
+        var materials = subjectData[DataManager.materialsKey] ?? []
+        var sources = subjectData[DataManager.sourcesKey] ?? []
+        
+        var itemsToDelete: [String] = [] // For logging deleted item names
+
+        for item in items {
+            if let topic = item as? Topic {
+                // Remove Topic items based on name
+                materials.removeAll { ($0 as? Topic)?.name == topic.name }
+                itemsToDelete.append(topic.name)
+                
+            } else if let source = item as? Source {
+                // Remove Source items based on name
+                sources.removeAll { ($0 as? Source)?.name == source.name }
+                itemsToDelete.append(source.name)
+            }
+        }
+        
+        // Update the main dictionary with the filtered arrays
+        subjectData[DataManager.materialsKey] = materials
+        subjectData[DataManager.sourcesKey] = sources
+        savedMaterials[subjectName] = subjectData // Reassign the modified subject data
+        
+        print("Deleted items in \(subjectName): \(itemsToDelete.joined(separator: ", "))")
+
+        // Notify listeners (like SubjectViewController) to reload the data
+        NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+    }
     //the material detail view controller for the text these are the functions below
     // DataManager.swift (Add/Verify this function)
 
@@ -208,6 +244,7 @@ class DataManager {
         // Notify the app that content has changed (e.g., last modified date might update)
         NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
     }
+    
     
 }
 
