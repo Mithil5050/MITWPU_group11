@@ -150,59 +150,44 @@ class DataManager {
     
 
     //the material detail view controller for the text these are the functions below
+    // DataManager.swift (Add/Verify this function)
+
     func getDetailedContent(for subjectName: String, topicName: String) -> String {
-        // Look up the material array
+        // 1. Look up the material array
         guard let subjectData = DataManager.shared.savedMaterials[subjectName],
               let materials = subjectData[DataManager.materialsKey] else {
             return "Material or Parent Subject not found."
         }
         
-        // Find the specific Topic object
+        // 2. Find the specific Topic object
         if let topic = materials.first(where: { ($0 as? Topic)?.name == topicName }) as? Topic {
             
-            // 1. CONTENT FOR CALCULUS
+         
+            
+            // Case 1: Calculus Cheatsheet/Notes (Screenshots 12.06.43 PM, 11.13.37 AM)
             if subjectName == "Calculus" {
-                if topicName == "Limits" || topicName == "Multivariable Calculus" {
+                if topicName == "Multivariable Calculus" {
                     return """
-                    Cheat Sheet for Limits:
+                    Cheat Sheet for Multivariable Calculus:
                     1. Separable (1st Order): dx/dy = f(x)g(y)
                     Solution: \\(\\int g(y) dy = \\int f(x) dx + C\\)
-                    ... [Formulas and Definitions] ...
+                    
+                    2. Applications of derivatives
+                    Key applications include finding extrema (maximum/minimum) and calculating rates of change.
                     """
-                } else if topicName == "Applications of derivatives" || topicName == "Series and Sequences" {
-                    return "NOTES for \(topicName):\n\nKey applications include finding extrema (maximum/minimum) and analyzing convergence properties."
-                } else {
-                    // Return fallback for a known Calculus topic (e.g., Indefinite integral, Area under functions)
-                    let baseMessage = "No custom detailed content is available for this item yet."
-                    return "\(baseMessage)\nTopic: \(topicName) in \(subjectName)"
+                } else if topicName == "Applications of derivatives" {
+                    // Returns content for the "Applications of derivatives" Note
+                    return "NOTES: Applications of derivatives include finding critical points, optimization, L'Hôpital's Rule, and calculating related rates. These are core concepts for understanding change."
                 }
             }
             
-            // 2. CONTENT FOR BIG DATA
-            if subjectName == "Big Data" {
-                if topicName == "Hadoop Fundamentals" {
-                    // This is the specific content for the item you clicked!
-                    return """
-                    Big Data Notes: HADOOP FUNDAMENTALS
-
-                    Hadoop is an open-source framework for storing and processing massive datasets. It is built on two core components:
-
-                    1. HDFS (Storage): For distributed file storage.
-                    2. MapReduce (Processing Model): For parallel data processing.
-                    """
-                }
-                // Add other Big Data topics here
-            }
-
-            // 3. CONTENT FOR SWIFT FUNDAMENTALS
-            if subjectName == "Swift Fundamentals" {
-                if topicName == "Concurrency with Async/Await" {
-                    return "Cheatsheet: Async/Await simplifies asynchronous code by making it look synchronous, improving readability and error handling."
-                }
-                // Add other Swift topics here
+            // Case 2: Big Data Notes (Screenshots 12.06.28 PM, 10.48.00 AM)
+            if subjectName == "Big Data" && topicName == "Hadoop Fundamentals" {
+                // Returns content for the "Hadoop Fundamentals" Note
+                return "Big Data Notes: HADOOP FUNDAMENTALS\n\nHadoop is an open-source framework for storing and processing massive datasets. It is built on two core components:\n\n1. HDFS (Storage)\n2. MapReduce (Processing Model)\n\nThis framework enables distributed processing of large data sets across clusters of computers."
             }
             
-            // 4. Fallback for all other topics found in the list (e.g., MMA)
+            // 3. Fallback for unhandled Notes/Cheatsheets
             let baseMessage = "No custom detailed content is available for this item yet."
             let detail = "\n\nMaterial Type: \(topic.materialType)\nSubject: \(subjectName)"
             return "\(baseMessage)\nTopic: \(topicName)\n\(detail)"

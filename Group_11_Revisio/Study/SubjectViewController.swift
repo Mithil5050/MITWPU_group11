@@ -9,6 +9,12 @@ import UIKit
 
 class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     // SubjectViewController.swift (Inside the class)
+    // SubjectViewController.swift (Inside the class)
+
+    var doneSelectionButton: UIBarButtonItem!
+    var cancelSelectionButton: UIBarButtonItem!
+    // Store the original right bar button items (Filter and Options)
+    var originalRightBarButtonItems: [UIBarButtonItem]?
 
     var activeSegmentTitle: String {
         return materialsSegmentedControl.titleForSegment(at: materialsSegmentedControl.selectedSegmentIndex) ?? "Materials"
@@ -110,14 +116,18 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         super.viewDidLoad()
 
         // --- CRITICAL FIX: Ensure Toolbar Items Array is EMPTY at startup ---
-        // This prevents the plain "Delete" and "Move" text placeholders from flashing or appearing incorrectly.
-        // The self.toolbarItems array will be populated entirely by updateToolbarForSelection()
-        // when the user taps 'Select'.
         self.toolbarItems = []
         // --- END CRITICAL FIX ---
-
-
-        // Configure the UI using the selected subject if available
+        
+        
+        let buttonColor: UIColor = .label // Use .label for dynamic black/white contrast (best practice)
+        
+        doneSelectionButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(selectionDoneTapped))
+        doneSelectionButton.tintColor = buttonColor // Set color
+        
+        cancelSelectionButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(selectionCancelTapped))
+        cancelSelectionButton.tintColor = buttonColor // Set color
+        
         if let selectedSubject {
             title = selectedSubject
             setupTableView()
@@ -125,6 +135,9 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             loadContentForSubject(selectedSubject, segmentIndex: 0)
             setupFilterMenu()
             optionsButton.menu = setupOptionsMenu()
+            
+            // Store the initial right bar buttons (Filter and Options)
+            self.originalRightBarButtonItems = self.navigationItem.rightBarButtonItems
         }
         
         topicsTableView.layer.cornerRadius = 12.0
@@ -175,6 +188,23 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         if let subject = selectedSubject {
             loadContentForSubject(subject, segmentIndex: materialsSegmentedControl.selectedSegmentIndex)
         }
+    }
+    // SubjectViewController.swift (Selection Handlers)
+
+
+    func exitSelectionMode() {
+        // 1. Restore the original navigation bar items (Filter and Options)
+        self.navigationItem.rightBarButtonItems = self.originalRightBarButtonItems
+        
+        // 2. Restore system back button by setting leftBarButtonItem to nil
+        self.navigationItem.leftBarButtonItem = nil
+        
+        // 3. Hide the toolbar and unhide the tab bar
+        self.navigationController?.setToolbarHidden(true, animated: true)
+        self.tabBarController?.tabBar.isHidden = false
+        
+        // 4. Rebuild the options menu to update the 'Select' checkmark state
+        self.optionsButton.menu = self.setupOptionsMenu()
     }
     func segmentKey(forIndex index: Int) -> String {
         // Maps index 0 to "Materials" and index 1 to "Sources"
@@ -463,32 +493,42 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         let isSelectModeActive = topicsTableView.isEditing
         
-        let selectAction = UIAction(title: "Select",
-                                    image: UIImage(systemName: "checkmark.circle"),
+        let selectAction = UIAction(title: isSelectModeActive ? "Done" : "Select",
+                                    image: UIImage(systemName: isSelectModeActive ? "checkmark.circle.fill" : "checkmark.circle"),
                                     handler: { [weak self] action in
             guard let self = self else { return }
             
-            self.topicsTableView.isEditing.toggle()
-            let isNowEditing = self.topicsTableView.isEditing
-            
-            if isNowEditing {
-                self.updateToolbarForSelection()
+            let isEditing = self.topicsTableView.isEditing
+
+            if isEditing {
+                // If already editing (and tapping 'Done' in the menu), exit selection mode.
+                self.selectionDoneTapped()
             } else {
-                self.navigationController?.setToolbarHidden(true, animated: true)
+                // ENTERING SELECTION MODE
+                self.topicsTableView.isEditing = true
+                
+              
+                self.navigationItem.rightBarButtonItems = [self.doneSelectionButton]
+                
+                // 2. Left side: Replace Back button with CANCEL button
+                self.navigationItem.leftBarButtonItem = self.cancelSelectionButton
+                
+                self.updateToolbarForSelection()
+                self.tabBarController?.tabBar.isHidden = true
             }
             
-            self.tabBarController?.tabBar.isHidden = isNowEditing
-            
+            // Rebuild menu for state change
             DispatchQueue.main.async {
                 self.optionsButton.menu = self.setupOptionsMenu()
             }
         })
         
-        selectAction.state = isSelectModeActive ? .on : .off
+        selectAction.state = .off
         
         let renameAction = UIAction(title: "Rename Subject", image: UIImage(systemName: "pencil")) { [weak self] _ in
             self?.renameCurrentSubject()
         }
+        // ... rest of menu actions ...
         
         let moveAllAction = UIAction(title: "Move All Content", image: UIImage(systemName: "arrow.turn.forward"), handler: { [weak self] _ in
             self?.moveAllContent()
@@ -546,8 +586,13 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     
 
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
-        // CRITICAL FIX: Return .none to suppress the red delete icon
-        return .none
+        // If we are in editing mode, allow the default selection tick style (.insert).
+        // Otherwise, suppress it.
+        if tableView.isEditing {
+            return .insert
+        } else {
+            return .none
+        }
     }
 
     // Helper function to present the menu manually via target-action
@@ -570,6 +615,30 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         // You only need to call this function inside the @objc showOptionsMenu()
     }
     // SubjectViewController.swift (Add this method)
+
+    // SubjectViewController.swift (Selection Handlers)
+
+    @objc func selectionDoneTapped() {
+        // Ends selection mode, keeping items selected for the toolbar action
+        topicsTableView.isEditing = false
+        exitSelectionMode()
+        print("Action: Selection Done.")
+    }
+
+    @objc func selectionCancelTapped() {
+        // Discard selection and exit editing mode
+        // Clear selections visually
+        if let selected = topicsTableView.indexPathsForSelectedRows {
+            for indexPath in selected {
+                topicsTableView.deselectRow(at: indexPath, animated: false)
+            }
+        }
+        topicsTableView.isEditing = false
+        exitSelectionMode()
+        print("Action: Selection Cancelled.")
+    }
+
+    // NOTE: Your exitSelectionMode() already contains the necessary logic to restore buttons and exit editing.
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ShowMaterialDetail" {

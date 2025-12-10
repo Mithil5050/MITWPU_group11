@@ -12,6 +12,10 @@ class MaterialDetailViewController: UIViewController {
     // Connect this to the UITextView in your Storyboard
     @IBOutlet weak var contentView: UITextView!
     
+    @IBOutlet var optionsBarButton: UIBarButtonItem!
+    
+    @IBOutlet var editDoneBarButton: UIBarButtonItem!
+    
     var materialName: String?
     var contentData: Topic? // The specific Topic object
     var parentSubjectName: String? // Needed for DataManager saving/lookup
@@ -42,11 +46,11 @@ class MaterialDetailViewController: UIViewController {
             return
         }
         
-        // Since DataManager has no detailed content API, show a sensible placeholder using available data.
-        let header = "\(topic.name)"
-        let meta = "\(topic.materialType) • Last Accessed: \(topic.lastAccessed)"
-        let body = "\n\nNo detailed content is stored for this item.\nSubject: \(subject)"
-        contentView.text = header + "\n" + meta + body
+        
+        contentView.text = DataManager.shared.getDetailedContent(for: subject, topicName: topic.name)
+        
+        // Set up the current editing state based on the loaded content/material type
+        updateUIForState()
     }
     
     // MaterialDetailViewController.swift (Updated saveChanges)
@@ -69,49 +73,41 @@ class MaterialDetailViewController: UIViewController {
     // MARK: - Navigation Bar Actions
     
     func setupNavigationButtons() {
-        // DO NOT TOUCH LEFT BUTTON: Let the system handle the Back Button.
-        navigationItem.leftBarButtonItem = nil // Ensure no custom button is overriding the Back button.
         
-        // --- RIGHT BAR BUTTON ITEMS (SHARE / OPTIONS) ---
-        
-        guard let barButtons = navigationItem.rightBarButtonItems, barButtons.count >= 2 else {
+        // Check if the buttons were correctly connected via outlets
+        guard let editButton = editDoneBarButton,
+              let optionsButton = optionsBarButton else {
+            print("CRITICAL ERROR: Edit or Options Bar Button Outlet is NOT CONNECTED in Storyboard!")
             return
         }
 
-        // Identify the buttons by their image/icon
-        let shareButton = barButtons.first { $0.image == UIImage(systemName: "square.and.arrow.up") }
-        let optionsButton = barButtons.first { $0.image == UIImage(systemName: "ellipsis.circle") }
+        // --- 1. CONFIGURE EDIT/DONE BUTTON (The Toggle) ---
+        editButton.target = self
+        editButton.action = #selector(editButtonTapped)
+        editButton.menu = nil
         
-        guard let finalShareButton = shareButton,
-              let finalOptionsButton = optionsButton else {
-            return
-        }
+        // --- 2. CONFIGURE OPTIONS BUTTON (The Menu) ---
+        optionsButton.target = nil
+        optionsButton.action = nil
+        optionsButton.menu = buildOptionsMenu()
         
-        // 1. Share Button Setup (Direct Action)
-        finalShareButton.target = self
-        finalShareButton.action = #selector(shareContent(_:))
-        finalShareButton.menu = nil
+        // --- 3. FINAL ARRAY ASSIGNMENT (THE ORDER FIX) ---
         
-        // 2. Options Button Setup (Menu Assignment)
-        finalOptionsButton.menu = buildOptionsMenu() // Assign the initial menu
-        finalOptionsButton.target = nil
-        finalOptionsButton.action = nil
+        // If [options, edit] puts 'options' on the right, we must swap them in the array.
+        // We are forcing the array order to be [Edit/Done, Options] to fix the display.
+        navigationItem.rightBarButtonItems = [editButton, optionsButton]
         
-        // 3. Set the final right-hand order: [Options, Share] visually
-        navigationItem.rightBarButtonItems = [finalOptionsButton, finalShareButton].reversed()
+        // 4. Initialize the correct state (Fixes "Edit" vs. "Tick" image on load)
+        updateUIForState()
     }
-
     // MaterialDetailViewController.swift (Updated buildOptionsMenu)
 
     func buildOptionsMenu() -> UIMenu {
         
-        // 1. Define the primary action: Edit or Done (Dynamic based on state)
-        let primaryTitle = isEditingMode ? "Done" : "Edit"
-        let primaryImage = isEditingMode ? UIImage(systemName: "checkmark.circle.fill") : UIImage(systemName: "pencil")
-        
-        let editToggleAction = UIAction(title: primaryTitle, image: primaryImage) { [weak self] _ in
-            // This action triggers the toggle logic
-            self?.editButtonTapped()
+        // 1. Define the nested Share Action
+        let shareAction = UIAction(title: "Share Material", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
+            // Use the editDoneBarButton reference for the popover anchor
+            self?.shareContent(self!.editDoneBarButton)
         }
         
         // 2. Define Pin and Delete actions
@@ -122,11 +118,11 @@ class MaterialDetailViewController: UIViewController {
             print("Action: Delete Material")
         }
         
-        // 3. Assemble the Menu: [Edit/Done, Pin], then [Delete]
-        let nonDestructiveGroup = UIMenu(title: "", options: .displayInline, children: [editToggleAction, pinAction])
+        // 3. Assemble the Menu: [Share, Pin], then [Delete]. Edit is NOT included here.
+        let utilityGroup = UIMenu(title: "Actions", options: .displayInline, children: [shareAction, pinAction])
         let destructiveGroup = UIMenu(title: "", options: .displayInline, children: [deleteAction])
         
-        return UIMenu(title: "", children: [nonDestructiveGroup, destructiveGroup])
+        return UIMenu(title: "", children: [utilityGroup, destructiveGroup])
     }
 
     // REMOVE: @objc func editButtonTapped()
@@ -160,23 +156,28 @@ class MaterialDetailViewController: UIViewController {
     }
 
     func updateUIForState() {
-        let optionsButton = navigationItem.rightBarButtonItems?.first { $0.image == UIImage(systemName: "ellipsis.circle") }
         
+        guard let editButton = editDoneBarButton,
+              let optionsButton = optionsBarButton else { return }
+
         if isEditingMode {
-            // EDIT MODE: Enable text field, prompt keyboard
+            // EDIT MODE: Change to Tick icon, enable text field
+            editButton.image = UIImage(systemName: "checkmark") // Better visibility
+            editButton.title = nil
             contentView.isEditable = true
             contentView.becomeFirstResponder()
             
         } else {
-            // VIEW MODE: Disable text field, dismiss keyboard
+            // VIEW MODE: Change to Edit text, disable text field
+            editButton.image = nil
+            editButton.title = "Edit"
             contentView.isEditable = false
             contentView.resignFirstResponder()
         }
         
-        // Always rebuild and re-assign the menu to update the "Edit"/"Done" title
-        optionsButton?.menu = buildOptionsMenu()
+        // Rebuild and re-assign the Options Menu
+        optionsButton.menu = buildOptionsMenu()
     }
-    // MARK: - View/Edit Toggle Logic
     
     
 }

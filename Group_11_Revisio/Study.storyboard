@@ -230,8 +230,8 @@
                     </view>
                     <navigationItem key="navigationItem" id="Xeu-5C-KHG">
                         <rightBarButtonItems>
-                            <barButtonItem title="Item" image="ellipsis.circle" catalog="system" id="Uw6-P8-J38"/>
-                            <barButtonItem title="Item" image="square.and.arrow.up" catalog="system" id="c94-yq-eU7">
+                            <barButtonItem title="Edit" id="Uw6-P8-J38"/>
+                            <barButtonItem title="Item" image="ellipsis.circle" catalog="system" id="c94-yq-eU7">
                                 <connections>
                                     <action selector="shareContent:" destination="gBa-Vc-8cR" id="Lw2-pc-r81"/>
                                 </connections>
@@ -240,6 +240,8 @@
                     </navigationItem>
                     <connections>
                         <outlet property="contentView" destination="gl7-fZ-yhY" id="nf7-A1-QOP"/>
+                        <outlet property="editDoneBarButton" destination="Uw6-P8-J38" id="xka-GA-yzL"/>
+                        <outlet property="optionsBarButton" destination="c94-yq-eU7" id="8XO-5Y-wJd"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="3W6-uO-kAv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -291,7 +293,6 @@
         <image name="folder.badge.plus" catalog="system" width="128" height="93"/>
         <image name="folder.fill" catalog="system" width="128" height="96"/>
         <image name="line.3.horizontal.decrease.circle" catalog="system" width="128" height="123"/>
-        <image name="square.and.arrow.up" catalog="system" width="110" height="128"/>
         <image name="xmark" catalog="system" width="128" height="113"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
