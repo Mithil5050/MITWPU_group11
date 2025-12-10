@@ -18,7 +18,8 @@ class UploadContentCollectionViewCell: UICollectionViewCell, UITableViewDelegate
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        
+        tableView.backgroundColor = .systemGray5
+        tableView.layer.cornerRadius = 12.0
         // 1. Setup Table View delegates
         tableView.delegate = self
         tableView.dataSource = self
@@ -41,7 +42,8 @@ class UploadContentCollectionViewCell: UICollectionViewCell, UITableViewDelegate
     
     // Call this from HomeViewController to pass the data
     func configure(with items: [ContentItem]) {
-        self.uploadData = items
+        // FIX: Filter out the AddButton item so the Table View only displays files.
+        self.uploadData = items.filter { $0.itemType != "AddButton" }
         tableView.reloadData()
     }
     
@@ -59,7 +61,14 @@ class UploadContentCollectionViewCell: UICollectionViewCell, UITableViewDelegate
         // Configure the basic cell for the file display
         var content = cell.defaultContentConfiguration()
         content.text = item.title
+        // If iconName is empty, use a default system icon ("doc.fill")
         content.image = UIImage(systemName: item.iconName.isEmpty ? "doc.fill" : item.iconName)
+        
+        // Use a modern, streamlined style for the cell content
+        content.textProperties.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        content.textProperties.color = .label
+        content.imageProperties.tintColor = .systemGray
+        
         cell.contentConfiguration = content
         
         return cell
@@ -73,4 +82,3 @@ class UploadContentCollectionViewCell: UICollectionViewCell, UITableViewDelegate
         // Typically, you would use a Delegate or Closure here to notify HomeViewController
     }
 }
-

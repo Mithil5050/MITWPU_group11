@@ -54,7 +54,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         // 1. Load Dummy Data (Replace with real loading logic)
         heroData = [ContentItem(title: "Hi Alex !", iconName: "", itemType: "Greeting")]
         
-        // FIX 1: Added the specific "AddButton" item
+        // Added the specific "AddButton" item
         uploadItems = [
             ContentItem(title: "Big Data.pdf", iconName: "doc.fill", itemType: "PDF"),
             ContentItem(title: "Data Structures- Trees.com", iconName: "link", itemType: "Link"),
@@ -63,11 +63,10 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         
         learningItems = [ContentItem(title: "Area under functions", iconName: "", itemType: "Topic")]
         
-        // Update gameItems to have two distinct entries
+        // Game data updated for two distinct quick games
         gameItems = [
-            GameItem(title: "Word Scramble", imageAsset: "Screenshot 2025-12-09 at 3.06.21 PM"),
-            // NOTE: "calendar" is an SF Symbol, assuming it's available.
-            GameItem(title: "Quick Quiz", imageAsset: "calendar")
+            GameItem(title: "Word Fill", imageAsset: "Screenshot 2025-12-09 at 3.06.21 PM"),
+            GameItem(title: "Connections", imageAsset: "Screenshot 2025-12-09 at 12.28.48 PM.png")
         ]
 
         // 2. Setup
@@ -107,7 +106,20 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 return section
                 
-            case .uploadContent, .continueLearning:
+            case .uploadContent:
+                // Header is intentionally removed here
+                let listItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(130))
+                let listItemLayout = NSCollectionLayoutItem(layoutSize: listItemSize)
+                let listGroupSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(1))
+                let listGroup = NSCollectionLayoutGroup.vertical(layoutSize: listGroupSize, subitems: [listItemLayout])
+                
+                let section = NSCollectionLayoutSection(group: listGroup)
+                section.interGroupSpacing = 1
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
+                // No boundarySupplementaryItems for UploadContent
+                return section
+                
+            case .continueLearning:
                 let listItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: itemHeight)
                 let listItemLayout = NSCollectionLayoutItem(layoutSize: listItemSize)
                 let listGroupSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(1))
@@ -118,23 +130,19 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 section.boundarySupplementaryItems = [headerItem]
                 return section
-                    
+                
             case .quickGames:
-                // Height updated to match the .xib file's size estimation for games
-                let gameItemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5), heightDimension: .estimated(130))
+                // The size is set to full width to accommodate the single cell containing two views.
+                let gameItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(130))
                 let gameItem = NSCollectionLayoutItem(layoutSize: gameItemSize)
-                let gameGroupSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(130))
-                let gameGroup = NSCollectionLayoutGroup.horizontal(layoutSize: gameGroupSize, repeatingSubitem: gameItem, count: 2)
+                let gameGroup = NSCollectionLayoutGroup.horizontal(layoutSize: gameItemSize, subitems: [gameItem])
                 
                 let section = NSCollectionLayoutSection(group: gameGroup)
-                let gutter: CGFloat = 10
-                section.interGroupSpacing = gutter
-                gameGroup.interItemSpacing = .fixed(gutter)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 section.boundarySupplementaryItems = [headerItem]
                 return section
 
-            // Study Plan Layout (now at the end)
+            // Study Plan Layout (at the end)
             case .studyPlan:
                 let studyPlanItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(100))
                 let studyPlanItem = NSCollectionLayoutItem(layoutSize: studyPlanItemSize)
@@ -153,7 +161,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         collectionView.register(UINib(nibName: "UploadContentCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: uploadContentCellID)
         collectionView.register(UINib(nibName: "ContinueLearningCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: continueLearningCellID)
         collectionView.register(UINib(nibName: "QuickGamesCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: quickGamesCellID)
-        // Registration for the new cell
+        // Registration for the new cells
         collectionView.register(UINib(nibName: "StudyPlanCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: studyPlanCellID)
         collectionView.register(UINib(nibName: "HeaderViewCollectionReusableView", bundle: nil),
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
@@ -171,9 +179,9 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         switch sectionType {
         case .hero: return heroData.count
         case .studyPlan: return studyPlanData.count
-        case .uploadContent: return 1 // Assuming this count is correct for one container cell
+        case .uploadContent: return 1 // Single cell containing the table view
         case .continueLearning: return learningItems.count
-        case .quickGames: return gameItems.count // Returns 2 items
+        case .quickGames: return 1 // 💡 FIX: Returns 1 cell to hold both game cards
         }
     }
     
@@ -192,11 +200,16 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         case .uploadContent:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: uploadContentCellID, for: indexPath) as! UploadContentCollectionViewCell
             
-            _ = uploadItems[indexPath.item]
+            // Configure the inner table view with the file list
+            cell.configure(with: uploadItems)
             
             // Assign the Closure for the Add Button action
-            // NOTE: The cell must have the onAddTapped closure defined.
-            // cell.onAddTapped = { [weak self] in ... }
+            cell.onAddTapped = { [weak self] in
+                guard let self = self else { return }
+                
+                print("Upload Content Button Tapped via Cell Closure.")
+                self.performSegue(withIdentifier: self.uploadContentSegueID, sender: nil)
+            }
             
             return cell
             
@@ -207,10 +220,12 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         case .quickGames:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: quickGamesCellID, for: indexPath) as! QuickGamesCollectionViewCell
             
-            _ = gameItems[indexPath.item]
+            let item1 = gameItems[0] // Word Scramble
+            let item2 = gameItems[1] // Connections
             
-            // NOTE: The QuickGamesCollectionViewCell must have the configure method implemented.
-            // cell.configure(with: gameItem)
+            // 💡 FIX: Configure the single cell with BOTH data items
+            // This relies on QuickGamesCollectionViewCell having the configure(with:and:) method.
+            cell.configure(with: item1, and: item2)
             
             return cell
         }
@@ -226,13 +241,13 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         
         // Check if the section actually uses the supplementary header view.
         switch sectionType {
-        case .hero, .studyPlan:
-            // For sections without an external header, safely dequeue a generic view.
+        case .hero, .studyPlan, .uploadContent:
+            // These sections do not use an external header.
             return collectionView.dequeueReusableSupplementaryView(ofKind: kind,
                                                                    withReuseIdentifier: headerID,
                                                                    for: indexPath)
             
-        case .uploadContent, .continueLearning, .quickGames:
+        case .continueLearning, .quickGames:
             // These sections require and use the configured HeaderViewCollectionReusableView.
             let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
                                                                            withReuseIdentifier: headerID,
@@ -240,10 +255,9 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             
             let title: String
             switch sectionType {
-            case .uploadContent: title = "Upload Content"
             case .continueLearning: title = "Continue Learning"
             case .quickGames: title = "Quick Games"
-            default: fatalError("Section requiring a header title was not handled.")
+            default: title = "" // Should not be reached
             }
             
             headerView.configureHeader(with: title)
@@ -266,13 +280,14 @@ extension HomeViewController {
             print("Study Plan Card Tapped: Navigate to the full Study Plan interface.")
             
         case .quickGames:
-            print("Game Card Tapped: Start game at index \(indexPath.item)")
+            // Note: This tap will register for the entire container cell. You may need
+            // to implement hit testing within QuickGamesCollectionViewCell to know which
+            // card was tapped.
+            print("Quick Games Container Tapped.")
             
         case .uploadContent:
-            let item = uploadItems[indexPath.item]
-            if item.itemType != "AddButton" {
-                print("File Tapped: Open file \(item.title)")
-            }
+            // Taps on the file list inside the cell are handled by the inner UITableViewDelegate.
+            break
             
         case .continueLearning:
             print("Continue Learning Tapped: Open item at index \(indexPath.item)")
