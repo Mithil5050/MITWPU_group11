@@ -18,6 +18,8 @@ enum GenerationType {
 class GenerationViewController: UIViewController {
     
     var currentGenerationType: GenerationType = .none
+    var sourceItems: [Any]?
+    var parentSubjectName: String?
     
     @IBOutlet weak var generateButton: UIButton!
     

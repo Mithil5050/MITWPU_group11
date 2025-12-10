@@ -68,7 +68,22 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.navigationController?.setToolbarHidden(false, animated: true)
     }
     @objc func generateAction() {
-        print("Action: Generating from selected sources.")
+        // 1. Get selected items
+        guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else {
+            print("Error: Generate button tapped but no items selected.")
+            return
+        }
+
+        // Map the index paths to the actual data objects (Topics or Sources)
+        let selectedItems: [Any] = selectedPaths.map { filteredContent[$0.row] }
+        
+        // 2. Perform Segue
+        // We will use a dedicated segue identifier to open the Generation screen.
+        performSegue(withIdentifier: "ShowGenerationScreen", sender: selectedItems)
+        
+        // Note: Do NOT call exitSelectionMode() here.
+        // The user should stay in selection mode until they are done with the generation process.
+        print("Action: Navigating to Generation Screen with \(selectedItems.count) items.")
     }
     @objc func shareAction() {
         print("Action: Sharing selected materials.")
@@ -77,7 +92,44 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         print("Action: Moving selected items.")
     }
     @objc func deleteSelectionAction() {
-        print("Action: Deleting selected items.")
+        // 1. Identify selected items
+        guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else {
+            return
+        }
+
+        let selectedItems: [Any] = selectedPaths.map { filteredContent[$0.row] }
+        
+        // 2. Show Confirmation Alert
+        let alert = UIAlertController(
+            title: "Delete Selected Items?",
+            message: "Are you sure you want to permanently delete \(selectedItems.count) items? This cannot be undone.",
+            preferredStyle: .alert
+        )
+
+        // 3. Add Delete Action
+        let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
+            guard let self = self else { return }
+            
+            // Execute deletion via DataManager
+            DataManager.shared.deleteItems(subjectName: self.selectedSubject ?? "", items: selectedItems)
+            
+           
+            self.selectionCancelTapped()
+            
+            // DataManager posts a notification, but we force a direct synchronous reload
+            // to ensure the UI updates instantly after the deletion logic runs.
+            if let subject = self.selectedSubject {
+                 self.loadContentForSubject(subject, segmentIndex: self.materialsSegmentedControl.selectedSegmentIndex)
+            }
+        }
+
+        // 4. Add Cancel Action
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        
+        alert.addAction(deleteAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true)
     }
 
     @objc func moveAllContent() {
@@ -189,6 +241,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             loadContentForSubject(subject, segmentIndex: materialsSegmentedControl.selectedSegmentIndex)
         }
     }
+    
     // SubjectViewController.swift (Selection Handlers)
 
 
@@ -626,16 +679,22 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
 
     @objc func selectionCancelTapped() {
-        // Discard selection and exit editing mode
-        // Clear selections visually
+        // 1. Clear selections visually
         if let selected = topicsTableView.indexPathsForSelectedRows {
             for indexPath in selected {
                 topicsTableView.deselectRow(at: indexPath, animated: false)
             }
         }
-        topicsTableView.isEditing = false
+        
+        // 2. Clear editing state
+        topicsTableView.setEditing(false, animated: true) // Use setEditing(false, animated: true)
+        
+        // 3. Restore UI (hides toolbar, restores nav bar buttons)
         exitSelectionMode()
         print("Action: Selection Cancelled.")
+        
+        
+        topicsTableView.reloadData()
     }
 
     // NOTE: Your exitSelectionMode() already contains the necessary logic to restore buttons and exit editing.
@@ -644,13 +703,29 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         if segue.identifier == "ShowMaterialDetail" {
             if let detailVC = segue.destination as? MaterialDetailViewController,
                let topic = sender as? Topic {
-                
+                    
                 // Pass the Topic data
                 detailVC.materialName = topic.name
                 detailVC.contentData = topic
-                
-                
                 detailVC.parentSubjectName = selectedSubject
+            }
+        }
+        
+        
+        else if segue.identifier == "ShowGenerationScreen" {
+            // NOTE: Ensure your GenerationViewController class is named exactly 'GenerationViewController'
+            if let generationVC = segue.destination as? GenerationViewController,
+               let selectedItems = sender as? [Any] {
+                
+                // Assuming your GenerationViewController has properties named 'sourceItems' and 'parentSubjectName'
+                // to accept the data.
+               generationVC.sourceItems = selectedItems
+               generationVC.parentSubjectName = selectedSubject
+                
+                // IMPORTANT: Clean up selection mode when leaving the SubjectVC screen
+                // The selectionCancelTapped() function restores the navigation bar, hides the toolbar,
+                // and clears selections.
+                selectionCancelTapped()
             }
         }
     }
