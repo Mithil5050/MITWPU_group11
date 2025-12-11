@@ -6,10 +6,14 @@
 //
 
 import Foundation
+// QuizData.swift (If you can edit this file)
+
 struct QuizQuestion {
     let questionText: String
-    let answers: [String] // Array of 4 answer choices
-    let correctAnswerIndex: Int // Index of the correct answer (0, 1, 2, or 3)
+    let answers: [String]
+    let correctAnswerIndex: Int
+    var userAnswerIndex: Int? = nil
+    var isFlagged: Bool = false
 }
 
 // Stores the list of questions for the quiz

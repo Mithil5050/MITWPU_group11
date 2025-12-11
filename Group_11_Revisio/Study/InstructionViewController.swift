@@ -75,7 +75,7 @@ class InstructionViewController: UIViewController {
         }
     
     @IBAction func attemptQuizTapped(_ sender: Any) {
-        performSegue(withIdentifier: "StartQuiz", sender: quizTopic)
+        //performSegue(withIdentifier: "StartQuiz", sender: quizTopic)
     }
     
     @IBAction func saveAndExitTapped(_ sender: Any) {

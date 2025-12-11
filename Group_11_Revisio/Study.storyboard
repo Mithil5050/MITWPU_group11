@@ -307,14 +307,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="18u-E7-ZFs">
-                                <rect key="frame" x="24" y="172" width="353" height="63"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="0TD-K0-Ptm">
-                                <rect key="frame" x="20" y="243" width="353" height="276"/>
+                                <rect key="frame" x="20" y="288" width="353" height="276"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NJl-zf-Qoh">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="60"/>
@@ -366,32 +360,59 @@
                                     </button>
                                 </subviews>
                             </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IXE-DJ-e2L">
-                                <rect key="frame" x="125" y="669" width="150" height="50"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="xzs-6k-RMK">
+                                <rect key="frame" x="20" y="669" width="353" height="50"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Zbl-VK-beE">
+                                        <rect key="frame" x="0.0" y="0.0" width="170.66666666666666" height="50"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" title="Previous">
+                                            <color key="baseBackgroundColor" systemColor="systemGrayColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="previousButtonTapped:" destination="PPa-AC-hfQ" eventType="touchUpInside" id="OFV-G1-iEx"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uMF-Q4-s49">
+                                        <rect key="frame" x="182.66666666666663" y="0.0" width="170.33333333333337" height="50"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" title="Next"/>
+                                    </button>
+                                </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="50" id="GhT-zZ-Qbt"/>
-                                    <constraint firstAttribute="width" constant="150" id="Vv9-CC-BxE"/>
+                                    <constraint firstAttribute="height" constant="50" id="nsS-FW-ZVx"/>
                                 </constraints>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Next"/>
-                            </button>
+                            </stackView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="18u-E7-ZFs">
+                                <rect key="frame" x="20" y="194" width="353" height="20.333333333333343"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Idj-VT-ysw"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="IXE-DJ-e2L" firstAttribute="bottom" secondItem="Idj-VT-ysw" secondAttribute="bottom" constant="-16" id="8kb-PX-hcJ"/>
+                            <constraint firstItem="Idj-VT-ysw" firstAttribute="trailing" secondItem="xzs-6k-RMK" secondAttribute="trailing" constant="20" id="2iF-Dm-gsH"/>
+                            <constraint firstItem="Idj-VT-ysw" firstAttribute="bottom" secondItem="xzs-6k-RMK" secondAttribute="bottom" constant="16" id="4LK-EW-2d0"/>
+                            <constraint firstItem="xzs-6k-RMK" firstAttribute="leading" secondItem="Idj-VT-ysw" secondAttribute="leading" constant="20" id="694-yL-Udq"/>
                             <constraint firstItem="Idj-VT-ysw" firstAttribute="trailing" secondItem="0TD-K0-Ptm" secondAttribute="trailing" constant="20" id="JJs-3V-lpM"/>
-                            <constraint firstItem="IXE-DJ-e2L" firstAttribute="leading" secondItem="Idj-VT-ysw" secondAttribute="leading" constant="125" id="JcS-eL-fR9"/>
-                            <constraint firstItem="0TD-K0-Ptm" firstAttribute="top" secondItem="18u-E7-ZFs" secondAttribute="bottom" constant="8" id="QD6-su-3QV"/>
-                            <constraint firstItem="Idj-VT-ysw" firstAttribute="trailing" secondItem="18u-E7-ZFs" secondAttribute="trailing" constant="16" id="Vse-9W-dao"/>
-                            <constraint firstItem="IXE-DJ-e2L" firstAttribute="top" secondItem="0TD-K0-Ptm" secondAttribute="bottom" constant="150" id="WIL-WY-s2M"/>
-                            <constraint firstItem="18u-E7-ZFs" firstAttribute="top" secondItem="Idj-VT-ysw" secondAttribute="top" id="Zyx-d8-Oy3"/>
-                            <constraint firstItem="18u-E7-ZFs" firstAttribute="leading" secondItem="Idj-VT-ysw" secondAttribute="leading" constant="24" id="aTy-vd-DZi"/>
+                            <constraint firstItem="0TD-K0-Ptm" firstAttribute="top" secondItem="18u-E7-ZFs" secondAttribute="bottom" constant="73.666666666666657" id="QD6-su-3QV"/>
+                            <constraint firstItem="Idj-VT-ysw" firstAttribute="trailing" secondItem="18u-E7-ZFs" secondAttribute="trailing" constant="20" id="Vse-9W-dao"/>
+                            <constraint firstItem="18u-E7-ZFs" firstAttribute="top" secondItem="Idj-VT-ysw" secondAttribute="top" constant="22" id="Zyx-d8-Oy3"/>
+                            <constraint firstItem="18u-E7-ZFs" firstAttribute="leading" secondItem="Idj-VT-ysw" secondAttribute="leading" constant="20" id="aTy-vd-DZi"/>
                             <constraint firstItem="0TD-K0-Ptm" firstAttribute="leading" secondItem="Idj-VT-ysw" secondAttribute="leading" constant="20" id="tbj-YR-Ufm"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="aG9-C5-lyD"/>
+                    <navigationItem key="navigationItem" id="aG9-C5-lyD">
+                        <rightBarButtonItems>
+                            <barButtonItem title="Item" image="flag" catalog="system" id="atQ-a7-BWk"/>
+                            <barButtonItem title="Item" image="lightbulb.min" catalog="system" id="iCv-ZN-BPs"/>
+                        </rightBarButtonItems>
+                    </navigationItem>
                     <connections>
+                        <outlet property="nextButton" destination="uMF-Q4-s49" id="TJE-zH-oVq"/>
+                        <outlet property="previousButton" destination="Zbl-VK-beE" id="agK-Og-MJq"/>
                         <outlet property="questionLabel" destination="18u-E7-ZFs" id="qOW-ii-AUD"/>
                         <outletCollection property="answerButtons" destination="NJl-zf-Qoh" collectionClass="NSMutableArray" id="bvH-UX-qPc"/>
                         <outletCollection property="answerButtons" destination="ujr-SR-Vg7" collectionClass="NSMutableArray" id="dyq-kN-bLP"/>
@@ -736,7 +757,7 @@
                         <outlet property="generateButton" destination="tUp-DB-oZb" id="mn4-AR-aR1"/>
                         <outlet property="notesButton" destination="Hxh-ym-1qO" id="qGX-0Y-TEk"/>
                         <outlet property="quizButton" destination="iDk-Ja-0hb" id="74S-Gm-bxO"/>
-                        <segue destination="nO8-nf-sye" kind="show" identifier="ShowQuizInstructionsFromGen" id="df5-c5-cT1"/>
+                        <segue destination="nO8-nf-sye" kind="show" identifier="ShowQuizInstructionsFromGen" id="y1f-ED-n8P"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="o1W-0c-r7D" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -749,8 +770,10 @@
         <image name="book.pages" catalog="system" width="107" height="128"/>
         <image name="checkmark" catalog="system" width="128" height="114"/>
         <image name="ellipsis.circle" catalog="system" width="128" height="123"/>
+        <image name="flag" catalog="system" width="128" height="121"/>
         <image name="folder.badge.plus" catalog="system" width="128" height="93"/>
         <image name="folder.fill" catalog="system" width="128" height="96"/>
+        <image name="lightbulb.min" catalog="system" width="115" height="128"/>
         <image name="line.3.horizontal.decrease.circle" catalog="system" width="128" height="123"/>
         <image name="list.bullet.clipboard" catalog="system" width="98" height="128"/>
         <image name="rectangle.on.rectangle.angled" catalog="system" width="128" height="98"/>
