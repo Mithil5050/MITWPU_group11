@@ -23,7 +23,7 @@ class GenerationViewController: UIViewController {
     
     @IBOutlet weak var generateButton: UIButton!
     
-
+    
     // Settings container views
     @IBOutlet weak var QuizSettingsView: UIView!
     @IBOutlet weak var FlashcardSettingsView: UIView!
@@ -43,10 +43,10 @@ class GenerationViewController: UIViewController {
         showSettingsView(QuizSettingsView)
         updateButtonHighlight(selectedButton: quizButton)
         generateButton.isEnabled = false
-                generateButton.alpha = 0.5
+        generateButton.alpha = 0.5
         // Ensure only Quiz is visible initially
-//        QuizSettingsView.isHidden = false
-//        FlashcardSettingsView.isHidden = true
+        //        QuizSettingsView.isHidden = false
+        //        FlashcardSettingsView.isHidden = true
     }
     
     private func showSettingsView(_ viewToShow: UIView) {
@@ -119,64 +119,91 @@ class GenerationViewController: UIViewController {
         }
     }
     // MARK: - Action Handlers
-
+    
     @IBAction func quizButtonTapped(_ sender: UIButton) {
         showSettingsView(QuizSettingsView) // Show Quiz view
         updateButtonHighlight(selectedButton: sender)
         updateGenerateButton(for: .quiz) // ⬅️ NEW
     }
-            
+    
     @IBAction func flashCardsButtonTapped(_ sender: UIButton) {
         showSettingsView(FlashcardSettingsView) // Show Flashcard view
         updateButtonHighlight(selectedButton: sender)
         updateGenerateButton(for: .flashcards) // ⬅️ NEW
     }
-            
+    
     @IBAction func notesButtonTapped(_ sender: UIButton) {
-         showSettingsView(emptySettingsPlaceholder) // Add when you have a Notes view
+        showSettingsView(emptySettingsPlaceholder) // Add when you have a Notes view
         updateButtonHighlight(selectedButton: sender)
         updateGenerateButton(for: .notes) // ⬅️ NEW
     }
-            
+    
     @IBAction func cheatsheetButtonTapped(_ sender: UIButton) {
-         showSettingsView(emptySettingsPlaceholder) // Add when you have a Cheat Sheet view
+        showSettingsView(emptySettingsPlaceholder) // Add when you have a Cheat Sheet view
         updateButtonHighlight(selectedButton: sender)
         updateGenerateButton(for: .cheatsheet) // ⬅️ NEW
     }
     @IBAction func generateButtonTapped(_ sender: UIButton) {
         
+        guard let sourceItem = sourceItems?.first else {
+            print("Error: No source item available to generate quiz from.")
+            return
+        }
+        
         switch currentGenerationType {
         case .quiz:
-            print("Initiating Quiz Generation...")
-            // TODO: Gather settings from sliders and perform segue to Quiz Results Screen
-            break
+            print("Initiating Quiz Generation and segue to Instructions...")
             
-        case .flashcards:
-            print("Initiating Flashcard Generation...")
-            // TODO: Gather settings and perform segue to Flashcard Deck Screen
-            break
+            let topicToPass: Topic?
             
-        case .notes:
-            print("Initiating Summary Notes Generation...")
-            // TODO: Perform segue to Notes Summary Screen
-            break
+            if let topic = sourceItem as? Topic {
+                // Case 1: Source item is already a Topic
+                topicToPass = topic
+                
+            } else if let source = sourceItem as? Source {
+                // Case 2: Source item is a Source, create a dummy Topic structure
+                topicToPass = Topic(name: source.name, lastAccessed: "N/A", materialType: "Quiz")
+                
+            } else {
+                topicToPass = nil
+            }
             
-        case .cheatsheet:
-            print("Initiating Cheat Sheet Generation...")
-            // TODO: Perform segue to Cheat Sheet View
-            break
+            if let topic = topicToPass {
+                // ⭐️ This performs the segue! ⭐️
+                performSegue(withIdentifier: "ShowQuizInstructionsFromGen", sender: topic)
+            } else {
+                print("Error: Could not create valid Topic data to start quiz.")
+            }
             
-        case .none:
-            // Should be disabled, but acts as a fallback
-            print("Error: No generation type selected.")
+        case .flashcards, .notes, .cheatsheet, .none:
+            // Other generation types or error handling
+            print("Generation type \(currentGenerationType) not yet fully implemented for segue.")
             break
         }
         
-        // Example: performSegue(withIdentifier: "ShowLoadingScreen", sender: self)
+        
     }
+    // GenerationViewController.swift
 
-    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if segue.identifier == "ShowQuizInstructionsFromGen" {
+            
+            guard let topicData = sender as? Topic else {
+                print("Prepare Error: Sender was not a Topic.")
+                return
+            }
+
+            if let instructionVC = segue.destination as? InstructionViewController {
+                
+                // Pass the Topic data to the Instruction Screen
+                instructionVC.quizTopic = topicData
+                
+                // Pass the parent subject name for context
+                instructionVC.parentSubjectName = self.parentSubjectName
+            }
+        }
+    }
 }
-
  
    
