@@ -35,28 +35,30 @@ class StudyPlanViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
+        // setupUI() // Uncomment this when you want to set navigation bar items
         setupCollectionViews()
         setupTableView()
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // Crucial: Update the height constraint of the UITableView based on its content size.
-        // This ensures the mainScrollView handles all vertical scrolling.
+        
+        // CRUCIAL FIX: Force layout pass and then update the height constraint.
+        // This ensures the mainScrollView can determine the content size accurately.
+        taskTableView.layoutIfNeeded()
         taskTableViewHeightConstraint.constant = taskTableView.contentSize.height
     }
 
     // MARK: - Setup
-    
-    private func setupUI() {
-        // Set the Navigation Bar style (e.g., large title style if needed, though this design uses a small title)
-        title = "Study Plan"
-        
-        // Add left and right bar button items
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(backTapped))
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addTapped))
-    }
+//
+//     private func setupUI() {
+//         // Set the Navigation Bar style (e.g., small title)
+//         title = "Study Plan"
+//
+//         // Add left and right bar button items
+//         navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(backTapped))
+//         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addTapped))
+//     }
     
     private func setupCollectionViews() {
         // Date Collection View
@@ -76,8 +78,8 @@ class StudyPlanViewController: UIViewController {
     private func setupTableView() {
         taskTableView.dataSource = self
         taskTableView.delegate = self
-        // Disable inner table view scrolling
-        taskTableView.isScrollEnabled = false
+        // **CRITICAL FIX: Table View Scrolling MUST be disabled when embedded.**
+        taskTableView.isScrollEnabled = true
         // Register the XIB for the task list cell
         let taskCellNib = UINib(nibName: "TaskCell", bundle: nil)
         taskTableView.register(taskCellNib, forCellReuseIdentifier: "TaskCell")
@@ -102,7 +104,7 @@ extension StudyPlanViewController: UICollectionViewDataSource, UICollectionViewD
         if collectionView == dateCollectionView {
             return days.count
         } else if collectionView == subjectCollectionView {
-            // Assuming 3 subjects for the initial view, but you can load more
+            // Assuming 5 subjects for the initial view
             return 5
         }
         return 0
@@ -113,16 +115,41 @@ extension StudyPlanViewController: UICollectionViewDataSource, UICollectionViewD
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DateButtonCell", for: indexPath) as? DateButtonCell else {
                 return UICollectionViewCell()
             }
-            // Configuration for date buttons (You'll set the label text and appearance here)
-            // cell.dateLabel.text = days[indexPath.row]
+            
+            // --- Dynamic Date Configuration ---
+            let dayAbbreviation = days[indexPath.row]
+            // Calculate an arbitrary date number based on index (For visual display only)
+            let dateNumber = "\(indexPath.row + 10)"
+            
+            // Example: Set the 5th day (Tue) as selected to match the design.
+            let isSelected = (indexPath.row == 4)
+            
+            cell.configure(day: dayAbbreviation, dateNumber: dateNumber, isSelected: isSelected)
+            // --- End Configuration ---
+            
             return cell
             
         } else if collectionView == subjectCollectionView {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SubjectCardCell", for: indexPath) as? SubjectCardCell else {
                 return UICollectionViewCell()
             }
-            // Configuration for subject cards (You'll set the subject name, task, and progress)
-            // cell.subjectLabel.text = ...
+            // Example: Configure Subject Cards Dynamically
+            if indexPath.row == 0 {
+                cell.subjectLabel.text = "Calculus"
+            } else if indexPath.row == 1 {
+                cell.subjectLabel.text = "Big Data"
+            } else if indexPath.row == 2 {
+                cell.subjectLabel.text = "MMA"
+            } else if indexPath.row == 3 {
+                cell.subjectLabel.text = "OS"
+            } else if indexPath.row == 4 {
+                cell.subjectLabel.text = "Chemistry"
+            } else if indexPath.row == 5 {
+                cell.subjectLabel.text = "Peace"
+            } else {
+                 cell.subjectLabel.text = "Subject \(indexPath.row)"
+            }
+            
             return cell
         }
         
@@ -135,7 +162,7 @@ extension StudyPlanViewController: UICollectionViewDataSource, UICollectionViewD
             // Fixed size for the round date buttons (e.g., 60x60)
             return CGSize(width: 60, height: 60)
         } else if collectionView == subjectCollectionView {
-            // Cards fill most of the screen, leaving a peek of the next one (for iPhone 14/15/16 width ~393)
+            // Cards fill most of the screen, leaving a peek of the next one
             let collectionViewWidth = collectionView.bounds.width
             let desiredWidth = collectionViewWidth * 0.85 // e.g., 85% of screen width
             return CGSize(width: desiredWidth, height: collectionView.bounds.height)
@@ -156,30 +183,38 @@ extension StudyPlanViewController: UICollectionViewDataSource, UICollectionViewD
 // MARK: - UITableViewDataSource
 extension StudyPlanViewController: UITableViewDataSource {
     
-    // Example using sections for "Day 1" and "Day 2"
+    // MODIFIED: Returns 4 sections for Day 1 through Day 4
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 2 // Day 1 and Day 2
+        return 4 // Day 1, Day 2, Day 3, and Day 4
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 0 {
-            return 2 // Tasks for Day 1
-        } else {
-            return 2 // Tasks for Day 2
-        }
+        // Consistent number of tasks per day
+        return 2
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell", for: indexPath) as? TaskCell else {
             return UITableViewCell()
         }
+        
         // Configuration for Task Cells
-        if indexPath.section == 0 {
+        switch indexPath.section {
+        case 0: // Day 1
             cell.titleLabel.text = indexPath.row == 0 ? "Practice Problems - Limits" : "Summarize Integral Concepts"
             cell.subtitleLabel.text = indexPath.row == 0 ? "Quiz" : "Short Notes"
-        } else {
+        case 1: // Day 2
             cell.titleLabel.text = indexPath.row == 0 ? "Practice Problems - Data Lakes" : "Summarize ETL Concepts"
             cell.subtitleLabel.text = indexPath.row == 0 ? "Quiz" : "Short Notes"
+        case 2: // Day 3
+            cell.titleLabel.text = indexPath.row == 0 ? "Review Calculus Theorems" : "Practice Big Data Queries"
+            cell.subtitleLabel.text = indexPath.row == 0 ? "Revision" : "Quiz"
+        case 3: // Day 4
+            cell.titleLabel.text = indexPath.row == 0 ? "Analyze MMA Technique Videos" : "Draft Study Group Agenda"
+            cell.subtitleLabel.text = indexPath.row == 0 ? "Notes" : "Planning"
+        default:
+            cell.titleLabel.text = "Error"
+            cell.subtitleLabel.text = "Task Missing"
         }
         
         return cell
@@ -194,17 +229,23 @@ extension StudyPlanViewController: UITableViewDelegate {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont.preferredFont(forTextStyle: .headline) // iOS style headline font
-        label.text = section == 0 ? "Day 1" : "Day 2"
+        
+        // Set header title: "Day 1", "Day 2", etc.
+        label.text = "Day \(section + 1)"
+        
         headerView.addSubview(label)
         
         NSLayoutConstraint.activate([
+            // Align header text with cell content padding
             label.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
+            // Pin to bottom for vertical alignment
             label.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
         ])
         return headerView
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 40.0 // Header height for "Day 1", "Day 2"
+        // Reduced height for the Day X header to save space
+        return 24.0
     }
 }

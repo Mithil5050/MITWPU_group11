@@ -18,7 +18,7 @@ class DateButtonCell: UICollectionViewCell {
         super.awakeFromNib()
         
         // 🍏 iOS 26 Aesthetic: Rounded capsule look
-        containerView.layer.cornerRadius = 30 // Half of 60pt cell height for capsule shape
+        containerView.layer.cornerRadius = 28 // Half of 60pt cell height for capsule shape
         containerView.clipsToBounds = true
         
         // 🍏 iOS 26 Aesthetic: Ultra Thin Material/Liquid Glass effect (simulated)
@@ -29,17 +29,19 @@ class DateButtonCell: UICollectionViewCell {
     }
     
     // Function to visually select the cell (e.g., 'Tue' in the screenshot)
-    func configure(day: String, isSelected: Bool) {
+    func configure(day: String, dateNumber: String, isSelected: Bool) {
         dayLabel.text = day
-        // dateLabel.text = ... (Set the date number here)
-        
+        dateLabel.text = dateNumber // <-- Use the date number here
+
         if isSelected {
             containerView.backgroundColor = .systemBlue
             dayLabel.textColor = .white
+            dateLabel.textColor = .white
         } else {
             // Set unselected appearance
-            containerView.backgroundColor = .systemGray5 // Or your simulated Liquid Glass color
+            containerView.backgroundColor = .systemGray5
             dayLabel.textColor = .label
+            dateLabel.textColor = .label
         }
     }
 }
