@@ -11,18 +11,20 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="UploadContentCollectionViewCell" customModule="Group_11_Revisio" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="370" height="165"/>
+            <rect key="frame" x="0.0" y="0.0" width="370" height="185"/>
             <autoresizingMask key="autoresizingMask"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                <rect key="frame" x="0.0" y="0.0" width="370" height="165"/>
+                <rect key="frame" x="0.0" y="0.0" width="370" height="185"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="rUl-rl-9nX">
-                        <rect key="frame" x="0.0" y="37" width="370" height="128"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <rect key="frame" x="0.0" y="37" width="370" height="148"/>
+                        <color key="backgroundColor" systemColor="systemGray5Color"/>
+                        <color key="separatorColor" systemColor="systemGray5Color"/>
+                        <color key="sectionIndexBackgroundColor" systemColor="systemGray5Color"/>
                     </tableView>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YG3-Bf-DXS">
-                        <rect key="frame" x="283" y="0.0" width="87" height="37"/>
+                        <rect key="frame" x="283" y="0.0" width="87" height="29"/>
                         <state key="normal" title="Button"/>
                         <buttonConfiguration key="configuration" style="filled" image="plus" catalog="system"/>
                         <connections>
@@ -48,18 +50,19 @@
                 <constraint firstAttribute="bottom" secondItem="rUl-rl-9nX" secondAttribute="bottom" id="dhk-6d-QAX"/>
                 <constraint firstItem="rUl-rl-9nX" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" constant="37" id="txp-QG-tCI"/>
                 <constraint firstAttribute="trailing" secondItem="YG3-Bf-DXS" secondAttribute="trailing" id="uqC-3i-que"/>
-                <constraint firstItem="rUl-rl-9nX" firstAttribute="top" secondItem="YG3-Bf-DXS" secondAttribute="bottom" id="znN-dG-Zo6"/>
+                <constraint firstItem="rUl-rl-9nX" firstAttribute="top" secondItem="YG3-Bf-DXS" secondAttribute="bottom" constant="8" id="znN-dG-Zo6"/>
             </constraints>
+            <size key="customSize" width="370" height="185"/>
             <connections>
                 <outlet property="tableView" destination="rUl-rl-9nX" id="sQx-oY-iPc"/>
             </connections>
-            <point key="canvasLocation" x="13.740458015267174" y="112.32394366197184"/>
+            <point key="canvasLocation" x="13.740458015267174" y="119.36619718309859"/>
         </collectionViewCell>
     </objects>
     <resources>
         <image name="plus" catalog="system" width="128" height="113"/>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        <systemColor name="systemGray5Color">
+            <color red="0.8980392157" green="0.8980392157" blue="0.91764705879999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

@@ -18,7 +18,7 @@ class UploadContentCollectionViewCell: UICollectionViewCell, UITableViewDelegate
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        tableView.backgroundColor = .systemGray5
+        tableView.backgroundColor = .systemRed
         tableView.layer.cornerRadius = 12.0
         // 1. Setup Table View delegates
         tableView.delegate = self
@@ -65,9 +65,11 @@ class UploadContentCollectionViewCell: UICollectionViewCell, UITableViewDelegate
         content.image = UIImage(systemName: item.iconName.isEmpty ? "doc.fill" : item.iconName)
         
         // Use a modern, streamlined style for the cell content
-        content.textProperties.font = UIFont.preferredFont(forTextStyle: .subheadline)
+//        content.textProperties.font = UIFont.preferredFont(forTextStyle: .title3)
+        content.textProperties.font = UIFont.systemFont(ofSize: 17)
         content.textProperties.color = .label
-        content.imageProperties.tintColor = .systemGray
+        content.imageProperties.tintColor = .systemBlue
+        cell.backgroundColor = UIColor(hex: "F5F5F5")
         
         cell.contentConfiguration = content
         
