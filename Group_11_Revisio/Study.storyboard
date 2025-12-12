@@ -247,7 +247,6 @@
                                         <buttonConfiguration key="configuration" style="filled" title="Attempt Quiz"/>
                                         <connections>
                                             <action selector="attemptQuizTapped:" destination="nO8-nf-sye" eventType="touchUpInside" id="7kL-Pb-eBr"/>
-                                            <segue destination="PPa-AC-hfQ" kind="show" identifier="StartQuiz" id="vyW-cf-eHb"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1Vh-Az-eUR">
@@ -293,6 +292,7 @@
                         <outlet property="instructionsTextView" destination="5dE-Oa-vuK" id="IcL-9B-GHS"/>
                         <outlet property="saveExitButton" destination="1Vh-Az-eUR" id="MA1-1h-l4r"/>
                         <outlet property="titleLabel" destination="4fH-tg-uIu" id="lpY-zy-bqB"/>
+                        <segue destination="PPa-AC-hfQ" kind="show" identifier="StartQuiz" id="mzz-ew-08i"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="LSc-ki-pNN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
