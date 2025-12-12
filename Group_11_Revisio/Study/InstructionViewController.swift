@@ -82,20 +82,20 @@ class InstructionViewController: UIViewController {
         navigationController?.popViewController(animated: true)
     }
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        // Check for the correct segue identifier first
-        if segue.identifier == "StartQuiz" {
             
-            // Use a single 'if let' block to safely unwrap BOTH the destination VC and the sender data
-            if let quizVC = segue.destination as? QuizViewController,
-               let topic = sender as? Topic {
+            // Check for the correct segue identifier first
+            if segue.identifier == "StartQuiz" {
                 
-                // These lines are now INSIDE the 'if let' block, so quizVC is in scope
-                quizVC.quizTopic = topic
-                quizVC.parentSubjectName = parentSubjectName // Assuming this property is defined in the class
+                // Use a single 'if let' block to safely unwrap BOTH the destination VC and the sender data
+                if let quizVC = segue.destination as? QuizViewController,
+                   let topic = sender as? Topic {
+                    
+                    // These lines are now INSIDE the 'if let' block, so quizVC is in scope
+                    quizVC.quizTopic = topic
+                    quizVC.parentSubjectName = parentSubjectName // Assuming this property is defined in the class
+                }
             }
-        }
-    }
+        } 
     /*
     // MARK: - Navigation
 

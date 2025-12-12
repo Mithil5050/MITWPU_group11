@@ -308,7 +308,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="0TD-K0-Ptm">
-                                <rect key="frame" x="20" y="288" width="353" height="276"/>
+                                <rect key="frame" x="20" y="328" width="353" height="276"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NJl-zf-Qoh">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="60"/>
@@ -384,7 +384,13 @@
                                 </constraints>
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="18u-E7-ZFs">
-                                <rect key="frame" x="20" y="194" width="353" height="20.333333333333343"/>
+                                <rect key="frame" x="20" y="266" width="353" height="20.333333333333314"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pdu-Ug-796">
+                                <rect key="frame" x="20" y="172" width="353" height="20.333333333333343"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -397,10 +403,13 @@
                             <constraint firstItem="Idj-VT-ysw" firstAttribute="bottom" secondItem="xzs-6k-RMK" secondAttribute="bottom" constant="16" id="4LK-EW-2d0"/>
                             <constraint firstItem="xzs-6k-RMK" firstAttribute="leading" secondItem="Idj-VT-ysw" secondAttribute="leading" constant="20" id="694-yL-Udq"/>
                             <constraint firstItem="Idj-VT-ysw" firstAttribute="trailing" secondItem="0TD-K0-Ptm" secondAttribute="trailing" constant="20" id="JJs-3V-lpM"/>
-                            <constraint firstItem="0TD-K0-Ptm" firstAttribute="top" secondItem="18u-E7-ZFs" secondAttribute="bottom" constant="73.666666666666657" id="QD6-su-3QV"/>
+                            <constraint firstItem="0TD-K0-Ptm" firstAttribute="top" secondItem="18u-E7-ZFs" secondAttribute="bottom" constant="41.666666666666629" id="QD6-su-3QV"/>
                             <constraint firstItem="Idj-VT-ysw" firstAttribute="trailing" secondItem="18u-E7-ZFs" secondAttribute="trailing" constant="20" id="Vse-9W-dao"/>
-                            <constraint firstItem="18u-E7-ZFs" firstAttribute="top" secondItem="Idj-VT-ysw" secondAttribute="top" constant="22" id="Zyx-d8-Oy3"/>
+                            <constraint firstItem="Idj-VT-ysw" firstAttribute="trailing" secondItem="pdu-Ug-796" secondAttribute="trailing" constant="20" id="ZGN-CT-bVi"/>
+                            <constraint firstItem="18u-E7-ZFs" firstAttribute="top" secondItem="Idj-VT-ysw" secondAttribute="top" constant="94" id="Zyx-d8-Oy3"/>
                             <constraint firstItem="18u-E7-ZFs" firstAttribute="leading" secondItem="Idj-VT-ysw" secondAttribute="leading" constant="20" id="aTy-vd-DZi"/>
+                            <constraint firstItem="pdu-Ug-796" firstAttribute="top" secondItem="Idj-VT-ysw" secondAttribute="top" id="lwn-wW-7Xk"/>
+                            <constraint firstItem="pdu-Ug-796" firstAttribute="leading" secondItem="Idj-VT-ysw" secondAttribute="leading" constant="20" id="oNk-k8-aLg"/>
                             <constraint firstItem="0TD-K0-Ptm" firstAttribute="leading" secondItem="Idj-VT-ysw" secondAttribute="leading" constant="20" id="tbj-YR-Ufm"/>
                         </constraints>
                     </view>
@@ -414,6 +423,7 @@
                         <outlet property="nextButton" destination="uMF-Q4-s49" id="TJE-zH-oVq"/>
                         <outlet property="previousButton" destination="Zbl-VK-beE" id="agK-Og-MJq"/>
                         <outlet property="questionLabel" destination="18u-E7-ZFs" id="qOW-ii-AUD"/>
+                        <outlet property="timerLabel" destination="pdu-Ug-796" id="Py0-0c-Qoj"/>
                         <outletCollection property="answerButtons" destination="NJl-zf-Qoh" collectionClass="NSMutableArray" id="bvH-UX-qPc"/>
                         <outletCollection property="answerButtons" destination="ujr-SR-Vg7" collectionClass="NSMutableArray" id="dyq-kN-bLP"/>
                         <outletCollection property="answerButtons" destination="f0n-zZ-Jwh" collectionClass="NSMutableArray" id="atu-vW-w6E"/>

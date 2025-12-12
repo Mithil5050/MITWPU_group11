@@ -13,42 +13,66 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
         
     // MARK: - Outlets (Connect these in Storyboard)
     @IBOutlet weak var questionLabel: UILabel!
-    // Connect ALL 4 answer buttons to this single outlet collection
+    
     @IBOutlet var answerButtons: [UIButton]!
     
     @IBOutlet var previousButton: UIButton!
     
     @IBOutlet var nextButton: UIButton!
     
-
-    var allQuestions = QuizManager.quiz
+    
+    @IBOutlet var timerLabel: UILabel!
+    
+    var allQuestions : [QuizQuestion] = []
+    var selectedSourceName:String?
     var currentQuestionIndex = 0
     var score = 0
+    var hintBarItem: UIBarButtonItem?
+    var flagBarItem: UIBarButtonItem?
+    var countdownTimer: Timer?
+    var totalTime = 300
+    var timeRemaining = 0
 
-    // QuizViewController.swift
-
-    // QuizViewController.swift (In viewDidLoad)
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = quizTopic?.name ?? "Quiz"
+        // ⭐️ CRITICAL FIX: Load questions based on selectedSourceName ⭐️
+        // Use the selected name, or fall back to a safe default for stability (e.g., "Taylor Series PDF").
+        let sourceToLoad = self.selectedSourceName ?? "Taylor Series PDF"
         
-        // 1. Setup the custom back button (Correct)
+        // 1. Load the actual quiz data
+        allQuestions = QuizManager.getQuestions(for: sourceToLoad)
+        
+        // 2. Set the title
+        title = sourceToLoad // Set the title to the loaded source name
+        
+        // 3. Setup the custom back button (Remains Correct)
         navigationItem.hidesBackButton = true
         let quitButton = UIBarButtonItem(image: UIImage(systemName: "chevron.backward"), style: .plain, target: self, action: #selector(backButtonTapped))
         navigationItem.leftBarButtonItem = quitButton
         
+        // 4. Setup UI elements
         setupButtons()
-        setupNavigationBarButtons()
+        setupNavigationBarButtons() // Installs Hint/Flag buttons
+        
+        // 5. Display the first question and start the timer
         displayQuestion()
         
+        // ⭐️ FIX: Start the timer after all data is loaded ⭐️
+        startTimer()
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
     }
+    // SourceSelectionViewController.swift (This is the class *before* QuizViewController)
+
+    // SourceSelectionViewController.swift (The view controller BEFORE QuizViewController)
+
+   
     
 //    @IBAction func nextButtonTapped(_ sender: Any) {
 //        // Targets are assigned dynamically in displayQuestion()
@@ -60,47 +84,52 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
     
     func setupButtons() {
         for button in answerButtons {
-            // Disable UIButtonConfiguration so classic properties (like contentEdgeInsets) apply
+           
             button.configuration = nil
 
-            // Visual Styling for Sleek Card Look
+            
             button.layer.cornerRadius = 16
             button.clipsToBounds = true
             
-            // Subtle Gray Border for the unselected look
+            
             button.layer.borderWidth = 1.0
             button.layer.borderColor = UIColor.systemGray3.cgColor
             
-            // Text alignment, padding, and font style
+            
             button.titleLabel?.lineBreakMode = .byWordWrapping
             button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
             button.contentEdgeInsets = UIEdgeInsets(top: 15, left: 15, bottom: 15, right: 15)
             
-            // Initial state: Clear background (relying on the border for visibility)
+           
             button.backgroundColor = .clear
             
-            // Ensure content is left-aligned in the button title
+            
             button.contentHorizontalAlignment = .left
         }
     }
     // QuizViewController.swift (Add this function)
 
     func setupNavigationBarButtons() {
-        // Check if the buttons are already installed
-        if navigationItem.rightBarButtonItems == nil || navigationItem.rightBarButtonItems?.isEmpty == true {
+        // Check if the buttons are already installed (check our new properties)
+        if self.flagBarItem == nil {
             
-            let hintItem = UIBarButtonItem(image: UIImage(systemName: "lightbulb"),
+            // 1. Create the items
+            let newHintItem = UIBarButtonItem(image: UIImage(systemName: "lightbulb"),
                                            style: .plain,
                                            target: self,
                                            action: #selector(hintButtonTapped))
             
-            let flagItem = UIBarButtonItem(image: UIImage(systemName: "flag"),
+            let newFlagItem = UIBarButtonItem(image: UIImage(systemName: "flag"),
                                            style: .plain,
                                            target: self,
                                            action: #selector(flagButtonTapped))
             
-            // Install the buttons
-            navigationItem.rightBarButtonItems = [flagItem, hintItem]
+            
+            self.hintBarItem = newHintItem
+            self.flagBarItem = newFlagItem
+
+            // 2. Install the buttons using the stored properties
+            navigationItem.rightBarButtonItems = [newFlagItem, newHintItem]
         }
     }
   
@@ -128,10 +157,7 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
         // Update navigation bar title
         title = "Question \(currentQuestionIndex + 1)/\(allQuestions.count)"
         
-        // ❌ REMOVED: The logic to install Hint/Flag buttons is GONE from here.
-        //             It should be called only once from viewDidLoad or setupNavigationBarButtons().
-        
-        // ⭐️ KEEP: Update the flag icon state ⭐️
+       
         updateFlagButtonAppearance() // This ensures the icon reflects the current question's state
         
         questionLabel.text = question.questionText
@@ -139,7 +165,7 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
         // Reset ALL buttons to clean, clear state first
         resetAnswerButtonAppearance()
         
-        // ⭐️ RESTORE PREVIOUS ANSWER STATE (Neutral Highlight) ⭐️
+        
         if let savedIndex = question.userAnswerIndex {
             let selectedButton = answerButtons[savedIndex]
             
@@ -186,24 +212,43 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
             button.isEnabled = true // Temporarily re-enable everything
         }
     }
+    func startTimer() {
+        // Stop any existing timer first
+        countdownTimer?.invalidate()
+        
+        // Check if the user set a limit (e.g., from a settings screen, let's assume 300s = 5 min)
+        if totalTime > 0 {
+            timeRemaining = totalTime
+            timerLabel.isHidden = false
+            updateTimerLabel()
+            
+            // Create a new timer that fires every 1 second
+            countdownTimer = Timer.scheduledTimer(timeInterval: 1.0,
+                                                  target: self,
+                                                  selector: #selector(handleTimerTick),
+                                                  userInfo: nil,
+                                                  repeats: true)
+        } else {
+            timerLabel.isHidden = true
+        }
+    }
     
     @IBAction func answerTapped(_ sender: UIButton) {
-        // ⭐️ 1. Reset all buttons visually and re-enable them (Crucial for clearing old highlight) ⭐️
-            // The resetAnswerButtonAppearance() ensures that if a highlight was showing, it's gone.
+       
             resetAnswerButtonAppearance()
             
-            // Determine which button was tapped
+            
             guard let tappedIndex = answerButtons.firstIndex(of: sender) else { return }
 
-            // 2. SAVE THE NEW USER'S ANSWER STATE
+           
             allQuestions[currentQuestionIndex].userAnswerIndex = tappedIndex
 
-            // 3. Apply the visual confirmation highlight to the *newly tapped* button
+            
             sender.backgroundColor = UIColor.systemGray4 // Neutral color for selection
             sender.layer.borderColor = UIColor.systemBlue.cgColor
             sender.layer.borderWidth = 2.0
 
-            // 4. Unlock the Navigation Buttons (They are ready to go)
+            
             self.previousButton.isEnabled = true
             self.nextButton.isEnabled = true
     }
@@ -218,20 +263,20 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
         }
     }
     
-    // QuizViewController.swift
+  
 
-    // ⭐️ ADD @objc HERE ⭐️
+   
     @objc func exitQuizTapped() {
-        // 1. Give the user a warning
+        
         let alert = UIAlertController(title: "End Quiz?", message: "Are you sure you want to exit? Your current progress will be lost.", preferredStyle: .alert)
         
-        // 2. Action to confirm and exit
+       
         alert.addAction(UIAlertAction(title: "Exit", style: .destructive) { [weak self] _ in
-            // Navigates back to the previous screen (InstructionViewController)
+            
             self?.navigationController?.popViewController(animated: true)
         })
         
-        // 3. Action to cancel
+       
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         
         present(alert, animated: true)
@@ -266,11 +311,16 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
     }
     // QuizViewController.swift
 
+    // QuizViewController.swift
+
     @objc func hintButtonTapped() {
-        // Logic to show a simple alert hint
-        print("Hint button tapped for question \(currentQuestionIndex + 1)")
+        let currentQuestion = allQuestions[currentQuestionIndex]
         
-        let alert = UIAlertController(title: "Hint Available", message: "Consider the context of Data Structures. What type of storage best fits this question?", preferredStyle: .alert)
+        let alert = UIAlertController(
+            title: "Hint (\(currentQuestionIndex + 1)/\(allQuestions.count))",
+            message: currentQuestion.hint, 
+            preferredStyle: .alert
+        )
         alert.addAction(UIAlertAction(title: "Got it", style: .default))
         present(alert, animated: true)
     }
@@ -284,23 +334,49 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
         
         print("Question \(currentQuestionIndex + 1) flagged status: \(allQuestions[currentQuestionIndex].isFlagged)")
     }
+    
 
-    func updateFlagButtonAppearance() {
-        guard currentQuestionIndex < allQuestions.count else { return }
-        let currentQuestion = allQuestions[currentQuestionIndex]
-        
-        // Find the flag button item (assuming it's the second item in the right bar button array, or the last one)
-        if let flagButton = navigationItem.rightBarButtonItems?.first(where: { $0.action == #selector(flagButtonTapped) }) {
-            
-            let systemName = currentQuestion.isFlagged ? "flag.fill" : "flag"
-            flagButton.image = UIImage(systemName: systemName)
-            
-            // Optional: Change tint color when flagged
-            flagButton.tintColor = currentQuestion.isFlagged ? .systemRed : .systemGray
-        }
-    }
     // QuizViewController.swift
 
+    func updateFlagButtonAppearance() {
+        guard currentQuestionIndex < allQuestions.count,
+              let flagButton = self.flagBarItem else {
+            return
+        }
+        
+        let currentQuestion = allQuestions[currentQuestionIndex]
+        
+        // Direct access to the stored property is fast and reliable
+        let systemName = currentQuestion.isFlagged ? "flag.fill" : "flag"
+        flagButton.image = UIImage(systemName: systemName)
+        
+        // Optional: Change tint color when flagged
+        flagButton.tintColor = currentQuestion.isFlagged ? .systemRed : .systemGray
+    }
+    @objc func handleTimerTick() {
+        if timeRemaining > 0 {
+            timeRemaining -= 1
+            updateTimerLabel()
+        } else {
+            // Time is up!
+            countdownTimer?.invalidate()
+            // Optional: Automatically trigger the end of the quiz here
+            // self.finishQuizTapped()
+        }
+    }
+    func updateTimerLabel() {
+        let minutes = Int(timeRemaining) / 60
+        let seconds = Int(timeRemaining) % 60
+        timerLabel.text = String(format: "%02i:%02i", minutes, seconds)
+        
+        // Optional: Change color if time is low
+        if timeRemaining <= 60 {
+            timerLabel.textColor = .systemRed
+        } else {
+            timerLabel.textColor = .darkGray
+        }
+    }
+    
     
    
     
