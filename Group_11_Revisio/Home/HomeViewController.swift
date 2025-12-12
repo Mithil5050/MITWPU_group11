@@ -39,7 +39,8 @@ let headerID = "HeaderID"
 
 // **ADD CONSTANT FOR SEGUE IDENTIFIER**
 let showStudyPlanSegueID = "ShowStudyPlanSegue"
-
+// Add a constant for the hero/today task segue (make sure this matches your storyboard)
+let showTodayTaskSegueID = "showTodayTaskSegue"
 
 class HomeViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
@@ -76,7 +77,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         // Game data updated for two distinct quick games
         gameItems = [
             GameItem(title: "Word Fill", imageAsset: "Screenshot 2025-12-09 at 3.06.21 PM"),
-            GameItem(title: "Connections", imageAsset: "Screenshot 2025-12-09 at 12.28.48 PM.png")
+            GameItem(title: "Connections", imageAsset: "Screenshot 2025-12-12 at 11.26.08 AM")
         ]
 
         // 2. Setup
@@ -118,7 +119,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 
             case .uploadContent:
                 // Header is intentionally removed here
-                let listItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(130))
+                let listItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(140))
                 let listItemLayout = NSCollectionLayoutItem(layoutSize: listItemSize)
                 let listGroupSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(1))
                 let listGroup = NSCollectionLayoutGroup.vertical(layoutSize: listGroupSize, subitems: [listItemLayout])
@@ -285,6 +286,7 @@ extension HomeViewController {
         switch sectionType {
         case .hero:
             print("Hero Card Tapped: Navigate to Profile/Tasks.")
+            performSegue(withIdentifier: showTodayTaskSegueID, sender: nil)
         
         case .studyPlan:
             print("Study Plan Card Tapped: Navigating to the full Study Plan interface.")
