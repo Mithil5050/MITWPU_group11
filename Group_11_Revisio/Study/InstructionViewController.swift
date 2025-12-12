@@ -10,6 +10,7 @@ import UIKit
 class InstructionViewController: UIViewController {
     var quizTopic: Topic?
     var parentSubjectName: String?
+    var sourceNameForQuiz: String?
     
     @IBOutlet var titleLabel: UILabel!
     
@@ -75,24 +76,46 @@ class InstructionViewController: UIViewController {
         }
     
     @IBAction func attemptQuizTapped(_ sender: Any) {
-        //performSegue(withIdentifier: "StartQuiz", sender: quizTopic)
+        performSegue(withIdentifier: "StartQuiz", sender: quizTopic)
     }
     
     @IBAction func saveAndExitTapped(_ sender: Any) {
         navigationController?.popViewController(animated: true)
     }
+    // InstructionViewController.swift
+
+    // InstructionViewController.swift
+
+    // InstructionViewController.swift
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        // Check for the correct segue identifier first
         if segue.identifier == "StartQuiz" {
             
-            // Use a single 'if let' block to safely unwrap BOTH the destination VC and the sender data
-            if let quizVC = segue.destination as? QuizViewController,
-               let topic = sender as? Topic {
+            if let quizVC = segue.destination as? QuizViewController {
                 
-                // These lines are now INSIDE the 'if let' block, so quizVC is in scope
-                quizVC.quizTopic = topic
-                quizVC.parentSubjectName = parentSubjectName // Assuming this property is defined in the class
+                // 1. Start with the source name already set from the previous screen (Generation VC)
+                var nameToPass = self.sourceNameForQuiz
+                
+                // 2. Fallback: If the source name wasn't explicitly set, check the Topic object.
+                if nameToPass == nil {
+                    nameToPass = self.quizTopic?.name
+                }
+                
+                // 3. Fallback: If still nil, check if the sender itself is a Topic/Source object.
+                if nameToPass == nil {
+                    if let topic = sender as? Topic {
+                        nameToPass = topic.name
+                    } else if let source = sender as? Source {
+                        nameToPass = source.name
+                    }
+                }
+                
+                // 4. CRITICAL ASSIGNMENT: Pass the final determined name
+                quizVC.selectedSourceName = nameToPass
+                
+                // Log for debugging
+                print("InstructionVC forwarding source: \(nameToPass ?? "NIL (FALLING BACK TO DEFAULT)") to QuizVC.")
+                
             }
         }
     }
