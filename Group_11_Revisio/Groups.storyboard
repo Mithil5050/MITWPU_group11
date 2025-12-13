@@ -5,6 +5,7 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="collection view cell content view" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -41,7 +42,7 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="plus.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="t39-0X-2M1">
-                                                <rect key="frame" x="15" y="15.666666666666693" width="20" height="18.666666666666679"/>
+                                                <rect key="frame" x="15" y="15.666666666666694" width="20" height="18.666666666666671"/>
                                                 <color key="tintColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="20" id="Kse-7S-TCF"/>
@@ -683,20 +684,82 @@
                                     <constraint firstAttribute="height" constant="36" id="5wB-qB-et6"/>
                                 </constraints>
                                 <segments>
-                                    <segment title="First"/>
-                                    <segment title="Second"/>
+                                    <segment title="Info"/>
+                                    <segment title="Documents"/>
+                                    <segment title="Leaderboard"/>
                                 </segments>
                             </segmentedControl>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Fih-z0-2pN" userLabel="infoView">
+                                <rect key="frame" x="16" y="390" width="361" height="378"/>
+                                <subviews>
+                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="ntU-R7-iAp">
+                                        <rect key="frame" x="8" y="8" width="345" height="220"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="220" id="Flb-4a-XdN"/>
+                                        </constraints>
+                                        <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="ZDt-bu-0IT">
+                                            <size key="itemSize" width="128" height="128"/>
+                                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                        </collectionViewFlowLayout>
+                                        <cells>
+                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="MemberCellIdentifier" id="uxq-RA-71j" customClass="MemberCell" customModule="Group_11_Revisio" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="wsz-1a-5bQ">
+                                                    <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <subviews>
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Zym-Bm-Khr">
+                                                            <rect key="frame" x="-44" y="-16" width="240" height="128"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        </imageView>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yzl-ej-uO5">
+                                                            <rect key="frame" x="43" y="107" width="42" height="21"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                            <nil key="textColor"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                    </subviews>
+                                                </collectionViewCellContentView>
+                                            </collectionViewCell>
+                                        </cells>
+                                    </collectionView>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="ntU-R7-iAp" secondAttribute="trailing" constant="8" id="swX-Up-ZFA"/>
+                                    <constraint firstItem="ntU-R7-iAp" firstAttribute="top" secondItem="Fih-z0-2pN" secondAttribute="top" constant="8" id="tUY-PH-kx7"/>
+                                    <constraint firstItem="ntU-R7-iAp" firstAttribute="leading" secondItem="Fih-z0-2pN" secondAttribute="leading" constant="8" id="tqK-Ic-VoO"/>
+                                </constraints>
+                            </view>
+                            <view hidden="YES" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dfy-az-Y6v" userLabel="documentView">
+                                <rect key="frame" x="76" y="692" width="240" height="128"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </view>
+                            <view hidden="YES" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eB7-eg-vaX" userLabel="leaderboardView">
+                                <rect key="frame" x="153" y="611" width="240" height="128"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="TC9-eV-RK9"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="TC9-eV-RK9" firstAttribute="bottom" secondItem="Fih-z0-2pN" secondAttribute="bottom" constant="16" id="2zt-YD-raN"/>
                             <constraint firstItem="TC9-eV-RK9" firstAttribute="trailing" secondItem="qU4-jN-lID" secondAttribute="trailing" constant="24" id="5r3-wX-rfA"/>
                             <constraint firstItem="qU4-jN-lID" firstAttribute="top" secondItem="NI7-Y4-uDw" secondAttribute="bottom" constant="12" id="E7l-kJ-JQA"/>
                             <constraint firstItem="NI7-Y4-uDw" firstAttribute="leading" secondItem="TC9-eV-RK9" secondAttribute="leading" id="G7o-0s-n9g"/>
                             <constraint firstItem="NI7-Y4-uDw" firstAttribute="top" secondItem="TC9-eV-RK9" secondAttribute="top" constant="12" id="Gem-7v-TYp"/>
                             <constraint firstItem="TC9-eV-RK9" firstAttribute="trailing" secondItem="NI7-Y4-uDw" secondAttribute="trailing" id="XhV-o6-tnO"/>
                             <constraint firstItem="qU4-jN-lID" firstAttribute="leading" secondItem="TC9-eV-RK9" secondAttribute="leading" constant="24" id="YCs-5X-N4P"/>
+                            <constraint firstItem="Fih-z0-2pN" firstAttribute="top" secondItem="qU4-jN-lID" secondAttribute="bottom" constant="12" id="g5z-cN-8cK"/>
+                            <constraint firstItem="TC9-eV-RK9" firstAttribute="trailing" secondItem="Fih-z0-2pN" secondAttribute="trailing" constant="16" id="iCs-Pt-psc"/>
+                            <constraint firstItem="Fih-z0-2pN" firstAttribute="leading" secondItem="TC9-eV-RK9" secondAttribute="leading" constant="16" id="wob-Rx-zHe"/>
                         </constraints>
                     </view>
                 </viewController>

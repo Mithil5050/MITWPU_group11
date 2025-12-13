@@ -100,7 +100,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
 
         // pass the group name
         let group = myGroups[indexPath.row]
-        chatVC.groupName = group.name
+        chatVC.group = group
 
         // push
         navigationController?.pushViewController(chatVC, animated: true)
