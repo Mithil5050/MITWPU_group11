@@ -137,18 +137,15 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
     func displayQuestion() {
         // 1. --- Check for Quiz Completion ---
         guard currentQuestionIndex < allQuestions.count else {
-            // END OF QUIZ: Display score.
-            title = "Finished!"
-            questionLabel.text = "Quiz Complete! Your Score: \(score)/\(allQuestions.count)"
+            // QUIZ COMPLETE: Process results and trigger the segue
+
+            // Process the final results (requires the processQuizResults function)
+            let finalResults = processQuizResults()
             
-            // Hide all buttons and remove navigation bar items
-            answerButtons.forEach { $0.isHidden = true }
-            previousButton.isHidden = true
-            nextButton.isHidden = true
+            // Perform the segue to the ResultsViewController (Identifier: "ShowQuizResults")
+            performSegue(withIdentifier: "ShowQuizResults", sender: finalResults)
             
-            navigationItem.rightBarButtonItems = [] // Clear Hint/Flag from score screen
-            navigationItem.hidesBackButton = false
-            return
+            return // Stop execution; navigation takes over
         }
 
         // Question is active:
@@ -157,8 +154,7 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
         // Update navigation bar title
         title = "Question \(currentQuestionIndex + 1)/\(allQuestions.count)"
         
-       
-        updateFlagButtonAppearance() // This ensures the icon reflects the current question's state
+        updateFlagButtonAppearance()
         
         questionLabel.text = question.questionText
         
@@ -376,7 +372,59 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
             timerLabel.textColor = .darkGray
         }
     }
-    
+    // Add this logic method to process and package the final results
+    func processQuizResults() -> FinalQuizResult {
+        var finalScore = 0
+        var detailResults: [QuestionResultDetail] = []
+        
+        // NOTE: Requires QuestionResultDetail and FinalQuizResult structs to be visible (e.g., in Models.swift)
+
+        for question in allQuestions {
+            let wasCorrect = (question.userAnswerIndex == question.correctAnswerIndex)
+            if wasCorrect {
+                finalScore += 1
+            }
+            
+            let selectedAnswerText: String? = question.userAnswerIndex.map { question.answers[$0] }
+            let correctAnswerText = question.answers[question.correctAnswerIndex]
+            
+            let detail = QuestionResultDetail(
+                questionText: question.questionText,
+                wasCorrect: wasCorrect,
+                selectedAnswer: selectedAnswerText,
+                correctAnswerFullText: correctAnswerText ,
+                isFlagged: question.isFlagged
+            )
+            detailResults.append(detail)
+        }
+        
+        let timeElapsed = TimeInterval(totalTime - timeRemaining)
+        countdownTimer?.invalidate()
+        
+        let finalResult = FinalQuizResult(
+            finalScore: finalScore,
+            totalQuestions: allQuestions.count,
+            timeElapsed: timeElapsed,
+            sourceName: self.selectedSourceName ?? "Quiz",
+            details: detailResults
+        )
+        
+        return finalResult
+    }
+
+    // Add this prepare method to handle the data transfer during the segue
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Check for the specific segue identifier (confirmed as ShowQuizResults)
+        if segue.identifier == "ShowQuizResults" {
+            // Destination is the ResultsViewController
+            if let resultsVC = segue.destination as? ResultsViewController,
+               let results = sender as? FinalQuizResult {
+                
+                // Pass the FinalQuizResult data
+                resultsVC.finalResult = results
+            }
+        }
+    }
     
    
     
