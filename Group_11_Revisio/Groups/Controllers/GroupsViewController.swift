@@ -91,19 +91,16 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
 
-        // instantiate ChatVC from storyboard where Chat scene lives (likely "Main" or your storyboard name)
-        let storyboard = UIStoryboard(name: "Groups", bundle: nil) // change "Main" if your storyboard name differs
-        guard let chatVC = storyboard.instantiateViewController(withIdentifier: "ChatVC") as? ChatViewController else {
-            print("ERROR: Could not instantiate ChatVC")
-            return
-        }
+        let storyboard = UIStoryboard(name: "Groups", bundle: nil)
 
-        // pass the group name
-        let group = myGroups[indexPath.row]
-        chatVC.group = group
+            guard let chatVC = storyboard.instantiateViewController(
+                withIdentifier: "ChatVC"
+            ) as? ChatViewController else {
+                return
+            }
+            chatVC.group = myGroups[indexPath.row]
 
-        // push
-        navigationController?.pushViewController(chatVC, animated: true)
+            navigationController?.pushViewController(chatVC, animated: true)
     }
     
     // MARK: - Delete helper
@@ -171,5 +168,16 @@ extension GroupsViewController: CreateGroupDelegate {
         groupsTableView.scrollToRow(at: IndexPath(row: 0, section: 0),
                                     at: .top,
                                     animated: true)
+    }
+}
+extension GroupsViewController: LeaveGroupDelegate {
+    func didLeaveGroup(_ group: Group) {
+        if let idx = myGroups.firstIndex(where: { $0.name == group.name }) {
+            myGroups.remove(at: idx)
+            groupsTableView.deleteRows(
+                at: [IndexPath(row: idx, section: 0)],
+                with: .automatic
+            )
+        }
     }
 }

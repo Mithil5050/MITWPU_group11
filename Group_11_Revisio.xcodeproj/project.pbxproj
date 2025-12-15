@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		46DF93E12EF002B7007D562B /* MessageKit in Frameworks */ = {isa = PBXBuildFile; productRef = 46DF93E02EF002B7007D562B /* MessageKit */; };
+		46DF93E42EF002DE007D562B /* InputBarAccessoryView in Frameworks */ = {isa = PBXBuildFile; productRef = 46DF93E32EF002DE007D562B /* InputBarAccessoryView */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		546963BE2ED6CB31001C03B8 /* Group_11_Revisio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Group_11_Revisio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +41,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				46DF93E12EF002B7007D562B /* MessageKit in Frameworks */,
+				46DF93E42EF002DE007D562B /* InputBarAccessoryView in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +85,8 @@
 			);
 			name = Group_11_Revisio;
 			packageProductDependencies = (
+				46DF93E02EF002B7007D562B /* MessageKit */,
+				46DF93E32EF002DE007D562B /* InputBarAccessoryView */,
 			);
 			productName = Group_11_Revisio;
 			productReference = 546963BE2ED6CB31001C03B8 /* Group_11_Revisio.app */;
@@ -107,6 +116,10 @@
 			);
 			mainGroup = 546963B52ED6CB31001C03B8;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				46DF93DF2EF002B7007D562B /* XCRemoteSwiftPackageReference "MessageKit" */,
+				46DF93E22EF002DE007D562B /* XCRemoteSwiftPackageReference "InputBarAccessoryView" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 546963BF2ED6CB31001C03B8 /* Products */;
 			projectDirPath = "";
@@ -345,6 +358,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		46DF93DF2EF002B7007D562B /* XCRemoteSwiftPackageReference "MessageKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/MessageKit/MessageKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
+		46DF93E22EF002DE007D562B /* XCRemoteSwiftPackageReference "InputBarAccessoryView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nathantannar4/InputBarAccessoryView";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		46DF93E02EF002B7007D562B /* MessageKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 46DF93DF2EF002B7007D562B /* XCRemoteSwiftPackageReference "MessageKit" */;
+			productName = MessageKit;
+		};
+		46DF93E32EF002DE007D562B /* InputBarAccessoryView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 46DF93E22EF002DE007D562B /* XCRemoteSwiftPackageReference "InputBarAccessoryView" */;
+			productName = InputBarAccessoryView;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 546963B62ED6CB31001C03B8 /* Project object */;
 }
