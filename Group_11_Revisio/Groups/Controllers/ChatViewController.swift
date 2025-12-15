@@ -6,225 +6,263 @@
 //
 
 import UIKit
+import MessageKit
+import InputBarAccessoryView
 
-class ChatViewController: UIViewController {
-
+class ChatViewController: MessagesViewController {
+    
     var group: Group?
-
-    // MARK: - IBOutlets (must match storyboard)
-    @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var inputBarView: UIView!
-    @IBOutlet weak var inputBarBottomConstraint: NSLayoutConstraint! // bottom constraint connecting inputBarView to safe area bottom
-    @IBOutlet weak var messageTextView: UITextView!
-    @IBOutlet weak var messageTextViewHeightConstraint: NSLayoutConstraint!
-    @IBOutlet weak var sendButton: UIButton!
-
-    private var messagePlaceholderLabel: UILabel!
-
-    // Data model
-    var messages: [Message] = []
-
-    // Config
-    private let textViewMinHeight: CGFloat = 36
-    private let textViewMaxHeight: CGFloat = 120
-
+    
+    // MARK: - MessageKit data
+    private let currentUser = ChatSender(senderId: "self", displayName: "Me")
+    private let otherUser = ChatSender(senderId: "other", displayName: "User")
+    private var chatMessages: [ChatMessage] = []
+    
+    //Mic symbol before send button
+    private lazy var micButton: InputBarButtonItem = {
+        let item = InputBarButtonItem()
+        item.image = UIImage(systemName: "mic.fill")
+        item.tintColor = .systemGray
+        item.setSize(CGSize(width: 36, height: 36), animated: false)
+        return item
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Title from group
-        if let g = group {
-            self.title = g.name
-        }
-
-        // Table setup
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.keyboardDismissMode = .interactive
-        tableView.separatorStyle = .none
-        tableView.estimatedRowHeight = 80
-        tableView.rowHeight = UITableView.automaticDimension
-
-        // Original demo messages
-        messages = [
-            Message(text: "Welcome to iMAAC group!", isOutgoing: false, date: Date(timeIntervalSinceNow: -3600)),
-            Message(text: "Hey everyone 👋", isOutgoing: true, date: Date(timeIntervalSinceNow: -3500)),
-            Message(text: "Don't forget to submit your statistics assignment.", isOutgoing: false, date: Date(timeIntervalSinceNow: -3200)),
-            Message(text: "Let’s finish it today 🔥", isOutgoing: true, date: Date(timeIntervalSinceNow: -3000))
+        
+        messagesCollectionView.messagesDataSource = self
+        messagesCollectionView.messagesLayoutDelegate = self
+        messagesCollectionView.messagesDisplayDelegate = self
+        messageInputBar.delegate = self
+        
+        chatMessages = [
+            ChatMessage(
+                sender: otherUser,
+                messageId: UUID().uuidString,
+                sentDate: Date(timeIntervalSinceNow: -3600),
+                kind: .text("Welcome to the group 👋")
+            ),
+            ChatMessage(
+                sender: currentUser,
+                messageId: UUID().uuidString,
+                sentDate: Date(timeIntervalSinceNow: -3500),
+                kind: .text("Hey everyone!")
+            ),
+            ChatMessage(
+                sender: otherUser,
+                messageId: UUID().uuidString,
+                sentDate: Date(timeIntervalSinceNow: -3200),
+                kind: .text("Assignments due today.")
+            )
         ]
-
-        tableView.reloadData()
-        scrollToBottom(animated: false)
-
-        // Input UI
-        messageTextView.delegate = self
-        messageTextView.isScrollEnabled = false
-        messageTextView.textContainerInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
-        messageTextView.font = UIFont.systemFont(ofSize: 16)
-        messageTextView.backgroundColor = .clear
-        messageTextView.textColor = .label
-
-        // Send button original style
-        if let img = UIImage(systemName: "arrow.up.circle.filled") {
-            sendButton.setImage(img, for: .normal)
-            sendButton.tintColor = .systemBlue
-        }
-        sendButton.setTitle("", for: .normal)
-        sendButton.isEnabled = false
-
-        // Placeholder label
-        messagePlaceholderLabel = UILabel()
-        messagePlaceholderLabel.text = "Message"
-        messagePlaceholderLabel.font = UIFont.systemFont(ofSize: 16)
-        messagePlaceholderLabel.textColor = UIColor.secondaryLabel
-        messagePlaceholderLabel.translatesAutoresizingMaskIntoConstraints = false
-        messageTextView.addSubview(messagePlaceholderLabel)
-        NSLayoutConstraint.activate([
-            messagePlaceholderLabel.leadingAnchor.constraint(equalTo: messageTextView.leadingAnchor, constant: 12),
-            messagePlaceholderLabel.centerYAnchor.constraint(equalTo: messageTextView.centerYAnchor)
-        ])
-        updatePlaceholderVisibility()
-
-        // Keyboard observers
-        NotificationCenter.default.addObserver(self, selector: #selector(kbWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(kbWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
-
+        
+        messagesCollectionView.reloadData()
+        messagesCollectionView.scrollToLastItem(animated: false)
+        
+        // Default: show mic button
+        messageInputBar.setStackViewItems([micButton], forStack: .right, animated: false)
+        messageInputBar.setRightStackViewWidthConstant(to: 38, animated: false)
+        
+        // Style input bar (iMessage-like)
+        messageInputBar.inputTextView.placeholder = "Aa"
+        messageInputBar.inputTextView.font = UIFont.systemFont(ofSize: 16)
+        messageInputBar.sendButton.setTitle("", for: .normal)
+        messageInputBar.sendButton.setImage(
+            UIImage(systemName: "arrow.up.circle.fill"),
+            for: .normal
+        )
+        messageInputBar.sendButton.tintColor = .systemBlue
+        messageInputBar.sendButton.setSize(
+            CGSize(width: 36, height: 36),
+            animated: false
+        )
+        
         // initial inset
         view.layoutIfNeeded()
-        let barHeight = inputBarView.frame.height
-        tableView.contentInset.bottom = barHeight
-        tableView.scrollIndicatorInsets.bottom = barHeight
+        
+        navigationItem.title = group?.name ?? "Group"
+        navigationItem.largeTitleDisplayMode = .never
+        
+        let titleButton = UIButton(type: .system)
+        titleButton.setTitle(group?.name ?? "Group", for: .normal)
+        titleButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        titleButton.addTarget(self, action: #selector(groupTitleTapped), for: .touchUpInside)
+        
+        navigationItem.titleView = titleButton
+        
+        // iMessage-style input bar appearance
+        messageInputBar.backgroundView.backgroundColor = .clear
+        messageInputBar.backgroundView.layer.cornerRadius = 18
+        messageInputBar.backgroundView.clipsToBounds = true
+        
+        let blur = UIBlurEffect(style: .systemMaterial)
+        let blurView = UIVisualEffectView(effect: blur)
+        blurView.frame = messageInputBar.backgroundView.bounds
+        blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        messageInputBar.backgroundView.insertSubview(blurView, at: 0)
+        
+        messageInputBar.inputTextView.backgroundColor = .clear
+        messageInputBar.inputTextView.layer.cornerRadius = 16
+        messageInputBar.inputTextView.layer.borderWidth = 0
+        messageInputBar.inputTextView.textContainerInset = UIEdgeInsets(
+            top: 8, left: 12, bottom: 8, right: 12
+        )
+        
+        messagesCollectionView.scrollsToTop = false
+        messagesCollectionView.contentInsetAdjustmentBehavior = .always
+        
     }
-
+    
+    @objc private func groupTitleTapped() {
+        let storyboard = UIStoryboard(name: "Groups", bundle: nil)
+        
+        guard let settingsVC = storyboard.instantiateViewController(
+            withIdentifier: "GroupSettingsVC"
+        ) as? GroupSettingsViewController else {
+            print("ERROR: GroupSettingsVC not found")
+            return
+        }
+        
+        settingsVC.group = group
+        settingsVC.delegate = navigationController?.viewControllers.first {
+            $0 is GroupsViewController
+        } as? LeaveGroupDelegate
+        
+        navigationController?.pushViewController(settingsVC, animated: true)
+    }
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-
-        if sendButton.bounds.height > 0 {
-            sendButton.layer.cornerRadius = min(sendButton.bounds.height, sendButton.bounds.width) / 2
-            sendButton.clipsToBounds = true
+}
+    
+extension ChatViewController: MessagesDataSource {
+        
+        var currentSender: SenderType {
+            return currentUser
         }
-
-        if messageTextViewHeightConstraint.constant <= 0 {
-            messageTextViewHeightConstraint.constant = textViewMinHeight
+        
+        func numberOfSections(
+            in messagesCollectionView: MessagesCollectionView
+        ) -> Int {
+            return chatMessages.count
         }
-
-        let barHeight = inputBarView.frame.height
-        tableView.contentInset.bottom = barHeight
-        tableView.scrollIndicatorInsets.bottom = barHeight
-    }
-
-    // MARK: - Send
-    @IBAction func sendButtonTapped(_ sender: UIButton) {
-        let raw = messageTextView.text ?? ""
-        let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { return }
-
-        let new = Message(text: text, isOutgoing: true, date: Date())
-        messages.append(new)
-
-        let newIndex = IndexPath(row: messages.count - 1, section: 0)
-        tableView.beginUpdates()
-        tableView.insertRows(at: [newIndex], with: .automatic)
-        tableView.endUpdates()
-        scrollToBottom(animated: true)
-
-        messageTextView.text = ""
-        messageTextViewHeightConstraint.constant = textViewMinHeight
-        updatePlaceholderVisibility()
-        sendButton.isEnabled = false
-    }
-
-    private func scrollToBottom(animated: Bool) {
-        guard messages.count > 0 else { return }
-        let last = IndexPath(row: messages.count - 1, section: 0)
-        tableView.scrollToRow(at: last, at: .bottom, animated: animated)
-    }
-
-    // MARK: - Keyboard
-    @objc private func kbWillShow(_ notification: Notification) {
-        if let info = notification.userInfo,
-           let keyboardFrame = info[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
-           let duration = info[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
-           let curveValue = info[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt {
-
-            let kbHeight = keyboardFrame.height - view.safeAreaInsets.bottom
-            inputBarBottomConstraint.constant = -kbHeight
-
-            let options = UIView.AnimationOptions(rawValue: curveValue << 16)
-            UIView.animate(withDuration: duration, delay: 0, options: options, animations: {
-                self.view.layoutIfNeeded()
-                let inset = kbHeight + self.inputBarView.frame.height
-                self.tableView.contentInset.bottom = inset
-                self.tableView.scrollIndicatorInsets.bottom = inset
-                self.scrollToBottom(animated: true)
-            })
+        
+        func messageForItem(
+            at indexPath: IndexPath,
+            in messagesCollectionView: MessagesCollectionView
+        ) -> MessageType {
+            return chatMessages[indexPath.section]
         }
     }
+    
+extension ChatViewController {
 
-    @objc private func kbWillHide(_ notification: Notification) {
-        if let info = notification.userInfo,
-           let duration = info[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
-           let curveValue = info[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt {
-
-            inputBarBottomConstraint.constant = 0
-
-            let options = UIView.AnimationOptions(rawValue: curveValue << 16)
-            UIView.animate(withDuration: duration, delay: 0, options: options, animations: {
-                self.view.layoutIfNeeded()
-                let barHeight = self.inputBarView.frame.height
-                self.tableView.contentInset.bottom = barHeight
-                self.tableView.scrollIndicatorInsets.bottom = barHeight
-            })
-        }
-    }
-
-    // MARK: - Placeholder
-    private func updatePlaceholderVisibility() {
-        let trimmed = (messageTextView.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        messagePlaceholderLabel.isHidden = !trimmed.isEmpty
-        sendButton.isEnabled = !trimmed.isEmpty
+    // Hide avatars for consecutive messages (iMessage style)
+    func isNextMessageSameSender(at indexPath: IndexPath) -> Bool {
+        guard indexPath.section + 1 < chatMessages.count else { return false }
+        return chatMessages[indexPath.section].sender.senderId ==
+               chatMessages[indexPath.section + 1].sender.senderId
     }
 }
 
-// MARK: - UITableViewDataSource
-extension ChatViewController: UITableViewDataSource, UITableViewDelegate {
+extension ChatViewController: MessagesLayoutDelegate {
 
-    func numberOfSections(in tableView: UITableView) -> Int { 1 }
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { messages.count }
+    func avatarSize(
+        for message: MessageType,
+        at indexPath: IndexPath,
+        in messagesCollectionView: MessagesCollectionView
+    ) -> CGSize {
+        return isNextMessageSameSender(at: indexPath)
+            ? .zero
+            : CGSize(width: 28, height: 28)
+    }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "MessageCellIdentifier", for: indexPath) as? MessageCell else {
-            return UITableViewCell()
-        }
-        let message = messages[indexPath.row]
-        cell.configure(with: message)
-        cell.selectionStyle = .none
-        return cell
+    func messagePadding(
+        for message: MessageType,
+        at indexPath: IndexPath,
+        in messagesCollectionView: MessagesCollectionView
+    ) -> UIEdgeInsets {
+        return UIEdgeInsets(top: 2, left: 8, bottom: 2, right: 8)
     }
 }
 
-// MARK: - UITextViewDelegate
-extension ChatViewController: UITextViewDelegate {
+extension ChatViewController: MessagesDisplayDelegate {
 
-    func textViewDidChange(_ textView: UITextView) {
-        let trimmed = textView.text.trimmingCharacters(in: .whitespacesAndNewlines)
-        sendButton.isEnabled = !trimmed.isEmpty
+    func backgroundColor(
+        for message: MessageType,
+        at indexPath: IndexPath,
+        in messagesCollectionView: MessagesCollectionView
+    ) -> UIColor {
 
-        // Resize text view
-        let size = textView.sizeThatFits(CGSize(width: textView.frame.width, height: .greatestFiniteMagnitude))
-        var newHeight = size.height
-        if newHeight < textViewMinHeight { newHeight = textViewMinHeight }
-        if newHeight > textViewMaxHeight { newHeight = textViewMaxHeight; textView.isScrollEnabled = true }
-        else { textView.isScrollEnabled = false }
-        messageTextViewHeightConstraint.constant = newHeight
-        UIView.animate(withDuration: 0.12) { self.view.layoutIfNeeded() }
-
-        updatePlaceholderVisibility()
+        if message.sender.senderId == currentUser.senderId {
+            return .systemBlue   // outgoing (you)
+        } else {
+            return .systemGray5  // incoming
+        }
     }
 
-    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool { return true }
+    func textColor(
+        for message: MessageType,
+        at indexPath: IndexPath,
+        in messagesCollectionView: MessagesCollectionView
+    ) -> UIColor {
+
+        if message.sender.senderId == currentUser.senderId {
+            return .white
+        } else {
+            return .label
+        }
+    }
+
+    func configureAvatarView(
+        _ avatarView: AvatarView,
+        for message: MessageType,
+        at indexPath: IndexPath,
+        in messagesCollectionView: MessagesCollectionView
+    ) {
+        if message.sender.senderId == currentUser.senderId {
+            avatarView.image = UIImage(systemName: "person.fill")
+        } else {
+            avatarView.image = UIImage(systemName: "person.circle")
+        }
+    }
+}
+
+extension ChatViewController: InputBarAccessoryViewDelegate {
+
+    func inputBar(
+        _ inputBar: InputBarAccessoryView,
+        didPressSendButtonWith text: String
+    ) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        let msg = ChatMessage(
+            sender: currentUser,
+            messageId: UUID().uuidString,
+            sentDate: Date(),
+            kind: .text(trimmed)
+        )
+
+        chatMessages.append(msg)
+        messagesCollectionView.reloadData()
+        messagesCollectionView.scrollToLastItem(animated: true)
+
+        inputBar.inputTextView.text = ""
+
+        // After send → show mic again
+        inputBar.setStackViewItems([micButton], forStack: .right, animated: true)
+    }
+
+    func inputBar(
+        _ inputBar: InputBarAccessoryView,
+        textViewTextDidChangeTo text: String
+    ) {
+        if text.isEmpty {
+            inputBar.setStackViewItems([micButton], forStack: .right, animated: true)
+        } else {
+            inputBar.setStackViewItems([inputBar.sendButton], forStack: .right, animated: true)
+        }
+    }
 }

@@ -72,7 +72,6 @@ class GroupSettingsViewController: UIViewController {
     private func showSegment(index: Int) {
         infoView.isHidden = index != 0
         docsView.isHidden = index != 1
-        leaderboardView.isHidden = index != 2
     }
 
     // MARK: - Leave group
@@ -170,23 +169,5 @@ extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegat
         cell.detailTextLabel?.text = "\(item.score)"
         cell.selectionStyle = .none
         return cell
-    }
-}
-
-// MARK: - LeaveGroupDelegate
-extension GroupsViewController: LeaveGroupDelegate {
-    func didLeaveGroup(_ group: Group) {
-        // Remove the group from the data source if it exists, then reload
-        if let idx = myGroups.firstIndex(where: { $0.name == group.name }) {
-            // If myGroups is a var; if it's currently a let, change it to var
-            myGroups.remove(at: idx)
-            // Animate delete row (optional)
-            let indexPath = IndexPath(row: idx, section: 0)
-            groupsTableView.beginUpdates()
-            groupsTableView.deleteRows(at: [indexPath], with: .automatic)
-            groupsTableView.endUpdates()
-        } else {
-            groupsTableView.reloadData()
-        }
     }
 }
