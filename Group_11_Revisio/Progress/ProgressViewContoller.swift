@@ -8,8 +8,16 @@
 import UIKit
 
 class ProgressViewContoller: UIViewController, LogStudyTimeDelegate {
-    
+
     @IBOutlet weak var hoursGraphView: UIView!
+    
+    @IBOutlet weak var streaksCard: UIView!
+    
+    @IBOutlet weak var awardsCard: UIView!
+    
+    @IBOutlet weak var personalBestCard: UIView!
+    
+    
     var chart = BarGraphView()
 
     override func viewDidLoad() {
@@ -29,6 +37,30 @@ class ProgressViewContoller: UIViewController, LogStudyTimeDelegate {
             chart.topAnchor.constraint(equalTo: hoursGraphView.topAnchor, constant: 12),
             chart.bottomAnchor.constraint(equalTo: hoursGraphView.bottomAnchor, constant: -12)
         ])
+        // --- NEW: Apply Corner Radius to Cards ---
+            let cardRadius: CGFloat = 12 // Define a consistent radius
+            
+            // AWARDS Card Styling
+            if let awardsView = awardsCard {
+                awardsView.layer.cornerRadius = cardRadius
+                awardsView.layer.masksToBounds = true
+                // Optional: Set a background color if the view is transparent
+                awardsView.backgroundColor = .systemGray6
+            }
+            
+            // STREAKS Card Styling
+            if let streaksView = streaksCard {
+                streaksView.layer.cornerRadius = cardRadius
+                streaksView.layer.masksToBounds = true
+                streaksView.backgroundColor = .systemGray6
+            }
+            
+            // PERSONAL BEST Card Styling
+            if let personalBestView = personalBestCard {
+                personalBestView.layer.cornerRadius = cardRadius
+                personalBestView.layer.masksToBounds = true
+                personalBestView.backgroundColor = .systemGray6
+            }
     }
 
     @IBAction func segmentChanged(_ sender: UISegmentedControl) {
