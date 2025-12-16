@@ -499,7 +499,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="GVt-H9-PuE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-463.35877862595419" y="-357.04225352112678"/>
+            <point key="canvasLocation" x="54" y="-1909"/>
         </scene>
         <!--Progress-->
         <scene sceneID="XMz-2C-bnh">
@@ -592,7 +592,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ONw-iS-NJn" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-645.03816793893122" y="-1050"/>
+            <point key="canvasLocation" x="-673" y="-1063"/>
         </scene>
         <!--Streaks-->
         <scene sceneID="sYp-F7-sfR">
@@ -717,7 +717,22 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4u2-Ri-ieQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="206.87022900763358" y="-1050"/>
+            <point key="canvasLocation" x="-2240" y="-357"/>
+        </scene>
+        <!--Monthly Challenge View Controller-->
+        <scene sceneID="aPE-tn-H4i">
+            <objects>
+                <viewController id="uXR-VA-BhQ" customClass="MonthlyChallengeViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Bkc-Pc-Qsx">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="laf-hT-7Lt"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="PG2-Hi-eDV" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="184" y="-1063"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="7Gf-bo-Rfe">
@@ -735,7 +750,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="z9P-jm-0Zm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1390.0763358778624" y="-357.04225352112678"/>
+            <point key="canvasLocation" x="-796" y="-1909"/>
         </scene>
     </scenes>
     <resources>

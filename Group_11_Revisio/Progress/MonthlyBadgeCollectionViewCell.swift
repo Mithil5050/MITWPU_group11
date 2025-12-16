@@ -7,6 +7,11 @@
 
 import UIKit
 
+// This protocol defines the methods the parent View Controller must implement.
+protocol MonthlyBadgeCellDelegate: AnyObject {
+    func didTapShowAllButton()
+    func didTapMonthlyBadgeCard() // Used for tapping the badge image/card area
+}
 class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
 
     
@@ -24,6 +29,8 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet weak var showAllContainerView: UIView!
     
+    weak var delegate: MonthlyBadgeCellDelegate?
+    
     // MARK: - Lifecycle & Setup
         
         override func awakeFromNib() {
@@ -32,6 +39,8 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
             setupCardStyle()
             // Apply styling to the "Show All" area if it has a separate design
             setupShowAllStyle()
+            
+            setupTapGesture()
         }
         
         // MARK: - Configuration Method
@@ -76,8 +85,27 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
             // Set a distinct background color for the 'Show All' area, if desired
             // showAllContainerView.backgroundColor = UIColor(named: "CoinContainerColor") ?? .systemGray5
         }
+    private func setupTapGesture() {
+            // 1. Ensure the image view can receive touches
+            monthlyBadgeImageView.isUserInteractionEnabled = true
+            
+            // 2. Create the recognizer
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(badgeImageTapped))
+            
+            // 3. Add it to the image view
+            monthlyBadgeImageView.addGestureRecognizer(tapGesture)
+        }
+        
+        
+        @objc private func badgeImageTapped() {
+            // Notify the AwardsViewController that the card was tapped
+            delegate?.didTapMonthlyBadgeCard()
+        }
 
-        // MARK: - Layout Update
+    @IBAction func showAllButtonTapped(_ sender: UIButton) {
+        delegate?.didTapShowAllButton()
+    }
+    // MARK: - Layout Update
         
         override func layoutSubviews() {
             super.layoutSubviews()
