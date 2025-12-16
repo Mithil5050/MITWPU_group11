@@ -12,7 +12,7 @@ class GroupSettingsViewController: UIViewController {
     // MARK: - IBOutlets
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     @IBOutlet weak var infoView: UIView!
-//    @IBOutlet weak var docsView: UIView!
+    @IBOutlet weak var docsView: UIView!
 //    @IBOutlet weak var leaderboardView: UIView!
 //
 //    // Info view outlets (inside infoView)
@@ -22,8 +22,8 @@ class GroupSettingsViewController: UIViewController {
 //    @IBOutlet weak var hideAlertsSwitch: UISwitch!
 //    @IBOutlet weak var leaveButton: UIButton!
 //
-//    // Docs view
-//    @IBOutlet weak var docsCollectionView: UICollectionView!
+    // Docs view
+    @IBOutlet weak var docsCollectionView: UICollectionView!
 //
 //    // Leaderboard view
 //    @IBOutlet weak var leaderboardTableView: UITableView!
@@ -32,8 +32,9 @@ class GroupSettingsViewController: UIViewController {
     var group: Group!
     weak var delegate: LeaveGroupDelegate?
 
-    private var members: [String] = ["You","Ashika","Mithil","Ayaana"]
-    private var documents: [String] = ["DBMS.pdf","Statistics.pdf","DS Qs.jpg"]
+    //private let members: [(name: String, avatar: String)] = [("You", "pfp1"), ("Ashika", "pfp2"), ("Mithil", "pfp3"), ("Ayaana", "pfp4")]
+    
+    private var documents: [String] = ["DBMS.pdf","Statistics.pdf","DS QB.jpg","DETT.pdf","Operating systems.jpg"]
     private var leaderboard: [(name: String, score: Int)] = [("Chirag",650),("Ashika",590),("Ayaana",400)]
 
     override func viewDidLoad() {
@@ -51,13 +52,12 @@ class GroupSettingsViewController: UIViewController {
         //leaveButton.backgroundColor = UIColor.systemGray6
 
         // register / datasource delegates
-        //membersCollectionView.dataSource = self
-        //membersCollectionView.delegate = self
-        //membersCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "MemberCellIdentifier")
+//        membersCollectionView.dataSource = self
+//        membersCollectionView.delegate = self
+//        membersCollectionView.register(MemberCell.self, forCellWithReuseIdentifier: "MemberCellIdentifier")
 
-        //docsCollectionView.dataSource = self
-        //docsCollectionView.delegate = self
-        //docsCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "DocumentCellIdentifier")
+        docsCollectionView.dataSource = self
+        docsCollectionView.delegate = self
 
         //leaderboardTableView.dataSource = self
         //leaderboardTableView.delegate = self
@@ -70,9 +70,14 @@ class GroupSettingsViewController: UIViewController {
     }
 
     private func showSegment(index: Int) {
-        infoView?.isHidden = index != 0
-        //docsView?.isHidden = index != 1
-        //leaderboardView?.isHidden = index != 2
+        infoView?.isHidden = true
+        docsView?.isHidden = true
+
+        if index == 0 {
+            infoView?.isHidden = false
+        } else if index == 1 {
+            docsView?.isHidden = false
+        }
     }
 
     // MARK: - Leave group
@@ -101,75 +106,69 @@ class GroupSettingsViewController: UIViewController {
     }
 }
 
-/*// MARK: - Collection / Table DataSources
+// MARK: - Documents, Members Collection View
 extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if collectionView == membersCollectionView { return members.count }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        numberOfItemsInSection section: Int) -> Int {
         return documents.count
     }
 
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if collectionView == membersCollectionView {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MemberCellIdentifier", for: indexPath)
-            if let label = cell.contentView.viewWithTag(101) as? UILabel {
-                label.text = members[indexPath.item]
-            } else {
-                let lbl = UILabel(frame: cell.contentView.bounds.insetBy(dx: 4, dy: 4))
-                lbl.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-                lbl.textAlignment = .center
-                lbl.font = UIFont.systemFont(ofSize: 12)
-                lbl.text = members[indexPath.item]
-                lbl.tag = 101
-                cell.contentView.addSubview(lbl)
-            }
-            return cell
-        } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DocumentCellIdentifier", for: indexPath)
-            if let label = cell.contentView.viewWithTag(201) as? UILabel {
-                label.text = documents[indexPath.item]
-            } else {
-                let lbl = UILabel(frame: cell.contentView.bounds.insetBy(dx: 4, dy: 4))
-                lbl.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-                lbl.font = UIFont.systemFont(ofSize: 12)
-                lbl.textAlignment = .center
-                lbl.numberOfLines = 2
-                lbl.tag = 201
-                lbl.text = documents[indexPath.item]
-                cell.contentView.addSubview(lbl)
-            }
-            return cell
-        }
-    }
+    func collectionView(_ collectionView: UICollectionView,
+                        cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        if collectionView == membersCollectionView {
-            return CGSize(width: 72, height: 72)
-        } else {
-            let width = (collectionView.bounds.width - 24) / 2
-            return CGSize(width: width, height: width * 0.7)
-        }
-    }
+        let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: "DocumentCellIdentifier",
+            for: indexPath
+        ) as! DocumentCell
 
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if collectionView == membersCollectionView {
-            print("Tapped member:", members[indexPath.item])
-        } else {
-            print("Open doc:", documents[indexPath.item])
-        }
-    }
-}
-
-extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegate {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { leaderboard.count }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
-        let cell = tableView.dequeueReusableCell(withIdentifier: "LeaderboardCellIdentifier", for: indexPath)
-        let item = leaderboard[indexPath.row]
-        cell.textLabel?.text = "\(indexPath.row + 1). \(item.name)"
-        cell.detailTextLabel?.text = "\(item.score)"
-        cell.selectionStyle = .none
+        cell.configure(title: documents[indexPath.item])
         return cell
     }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        sizeForItemAt indexPath: IndexPath) -> CGSize {
+
+        let columns: CGFloat = 3
+        let spacing: CGFloat = 12
+
+        let totalSpacing = (columns - 1) * spacing + 24 // 12 left + 12 right
+        let width = (collectionView.bounds.width - totalSpacing) / columns
+
+        return CGSize(width: width, height: width * 0.85)
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        insetForSectionAt section: Int) -> UIEdgeInsets {
+        return UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 12
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 12
+    }
 }
-*/
+
+//extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegate {
+//    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { leaderboard.count }
+//
+//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "LeaderboardCellIdentifier", for: indexPath)
+//        let item = leaderboard[indexPath.row]
+//        cell.textLabel?.text = "\(indexPath.row + 1). \(item.name)"
+//        cell.detailTextLabel?.text = "\(item.score)"
+//        cell.selectionStyle = .none
+//        return cell
+//    }
+//}
+

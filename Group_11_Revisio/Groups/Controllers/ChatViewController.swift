@@ -13,8 +13,19 @@ class ChatViewController: MessagesViewController {
     
     var group: Group!
     
+    // MARK: - Senders
+    let currentUser = ChatSender(
+        senderId: "me",
+        displayName: "Chirag"
+    )
+
+    let otherUsers: [String: ChatSender] = [
+        "ashika": ChatSender(senderId: "ashika", displayName: "Ashika"),
+        "mithil": ChatSender(senderId: "mithil", displayName: "Mithil"),
+        "ayaana": ChatSender(senderId: "ayaana", displayName: "Ayaana")
+    ]
+    
     // MARK: - MessageKit data
-    private let currentUser = ChatSender(senderId: "self", displayName: "Me")
     private let otherUser = ChatSender(senderId: "other", displayName: "User")
     private var chatMessages: [ChatMessage] = []
     
@@ -36,26 +47,49 @@ class ChatViewController: MessagesViewController {
         messageInputBar.delegate = self
         
         chatMessages = [
+
+            // Ashika
             ChatMessage(
-                sender: otherUser,
+                sender: otherUsers["ashika"]!,
                 messageId: UUID().uuidString,
                 sentDate: Date(timeIntervalSinceNow: -3600),
-                kind: .text("Welcome to the group 👋")
+                kind: .text("Hey everyone 👋")
             ),
+            ChatMessage(
+                sender: otherUsers["ashika"]!,
+                messageId: UUID().uuidString,
+                sentDate: Date(timeIntervalSinceNow: -3500),
+                kind: .text("Did anyone finish the DBMS assignment?")
+            ),
+            // Mithil
+            ChatMessage(
+                sender: otherUsers["mithil"]!,
+                messageId: UUID().uuidString,
+                sentDate: Date(timeIntervalSinceNow: -3200),
+                kind: .text("Almost done, just revising the last question.")
+            ),
+            // You
             ChatMessage(
                 sender: currentUser,
                 messageId: UUID().uuidString,
-                sentDate: Date(timeIntervalSinceNow: -3500),
-                kind: .text("Hey everyone!")
+                sentDate: Date(timeIntervalSinceNow: -3000),
+                kind: .text("Same here, planning to submit tonight.")
             ),
+            // Ayaana
             ChatMessage(
-                sender: otherUser,
+                sender: otherUsers["ayaana"]!,
                 messageId: UUID().uuidString,
-                sentDate: Date(timeIntervalSinceNow: -3200),
-                kind: .text("Assignments due today.")
+                sentDate: Date(timeIntervalSinceNow: -2800),
+                kind: .text("Guys don’t forget statistics viva tomorrow 😭")
+            ),
+            // You
+            ChatMessage(
+                sender: currentUser,
+                messageId: UUID().uuidString,
+                sentDate: Date(timeIntervalSinceNow: -2600),
+                kind: .text("Oh damn, thanks for the reminder 💀")
             )
         ]
-        
         messagesCollectionView.reloadData()
         messagesCollectionView.scrollToLastItem(animated: false)
         
@@ -174,12 +208,28 @@ extension ChatViewController: MessagesLayoutDelegate {
             : CGSize(width: 28, height: 28)
     }
 
-    func messagePadding(
+    func messagePadding(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIEdgeInsets {
+        
+        return UIEdgeInsets(top: 1, left: 8, bottom: 1, right: 8)
+    }
+    
+    func messageTopLabelHeight(
         for message: MessageType,
         at indexPath: IndexPath,
         in messagesCollectionView: MessagesCollectionView
-    ) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 2, left: 8, bottom: 2, right: 8)
+    ) -> CGFloat {
+
+        // Your messages → no name
+        if message.sender.senderId == currentUser.senderId {
+            return 0
+        }
+
+        // If next message is from same sender → hide name
+        if isNextMessageSameSender(at: indexPath) {
+            return 0
+        }
+
+        return 14
     }
 }
 
@@ -210,18 +260,54 @@ extension ChatViewController: MessagesDisplayDelegate {
             return .label
         }
     }
-
-    func configureAvatarView(
-        _ avatarView: AvatarView,
+    
+    func messageTopLabelAttributedText(
         for message: MessageType,
-        at indexPath: IndexPath,
-        in messagesCollectionView: MessagesCollectionView
-    ) {
+        at indexPath: IndexPath
+    ) -> NSAttributedString? {
+
+        // No name for your own messages
         if message.sender.senderId == currentUser.senderId {
-            avatarView.image = UIImage(systemName: "person.fill")
-        } else {
-            avatarView.image = UIImage(systemName: "person.circle")
+            return nil
         }
+
+        // Hide name if next message is same sender
+        if isNextMessageSameSender(at: indexPath) {
+            return nil
+        }
+
+        return NSAttributedString(
+            string: message.sender.displayName,
+            attributes: [
+                .font: UIFont.systemFont(ofSize: 11, weight: .medium),
+                .foregroundColor: UIColor.secondaryLabel
+            ]
+        )
+    }
+
+    func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
+        // Your messages → no avatar
+            if message.sender.senderId == currentUser.senderId {
+                avatarView.isHidden = true
+                return
+            }
+
+            avatarView.isHidden = false
+
+            switch message.sender.senderId {
+            case "ashika":
+                avatarView.image = UIImage(named: "pfp_ashika")
+            case "mithil":
+                avatarView.image = UIImage(named: "pfp_mithil")
+            case "ayaana":
+                avatarView.image = UIImage(named: "pfp_ayaana")
+            case "chirag":
+                avatarView.image = UIImage(named: "pfp_chirag")
+            default:
+                avatarView.image = UIImage(systemName: "person.circle.fill")
+            }
+        avatarView.layer.cornerRadius = avatarView.bounds.width / 2
+        avatarView.clipsToBounds = true
     }
 }
 
