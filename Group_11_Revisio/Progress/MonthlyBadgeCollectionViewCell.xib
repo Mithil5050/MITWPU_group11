@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="MonthlyBadgeCollectionViewCell" customModule="Group_11_Revisio" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="370" height="100"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="370" height="100"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qI9-jV-5yP">
+                        <rect key="frame" x="0.0" y="0.0" width="370" height="100"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="O4m-PW-F74">
+                                <rect key="frame" x="8" y="8" width="354" height="84"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="4L8-hV-wqe">
+                                        <rect key="frame" x="0.0" y="0.0" width="80" height="84"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="80" id="QeQ-CS-Ndw"/>
+                                            <constraint firstAttribute="height" constant="84" id="l7J-x8-sFs"/>
+                                        </constraints>
+                                    </imageView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="G4Z-Qc-LsC">
+                                        <rect key="frame" x="88" y="0.0" width="160" height="84"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4cK-ip-vsX">
+                                                <rect key="frame" x="0.0" y="0.0" width="160" height="50.333333333333336"/>
+                                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sz4-Nl-pZW">
+                                                <rect key="frame" x="0.0" y="50.333333333333336" width="160" height="18.000000000000007"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zgo-ZG-9Mr">
+                                                <rect key="frame" x="0.0" y="68.333333333333329" width="160" height="15.666666666666671"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="84" id="Y5u-hx-E7X"/>
+                                            <constraint firstAttribute="width" constant="160" id="sht-t5-sIp"/>
+                                        </constraints>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="zW0-uL-b1p">
+                                        <rect key="frame" x="256" y="0.0" width="98" height="84"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="badge_showall_button" translatesAutoresizingMaskIntoConstraints="NO" id="H5N-cm-nGh">
+                                                <rect key="frame" x="0.0" y="0.0" width="98" height="64"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="98" id="Nzn-dY-tws"/>
+                                                    <constraint firstAttribute="height" constant="64" id="yJA-IA-RLN"/>
+                                                </constraints>
+                                            </imageView>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DBR-RU-pFc">
+                                                <rect key="frame" x="0.0" y="64" width="98" height="20"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="20" id="520-tb-j3g"/>
+                                                </constraints>
+                                                <state key="normal" title="Button"/>
+                                                <buttonConfiguration key="configuration" style="plain" title="Show All">
+                                                    <fontDescription key="titleFontDescription" style="UICTFontTextStyleCaption1"/>
+                                                </buttonConfiguration>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                </subviews>
+            </view>
+            <viewLayoutGuide key="safeArea" id="ZTg-uK-7eu"/>
+            <constraints>
+                <constraint firstItem="qI9-jV-5yP" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="6f8-TA-idt"/>
+                <constraint firstItem="qI9-jV-5yP" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="70g-mt-fgv"/>
+                <constraint firstAttribute="bottom" secondItem="qI9-jV-5yP" secondAttribute="bottom" id="8rF-mu-ebX"/>
+                <constraint firstAttribute="trailing" secondItem="qI9-jV-5yP" secondAttribute="trailing" id="vgE-OP-Fkn"/>
+            </constraints>
+            <connections>
+                <outlet property="allBadgesImageView" destination="H5N-cm-nGh" id="xwi-GH-rhC"/>
+                <outlet property="challengeNameLabel" destination="sz4-Nl-pZW" id="ZhW-tv-f5q"/>
+                <outlet property="mainTitleLabel" destination="4cK-ip-vsX" id="B6Z-Du-rFi"/>
+                <outlet property="monthlyBadgeImageView" destination="4L8-hV-wqe" id="b4i-aS-DRR"/>
+                <outlet property="showAllButton" destination="DBR-RU-pFc" id="1n1-OC-sOc"/>
+                <outlet property="showAllContainerView" destination="qI9-jV-5yP" id="w7v-Lo-39c"/>
+                <outlet property="upcomingBadgeLabel" destination="zgo-ZG-9Mr" id="pHp-mu-gmt"/>
+            </connections>
+            <point key="canvasLocation" x="77.862595419847324" y="112.67605633802818"/>
+        </collectionViewCell>
+    </objects>
+    <resources>
+        <image name="badge_showall_button" width="616" height="364"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>
