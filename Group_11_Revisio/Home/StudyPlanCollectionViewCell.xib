@@ -65,7 +65,6 @@
                 <constraint firstAttribute="trailing" secondItem="zBv-LR-KpA" secondAttribute="trailing" id="D8m-ob-Mcu"/>
                 <constraint firstItem="zBv-LR-KpA" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="EsE-MO-AcQ"/>
                 <constraint firstItem="uCi-GY-VPc" firstAttribute="leading" secondItem="zBv-LR-KpA" secondAttribute="leading" id="WQa-H0-T6T"/>
-                <constraint firstItem="zBv-LR-KpA" firstAttribute="top" secondItem="uCi-GY-VPc" secondAttribute="bottom" id="ogX-G7-c2g"/>
                 <constraint firstItem="zBv-LR-KpA" firstAttribute="top" secondItem="uCi-GY-VPc" secondAttribute="bottom" constant="8" id="tRd-v9-3Fy"/>
                 <constraint firstAttribute="bottom" secondItem="zBv-LR-KpA" secondAttribute="bottom" id="vGq-T1-tTm"/>
             </constraints>

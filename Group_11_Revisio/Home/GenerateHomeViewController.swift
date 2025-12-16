@@ -183,9 +183,12 @@ class GenerateHomeViewController: UIViewController {
 
         case .notes:
             print("Action: Attempted to start Notes creation. (Segue removed)")
+            performSegue(withIdentifier: "HomeToNotesView", sender: nil)
 
         case .cheatsheet:
             print("Action: Attempted to start Cheatsheet creation. (Segue removed)")
+            performSegue(withIdentifier: "HomeToCheatSheetView", sender: nil)
+            
 
         case .none:
             print("Error: No material type selected.")
