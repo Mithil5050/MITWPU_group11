@@ -14,7 +14,7 @@
         <!--Profile-->
         <scene sceneID="TUB-E4-WgM">
             <objects>
-                <viewController id="app-ce-bSr" customClass="ProfileViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="app-ce-bSr" customClass="ProfileViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="U63-0e-cz1">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="793"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -57,6 +57,118 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hg4-6t-r5H" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-845" y="-1639"/>
+        </scene>
+        <!--Word Fill View Controller-->
+        <scene sceneID="hjh-J9-Bp2">
+            <objects>
+                <viewController id="29q-b6-TaY" customClass="WordFillViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="cJB-yH-dJA">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ufa-hA-TS5">
+                                <rect key="frame" x="20" y="196" width="273" height="20"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dt6-ao-r1d">
+                                <rect key="frame" x="293" y="195.66666666666666" width="80" height="20.333333333333343"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" verticalCompressionResistancePriority="751" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="B2w-H0-Mp6">
+                                <rect key="frame" x="20" y="232" width="353" height="4"/>
+                            </progressView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vzM-40-LGc">
+                                <rect key="frame" x="16" y="252" width="361" height="299"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cq1-ny-0GD">
+                                        <rect key="frame" x="159" y="114" width="42" height="21"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </view>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="EbO-LT-3Re">
+                                <rect key="frame" x="20" y="575" width="353" height="84.666666666666629"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="hnQ-hv-KCL">
+                                        <rect key="frame" x="0.0" y="0.0" width="353" height="34.333333333333336"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cIF-GU-cJ8">
+                                                <rect key="frame" x="0.0" y="0.0" width="168.66666666666666" height="34.333333333333336"/>
+                                                <state key="normal" title="Button"/>
+                                                <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TfN-vQ-XHJ">
+                                                <rect key="frame" x="184.66666666666663" y="0.0" width="168.33333333333337" height="34.333333333333336"/>
+                                                <state key="normal" title="Button"/>
+                                                <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="Fia-KC-tGd">
+                                        <rect key="frame" x="0.0" y="50.333333333333371" width="353" height="34.333333333333343"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ygn-DA-QkF">
+                                                <rect key="frame" x="0.0" y="0.0" width="168.66666666666666" height="34.333333333333336"/>
+                                                <state key="normal" title="Button"/>
+                                                <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iia-ed-tjs">
+                                                <rect key="frame" x="184.66666666666663" y="0.0" width="168.33333333333337" height="34.333333333333336"/>
+                                                <state key="normal" title="Button"/>
+                                                <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ca9-ka-PNv">
+                                <rect key="frame" x="20" y="673" width="353" height="34.333333333333485"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Button"/>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="P2q-My-ysS"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="P2q-My-ysS" firstAttribute="trailing" secondItem="vzM-40-LGc" secondAttribute="trailing" constant="16" id="Awg-ja-j2T"/>
+                            <constraint firstItem="P2q-My-ysS" firstAttribute="trailing" secondItem="EbO-LT-3Re" secondAttribute="trailing" constant="20" id="BZn-U2-6nh"/>
+                            <constraint firstItem="ufa-hA-TS5" firstAttribute="top" secondItem="P2q-My-ysS" secondAttribute="top" constant="24" id="FoP-L4-f0j"/>
+                            <constraint firstItem="P2q-My-ysS" firstAttribute="trailing" secondItem="ufa-hA-TS5" secondAttribute="trailing" constant="100" id="HaT-tl-sEl"/>
+                            <constraint firstItem="vzM-40-LGc" firstAttribute="top" secondItem="cJB-yH-dJA" secondAttribute="top" constant="252" id="JGz-Oe-akY"/>
+                            <constraint firstItem="P2q-My-ysS" firstAttribute="trailing" secondItem="dt6-ao-r1d" secondAttribute="trailing" constant="20" id="Lwv-7e-1lE"/>
+                            <constraint firstItem="vzM-40-LGc" firstAttribute="top" secondItem="B2w-H0-Mp6" secondAttribute="bottom" constant="16" id="M81-4R-UF5"/>
+                            <constraint firstItem="P2q-My-ysS" firstAttribute="bottom" secondItem="EbO-LT-3Re" secondAttribute="bottom" constant="75.333333333333258" id="VZx-E4-qLD"/>
+                            <constraint firstItem="dt6-ao-r1d" firstAttribute="baseline" secondItem="ufa-hA-TS5" secondAttribute="baseline" id="Wx5-RO-d2E"/>
+                            <constraint firstItem="B2w-H0-Mp6" firstAttribute="top" secondItem="ufa-hA-TS5" secondAttribute="bottom" constant="16" id="bac-0b-xPt"/>
+                            <constraint firstItem="dt6-ao-r1d" firstAttribute="leading" secondItem="ufa-hA-TS5" secondAttribute="trailing" id="d3U-7j-CDE"/>
+                            <constraint firstItem="EbO-LT-3Re" firstAttribute="leading" secondItem="P2q-My-ysS" secondAttribute="leading" constant="20" id="hP2-0H-g40"/>
+                            <constraint firstItem="B2w-H0-Mp6" firstAttribute="leading" secondItem="P2q-My-ysS" secondAttribute="leading" constant="20" id="i2g-ae-adY"/>
+                            <constraint firstItem="vzM-40-LGc" firstAttribute="leading" secondItem="P2q-My-ysS" secondAttribute="leading" constant="16" id="mOi-yY-EK6"/>
+                            <constraint firstItem="P2q-My-ysS" firstAttribute="trailing" secondItem="B2w-H0-Mp6" secondAttribute="trailing" constant="20" id="nzb-zn-8b1"/>
+                            <constraint firstItem="EbO-LT-3Re" firstAttribute="top" secondItem="vzM-40-LGc" secondAttribute="bottom" constant="24" id="pH7-89-YyA"/>
+                            <constraint firstItem="ufa-hA-TS5" firstAttribute="leading" secondItem="P2q-My-ysS" secondAttribute="leading" constant="20" id="yvy-LM-ye6"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="zft-XJ-NiT"/>
+                    <connections>
+                        <outlet property="actionButton" destination="Ca9-ka-PNv" id="jeS-fN-xuR"/>
+                        <outlet property="progressLabel" destination="ufa-hA-TS5" id="Q3b-6b-6yy"/>
+                        <outlet property="progressView" destination="B2w-H0-Mp6" id="Zlb-zx-VQl"/>
+                        <outlet property="questionLabel" destination="cq1-ny-0GD" id="fwr-mO-5Q2"/>
+                        <outlet property="timerLabel" destination="dt6-ao-r1d" id="UC7-Qd-fNK"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="41j-st-7hR" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-34.351145038167935" y="-1639.4366197183099"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="YRA-50-TtV">
@@ -123,6 +235,9 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="aqC-uU-Bdr"/>
+                    <connections>
+                        <segue destination="29q-b6-TaY" kind="show" id="3t3-27-erf"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="klb-Ig-NLn" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -131,7 +246,7 @@
         <!--Connections Launching Screen View Controller-->
         <scene sceneID="76M-xd-TRN">
             <objects>
-                <viewController id="DRA-Mm-MJo" customClass="ConnectionsLaunchingScreenViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="DRA-Mm-MJo" customClass="ConnectionsLaunchingScreenViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="m2Y-mO-f3Z">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -208,7 +323,7 @@
         <!--Connections-->
         <scene sceneID="S0G-jM-cV4">
             <objects>
-                <viewController id="OcD-Ae-olb" customClass="ConnectionsViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="OcD-Ae-olb" customClass="ConnectionsViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="n50-H9-pG1">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -256,7 +371,7 @@
         <!--Home View Controller-->
         <scene sceneID="tYZ-Br-z2I">
             <objects>
-                <viewController storyboardIdentifier="HomeViewController" id="4ZY-0A-Wo4" customClass="HomeViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="HomeViewController" id="4ZY-0A-Wo4" customClass="HomeViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="QFp-Kk-Ioy" customClass="UICollectionView">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -325,7 +440,7 @@
         <!--Study Plan-->
         <scene sceneID="jhv-vV-joN">
             <objects>
-                <viewController id="22e-rk-fk9" customClass="StudyPlanViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="22e-rk-fk9" customClass="StudyPlanViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="nMK-BI-7hE">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -453,7 +568,7 @@
         <!--Upload Content-->
         <scene sceneID="na4-Op-mpZ">
             <objects>
-                <viewController storyboardIdentifier="UploadContent" id="ry9-kf-REg" customClass="UploadContentViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="UploadContent" id="ry9-kf-REg" customClass="UploadContentViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eec-Sm-vQp">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -548,7 +663,7 @@
         <!--Upload Content-->
         <scene sceneID="OBc-0S-qpG">
             <objects>
-                <viewController storyboardIdentifier="ConfirmationVC" useStoryboardIdentifierAsRestorationIdentifier="YES" id="WNP-DU-Qf0" customClass="UploadConfirmationViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ConfirmationVC" useStoryboardIdentifierAsRestorationIdentifier="YES" id="WNP-DU-Qf0" customClass="UploadConfirmationViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hnx-2M-7GR">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -610,7 +725,7 @@
         <!--Generation Screen-->
         <scene sceneID="KqS-LP-aKJ">
             <objects>
-                <viewController id="5F1-6M-WRb" customClass="GenerateHomeViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="5F1-6M-WRb" customClass="GenerateHomeViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="lgr-Vc-Vao">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -870,7 +985,7 @@
         <!--Big Data-->
         <scene sceneID="yGd-NL-qxy">
             <objects>
-                <viewController id="z8q-8S-FlA" customClass="FlashcardViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="z8q-8S-FlA" customClass="FlashcardViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Mar-51-CW7">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -909,7 +1024,7 @@
                                 </constraints>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xfD-Me-2gm">
-                                <rect key="frame" x="40" y="611.33333333333303" width="97" height="58.666666666666515"/>
+                                <rect key="frame" x="40" y="611.33333333333337" width="97" height="58.666666666666629"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="Previous">
                                     <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -957,7 +1072,7 @@
         <!--Add Flashcard View Controller-->
         <scene sceneID="e10-LL-N4Q">
             <objects>
-                <viewController id="5kv-o4-MUT" customClass="AddFlashcardViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="5kv-o4-MUT" customClass="AddFlashcardViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="jKR-Ft-EMT">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="793"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1087,7 +1202,7 @@
         <!--Today's Task-->
         <scene sceneID="szQ-mn-Qzr">
             <objects>
-                <viewController id="9gS-Nz-JOT" customClass="TodaysTaskViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="9gS-Nz-JOT" customClass="TodaysTaskViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="xJC-V1-4P4">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1134,7 +1249,7 @@
                                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                                 </collectionViewFlowLayout>
                                                 <cells>
-                                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="goy-vO-2il" customClass="InfoCollectionViewCell" customModule="Group_11_Revisio" customModuleProvider="target">
+                                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="goy-vO-2il" customClass="InfoCollectionViewCell" customModule="MITWPU_group11_" customModuleProvider="target">
                                                         <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="0pj-sf-vZ2">
@@ -1215,7 +1330,7 @@
         <!--Document Editor View Controller-->
         <scene sceneID="Msq-1E-Cz8">
             <objects>
-                <viewController id="tp0-vv-vla" customClass="DocumentEditorViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="tp0-vv-vla" customClass="DocumentEditorViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="TNR-Qp-uqi">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1257,7 +1372,7 @@
         <!--Cheat Sheet Detail View Controller-->
         <scene sceneID="Wfb-2k-QmJ">
             <objects>
-                <viewController id="buF-Xg-GBl" customClass="CheatSheetDetailViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="buF-Xg-GBl" customClass="CheatSheetDetailViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="5ah-yp-vGL">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
