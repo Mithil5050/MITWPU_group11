@@ -77,7 +77,7 @@
                                                     <fontDescription key="titleFontDescription" style="UICTFontTextStyleCaption1"/>
                                                 </buttonConfiguration>
                                                 <connections>
-                                                    <action selector="showAllButtonTapped:" destination="gTV-IL-0wX" eventType="touchUpInside" id="6V0-Wv-BBO"/>
+                                                    <action selector="showAllTapped:" destination="gTV-IL-0wX" eventType="touchUpInside" id="fPv-Ax-7p4"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -101,7 +101,6 @@
                 <outlet property="challengeNameLabel" destination="sz4-Nl-pZW" id="ZhW-tv-f5q"/>
                 <outlet property="mainTitleLabel" destination="4cK-ip-vsX" id="B6Z-Du-rFi"/>
                 <outlet property="monthlyBadgeImageView" destination="4L8-hV-wqe" id="b4i-aS-DRR"/>
-                <outlet property="showAllButton" destination="DBR-RU-pFc" id="1n1-OC-sOc"/>
                 <outlet property="showAllContainerView" destination="qI9-jV-5yP" id="w7v-Lo-39c"/>
                 <outlet property="upcomingBadgeLabel" destination="zgo-ZG-9Mr" id="pHp-mu-gmt"/>
             </connections>
