@@ -7,7 +7,7 @@
 
 import UIKit
 
-// Represents the different types of study material the user can generate.
+
 enum GenerationType {
     case quiz
     case flashcards
@@ -16,7 +16,7 @@ enum GenerationType {
     case none // Default state
 }
 
-// ⚠️ REQUIRED: Extension to provide a string representation for the 'Source' case data mapping.
+
 extension GenerationType: CustomStringConvertible {
     public var description: String {
         switch self {
@@ -89,10 +89,7 @@ class GenerationViewController: UIViewController {
         viewToShow.isHidden = false
     }
     
-    /**
-     Updates the text and enabled state of the primary generation button.
-     - Parameter type: The selected GenerationType.
-     */
+    
     private func updateGenerateButton(for type: GenerationType) {
         self.currentGenerationType = type
         
@@ -114,10 +111,7 @@ class GenerationViewController: UIViewController {
         generateButton.alpha = isEnabled ? 1.0 : 0.5
     }
     
-    /**
-     Manages the visual selection state of the tab buttons (iOS-style segmented appearance).
-     - Parameter selectedButton: The button that was just tapped.
-     */
+    
     private func updateButtonHighlight(selectedButton: UIButton) {
         let allButtons: [UIButton?] = [
             quizButton,
@@ -126,7 +120,7 @@ class GenerationViewController: UIViewController {
             cheatsheetButton
         ]
         
-        // --- Define the Gray Aesthetic Colors (Based on iOS Semantic Colors) ---
+        
         let unselectedBackground = UIColor.systemGray6 // Very light gray card
         let selectedBackground = UIColor.systemGray4   // Medium gray for subtle highlight
         let unselectedTitleColor = UIColor.darkGray    // Dark text for contrast
@@ -182,47 +176,33 @@ class GenerationViewController: UIViewController {
     
     @IBAction func generateButtonTapped(_ sender: UIButton) {
         
-        // 1. Validate source data availability
-        guard let sourceItem = sourceItems?.first else {
-            print("Error: No source item available to generate material from.")
-            return
-        }
+        guard let sourceItem = sourceItems?.first else { return }
         
-        // 2. Determine the Topic/Data payload to pass to the next screen
+        var finalSpecificName: String?
         let topicToPass: Topic?
+        
         if let topic = sourceItem as? Topic {
-            // Case 1: Source item is already a Topic object
             topicToPass = topic
+            finalSpecificName = topic.name
         } else if let source = sourceItem as? Source {
-            // Case 2: Source item is a Source object, create a temporary Topic structure
+            // 🛑 FIX: Use the actual source name (e.g., "Hadoop Doc")
+            finalSpecificName = source.name
             
-            // ⭐️ MODIFICATION HERE: Use "Big Data" as the topic name regardless of source.name
-            let fixedTopicName = "Big Data"
-            topicToPass = Topic(name: fixedTopicName, lastAccessed: "N/A", materialType: currentGenerationType.description)
-            
+            // Create the topic using the specific source name
+            topicToPass = Topic(name: source.name,
+                                lastAccessed: "N/A",
+                                materialType: currentGenerationType.description)
         } else {
             topicToPass = nil
         }
         
-        // 3. Ensure valid Topic data exists
-        guard let topic = topicToPass else {
-            print("Error: Could not create valid Topic data to proceed.")
-            return
-        }
-        
-        // 4. Perform Segue based on the current generation type
-        switch currentGenerationType {
-        case .quiz:
-            print("Initiating Quiz Generation and segue to Instructions...")
-            performSegue(withIdentifier: "ShowQuizInstructionsFromGen", sender: topic)
+        if let topic = topicToPass, let name = finalSpecificName {
+            // 🛑 Pack BOTH into a tuple sender
+            let payload = (topic: topic, sourceName: name)
             
-        case .flashcards:
-            print("Initiating Flashcard Generation and segue to Flashcard View...")
-            performSegue(withIdentifier: "ShowFlashcardsFromGen", sender: topic)
-            
-        case .notes, .cheatsheet, .none:
-            print("Generation type \(currentGenerationType.description) not yet fully implemented for segue.")
-            break
+            if currentGenerationType == .quiz {
+                performSegue(withIdentifier: "ShowQuizInstructionsFromGen", sender: payload)
+            }
         }
     }
     
@@ -233,29 +213,15 @@ class GenerationViewController: UIViewController {
      */
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        // Ensure the sender is the expected Topic data structure
-        guard let topicData = sender as? Topic else {
-            if segue.identifier == "ShowQuizInstructionsFromGen" || segue.identifier == "ShowFlashcardsFromGen" {
-                print("Prepare Error: Sender was not a Topic.")
-            }
-            return
-        }
+        // 🛑 Unpack the tuple payload
+        guard let data = sender as? (topic: Topic, sourceName: String) else { return }
         
         if segue.identifier == "ShowQuizInstructionsFromGen" {
-            // Target: InstructionViewController
             if let instructionVC = segue.destination as? InstructionViewController {
-                // Pass contextual data to the Quiz Instructions screen
-                instructionVC.quizTopic = topicData
+                instructionVC.quizTopic = data.topic
+                instructionVC.sourceNameForQuiz = data.sourceName // This will now be "Hadoop Doc"
                 instructionVC.parentSubjectName = self.parentSubjectName
             }
-//        } else if segue.identifier == "ShowFlashcardsFromGen" {
-//            //            // Target: FlashcardViewController
-//            //            if let flashcardVC = segue.destination as? FlashcardViewController {
-//            //                // Pass contextual data to the Flashcard View Controller
-//            //                flashcardVC.flashcardTopicName = topicData.name
-//            //                flashcardVC.parentSubjectName = self.parentSubjectName
-//            // NOTE: In a production app, you would pass the actual generated flashcard array here.
-//        }
         }
     }
 }

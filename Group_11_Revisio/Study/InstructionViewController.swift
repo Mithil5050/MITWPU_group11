@@ -36,21 +36,20 @@ class InstructionViewController: UIViewController {
 
         // Do any additional setup after loading the view.
     }
+    // InstructionViewController.swift - Replace the existing setupLabels()
+
+    // InstructionViewController.swift
+
     func setupLabels() {
-            // Set the main title (e.g., "Hadoop Fundamentals Quiz")
-            if let topicName = quizTopic?.name {
-                 titleLabel.text = "\(topicName) Quiz"
-            } else {
-                 titleLabel.text = "Quiz Instructions"
-            }
-            
-            // Load the detailed instructions text
-            instructionsTextView.text = getInstructionsText()
-            
-            // Optional: If you want to customize the metadata label ("16 Questions | 20 minutes")
-            // You would need an outlet for that label and set its text here as well.
-        }
+        // 🛑 Priority: sourceNameForQuiz -> Topic Name -> Fallback
+        let displayName = sourceNameForQuiz ?? quizTopic?.name ?? "Quiz"
         
+        // This will now result in "Hadoop Doc Quiz" instead of "Quiz Quiz"
+        titleLabel.text = "\(displayName) Quiz"
+        self.title = displayName
+        
+        instructionsTextView.text = getInstructionsText()
+    }
         func styleButtons() {
             // Apply rounded corners (You might have done this in the Storyboard, but enforcing it here is safe)
             attemptQuizButton.layer.cornerRadius = 10
@@ -93,29 +92,14 @@ class InstructionViewController: UIViewController {
             
             if let quizVC = segue.destination as? QuizViewController {
                 
-                // 1. Start with the source name already set from the previous screen (Generation VC)
-                var nameToPass = self.sourceNameForQuiz
+                // --- SIMPLIFY THE LOGIC ---
+                // 1. Get the most reliable name (likely set by the *previous* VC)
+                let nameToPass = self.sourceNameForQuiz ?? self.quizTopic?.name ?? "DEFAULT_FALLBACK_SOURCE"
                 
-                // 2. Fallback: If the source name wasn't explicitly set, check the Topic object.
-                if nameToPass == nil {
-                    nameToPass = self.quizTopic?.name
-                }
-                
-                // 3. Fallback: If still nil, check if the sender itself is a Topic/Source object.
-                if nameToPass == nil {
-                    if let topic = sender as? Topic {
-                        nameToPass = topic.name
-                    } else if let source = sender as? Source {
-                        nameToPass = source.name
-                    }
-                }
-                
-                // 4. CRITICAL ASSIGNMENT: Pass the final determined name
+                // 2. CRITICAL ASSIGNMENT: Pass the final determined name
                 quizVC.selectedSourceName = nameToPass
-                
-                // Log for debugging
-                print("InstructionVC forwarding source: \(nameToPass ?? "NIL (FALLING BACK TO DEFAULT)") to QuizVC.")
-                
+                  
+                print("InstructionVC forwarding source: \(nameToPass) to QuizVC.")
             }
         }
     }
