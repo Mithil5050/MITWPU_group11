@@ -15,5 +15,6 @@ struct BarChartView: View {
             .cornerRadius(6)
         }
         .padding()
+        .background(Color.clear) 
     }
 }

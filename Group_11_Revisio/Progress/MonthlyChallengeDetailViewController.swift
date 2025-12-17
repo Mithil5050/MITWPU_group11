@@ -27,6 +27,6 @@ class MonthlyChallengeDetailViewController: UIViewController {
             largeBadgeImageView.image = UIImage(named: "awards_monthly_main")
             challengeTitleLabel.text = "November Challenge"
             challengeDescriptionLabel.text = "Complete your monthly challenge when you gain 10 badges. You have won your monthly badge 1 time so far."
-            challengeProgressView.progress = 0.3 // Example progress
+            challengeProgressView.progress = 0.1 // Example progress
         }
     }

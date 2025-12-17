@@ -21,6 +21,7 @@ class ProgressViewContoller: UIViewController {
     
     @IBOutlet weak var personalBestCard: UIView!
     
+    @IBOutlet weak var progressBarCard: UIView!
     
     private var hostingController: UIHostingController<BarChartView>?
 
@@ -34,6 +35,11 @@ class ProgressViewContoller: UIViewController {
     private func setupUI() {
         chartContainerView.backgroundColor = .systemGray6
         chartContainerView.clipsToBounds = true
+        
+        streaksCard.layer.cornerRadius = 16
+        awardsCard.layer.cornerRadius = 16
+        personalBestCard.layer.cornerRadius = 16
+        progressBarCard.layer.cornerRadius = 16
     }
 
     @IBAction func segmentChanged(_ sender: UISegmentedControl) {
@@ -52,6 +58,7 @@ class ProgressViewContoller: UIViewController {
 
       let chartView = BarChartView(data: data)
       let host = UIHostingController(rootView: chartView)
+          host.view.backgroundColor = .clear
 
       addChild(host)
       chartContainerView.addSubview(host.view)
