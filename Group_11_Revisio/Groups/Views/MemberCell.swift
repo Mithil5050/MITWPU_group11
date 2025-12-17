@@ -18,6 +18,7 @@ class MemberCell: UICollectionViewCell {
         // Make avatar circular
         avatarImageView.layer.cornerRadius = avatarImageView.bounds.width / 2
         avatarImageView.clipsToBounds = true
+        avatarImageView.contentMode = .scaleAspectFill
     }
 
     func configure(name: String) {
