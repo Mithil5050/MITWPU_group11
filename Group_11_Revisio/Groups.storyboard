@@ -42,7 +42,7 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="plus.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="t39-0X-2M1">
-                                                <rect key="frame" x="15" y="15.666666666666664" width="20" height="18.666666666666679"/>
+                                                <rect key="frame" x="15" y="15.666666666666666" width="20" height="18.666666666666671"/>
                                                 <color key="tintColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="20" id="Kse-7S-TCF"/>
@@ -805,6 +805,9 @@
                                         <color key="tintColor" systemColor="systemRedColor"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" title="Leave this conversation"/>
+                                        <connections>
+                                            <action selector="leaveButtonTapped:" destination="2Pg-j9-pa6" eventType="touchUpInside" id="Tem-zP-caI"/>
+                                        </connections>
                                     </button>
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -851,7 +854,9 @@
                         <outlet property="docsView" destination="y4J-kT-zMw" id="ZtS-cL-Jev"/>
                         <outlet property="groupImageView" destination="O1R-Dd-suP" id="B79-LF-pg4"/>
                         <outlet property="groupNameLabel" destination="y4X-6d-tio" id="QnP-i7-oyh"/>
+                        <outlet property="hideAlertsSwitch" destination="96U-03-N4o" id="E9G-jh-5pm"/>
                         <outlet property="infoView" destination="5Vo-dK-OQq" id="ihB-0E-pIl"/>
+                        <outlet property="membersCollectionView" destination="OP9-1g-lwR" id="5LL-3i-q9m"/>
                         <outlet property="membersCountLabel" destination="I5e-bN-Tbe" id="ATi-aB-sOG"/>
                         <outlet property="segmentedControl" destination="dlp-BL-A6d" id="Zwe-A2-gqi"/>
                     </connections>
