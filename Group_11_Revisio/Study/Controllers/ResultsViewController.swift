@@ -50,7 +50,7 @@ class ResultsViewController: UIViewController, UITableViewDataSource, UITableVie
             for viewController in navigationController.viewControllers {
                 
                 if viewController.isKind(of: InstructionViewController.self) {
-                    e
+                
                     navigationController.popToViewController(viewController, animated: true)
                     return
                 }
