@@ -188,11 +188,15 @@ extension ChatViewController: MessagesDataSource {
     
 extension ChatViewController {
 
-    // Hide avatars for consecutive messages (iMessage style)
-    func isNextMessageSameSender(at indexPath: IndexPath) -> Bool {
-        guard indexPath.section + 1 < chatMessages.count else { return false }
+//    func isNextMessageSameSender(at indexPath: IndexPath) -> Bool {
+//        guard indexPath.section + 1 < chatMessages.count else { return false }
+//        return chatMessages[indexPath.section].sender.senderId ==
+//               chatMessages[indexPath.section + 1].sender.senderId
+//    }
+    func isPreviousMessageSameSender(at indexPath: IndexPath) -> Bool {
+        guard indexPath.section - 1 >= 0 else { return false }
         return chatMessages[indexPath.section].sender.senderId ==
-               chatMessages[indexPath.section + 1].sender.senderId
+               chatMessages[indexPath.section - 1].sender.senderId
     }
 }
 
@@ -203,7 +207,7 @@ extension ChatViewController: MessagesLayoutDelegate {
         at indexPath: IndexPath,
         in messagesCollectionView: MessagesCollectionView
     ) -> CGSize {
-        return isNextMessageSameSender(at: indexPath)
+        return isPreviousMessageSameSender(at: indexPath)
             ? .zero
             : CGSize(width: 28, height: 28)
     }
@@ -219,13 +223,11 @@ extension ChatViewController: MessagesLayoutDelegate {
         in messagesCollectionView: MessagesCollectionView
     ) -> CGFloat {
 
-        // Your messages → no name
         if message.sender.senderId == currentUser.senderId {
             return 0
         }
 
-        // If next message is from same sender → hide name
-        if isNextMessageSameSender(at: indexPath) {
+        if isPreviousMessageSameSender(at: indexPath) {
             return 0
         }
 
@@ -266,13 +268,11 @@ extension ChatViewController: MessagesDisplayDelegate {
         at indexPath: IndexPath
     ) -> NSAttributedString? {
 
-        // No name for your own messages
         if message.sender.senderId == currentUser.senderId {
             return nil
         }
 
-        // Hide name if next message is same sender
-        if isNextMessageSameSender(at: indexPath) {
+        if isPreviousMessageSameSender(at: indexPath) {
             return nil
         }
 
