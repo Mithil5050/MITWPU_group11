@@ -11,7 +11,8 @@ import InputBarAccessoryView
 
 class ChatViewController: MessagesViewController {
     
-    var group: Group!
+    var group: Group?
+    var groupName: String = ""
     
     // MARK: - Senders
     let currentUser = ChatSender(
@@ -138,12 +139,15 @@ class ChatViewController: MessagesViewController {
         // initial inset
         view.layoutIfNeeded()
         
-        navigationItem.title = group?.name ?? "Group"
+        navigationItem.title = groupName
         navigationItem.largeTitleDisplayMode = .never
 
         let titleButton = UIButton(type: .system)
-        titleButton.setTitle(group.name, for: .normal)
+        titleButton.setTitle(group?.name, for: .normal)
+        titleButton.setTitleColor(.systemBlue, for: .normal)
         titleButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        titleButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
+        titleButton.sizeToFit()
         titleButton.addTarget(self, action: #selector(groupTitleTapped), for: .touchUpInside)
 
         navigationItem.titleView = titleButton

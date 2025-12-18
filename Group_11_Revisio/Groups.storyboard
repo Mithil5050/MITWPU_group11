@@ -67,6 +67,7 @@
                                                     <userDefinedRuntimeAttribute type="boolean" keyPath="layer.maskToBounds" value="YES"/>
                                                 </userDefinedRuntimeAttributes>
                                                 <connections>
+                                                    <action selector="joinGroupButtonTapped:" destination="Uyg-al-Af7" eventType="touchUpInside" id="swg-lU-Uee"/>
                                                     <segue destination="Wdd-2u-ETB" kind="presentation" id="EVu-kS-Gso"/>
                                                 </connections>
                                             </button>
@@ -375,6 +376,9 @@
                                         <rect key="frame" x="0.0" y="120.99999999999999" width="362" height="34.333333333333329"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="filled" title="Enter"/>
+                                        <connections>
+                                            <action selector="joinButtonTapped:" destination="XlC-uH-5ZY" eventType="touchUpInside" id="SPX-PT-vfG"/>
+                                        </connections>
                                     </button>
                                 </subviews>
                             </stackView>
@@ -388,6 +392,9 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="fWV-ug-dza"/>
+                    <connections>
+                        <outlet property="codeTextField" destination="d5M-La-jMT" id="LP4-pa-Hac"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="VB4-Sx-lga" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -827,6 +834,10 @@
                                     <constraint firstAttribute="trailing" secondItem="96U-03-N4o" secondAttribute="trailing" constant="16" id="t7v-nC-3Aa"/>
                                 </constraints>
                             </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="skq-dz-3Lh">
+                                <rect key="frame" x="0.0" y="312" width="402" height="494"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="TC9-eV-RK9"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -840,10 +851,14 @@
                             <constraint firstItem="5Vo-dK-OQq" firstAttribute="top" secondItem="dlp-BL-A6d" secondAttribute="bottom" constant="12" id="PnR-6f-rm2"/>
                             <constraint firstItem="TC9-eV-RK9" firstAttribute="trailing" secondItem="5Vo-dK-OQq" secondAttribute="trailing" id="TYt-MX-tbK"/>
                             <constraint firstItem="WDY-ZC-Suv" firstAttribute="leading" secondItem="TC9-eV-RK9" secondAttribute="leading" id="VPy-yP-cAx"/>
+                            <constraint firstItem="skq-dz-3Lh" firstAttribute="leading" secondItem="TC9-eV-RK9" secondAttribute="leading" id="bKs-ON-LV0"/>
                             <constraint firstItem="WDY-ZC-Suv" firstAttribute="trailing" secondItem="TC9-eV-RK9" secondAttribute="trailing" id="cjV-uv-3si"/>
                             <constraint firstItem="5Vo-dK-OQq" firstAttribute="leading" secondItem="TC9-eV-RK9" secondAttribute="leading" id="cmR-6v-97k"/>
+                            <constraint firstItem="TC9-eV-RK9" firstAttribute="bottom" secondItem="skq-dz-3Lh" secondAttribute="bottom" id="hDc-JX-83X"/>
+                            <constraint firstItem="TC9-eV-RK9" firstAttribute="trailing" secondItem="skq-dz-3Lh" secondAttribute="trailing" id="iOT-dA-Qkx"/>
                             <constraint firstItem="dlp-BL-A6d" firstAttribute="top" secondItem="WDY-ZC-Suv" secondAttribute="bottom" constant="12" id="lCs-rC-RJZ"/>
                             <constraint firstItem="TC9-eV-RK9" firstAttribute="trailing" secondItem="dlp-BL-A6d" secondAttribute="trailing" constant="16" id="lNW-bQ-Kab"/>
+                            <constraint firstItem="skq-dz-3Lh" firstAttribute="top" secondItem="dlp-BL-A6d" secondAttribute="bottom" constant="12" id="twL-LE-p92"/>
                             <constraint firstItem="WDY-ZC-Suv" firstAttribute="top" secondItem="TC9-eV-RK9" secondAttribute="top" constant="8" id="vhh-UA-mj8"/>
                             <constraint firstItem="TC9-eV-RK9" firstAttribute="bottom" secondItem="5Vo-dK-OQq" secondAttribute="bottom" id="wGb-ba-5Ff"/>
                             <constraint firstItem="y4J-kT-zMw" firstAttribute="top" secondItem="dlp-BL-A6d" secondAttribute="bottom" constant="12" id="wOH-5N-sDS"/>

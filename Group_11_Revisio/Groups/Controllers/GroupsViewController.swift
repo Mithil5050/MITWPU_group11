@@ -7,7 +7,7 @@
 
 import UIKit
 
-class GroupsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class GroupsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, JoinGroupDelegate {
     
     @IBOutlet weak var groupsTableView: UITableView!
     
@@ -24,6 +24,9 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         Group(name: "Group 10"),
     ]
     
+    private let joinCodeMap: [String: String] = [
+        "IMA-123": "iMAAC"
+    ]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -131,6 +134,20 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
             present(alert, animated: true, completion: nil)
         }
     
+    @IBAction func joinGroupButtonTapped(_ sender: UIButton) {
+
+        let storyboard = UIStoryboard(name: "Groups", bundle: nil)
+
+        guard let joinVC = storyboard.instantiateViewController(
+            withIdentifier: "JoinGroupVC"
+        ) as? JoinGroupViewController else {
+            print("JoinGroupViewController not found")
+            return
+        }
+
+        joinVC.delegate = self   // ✅ THIS WAS MISSING
+        present(joinVC, animated: true)
+    }
     
     @IBAction func createGroupButtonTapped(_ sender: UIButton) {
         let storyboard = UIStoryboard(name: "Groups", bundle: nil)
@@ -148,6 +165,26 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         
             createNav.modalPresentationStyle = .pageSheet
             present(createNav, animated: true)
+    }
+    
+    func didJoinGroup(groupName: String) {
+
+        // 1. Find existing group (iMAAC)
+        guard let group = myGroups.first(where: { $0.name == groupName }) else {
+            print("Group not found:", groupName)
+            return
+        }
+
+        // 2. Open ChatVC for that group
+        let storyboard = UIStoryboard(name: "Groups", bundle: nil)
+        guard let chatVC = storyboard.instantiateViewController(
+            withIdentifier: "ChatVC"
+        ) as? ChatViewController else {
+            return
+        }
+
+        chatVC.group = group
+        navigationController?.pushViewController(chatVC, animated: true)
     }
 }
 
