@@ -445,27 +445,25 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         let contentToFilter = currentContent
         
         if currentFilterType == "All" {
-            // If "All" is selected, show everything.
+            
             filteredContent = contentToFilter
         } else {
-            // 2. Filter logic
+            
             filteredContent = contentToFilter.filter { item in
                 
-                // Only apply the filter if the item is a Topic (Sources do not have materialType)
+                
                 if let topic = item as? Topic {
                     return topic.materialType == currentFilterType
                 }
                 
-                // If the filter is active but the item is a Source, it's excluded.
                 return false
             }
         }
         
-        // 3. Reload the table view with the new filtered data
+        
         topicsTableView.reloadData()
         
-        // CRITICAL NOTE: If a segment (like Sources) is active, the filter will only show
-        // the "All" option effectively, as Source objects are not Topic objects.
+        
     }
    
 
