@@ -37,7 +37,6 @@ class ConnectionsViewController: UIViewController {
     }()
     
     // MARK: - Game State
-    // NOTE: Assuming WordModel and CategoryModel structs are defined in GameModels.swift
     private var words: [WordModel] = WordModel.generateInitialWords()
     private var mistakesRemaining: Int = 4 {
         didSet {
@@ -72,7 +71,6 @@ class ConnectionsViewController: UIViewController {
     private func setupCollectionView() {
         collectionView.delegate = self
         collectionView.dataSource = self
-        // Register the custom cell (assuming WordCell.swift is defined)
         collectionView.register(WordCell.self, forCellWithReuseIdentifier: "WordCell")
         let layout = createGridLayout()
         collectionView.setCollectionViewLayout(layout, animated: false)

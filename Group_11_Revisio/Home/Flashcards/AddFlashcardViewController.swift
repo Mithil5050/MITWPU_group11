@@ -20,14 +20,25 @@ class AddFlashcardViewController: UIViewController {
     // MARK: - Lifecycle & Dismissal
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Optional: Set modal presentation style for modern look (or set in Storyboard)
+        
+        let closeButton = UIBarButtonItem(
+            image: UIImage(systemName: "xmark"),
+            style: .plain,
+            target: self,
+            action: #selector(closeTapped)
+        )
+        self.navigationItem.leftBarButtonItem = closeButton
         if #available(iOS 13.0, *) {
-            isModalInPresentation = true // Prevent accidental swipe-down dismissal
+            isModalInPresentation = true
         }
     }
     
+    @objc private func closeTapped() {
+        // Mirrors cancel behavior; dismiss the modal add screen
+        dismiss(animated: true, completion: nil)
+    }
+    
     @IBAction func cancelButtonTapped(_ sender: UIButton) {
-        // Dismiss the modal screen
         dismiss(animated: true, completion: nil)
     }
     
@@ -35,17 +46,14 @@ class AddFlashcardViewController: UIViewController {
     @IBAction func saveButtonTapped(_ sender: UIButton) {
         guard let term = termTextField.text, !term.isEmpty,
               let definition = definitionTextField.text, !definition.isEmpty else {
-            // Provide user feedback (e.g., alert or shake animation)
             print("Error: Both fields must be filled.")
             return
         }
         
         let newCard = Flashcard(term: term, definition: definition)
         
-        // 💥 KEY STEP: Call the delegate method to pass data back
         delegate?.didCreateNewFlashcard(card: newCard)
         
-        // Dismiss the screen after successful data transfer
         dismiss(animated: true, completion: nil)
     }
 }
