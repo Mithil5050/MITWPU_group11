@@ -9,7 +9,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="QuickGamesCollectionViewCell" customModule="Group_11_Revisio" customModuleProvider="target">
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="QuickGamesCollectionViewCell" customModule="MITWPU_group11_" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="370" height="130"/>
             <autoresizingMask key="autoresizingMask"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
@@ -47,8 +47,8 @@
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="go1-Jg-IlQ">
                         <rect key="frame" x="193" y="0.0" width="177" height="130"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="CONNECTIONS" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mcb-Xl-7Nu">
-                                <rect key="frame" x="24" y="89" width="133" height="21"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="CONNECTIONS" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mcb-Xl-7Nu">
+                                <rect key="frame" x="0.0" y="89" width="177" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -64,11 +64,11 @@
                         </subviews>
                         <color key="backgroundColor" red="0.58453779930000005" green="0.76871567959999998" blue="0.72871691309999997" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                         <constraints>
-                            <constraint firstItem="Mcb-Xl-7Nu" firstAttribute="leading" secondItem="go1-Jg-IlQ" secondAttribute="leading" constant="24" id="TMA-tI-87Q"/>
+                            <constraint firstItem="Mcb-Xl-7Nu" firstAttribute="leading" secondItem="go1-Jg-IlQ" secondAttribute="leading" id="TMA-tI-87Q"/>
                             <constraint firstItem="7U0-Lq-hUz" firstAttribute="top" secondItem="go1-Jg-IlQ" secondAttribute="top" constant="16" id="V9w-7r-Or5"/>
                             <constraint firstItem="Mcb-Xl-7Nu" firstAttribute="top" secondItem="7U0-Lq-hUz" secondAttribute="bottom" constant="16" id="WNR-xg-9sH"/>
                             <constraint firstItem="7U0-Lq-hUz" firstAttribute="centerX" secondItem="go1-Jg-IlQ" secondAttribute="centerX" constant="-3" id="btw-h3-63q"/>
-                            <constraint firstAttribute="trailing" secondItem="Mcb-Xl-7Nu" secondAttribute="trailing" constant="20" id="wVW-Vf-hQ8"/>
+                            <constraint firstAttribute="trailing" secondItem="Mcb-Xl-7Nu" secondAttribute="trailing" id="wVW-Vf-hQ8"/>
                         </constraints>
                     </view>
                 </subviews>

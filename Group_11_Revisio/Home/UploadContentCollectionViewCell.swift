@@ -1,48 +1,56 @@
-// UploadContentCollectionViewCell.swift
-
 import UIKit
 
-// Reuse ID for the inner Table View cell
+// Global identifier for the internal table rows
 let innerUploadCellID = "InnerUploadCellID"
 
 class UploadContentCollectionViewCell: UICollectionViewCell, UITableViewDelegate, UITableViewDataSource {
 
-    // You must connect this outlet to the Table View in your XIB/Storyboard
+    // MARK: - IBOutlets
     @IBOutlet weak var tableView: UITableView!
     
-    // Closure to notify the owning view controller when the Add button is tapped
+    // MARK: - Callbacks & Data
     var onAddTapped: (() -> Void)?
-    
-    // Data source for the internal table view
     var uploadData: [ContentItem] = []
 
+    // MARK: - Lifecycle
     override func awakeFromNib() {
         super.awakeFromNib()
-        tableView.backgroundColor = .systemRed
-        tableView.layer.cornerRadius = 12.0
-        // 1. Setup Table View delegates
+        setupAdaptiveUI()
+    }
+    
+    // MARK: - UI Configuration
+    private func setupAdaptiveUI() {
+        // 1. Define the Master Background Color
+        let masterBackground = UIColor { traitCollection in
+            return traitCollection.userInterfaceStyle == .dark ?
+                   .secondarySystemBackground :
+                   UIColor(hex: "F5F5F5")
+        }
+        
+        // Apply to the TableView
+        tableView.backgroundColor = masterBackground
+        tableView.backgroundView = nil
+        
+        // 2. Modern Surface Smoothing
+        tableView.layer.cornerRadius = 16.0
+        tableView.layer.cornerCurve = .continuous
+        
         tableView.delegate = self
         tableView.dataSource = self
-        
-        // 2. Register the cell for the inner table (assuming a standard UITableViewCell for the file rows)
-        // If you are using a custom XIB/Cell for the file row, change the name and register that.
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: innerUploadCellID)
         
-        // 3. Optional: Set a fixed, non-scrolling height for the inner table
-        // This is crucial to prevent nested scrolling issues.
+        // 3. Layout Performance
         tableView.isScrollEnabled = false
-        tableView.separatorStyle = .none
+        tableView.separatorStyle = .singleLine
+        tableView.separatorColor = .separator
+        tableView.tableFooterView = UIView() // Clears extra lines at the bottom
     }
     
     @IBAction func AddButtonTapped(_ sender: UIButton) {
-        // Notify the owning view controller instead of trying to performSegue here
         onAddTapped?()
-        
     }
     
-    // Call this from HomeViewController to pass the data
     func configure(with items: [ContentItem]) {
-        // FIX: Filter out the AddButton item so the Table View only displays files.
         self.uploadData = items.filter { $0.itemType != "AddButton" }
         tableView.reloadData()
     }
@@ -50,7 +58,6 @@ class UploadContentCollectionViewCell: UICollectionViewCell, UITableViewDelegate
     // MARK: - UITableViewDataSource
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // Return the number of files you want to display in this group
         return uploadData.count
     }
     
@@ -58,29 +65,47 @@ class UploadContentCollectionViewCell: UICollectionViewCell, UITableViewDelegate
         let cell = tableView.dequeueReusableCell(withIdentifier: innerUploadCellID, for: indexPath)
         let item = uploadData[indexPath.row]
         
-        // Configure the basic cell for the file display
-        var content = cell.defaultContentConfiguration()
-        content.text = item.title
-        // If iconName is empty, use a default system icon ("doc.fill")
-        content.image = UIImage(systemName: item.iconName.isEmpty ? "doc.fill" : item.iconName)
+        // --- UPDATED: THE CELL COLOR FIX ---
+        // We set the cell's background to .clear so it doesn't overlap the TableView's F5F5F5.
+        // If it still looks white, we also force the contentView to .clear.
+        cell.backgroundColor = .clear
+        cell.contentView.backgroundColor = .clear
         
-        // Use a modern, streamlined style for the cell content
-//        content.textProperties.font = UIFont.preferredFont(forTextStyle: .title3)
-        content.textProperties.font = UIFont.systemFont(ofSize: 17)
+        // Modern Configuration Pattern
+        var content = cell.defaultContentConfiguration()
+        
+        // Text configuration (Adaptive)
+        content.text = item.title
+        content.textProperties.font = .preferredFont(forTextStyle: .body)
         content.textProperties.color = .label
-        content.imageProperties.tintColor = .systemBlue
-        cell.backgroundColor = UIColor(hex: "F5F5F5")
+        
+        // Icon configuration
+        let iconName = item.iconName.isEmpty ? "doc.fill" : item.iconName
+        content.image = UIImage(systemName: iconName)
+        content.imageProperties.tintColor = tintColor(for: item.itemType)
         
         cell.contentConfiguration = content
         
+        // Selection feedback
+        let selectedBackground = UIView()
+        selectedBackground.backgroundColor = .quaternarySystemFill
+        cell.selectedBackgroundView = selectedBackground
+        
         return cell
+    }
+    
+    private func tintColor(for itemType: String) -> UIColor {
+        switch itemType {
+        case "PDF": return .systemRed
+        case "Link": return .systemBlue
+        case "Video": return .systemGreen
+        default: return .secondaryLabel
+        }
     }
     
     // MARK: - UITableViewDelegate
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        print("File tapped inside collection view cell: \(uploadData[indexPath.row].title)")
-        // Typically, you would use a Delegate or Closure here to notify HomeViewController
     }
 }

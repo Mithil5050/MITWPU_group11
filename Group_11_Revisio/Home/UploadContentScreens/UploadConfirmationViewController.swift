@@ -91,7 +91,7 @@ class UploadConfirmationViewController: UIViewController {
         table.register(UITableViewCell.self, forCellReuseIdentifier: confirmationCellID)
         
         table.separatorStyle = .none
-        table.backgroundColor = .white
+        table.backgroundColor = .systemBackground
         table.layer.cornerRadius = 12.0
         table.clipsToBounds = true
     }

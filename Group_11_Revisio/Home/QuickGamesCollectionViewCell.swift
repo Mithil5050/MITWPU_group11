@@ -1,79 +1,90 @@
-// QuickGamesCollectionViewCell.swift
-
 import UIKit
 
 class QuickGamesCollectionViewCell: UICollectionViewCell {
     
-    // MARK: - Delegate Property
+    // MARK: - Properties
+    static let reuseIdentifier = "QuickGamesCollectionViewCell"
     weak var delegate: QuickGamesCellDelegate?
     
-    // Card 1 Outlets (Word Fill)
+    // MARK: - IBOutlets
+    // Card 1: Word Fill
     @IBOutlet weak var gameCard: UIView!
     @IBOutlet weak var gameImage1: UIImageView!
     @IBOutlet weak var gameTitle1: UILabel!
     
-    // Card 2 Outlets (Connections)
+    // Card 2: Connections
     @IBOutlet weak var gameCard2: UIView!
     @IBOutlet weak var gameImage2: UIImageView!
     @IBOutlet weak var gameTitle2: UILabel!
     
+    // MARK: - Lifecycle
     override func awakeFromNib() {
         super.awakeFromNib()
+        configureStyle()
+        setupGestureRecognizers()
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        // Reset cell state for recycled use
+        gameTitle1.text = nil
+        gameTitle2.text = nil
+        gameImage1.image = nil
+        gameImage2.image = nil
+    }
+    
+    // MARK: - UI Setup
+    private func configureStyle() {
+        // Applying iOS 26 High-Fidelity Design Patterns
+        [gameCard, gameCard2].forEach { card in
+            card?.layer.cornerRadius = 16
+            card?.layer.cornerCurve = .continuous // Smooth Apple-style corners
+            card?.isUserInteractionEnabled = true
+        }
         
-        // --- Setup UI/Design ---
-        gameCard.layer.cornerRadius = 12
-        gameCard.backgroundColor = UIColor(hex: "F0FFDB") // Light green/yellow aesthetic
-        gameCard2.layer.cornerRadius = 12
-        gameCard2.backgroundColor = UIColor(hex: "91C1EF", alpha: 0.25) // Light blue aesthetic
+        // Semantic background colors for Light/Dark mode compatibility
+        gameCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.12)
+        gameCard2.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.12)
         
-        // --- Tap Handling ---
-        
-        // 1. Ensure user interaction is enabled on the card views
-        gameCard.isUserInteractionEnabled = true
-        gameCard2.isUserInteractionEnabled = true
-        
-        // 2. Add tap gestures
-        let wordFillTap = UITapGestureRecognizer(target: self, action: #selector(wordFillCardTapped))
+        // Ensure images use a consistent content mode
+        gameImage1.contentMode = .scaleAspectFit
+        gameImage2.contentMode = .scaleAspectFit
+    }
+    
+    private func setupGestureRecognizers() {
+        let wordFillTap = UITapGestureRecognizer(target: self, action: #selector(handleWordFillTap))
         gameCard.addGestureRecognizer(wordFillTap)
         
-        let connectionsTap = UITapGestureRecognizer(target: self, action: #selector(connectionsCardTapped))
+        let connectionsTap = UITapGestureRecognizer(target: self, action: #selector(handleConnectionsTap))
         gameCard2.addGestureRecognizer(connectionsTap)
     }
-
-    // MARK: - Tap Handlers
     
-    @objc func wordFillCardTapped() {
-        // Notify the HomeViewController that the 'Word Fill' game was selected
+    // MARK: - Actions
+    @objc private func handleWordFillTap() {
         delegate?.didSelectQuickGame(gameTitle: "Word Fill")
     }
     
-    @objc func connectionsCardTapped() {
-        // Notify the HomeViewController that the 'Connections' game was selected
+    @objc private func handleConnectionsTap() {
         delegate?.didSelectQuickGame(gameTitle: "Connections")
     }
     
     // MARK: - Configuration
-    
-    // Configuration method for dynamic content for TWO items
+    /// Populates the dual-card cell with game data.
     func configure(with item1: GameItem, and item2: GameItem) {
-        
-        // --- Configure Card 1 (Item 1: Word Fill) ---
+        // Configure Card 1
         gameTitle1.text = item1.title.uppercased()
+        gameImage1.image = fetchImage(named: item1.imageAsset)
         
-        if item1.imageAsset.contains(" ") == false && UIImage(systemName: item1.imageAsset) != nil {
-            gameImage1.image = UIImage(systemName: item1.imageAsset)
-        } else {
-            // Assumes your image assets are in the Assets Catalog
-            gameImage1.image = UIImage(named: item1.imageAsset)
-        }
-
-        // --- Configure Card 2 (Item 2: Connections) ---
+        // Configure Card 2
         gameTitle2.text = item2.title.uppercased()
-
-        if item2.imageAsset.contains(" ") == false && UIImage(systemName: item2.imageAsset) != nil {
-            gameImage2.image = UIImage(systemName: item2.imageAsset)
-        } else {
-            gameImage2.image = UIImage(named: item2.imageAsset)
+        gameImage2.image = fetchImage(named: item2.imageAsset)
+    }
+    
+    private func fetchImage(named name: String) -> UIImage? {
+        // Prioritize SF Symbols, fallback to Asset Catalog
+        if let symbolImage = UIImage(systemName: name) {
+            return symbolImage
         }
+        return UIImage(named: name)
     }
 }
