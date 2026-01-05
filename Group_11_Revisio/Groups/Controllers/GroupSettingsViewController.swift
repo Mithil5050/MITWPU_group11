@@ -32,7 +32,12 @@ class GroupSettingsViewController: UIViewController {
         ("You", "pfp_chirag"),
         ("Ashika", "pfp_ashika"),
         ("Mithil", "pfp_mithil"),
-        ("Ayaana", "pfp_ayaana")
+        ("Ayaana", "pfp_ayaana"),
+        ("Tirthraj", "pfp_chirag"),
+        ("Yash", "pfp_mithil"),
+        ("Kavindra", "pfp_chirag"),
+        ("Prachi", "pfp_ashika"),
+        ("Smera", "pfp_ayaana")
     ]
     
     private var documents: [String] = ["DBMS.pdf","Statistics.pdf","DS QB.jpg","DETT.pdf","Operating systems.jpg"]

@@ -109,7 +109,7 @@ class ChatViewController: MessagesViewController {
         messageInputBar.sendButton.tintColor = .systemBlue
         messageInputBar.sendButton.setSize(
             CGSize(width: 48, height: 48),
-            animated: false
+            animated: true
         )
         
         // MARK: - iMessage input bar appearance
