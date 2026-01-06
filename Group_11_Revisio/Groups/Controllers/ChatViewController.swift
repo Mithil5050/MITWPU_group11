@@ -170,6 +170,8 @@ class ChatViewController: MessagesViewController {
 
         settingsVC.group = group
         navigationController?.pushViewController(settingsVC, animated: true)
+        settingsVC.delegate = navigationController?.viewControllers
+            .first(where: { $0 is GroupsViewController }) as? LeaveGroupDelegate
     }
     
     deinit {

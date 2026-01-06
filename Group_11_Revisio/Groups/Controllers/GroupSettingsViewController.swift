@@ -165,7 +165,7 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
             let spacing: CGFloat = 12
             let totalSpacing = (columns - 1) * spacing + 24 // left + right insets
             let width = (collectionView.bounds.width - totalSpacing) / columns
-            return CGSize(width: width, height: width + 20)
+            return CGSize(width: width, height: width + 12)
         }
 
         let columns: CGFloat = 3
@@ -180,7 +180,7 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
                         layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {
 
-        return UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+        return UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
     }
 
     func collectionView(_ collectionView: UICollectionView,
@@ -192,7 +192,7 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 12
+        return 6
     }
 }
 /*

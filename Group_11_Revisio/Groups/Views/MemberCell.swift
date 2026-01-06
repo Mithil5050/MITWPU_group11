@@ -16,12 +16,19 @@ class MemberCell: UICollectionViewCell {
         super.awakeFromNib()
         
         // Make avatar circular
-        avatarImageView.layer.cornerRadius = avatarImageView.bounds.width / 2
         avatarImageView.clipsToBounds = true
         avatarImageView.contentMode = .scaleAspectFill
+        
     }
-
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        avatarImageView.layer.cornerRadius = avatarImageView.bounds.width / 2
+        avatarImageView.clipsToBounds = true
+    }
+    
     func configure(name: String) {
         nameLabel.text = name
+        nameLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
     }
 }
