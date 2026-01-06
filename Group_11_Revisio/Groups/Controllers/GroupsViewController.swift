@@ -211,10 +211,13 @@ extension GroupsViewController: LeaveGroupDelegate {
     func didLeaveGroup(_ group: Group) {
         if let idx = myGroups.firstIndex(where: { $0.name == group.name }) {
             myGroups.remove(at: idx)
+            
+            groupsTableView.beginUpdates()
             groupsTableView.deleteRows(
                 at: [IndexPath(row: idx, section: 0)],
                 with: .automatic
             )
+            groupsTableView.endUpdates()
         }
     }
 }
