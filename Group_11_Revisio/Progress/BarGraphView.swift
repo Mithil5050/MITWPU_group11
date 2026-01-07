@@ -6,15 +6,33 @@ struct BarChartView: View {
     let data: [StudyData]
 
     var body: some View {
-        Chart(data) {
-            BarMark(
-                x: .value("Label", $0.label),
-                y: .value("Hours", $0.hours)
-            )
-            .foregroundStyle(.blue)
-            .cornerRadius(6)
+        Chart {
+            ForEach(data) { item in
+
+                BarMark(
+                    x: .value("Time", item.label),
+                    y: .value("Focus", item.focusMinutes)
+                )
+                .foregroundStyle(Color.blue)
+                .cornerRadius(4)
+
+               
+                BarMark(
+                    x: .value("Time", item.label),
+                    y: .value("Extra", item.extraMinutes)
+                )
+//                .foregroundStyle(Color.cyan)
+//                .cornerRadius(4)
+            }
+        }
+        .chartYAxis {
+            AxisMarks(position: .trailing)
+        }
+        .chartXAxis {
+            AxisMarks()
         }
         .padding()
-        .background(Color.clear) 
+        .background(Color.clear)
     }
 }
+
