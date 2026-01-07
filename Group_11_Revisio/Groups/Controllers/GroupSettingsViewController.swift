@@ -123,7 +123,7 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
                         numberOfItemsInSection section: Int) -> Int {
 
         if collectionView == membersCollectionView {
-            return members.count
+            return members.count + 1
         } else {
             return documents.count
         }
@@ -139,6 +139,17 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
                 for: indexPath
             ) as! MemberCell
 
+            
+        // LAST CELL → Add Member (+)
+            if indexPath.item == members.count {
+                cell.nameLabel.text = "Add Members"
+                cell.nameLabel.text = "Add"
+                cell.avatarImageView.image = UIImage(systemName: "plus.circle.fill")
+                cell.avatarImageView.tintColor = .systemGray4
+                cell.avatarImageView.backgroundColor = .clear
+                return cell
+            }
+            
             let member = members[indexPath.item]
             cell.configure(name: member.name)
             cell.avatarImageView.image = UIImage(named: member.avatar)
@@ -153,6 +164,37 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
 
             cell.configure(title: documents[indexPath.item])
             return cell
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+
+        let feedback = UIImpactFeedbackGenerator(style: .light)
+        feedback.impactOccurred()
+        
+        // Only react for Members collection
+        guard collectionView == membersCollectionView else { return }
+
+        // LAST CELL → Add Member (+)
+        if indexPath.item == members.count {
+
+            let storyboard = UIStoryboard(name: "Groups", bundle: nil)
+            
+            guard let codeVC = storyboard.instantiateViewController(
+                withIdentifier: "GroupCodeVC"
+            ) as? GroupCodeViewController else {
+                print("ERROR: GroupCodeVC not found")
+                return
+            }
+
+            // Pass existing group info
+            codeVC.configure(
+                withGroupName: group.name,
+                code: "ABC-123"
+            )
+            codeVC.isFromCreateGroup = false
+            codeVC.modalPresentationStyle = .pageSheet
+            present(codeVC, animated: true)
         }
     }
 

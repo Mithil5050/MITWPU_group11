@@ -18,6 +18,8 @@ class GroupCodeViewController: UIViewController {
     private var groupName: String = ""
     private var inviteCode: String = ""
 
+    var isFromCreateGroup: Bool = true
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -52,7 +54,12 @@ class GroupCodeViewController: UIViewController {
 
         // MARK: - Update UI text
         private func updateLabels() {
-            groupCreatedLabel.text = "Group \"\(groupName)\" Created"
+            
+            if isFromCreateGroup {
+                groupCreatedLabel.text = "Group \"\(groupName)\" Created"
+            } else {
+                groupCreatedLabel.text = "Code for \(groupName)"
+            }
 
             codeLabel.font = UIFont.monospacedSystemFont(ofSize: 16, weight: .semibold)
             codeLabel.text = inviteCode
@@ -113,6 +120,6 @@ class GroupCodeViewController: UIViewController {
     
     @objc private func closeWholeFlow() {
         // This dismisses the entire modal navigation controller
-        self.view.window?.rootViewController?.dismiss(animated: true, completion: nil)
+        dismiss(animated: true)
     }
 }
