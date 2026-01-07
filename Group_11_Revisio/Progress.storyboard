@@ -3,7 +3,6 @@
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
-        <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="collection view cell content view" minToolsVersion="11.0"/>
@@ -187,8 +186,8 @@
                                                                                         <nil key="textColor"/>
                                                                                         <nil key="highlightedColor"/>
                                                                                     </label>
-                                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="personal_best_badge" translatesAutoresizingMaskIntoConstraints="NO" id="Wye-HN-bxk">
-                                                                                        <rect key="frame" x="105" y="73" width="60" height="50"/>
+                                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="personal_best_badge" translatesAutoresizingMaskIntoConstraints="NO" id="Wye-HN-bxk">
+                                                                                        <rect key="frame" x="105" y="55" width="60" height="73"/>
                                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                                                     </imageView>
                                                                                 </subviews>
@@ -442,12 +441,11 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Log Study Time" id="OuO-ah-oZz">
-                        <barButtonItem key="leftBarButtonItem" image="xmark.circle" catalog="system" style="plain" id="iVy-jR-ShP">
-                            <color key="tintColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <barButtonItem key="leftBarButtonItem" image="xmark" catalog="system" style="plain" id="iVy-jR-ShP">
+                            <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" style="plain" id="2gZ-UY-4gZ">
-                            <imageReference key="image" image="checkmark.circle.fill" catalog="system" symbolScale="large"/>
-                            <color key="tintColor" systemColor="tableCellBlueTextColor"/>
+                        <barButtonItem key="rightBarButtonItem" style="plain" systemItem="done" id="2gZ-UY-4gZ">
+                            <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
@@ -689,16 +687,15 @@
         </scene>
     </scenes>
     <resources>
-        <image name="awards_monthly_main" width="658" height="796"/>
+        <image name="awards_monthly_main" width="468" height="446"/>
         <image name="chart.line.uptrend.xyaxis" catalog="system" width="128" height="102"/>
-        <image name="checkmark.circle.fill" catalog="system" width="128" height="123"/>
         <image name="chevron.forward.circle.fill" catalog="system" width="128" height="123"/>
         <image name="chevron.right.circle.fill" catalog="system" width="128" height="123"/>
         <image name="flame" catalog="system" width="106" height="128"/>
         <image name="hourglass" catalog="system" width="103" height="128"/>
-        <image name="personal_best_badge" width="1256" height="1290"/>
+        <image name="personal_best_badge" width="1024" height="1536"/>
         <image name="plus" catalog="system" width="128" height="113"/>
-        <image name="xmark.circle" catalog="system" width="128" height="123"/>
+        <image name="xmark" catalog="system" width="128" height="113"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
@@ -713,9 +710,6 @@
         </systemColor>
         <systemColor name="systemOrangeColor">
             <color red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
-        <systemColor name="tableCellBlueTextColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

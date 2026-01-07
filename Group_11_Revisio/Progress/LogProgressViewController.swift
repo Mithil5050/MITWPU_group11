@@ -26,9 +26,7 @@ class LogProgressViewController: UIViewController {
     override func viewDidLoad() {
             super.viewDidLoad()
             
-            // Background is managed by the system and the Navigation Controller for blur effect.
-            // The input card should be set to white in the Storyboard.
-            
+           
             setupNavigationBar()
             setupInitialData()
             
@@ -39,24 +37,25 @@ class LogProgressViewController: UIViewController {
         
         func setupNavigationBar() {
             navigationItem.title = "Log Study Time"
+                
+           
+           
+            let checkmarkSymbolConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .semibold, scale: .medium)
+            let checkmarkImage = UIImage(systemName: "checkmark", withConfiguration: checkmarkSymbolConfig)
+            let saveButton = UIBarButtonItem(image: checkmarkImage,
+                                             style: .plain,
+                                             target: self,
+                                             action: #selector(saveAndDismiss))
+            navigationItem.rightBarButtonItem = saveButton
+        
+            let xmarkConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .semibold, scale: .medium)
+            let xmarkImage = UIImage(systemName: "xmark", withConfiguration: xmarkConfig)
             
-            let largerConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .semibold)
-            
-            // Setup Cross Button (Left Side)
-            let xmarkImage = UIImage(systemName: "xmark", withConfiguration: largerConfig)
             let cancelButton = UIBarButtonItem(image: xmarkImage,
                                                style: .plain,
                                                target: self,
                                                action: #selector(dismissModal))
             navigationItem.leftBarButtonItem = cancelButton
-            
-            // Setup Tick Button (Right Side)
-            let checkmarkImage = UIImage(systemName: "checkmark.circle.fill", withConfiguration: largerConfig)
-            let saveButton = UIBarButtonItem(image: checkmarkImage,
-                                             style: .done,
-                                             target: self,
-                                             action: #selector(saveAndDismiss))
-            navigationItem.rightBarButtonItem = saveButton
         }
         
         func setupInitialData() {
@@ -82,35 +81,35 @@ class LogProgressViewController: UIViewController {
             }
         }
         
-        // MARK: - Action Handlers
+       
         
         @objc func dismissModal() {
             self.dismiss(animated: true, completion: nil)
         }
         
         @objc func saveAndDismiss() {
-            // 1. Data Validation and Extraction
+            
             let text = logHoursTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let hoursStudied = Double(text) ?? 0
 
             guard hoursStudied > 0 else {
-                // Dismiss if hours are invalid, preventing empty data submission
+                
                 self.dismiss(animated: true, completion: nil)
                 return
             }
 
-            // 2. Collect Data
+          
             let logDate: Date = datePicker.date
             let subject: String? = nil
 
-            // 3. Send to delegate
+           
             delegate?.didLogStudyTime(hours: hoursStudied, date: logDate, subject: subject)
 
-            // 4. Dismiss
+           
             self.dismiss(animated: true, completion: nil)
         }
         
-        // Optional: Hide keyboard when tapping outside
+       
         override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
             self.view.endEditing(true)
         }
