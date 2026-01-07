@@ -396,7 +396,7 @@
         <!--Home-->
         <scene sceneID="tYZ-Br-z2I">
             <objects>
-                <viewController storyboardIdentifier="HomeViewController" id="4ZY-0A-Wo4" customClass="HomeViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ConfirmationVC" id="4ZY-0A-Wo4" customClass="HomeViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="QFp-Kk-Ioy" customClass="UICollectionView">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -688,7 +688,7 @@
         <!--Upload Content-->
         <scene sceneID="OBc-0S-qpG">
             <objects>
-                <viewController storyboardIdentifier="ConfirmationVC" useStoryboardIdentifierAsRestorationIdentifier="YES" id="WNP-DU-Qf0" customClass="UploadConfirmationViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ConfirmationVC1" useStoryboardIdentifierAsRestorationIdentifier="YES" id="WNP-DU-Qf0" customClass="UploadConfirmationViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hnx-2M-7GR">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

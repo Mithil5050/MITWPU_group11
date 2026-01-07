@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import UniformTypeIdentifiers
 
 // MARK: - Supporting Structures
 struct GameItem: Hashable, Sendable {
@@ -192,12 +193,10 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             
         case .uploadContent:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: uploadContentCellID, for: indexPath) as! UploadContentCollectionViewCell
+            cell.delegate = self
             cell.configure(with: uploadItems)
-            cell.onAddTapped = { [weak self] in
-                self?.performSegue(withIdentifier: self?.uploadContentSegueID ?? "", sender: nil)
-            }
             return cell
-            
+        
         case .continueLearning:
             return collectionView.dequeueReusableCell(withReuseIdentifier: continueLearningCellID, for: indexPath)
             
@@ -246,3 +245,96 @@ extension HomeViewController: QuickGamesCellDelegate {
         performSegue(withIdentifier: segueID, sender: nil)
     }
 }
+
+// MARK: - UploadContentCellDelegate Implementation
+//extension HomeViewController: UploadContentCellDelegate {
+//    private func presentUploadContent() {
+//        // Prefer storyboard instantiation if you have a scene for UploadContentViewController
+//        // Otherwise, init directly.
+//        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+//        if let vc = storyboard.instantiateViewController(withIdentifier: "UploadContentViewController") as? UploadContentViewController {
+//            self.navigationController?.pushViewController(vc, animated: true)
+//        } else {
+//            // Fallback if storyboard ID is not set; instantiate directly.
+//            let vc = UploadContentViewController()
+//            self.navigationController?.pushViewController(vc, animated: true)
+//        }
+//    }
+extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    func navigateToConfirmation(with contentName: String) {
+            // 1. Access the Main Storyboard
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            
+            // 2. Instantiate the VC using the Storyboard ID "ConfirmationVC"
+            // Ensure you have set this ID in the Identity Inspector in Xcode.
+            guard let confirmationVC = storyboard.instantiateViewController(withIdentifier: "ConfirmationVC") as? UploadConfirmationViewController else {
+                print("Error: Could not find UploadConfirmationViewController with identifier 'ConfirmationVC'")
+                return
+            }
+            
+            // 3. Inject the data into the destination controller
+            confirmationVC.uploadedContentName = contentName
+            
+            // 4. Push onto the navigation stack
+            // This requires the HomeViewController to be embedded in a UINavigationController
+            self.navigationController?.pushViewController(confirmationVC, animated: true)
+        }
+    func uploadCellDidTapDocument(_ cell: UploadContentCollectionViewCell) {
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.pdf, .plainText], asCopy: true)
+        picker.delegate = self
+        present(picker, animated: true)
+    }
+    
+    func uploadCellDidTapMedia(_ cell: UploadContentCollectionViewCell) {
+        let picker = UIImagePickerController()
+        picker.sourceType = .photoLibrary
+        picker.delegate = self
+        present(picker, animated: true)
+    }
+    
+    func uploadCellDidTapLink(_ cell: UploadContentCollectionViewCell) {
+        showInputAlert(title: "Add Resource Link", placeholder: "https://...")
+    }
+    
+    func uploadCellDidTapText(_ cell: UploadContentCollectionViewCell) {
+        showInputAlert(title: "Quick Note", placeholder: "Enter text content...")
+    }
+    
+    private func showInputAlert(title: String, placeholder: String) {
+        let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
+        alert.addTextField { $0.placeholder = placeholder }
+        alert.addAction(UIAlertAction(title: "Confirm", style: .default) { _ in
+            if let text = alert.textFields?.first?.text, !text.isEmpty {
+                self.navigateToConfirmation(with: text)
+            }
+        })
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    // System Picker Callbacks
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        if let url = urls.first { navigateToConfirmation(with: url.lastPathComponent) }
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        picker.dismiss(animated: true) { self.navigateToConfirmation(with: "Media Asset") }
+    }
+}
+//    func uploadCellDidTapDocument(_ cell: UploadContentCollectionViewCell) {
+//        presentUploadContent()
+//    }
+//    
+//    func uploadCellDidTapMedia(_ cell: UploadContentCollectionViewCell) {
+//        presentUploadContent()
+//    }
+//    
+//    func uploadCellDidTapLink(_ cell: UploadContentCollectionViewCell) {
+//        presentUploadContent()
+//    }
+//    
+//    func uploadCellDidTapText(_ cell: UploadContentCollectionViewCell) {
+//        presentUploadContent()
+//    }
+//}

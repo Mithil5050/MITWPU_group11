@@ -1,31 +1,16 @@
-//
-//  CheatSheetDetailViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Mithil on 16/12/25.
-//
-
-
-//
-//  CheatSheetDetailViewController.swift
-//  Group_11_Revisio
-//
-
 import UIKit
 
 class CheatSheetDetailViewController: UIViewController {
     
     // MARK: - Outlets
-    // Refactored names to avoid conflict with MaterialDetailViewController
     @IBOutlet var cheatSheetTextView: UITextView!
-    
     @IBOutlet var cheatSheetActionMenu: UIBarButtonItem!
     @IBOutlet var cheatSheetEditToggle: UIBarButtonItem!
     
     // MARK: - Properties
     var sheetTitle: String?
-    var sheetData: Topic? 
-    var parentCategory: String? 
+    var sheetData: Topic?
+    var parentCategory: String?
     
     private var isSheetInEditMode: Bool = false
     
@@ -33,51 +18,42 @@ class CheatSheetDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Delegate for auto-saving
         cheatSheetTextView.delegate = self
         cheatSheetTextView.isEditable = false
+        
+        // iOS 26 Aesthetic: Large Title for Detail Views
+        navigationController?.navigationBar.prefersLargeTitles = false
         
         configureCheatSheetUI()
         fetchSheetContent()
     }
     
-    // MARK: - Interface Configuration
     private func configureCheatSheetUI() {
-        // Setup Primary Toggle (Edit/Done)
         cheatSheetEditToggle.target = self
         cheatSheetEditToggle.action = #selector(handleCheatSheetToggle)
-        
-        // Setup Secondary Options Menu
         cheatSheetActionMenu.menu = buildCheatSheetMenu()
         
-        // standard UIKit bar layout
         navigationItem.rightBarButtonItems = [cheatSheetEditToggle, cheatSheetActionMenu]
-        
         updateSheetStateUI()
     }
-    
+
     private func buildCheatSheetMenu() -> UIMenu {
-        let share = UIAction(title: "Share Sheet", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
+        let share = UIAction(title: "Export as PDF", image: UIImage(systemName: "doc.plaintext")) { [weak self] _ in
             self?.executeShareAction()
         }
         
-        let pin = UIAction(title: "Pin to Top", image: UIImage(systemName: "pin")) { _ in
-            print("Cheat Sheet Pinned")
+        let delete = UIAction(title: "Delete Sheet", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
+            self?.confirmDeletion()
         }
         
-        let delete = UIAction(title: "Delete Sheet", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-            print("Cheat Sheet Deleted")
-        }
-        
-        let inlineGroup = UIMenu(title: "", options: .displayInline, children: [share, pin])
-        return UIMenu(title: "Sheet Options", children: [inlineGroup, delete])
+        return UIMenu(title: "Actions", children: [share, delete])
     }
     
-    // MARK: - Data Management
+    // MARK: - Data Synchronization
     private func fetchSheetContent() {
-        title = sheetTitle ?? "Big Data Cheat Sheet"
+        title = sheetTitle ?? "Detail View"
         
-        // Attempt load from DataManager
+        // Use DataManager to retrieve the real-time state
         if let topic = sheetData, let category = parentCategory {
             let content = DataManager.shared.getDetailedContent(for: category, topicName: topic.name)
             if !content.isEmpty {
@@ -86,33 +62,28 @@ class CheatSheetDetailViewController: UIViewController {
             }
         }
         
-        // Fallback Demo for Big Data
-        injectBigDataDemo()
+        // Fallback demo content if nothing found
+        applyDemoCheatSheetContent()
     }
     
-    private func injectBigDataDemo() {
+    private func applyDemoCheatSheetContent() {
         cheatSheetTextView.text = """
-        BIG DATA CHEAT SHEET
+        CHEAT SHEET
         
-        ■ CORE CONCEPTS
-        - Velocity: Real-time processing speed.
-        - Volume: Data scale (TB/PB).
-        - Variety: Unstructured vs Structured.
+        This is placeholder content. Add your notes or cheatsheet here.
         
-        ■ TECH STACK
-        - Storage: HDFS, Amazon S3.
-        - Analysis: Apache Spark, Hive.
-        - NoSQL: MongoDB, Cassandra.
-        
-        ■ ARCHITECTURE
-        - Lambda: Batch + Speed layers.
-        - Kappa: Stream processing only.
+        Tips:
+        - Use concise bullet points.
+        - Highlight formulas and key steps.
+        - Keep sections short and scannable.
         """
     }
-    
+
     @objc private func handleCheatSheetToggle() {
         if isSheetInEditMode {
+            // User tapped 'Done' - Force a final disk sync
             syncChangesToStorage()
+            NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
         }
         
         isSheetInEditMode.toggle()
@@ -120,13 +91,17 @@ class CheatSheetDetailViewController: UIViewController {
     }
     
     private func updateSheetStateUI() {
+        let config = UIImage.SymbolConfiguration(weight: .bold)
+        
         if isSheetInEditMode {
-            cheatSheetEditToggle.image = UIImage(systemName: "checkmark.circle.fill")
+            cheatSheetEditToggle.image = UIImage(systemName: "checkmark.circle.fill", withConfiguration: config)
+            cheatSheetEditToggle.tintColor = .systemGreen
             cheatSheetEditToggle.title = nil
             cheatSheetTextView.isEditable = true
             cheatSheetTextView.becomeFirstResponder()
         } else {
             cheatSheetEditToggle.image = nil
+            cheatSheetEditToggle.tintColor = .systemBlue
             cheatSheetEditToggle.title = "Edit"
             cheatSheetTextView.isEditable = false
             cheatSheetTextView.resignFirstResponder()
@@ -137,14 +112,27 @@ class CheatSheetDetailViewController: UIViewController {
         guard let topic = sheetData, let category = parentCategory else { return }
         let currentText = cheatSheetTextView.text ?? ""
         
-        // DataManager.shared.updateTopicContent(subject: category, topicName: topic.name, newText: currentText)
-        print("Auto-saved: \(topic.name)")
+        // COMMITTING TO PERSISTENCE
+        DataManager.shared.updateTopicContent(subject: category, topicName: topic.name, newText: currentText)
+        
+        // Provide haptic feedback for successful save (iOS 26 standard)
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
     }
     
+    private func confirmDeletion() {
+        let alert = UIAlertController(title: "Delete Content?", message: "This action cannot be undone.", preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { _ in
+            // DataManager.shared.deleteItems logic here
+            self.navigationController?.popViewController(animated: true)
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
     private func executeShareAction() {
         let items = [cheatSheetTextView.text ?? ""]
         let activityVC = UIActivityViewController(activityItems: items, applicationActivities: nil)
-        activityVC.popoverPresentationController?.barButtonItem = cheatSheetActionMenu
         present(activityVC, animated: true)
     }
 }
@@ -152,6 +140,7 @@ class CheatSheetDetailViewController: UIViewController {
 // MARK: - UITextViewDelegate
 extension CheatSheetDetailViewController: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
+        // Auto-saving as the user types (Debouncing recommended for large files)
         syncChangesToStorage()
     }
 }
