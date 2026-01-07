@@ -1,111 +1,54 @@
 import UIKit
 
-// Global identifier for the internal table rows
-let innerUploadCellID = "InnerUploadCellID"
+// MARK: - Delegate Protocol
+protocol UploadContentCellDelegate: AnyObject {
+    func uploadCellDidTapDocument(_ cell: UploadContentCollectionViewCell)
+    func uploadCellDidTapMedia(_ cell: UploadContentCollectionViewCell)
+    func uploadCellDidTapLink(_ cell: UploadContentCollectionViewCell)
+    func uploadCellDidTapText(_ cell: UploadContentCollectionViewCell)
+}
 
-class UploadContentCollectionViewCell: UICollectionViewCell, UITableViewDelegate, UITableViewDataSource {
-
-    // MARK: - IBOutlets
-    @IBOutlet weak var tableView: UITableView!
+// MARK: - Collection View Cell
+class UploadContentCollectionViewCell: UICollectionViewCell {
     
-    // MARK: - Callbacks & Data
-    var onAddTapped: (() -> Void)?
-    var uploadData: [ContentItem] = []
-
-    // MARK: - Lifecycle
+    // MARK: - Properties
+    weak var delegate: UploadContentCellDelegate?
+    
+    private var items: [ContentItem] = []
+    
+    // If you have outlets (labels, icons, etc.), declare them here and connect in the XIB.
+    // @IBOutlet weak var titleLabel: UILabel!
+    // @IBOutlet weak var stackView: UIStackView!
+    
     override func awakeFromNib() {
         super.awakeFromNib()
-        setupAdaptiveUI()
+        // Style the cell if needed
+        contentView.layer.cornerRadius = 16
+        contentView.layer.masksToBounds = true
+        contentView.backgroundColor = .systemGray6
     }
     
-    // MARK: - UI Configuration
-    private func setupAdaptiveUI() {
-        // 1. Define the Master Background Color
-        let masterBackground = UIColor { traitCollection in
-            return traitCollection.userInterfaceStyle == .dark ?
-                   .secondarySystemBackground :
-                   UIColor(hex: "F5F5F5")
-        }
-        
-        // Apply to the TableView
-        tableView.backgroundColor = masterBackground
-        tableView.backgroundView = nil
-        
-        // 2. Modern Surface Smoothing
-        tableView.layer.cornerRadius = 16.0
-        tableView.layer.cornerCurve = .continuous
-        
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: innerUploadCellID)
-        
-        // 3. Layout Performance
-        tableView.isScrollEnabled = false
-        tableView.separatorStyle = .singleLine
-        tableView.separatorColor = .separator
-        tableView.tableFooterView = UIView() // Clears extra lines at the bottom
-    }
-    
-    @IBAction func AddButtonTapped(_ sender: UIButton) {
-        onAddTapped?()
-    }
-    
+    // Configure the cell with any data you want to show (e.g., recent uploads list)
     func configure(with items: [ContentItem]) {
-        self.uploadData = items.filter { $0.itemType != "AddButton" }
-        tableView.reloadData()
+        self.items = items
+        // Update UI from items as needed
+        // Example: titleLabel.text = "Upload Content"
     }
     
-    // MARK: - UITableViewDataSource
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return uploadData.count
+    // MARK: - Button Actions (connect these in the XIB)
+    @IBAction func documentButtonTapped(_ sender: UIButton) {
+        delegate?.uploadCellDidTapDocument(self)
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: innerUploadCellID, for: indexPath)
-        let item = uploadData[indexPath.row]
-        
-        // --- UPDATED: THE CELL COLOR FIX ---
-        // We set the cell's background to .clear so it doesn't overlap the TableView's F5F5F5.
-        // If it still looks white, we also force the contentView to .clear.
-        cell.backgroundColor = .clear
-        cell.contentView.backgroundColor = .clear
-        
-        // Modern Configuration Pattern
-        var content = cell.defaultContentConfiguration()
-        
-        // Text configuration (Adaptive)
-        content.text = item.title
-        content.textProperties.font = .preferredFont(forTextStyle: .body)
-        content.textProperties.color = .label
-        
-        // Icon configuration
-        let iconName = item.iconName.isEmpty ? "doc.fill" : item.iconName
-        content.image = UIImage(systemName: iconName)
-        content.imageProperties.tintColor = tintColor(for: item.itemType)
-        
-        cell.contentConfiguration = content
-        
-        // Selection feedback
-        let selectedBackground = UIView()
-        selectedBackground.backgroundColor = .quaternarySystemFill
-        cell.selectedBackgroundView = selectedBackground
-        
-        return cell
+    @IBAction func mediaButtonTapped(_ sender: UIButton) {
+        delegate?.uploadCellDidTapMedia(self)
     }
     
-    private func tintColor(for itemType: String) -> UIColor {
-        switch itemType {
-        case "PDF": return .systemRed
-        case "Link": return .systemBlue
-        case "Video": return .systemGreen
-        default: return .secondaryLabel
-        }
+    @IBAction func linkButtonTapped(_ sender: UIButton) {
+        delegate?.uploadCellDidTapLink(self)
     }
     
-    // MARK: - UITableViewDelegate
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
+    @IBAction func textButtonTapped(_ sender: UIButton) {
+        delegate?.uploadCellDidTapText(self)
     }
 }
