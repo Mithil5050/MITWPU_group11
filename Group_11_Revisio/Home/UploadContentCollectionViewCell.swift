@@ -19,6 +19,7 @@ class UploadContentCollectionViewCell: UICollectionViewCell {
     // If you have outlets (labels, icons, etc.), declare them here and connect in the XIB.
     // @IBOutlet weak var titleLabel: UILabel!
     // @IBOutlet weak var stackView: UIStackView!
+    @IBOutlet var ViewCard: UIView!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -26,6 +27,7 @@ class UploadContentCollectionViewCell: UICollectionViewCell {
         contentView.layer.cornerRadius = 16
         contentView.layer.masksToBounds = true
         contentView.backgroundColor = .systemGray6
+        ViewCard.backgroundColor = UIColor(hex: "F5F5F5")
     }
     
     // Configure the cell with any data you want to show (e.g., recent uploads list)

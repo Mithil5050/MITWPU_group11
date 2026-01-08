@@ -18,8 +18,8 @@ enum HomeSection: Int, CaseIterable {
     case hero = 0
     case uploadContent
     case continueLearning
-    case quickGames
     case studyPlan
+    case quickGames
 }
 
 // MARK: - Constants
@@ -117,7 +117,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .uploadContent:
-                let listItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(140))
+                let listItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(142))
                 let listItemLayout = NSCollectionLayoutItem(layoutSize: listItemSize)
                 let listGroup = NSCollectionLayoutGroup.vertical(layoutSize: listItemSize, subitems: [listItemLayout])
                 let section = NSCollectionLayoutSection(group: listGroup)
@@ -263,23 +263,37 @@ extension HomeViewController: QuickGamesCellDelegate {
 extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     func navigateToConfirmation(with contentName: String) {
-            // 1. Access the Main Storyboard
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            
-            // 2. Instantiate the VC using the Storyboard ID "ConfirmationVC"
-            // Ensure you have set this ID in the Identity Inspector in Xcode.
-            guard let confirmationVC = storyboard.instantiateViewController(withIdentifier: "ConfirmationVC") as? UploadConfirmationViewController else {
-                print("Error: Could not find UploadConfirmationViewController with identifier 'ConfirmationVC'")
-                return
-            }
-            
-            // 3. Inject the data into the destination controller
-            confirmationVC.uploadedContentName = contentName
-            
-            // 4. Push onto the navigation stack
-            // This requires the HomeViewController to be embedded in a UINavigationController
-            self.navigationController?.pushViewController(confirmationVC, animated: true)
+        // 1. Save the new filename to the JSON "Database"
+        JSONDatabaseManager.shared.addUploadedFile(name: contentName)
+        
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let confirmationVC = storyboard.instantiateViewController(withIdentifier: "ConfirmationVC") as? UploadConfirmationViewController else {
+            print("CRITICAL: Storyboard ID 'ConfirmationVC' not set!")
+            return
         }
+        
+        // 2. Pass the name for the header label
+        confirmationVC.uploadedContentName = contentName
+        self.navigationController?.pushViewController(confirmationVC, animated: true)
+    }
+//    func navigateToConfirmation(with contentName: String) {
+//            // 1. Access the Main Storyboard
+//            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+//            
+//            // 2. Instantiate the VC using the Storyboard ID "ConfirmationVC"
+//            // Ensure you have set this ID in the Identity Inspector in Xcode.
+//            guard let confirmationVC = storyboard.instantiateViewController(withIdentifier: "ConfirmationVC")as? UploadConfirmationViewController else {
+//                print("Error: Could not find UploadConfirmationViewController with identifier 'ConfirmationVC'")
+//                return
+//            }
+//            
+//            // 3. Inject the data into the destination controller
+//            confirmationVC.uploadedContentName = contentName
+//            
+//            // 4. Push onto the navigation stack
+//            // This requires the HomeViewController to be embedded in a UINavigationController
+//            self.navigationController?.pushViewController(confirmationVC, animated: true)
+//        }
     func uploadCellDidTapDocument(_ cell: UploadContentCollectionViewCell) {
         let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.pdf, .plainText], asCopy: true)
         picker.delegate = self
@@ -307,6 +321,8 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         alert.addAction(UIAlertAction(title: "Confirm", style: .default) { _ in
             if let text = alert.textFields?.first?.text, !text.isEmpty {
                 self.navigateToConfirmation(with: text)
+            } else {
+                self.performSegue(withIdentifier: "showUploadConfirmation", sender: nil)
             }
         })
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))

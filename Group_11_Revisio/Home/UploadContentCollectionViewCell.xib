@@ -11,29 +11,29 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="UploadContentCollectionViewCell" customModule="MITWPU_group11_" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="370" height="135"/>
+            <rect key="frame" x="0.0" y="0.0" width="370" height="142"/>
             <autoresizingMask key="autoresizingMask"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                <rect key="frame" x="0.0" y="0.0" width="370" height="135"/>
+                <rect key="frame" x="0.0" y="0.0" width="370" height="142"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SjA-Ya-yUK">
-                        <rect key="frame" x="0.0" y="0.0" width="370" height="135"/>
+                        <rect key="frame" x="0.0" y="0.0" width="370" height="142"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Upload Content" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z4b-NS-uH0">
-                                <rect key="frame" x="59.000000000000014" y="6" width="178.33333333333337" height="30"/>
+                                <rect key="frame" x="64" y="13" width="178.33333333333337" height="30"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="25"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="We’ll generate notes, quizzes &amp; flashcards" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nXl-Bl-37p">
-                                <rect key="frame" x="59" y="38" width="290.66666666666669" height="18"/>
+                                <rect key="frame" x="64" y="45" width="290.66666666666669" height="18"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="okN-sT-ncX">
-                                <rect key="frame" x="13" y="64" width="344" height="56"/>
+                                <rect key="frame" x="13" y="71" width="344" height="56"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="J4I-Nc-Hcd">
                                         <rect key="frame" x="0.0" y="0.0" width="75.666666666666671" height="56"/>
@@ -93,21 +93,21 @@ Text</string>
                                     <constraint firstAttribute="height" constant="56" id="aMr-gF-LKM"/>
                                 </constraints>
                             </stackView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="􀣘" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="V5r-Fm-qyt">
-                                <rect key="frame" x="12.999999999999998" y="10" width="22.333333333333329" height="38"/>
-                                <fontDescription key="fontDescription" name="SFPro-Regular" family="SF Pro" pointSize="20"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" verticalHuggingPriority="251" image="doc.badge.plus" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="nA2-TI-eEL">
+                                <rect key="frame" x="10.333333333333332" y="14.333333333333332" width="45.666666666666671" height="51.333333333333343"/>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemGray6Color"/>
                         <constraints>
-                            <constraint firstItem="okN-sT-ncX" firstAttribute="top" secondItem="V5r-Fm-qyt" secondAttribute="bottom" constant="16" id="ERC-xT-AdC"/>
-                            <constraint firstItem="okN-sT-ncX" firstAttribute="leading" secondItem="V5r-Fm-qyt" secondAttribute="leading" id="Emb-dy-u5r"/>
+                            <constraint firstItem="okN-sT-ncX" firstAttribute="top" secondItem="nA2-TI-eEL" secondAttribute="bottom" constant="8" symbolic="YES" id="8aN-fK-f7b"/>
                             <constraint firstItem="okN-sT-ncX" firstAttribute="top" secondItem="nXl-Bl-37p" secondAttribute="bottom" constant="8" id="G75-dJ-oYT"/>
+                            <constraint firstItem="Z4b-NS-uH0" firstAttribute="leading" secondItem="nA2-TI-eEL" secondAttribute="trailing" constant="8" id="GIF-Az-Hd5"/>
                             <constraint firstItem="nXl-Bl-37p" firstAttribute="top" secondItem="Z4b-NS-uH0" secondAttribute="bottom" constant="2" id="Jcw-rF-0kA"/>
-                            <constraint firstItem="Z4b-NS-uH0" firstAttribute="leading" secondItem="V5r-Fm-qyt" secondAttribute="trailing" constant="23.666666666666671" id="MWA-XB-Hil"/>
-                            <constraint firstItem="V5r-Fm-qyt" firstAttribute="top" secondItem="SjA-Ya-yUK" secondAttribute="top" constant="10" id="lAT-AQ-7o7"/>
+                            <constraint firstItem="nA2-TI-eEL" firstAttribute="top" secondItem="SjA-Ya-yUK" secondAttribute="top" constant="14" id="WCQ-zG-p4g"/>
+                            <constraint firstItem="nA2-TI-eEL" firstAttribute="leading" secondItem="SjA-Ya-yUK" secondAttribute="leading" constant="13.000000000000009" id="aWQ-bI-II8"/>
+                            <constraint firstItem="Z4b-NS-uH0" firstAttribute="top" secondItem="SjA-Ya-yUK" secondAttribute="top" constant="13" id="fLt-81-zyG"/>
+                            <constraint firstAttribute="height" constant="142" id="o6x-e1-8aG"/>
+                            <constraint firstAttribute="trailing" secondItem="nXl-Bl-37p" secondAttribute="trailing" constant="15.333333333333314" id="rT3-IA-n6y"/>
                             <constraint firstItem="Z4b-NS-uH0" firstAttribute="leading" secondItem="nXl-Bl-37p" secondAttribute="leading" id="uRs-VM-UQ4"/>
                             <constraint firstItem="okN-sT-ncX" firstAttribute="centerX" secondItem="SjA-Ya-yUK" secondAttribute="centerX" id="vWy-Ag-F3H"/>
                             <constraint firstAttribute="bottom" secondItem="okN-sT-ncX" secondAttribute="bottom" constant="15" id="vxt-oE-ROO"/>
@@ -122,11 +122,15 @@ Text</string>
                 <constraint firstItem="SjA-Ya-yUK" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="oHj-xd-miq"/>
                 <constraint firstItem="SjA-Ya-yUK" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" id="yt2-pP-E2U"/>
             </constraints>
-            <size key="customSize" width="370" height="135"/>
-            <point key="canvasLocation" x="-27.480916030534349" y="101.7605633802817"/>
+            <size key="customSize" width="370" height="142"/>
+            <connections>
+                <outlet property="ViewCard" destination="SjA-Ya-yUK" id="1YF-6K-FyD"/>
+            </connections>
+            <point key="canvasLocation" x="-27.480916030534349" y="99.295774647887328"/>
         </collectionViewCell>
     </objects>
     <resources>
+        <image name="doc.badge.plus" catalog="system" width="116" height="128"/>
         <systemColor name="systemGray6Color">
             <color red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>

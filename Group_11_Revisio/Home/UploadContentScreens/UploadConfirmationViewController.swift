@@ -28,6 +28,7 @@ class UploadConfirmationViewController: UIViewController {
     // Table View Outlet (Connected from Storyboard)
     @IBOutlet var UploadedContent: UITableView!
     
+    @IBOutlet var doneButton: UIButton!
     // Cell Identifier (Should match the registered or Storyboard cell)
     private let confirmationCellID = "ConfirmationContentCell"
     
@@ -43,15 +44,16 @@ class UploadConfirmationViewController: UIViewController {
         setupUI()
         setupTable()
         updateUI()
+        self.uploadedMaterials = JSONDatabaseManager.shared.loadFiles()
     }
     
     // MARK: - Setup and Data
-    
+   
     private func setupDemoSources() {
         
         uploadedMaterials = [
-             StudyContent(text: "Original Source Document (PDF)"),
-             StudyContent(text: "Core Definitions and Concepts (Link)"),
+            StudyContent(filename: "Original Source Document (PDF)"),
+            StudyContent(filename: "Core Definitions and Concepts (Link)"),
             
         ]
     }
