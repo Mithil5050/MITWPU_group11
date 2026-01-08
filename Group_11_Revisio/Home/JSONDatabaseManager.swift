@@ -33,7 +33,21 @@ class JSONDatabaseManager {
             print("Save Error: \(error)")
         }
     }
+    
+    // Add this inside class JSONDatabaseManager
 
+    /// Removes the file at the specific index and saves the updated list
+    func deleteFile(at index: Int) {
+        var currentFiles = loadFiles()
+        
+        // Safety check to prevent crashing if index is out of bounds
+        if index >= 0 && index < currentFiles.count {
+            currentFiles.remove(at: index)
+            saveFiles(currentFiles)
+            print("🗑️ Deleted file at index: \(index)")
+        }
+    }
+    
     func loadFiles() -> [StudyContent] {
         // If file doesn't exist in Documents yet, try to load from Bundle (the file you created above)
         if !FileManager.default.fileExists(atPath: fileURL.path) {

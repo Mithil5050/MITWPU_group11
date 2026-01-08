@@ -15,7 +15,10 @@ class SelectMaterialViewController: UIViewController {
         // Do any additional setup after loading the view.
     }
     
-
+    @IBAction func doneTap(_ sender: UIButton) {
+        performSegue(withIdentifier: "showGeneration", sender: nil)
+    }
+    
     /*
     // MARK: - Navigation
 
