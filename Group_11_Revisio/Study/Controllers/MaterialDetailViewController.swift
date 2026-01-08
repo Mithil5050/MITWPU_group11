@@ -56,12 +56,10 @@ class MaterialDetailViewController: UIViewController {
     
     func saveChanges() {
         guard let topic = contentData,
-              let subject = parentSubjectName else { return }
+              let subject = parentSubjectName,
+              let updatedText = contentView.text else { return }
         
-        let newContent = contentView.text
-        
-        
-        print("Auto-Saved changes for: \(topic.name) in \(subject).")
+        DataManager.shared.updateTopicContent(subject: subject, topicName: topic.name, newText: updatedText)
     }
     
     // MARK: - Navigation Bar Actions

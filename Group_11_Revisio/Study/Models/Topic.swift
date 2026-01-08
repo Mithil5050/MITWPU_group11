@@ -9,7 +9,7 @@ import Foundation
 // Topic.swift
 
 
-struct Topic {
+struct Topic:Codable {
     let name: String
     let lastAccessed: String
     let materialType: String

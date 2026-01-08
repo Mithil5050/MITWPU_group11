@@ -6,7 +6,7 @@
 //
 
 import Foundation
-struct QuestionResultDetail {
+struct QuestionResultDetail:Codable {
     let questionText: String
     let wasCorrect: Bool
     let selectedAnswer: String?
@@ -22,7 +22,7 @@ struct QuestionResultDetail {
             return String(firstChar)
         }
 }
-struct FinalQuizResult {
+struct FinalQuizResult:Codable{
     let finalScore: Int
     let totalQuestions: Int
     let timeElapsed: TimeInterval
