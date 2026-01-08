@@ -999,8 +999,6 @@
                         <outlet property="startCreationButton" destination="h7V-XT-mHS" id="ebo-DN-igi"/>
                         <segue destination="z8q-8S-FlA" kind="show" identifier="HomeToFlashcardView" id="raQ-KE-LNM"/>
                         <segue destination="7vE-Hi-Vgg" kind="show" identifier="HomeToQuizInstruction" id="vkc-OX-p76"/>
-                        <segue destination="tp0-vv-vla" kind="show" identifier="HomeToNotesView" id="RRS-eU-krx"/>
-                        <segue destination="buF-Xg-GBl" kind="show" identifier="HomeToCheatSheetView" id="ZFw-GV-xZ4"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bo6-ID-gRs" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1352,90 +1350,6 @@
             </objects>
             <point key="canvasLocation" x="1534" y="-200"/>
         </scene>
-        <!--Document Editor View Controller-->
-        <scene sceneID="Msq-1E-Cz8">
-            <objects>
-                <viewController id="tp0-vv-vla" customClass="DocumentEditorViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="TNR-Qp-uqi">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="59x-5x-GmR">
-                                <rect key="frame" x="0.0" y="172" width="393" height="563"/>
-                                <color key="backgroundColor" systemColor="systemGray6Color"/>
-                                <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
-                                <color key="textColor" systemColor="labelColor"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                            </textView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="Wdd-lU-VDS"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="59x-5x-GmR" firstAttribute="leading" secondItem="Wdd-lU-VDS" secondAttribute="leading" id="05q-ZK-CpD"/>
-                            <constraint firstItem="Wdd-lU-VDS" firstAttribute="bottom" secondItem="59x-5x-GmR" secondAttribute="bottom" id="081-3n-BG5"/>
-                            <constraint firstItem="Wdd-lU-VDS" firstAttribute="trailing" secondItem="59x-5x-GmR" secondAttribute="trailing" id="5WM-v5-Ay8"/>
-                            <constraint firstItem="59x-5x-GmR" firstAttribute="top" secondItem="Wdd-lU-VDS" secondAttribute="top" id="GXs-sf-BgH"/>
-                        </constraints>
-                    </view>
-                    <navigationItem key="navigationItem" id="lyK-5V-Hp8">
-                        <rightBarButtonItems>
-                            <barButtonItem title="Edit" id="KBv-cC-dch"/>
-                            <barButtonItem title="Item" image="ellipsis.circle" catalog="system" id="V6l-yE-J0g"/>
-                        </rightBarButtonItems>
-                    </navigationItem>
-                    <connections>
-                        <outlet property="actionMenuButton" destination="V6l-yE-J0g" id="mSk-Gy-ptV"/>
-                        <outlet property="primaryTextView" destination="59x-5x-GmR" id="jPG-Ud-Fr0"/>
-                        <outlet property="toggleEditButton" destination="KBv-cC-dch" id="vZl-Ze-mf4"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="U6i-cR-uih" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="3056" y="-200"/>
-        </scene>
-        <!--Cheat Sheet Detail View Controller-->
-        <scene sceneID="Wfb-2k-QmJ">
-            <objects>
-                <viewController id="buF-Xg-GBl" customClass="CheatSheetDetailViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="5ah-yp-vGL">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="u4a-0M-MIS">
-                                <rect key="frame" x="0.0" y="172" width="393" height="563"/>
-                                <color key="backgroundColor" systemColor="systemGray6Color"/>
-                                <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
-                                <color key="textColor" systemColor="labelColor"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                            </textView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="RQC-jo-gwW"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="RQC-jo-gwW" firstAttribute="trailing" secondItem="u4a-0M-MIS" secondAttribute="trailing" id="D9z-Py-QyK"/>
-                            <constraint firstItem="u4a-0M-MIS" firstAttribute="leading" secondItem="RQC-jo-gwW" secondAttribute="leading" id="bg5-kF-vCa"/>
-                            <constraint firstItem="u4a-0M-MIS" firstAttribute="top" secondItem="RQC-jo-gwW" secondAttribute="top" id="hnQ-rW-vMl"/>
-                            <constraint firstItem="RQC-jo-gwW" firstAttribute="bottom" secondItem="u4a-0M-MIS" secondAttribute="bottom" id="tXi-bv-MsZ"/>
-                        </constraints>
-                    </view>
-                    <navigationItem key="navigationItem" id="pey-ps-dMb">
-                        <rightBarButtonItems>
-                            <barButtonItem title="Edit" id="xXr-tt-7jA"/>
-                            <barButtonItem title="Item" image="ellipsis.circle" catalog="system" id="taU-ir-UWb"/>
-                        </rightBarButtonItems>
-                    </navigationItem>
-                    <connections>
-                        <outlet property="cheatSheetActionMenu" destination="taU-ir-UWb" id="vQj-I8-LLf"/>
-                        <outlet property="cheatSheetEditToggle" destination="xXr-tt-7jA" id="pQu-mJ-vwN"/>
-                        <outlet property="cheatSheetTextView" destination="u4a-0M-MIS" id="yC6-qg-RKO"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Wqf-C1-WUd" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="3775" y="-200"/>
-        </scene>
         <!--Navigation Controller-->
         <scene sceneID="WuN-oK-wup">
             <objects>
@@ -1479,7 +1393,6 @@
         <image name="book.pages" catalog="system" width="107" height="128"/>
         <image name="checkmark" catalog="system" width="128" height="114"/>
         <image name="document" catalog="system" width="115" height="128"/>
-        <image name="ellipsis.circle" catalog="system" width="128" height="123"/>
         <image name="house" catalog="system" width="128" height="104"/>
         <image name="link" catalog="system" width="128" height="124"/>
         <image name="list.bullet.clipboard" catalog="system" width="98" height="128"/>
