@@ -245,18 +245,18 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
         return configuration
     }
     func executeDeletion(at indexPath: IndexPath) {
-        let subjectToDelete = self.subjectNames[indexPath.row]
+    let subjectToDelete = self.subjectNames[indexPath.row]
         
-       
-        self.subjectNames.remove(at: indexPath.row)
+        // 1. Tell DataManager to delete it from the actual JSON file on disk
+        DataManager.shared.deleteSubjectFolder(name: subjectToDelete)
         
-       
-        self.studyTableView.deleteRows(at: [indexPath], with: .fade)
+        // 2. Remove it from the local list so it disappears from the screen
+//        self.subjectNames.remove(at: indexPath.row)
+//        
+//        // 3. Animate the deletion in the table
+//        self.studyTableView.deleteRows(at: [indexPath], with: .fade)
         
-       
-        NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
-        
-        print("Subject deleted: \(subjectToDelete)")
+        print("Subject deleted from disk and UI: \(subjectToDelete)")
     }
         
     // MARK: - UITableViewDelegate (Accessory / Segue)

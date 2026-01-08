@@ -6,7 +6,7 @@
 //
 
 import Foundation
-struct Source {
+struct Source :Codable {
     let name: String
     let fileType: String
     let size: String     

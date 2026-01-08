@@ -65,20 +65,21 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.navigationController?.setToolbarHidden(false, animated: true)
     }
     @objc func generateAction() {
-        
-        guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else {
-            print("Error: Generate button tapped but no items selected.")
-            return
-        }
+        guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else { return }
 
-      
-        let selectedItems: [Any] = selectedPaths.map { filteredContent[$0.row] }
+        // Map closure to unwrap StudyItems back into raw objects for the Generation screen
+        let selectedRawItems: [Any] = selectedPaths.compactMap { indexPath in
+            let item = filteredContent[indexPath.row]
+            if let studyItem = item as? StudyItem {
+                switch studyItem {
+                case .topic(let topic): return topic
+                case .source(let source): return source
+                }
+            }
+            return nil
+        }
         
-       
-        performSegue(withIdentifier: "ShowGenerationScreen", sender: selectedItems)
-        
-       
-        print("Action: Navigating to Generation Screen with \(selectedItems.count) items.")
+        performSegue(withIdentifier: "ShowGenerationScreen", sender: selectedRawItems)
     }
     @objc func shareAction() {
         print("Action: Sharing selected materials.")
@@ -87,41 +88,41 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         print("Action: Moving selected items.")
     }
     @objc func deleteSelectionAction() {
-        
-        guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else {
-            return
-        }
+        guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else { return }
 
-        let selectedItems: [Any] = selectedPaths.map { filteredContent[$0.row] }
+        // Use compactMap (a closure) to unwrap StudyItems into raw Topic/Source objects
+        let selectedRawItems: [Any] = selectedPaths.compactMap { indexPath in
+            let item = filteredContent[indexPath.row]
+            if let studyItem = item as? StudyItem {
+                switch studyItem {
+                case .topic(let topic): return topic
+                case .source(let source): return source
+                }
+            }
+            return nil
+        }
      
         let alert = UIAlertController(
             title: "Delete Selected Items?",
-            message: "Are you sure you want to permanently delete \(selectedItems.count) items? This cannot be undone.",
+            message: "Are you sure you want to permanently delete \(selectedRawItems.count) items?",
             preferredStyle: .alert
         )
 
-        
         let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
             guard let self = self else { return }
             
+            // Pass the unwrapped items to the DataManager
+            DataManager.shared.deleteItems(subjectName: self.selectedSubject ?? "", items: selectedRawItems)
             
-            DataManager.shared.deleteItems(subjectName: self.selectedSubject ?? "", items: selectedItems)
-            
-           
             self.selectionCancelTapped()
             
-           
             if let subject = self.selectedSubject {
                  self.loadContentForSubject(subject, segmentIndex: self.materialsSegmentedControl.selectedSegmentIndex)
             }
         }
 
-       
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
-        
         alert.addAction(deleteAction)
-        alert.addAction(cancelAction)
-        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
 
@@ -306,30 +307,30 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             return UITableViewCell()
         }
         
+        // 1. Get the item from the array
         let contentItem = filteredContent[indexPath.row]
+        let separator = " • "
         
-       
-        if let topic = contentItem as? Topic {
-            
-            let visuals = getMaterialVisuals(for: topic.materialType)
-            let separator = " • "
-            
-            cell.titleLabel.text = topic.name
-            cell.subtitleLabel.text = topic.materialType + separator + "Last Accessed: \(topic.lastAccessed)"
-            cell.iconImageView.image = UIImage(systemName: visuals.symbolName)
-            cell.iconImageView.tintColor = visuals.color
-            
-        } else if let source = contentItem as? Source {
-            
-            let visuals = getSourceVisuals(for: source.fileType)
-            
-            cell.titleLabel.text = source.name
-            cell.subtitleLabel.text = "\(source.fileType) • \(source.size)"
-            cell.iconImageView.image = UIImage(systemName: visuals.symbolName)
-            cell.iconImageView.tintColor = visuals.color
-            
+        // 2. Use a switch to check if it's a Topic or a Source
+        if let studyItem = contentItem as? StudyItem {
+            switch studyItem {
+                
+            case .topic(let topic):
+                let visuals = getMaterialVisuals(for: topic.materialType)
+                cell.titleLabel.text = topic.name
+                cell.subtitleLabel.text = topic.materialType + separator + "Last Accessed: \(topic.lastAccessed)"
+                cell.iconImageView.image = UIImage(systemName: visuals.symbolName)
+                cell.iconImageView.tintColor = visuals.color
+                
+            case .source(let source):
+                let visuals = getSourceVisuals(for: source.fileType)
+                cell.titleLabel.text = source.name
+                cell.subtitleLabel.text = "\(source.fileType) \(separator) \(source.size)"
+                cell.iconImageView.image = UIImage(systemName: visuals.symbolName)
+                cell.iconImageView.tintColor = visuals.color
+            }
         } else {
-            
+            // Fallback for unexpected data types
             cell.titleLabel.text = "Error: Unknown Content"
             cell.subtitleLabel.text = ""
             cell.iconImageView.image = UIImage(systemName: "xmark.octagon.fill")
@@ -370,30 +371,33 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     
    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-     
-       
-        
         if tableView.isEditing {
-           
-            print("Item at \(indexPath.row) selected.")
             updateToolbarForSelection()
         } else {
-           
             tableView.deselectRow(at: indexPath, animated: true)
             
-            let contentItem = filteredContent[indexPath.row]
+            guard let studyItem = filteredContent[indexPath.row] as? StudyItem else { return }
             
-            if let topic = contentItem as? Topic {
+            switch studyItem {
+            case .topic(let topic):
                 let viewableTypes = ["Notes", "Cheatsheet"]
+                
                 if viewableTypes.contains(topic.materialType) {
                     performSegue(withIdentifier: "ShowMaterialDetail", sender: topic)
-                } else {
+                } else if topic.materialType == "Quiz" {
+                    performSegue(withIdentifier: "ShowInstructionScreen", sender: topic)
+                } else if topic.materialType == "Flashcards" {
                    
-                    print("Action: Opening dedicated view for \(topic.materialType)")
-                    let alert = UIAlertController(title: "Feature Coming Soon", message: "A dedicated view for \(topic.materialType) will be available shortly.", preferredStyle: .alert)
+                    performSegue(withIdentifier: "openFlashcards", sender: topic)
+                } else {
+                    // Fallback for types you haven't built yet
+                    let alert = UIAlertController(title: "Coming Soon", message: "View for \(topic.materialType) is coming soon.", preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default))
                     self.present(alert, animated: true)
                 }
+                
+            case .source(let source):
+                print("Opening source: \(source.name)")
             }
         }
     }
@@ -440,30 +444,27 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
    
     func applyFilterAndReload() {
-        
-       
         let contentToFilter = currentContent
         
         if currentFilterType == "All" {
-            
             filteredContent = contentToFilter
         } else {
-            
+            // Advanced Closure using 'filter'
             filteredContent = contentToFilter.filter { item in
+                guard let studyItem = item as? StudyItem else { return false }
                 
-                
-                if let topic = item as? Topic {
+                switch studyItem {
+                case .topic(let topic):
+                    // The actual filtering logic
                     return topic.materialType == currentFilterType
+                case .source:
+                    // Sources don't match material types like "Quiz" or "Notes"
+                    return false
                 }
-                
-                return false
             }
         }
         
-        
         topicsTableView.reloadData()
-        
-        
     }
    
 
@@ -610,30 +611,43 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
 
    
-
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        var finalTopic: Topic?
+        
+        if let topic = sender as? Topic {
+            finalTopic = topic
+        } else if let studyItem = sender as? StudyItem {
+            if case .topic(let topic) = studyItem {
+                finalTopic = topic
+            }
+        }
+
+        // --- YOUR EXISTING SEGUES ---
         if segue.identifier == "ShowMaterialDetail" {
-            if let detailVC = segue.destination as? MaterialDetailViewController,
-               let topic = sender as? Topic {
-                    
-                
+            if let detailVC = segue.destination as? MaterialDetailViewController, let topic = finalTopic {
                 detailVC.materialName = topic.name
                 detailVC.contentData = topic
                 detailVC.parentSubjectName = selectedSubject
             }
+        } else if segue.identifier == "ShowInstructionScreen" {
+            if let instructionVC = segue.destination as? InstructionViewController, let topic = finalTopic {
+                instructionVC.quizTopic = topic
+                instructionVC.parentSubjectName = selectedSubject
+            }
         }
         
-        
+        else if segue.identifier == "openFlashcards" {
+            if let flashVC = segue.destination as? FlashcardsViewController, let topic = finalTopic {
+                // This sends "Partial Derivatives" and the cards to the player
+                flashVC.currentTopic = topic
+            }
+        }
+        // --- REST OF YOUR CODE ---
         else if segue.identifier == "ShowGenerationScreen" {
-            
-            if let generationVC = segue.destination as? GenerationViewController,
-               let selectedItems = sender as? [Any] {
-                
-               
-               generationVC.sourceItems = selectedItems
-               generationVC.parentSubjectName = selectedSubject
-                
-               
+            if let generationVC = segue.destination as? GenerationViewController, let items = sender as? [Any] {
+                generationVC.sourceItems = items
+                generationVC.parentSubjectName = selectedSubject
                 selectionCancelTapped()
             }
         }

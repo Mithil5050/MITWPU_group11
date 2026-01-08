@@ -16,11 +16,11 @@ import Foundation
 
 // MARK: - 1. Structure Definitions
 
-struct SourceTopic {
+struct SourceTopic: Codable {
     let name: String
 }
 
-struct QuizQuestion {
+struct QuizQuestion: Codable {
     let questionText: String
     let answers: [String]
     let correctAnswerIndex: Int
