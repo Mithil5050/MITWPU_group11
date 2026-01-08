@@ -34,6 +34,8 @@ let showStudyPlanSegueID = "ShowStudyPlanSegue"
 let showTodayTaskSegueID = "showTodayTaskSegue"
 let showConnectionsSegueID = "ConnectionsSegue"
 let showWordFillSegueID = "ShowWordFillSegue"
+// NEW: Segue ID for the upload screen
+let showUploadConfirmationSegueID = "ShowUploadConfirmation"
 
 protocol QuickGamesCellDelegate: AnyObject {
     func didSelectQuickGame(gameTitle: String)
@@ -41,8 +43,7 @@ protocol QuickGamesCellDelegate: AnyObject {
 
 class HomeViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
-    let uploadContentSegueID = "ShowUploadCreation"
-
+    // Existing Properties
     var heroData: [ContentItem] = []
     var studyPlanData: [ContentItem] = [ContentItem(title: "Study Plan", iconName: "calendar", itemType: "PlanOverview")]
     var uploadItems: [ContentItem] = []
@@ -55,7 +56,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         setupData()
         setupCollectionView()
     }
@@ -91,6 +91,18 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         performSegue(withIdentifier: "showProfileSegue", sender: nil)
     }
     
+    // MARK: - Navigation Preparation
+    // This is where data is passed to the next screen before the segue happens
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == showUploadConfirmationSegueID {
+            // Verify destination and cast sender to String
+            if let destinationVC = segue.destination as? UploadConfirmationViewController,
+               let filename = sender as? String {
+                destinationVC.uploadedContentName = filename
+            }
+        }
+    }
+    
     // MARK: - Layout Configuration
     
     func generateLayout() -> UICollectionViewLayout {
@@ -106,13 +118,10 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
 
             switch sectionType {
             case .hero:
-                // Height adjusted to fit the greeting card properly
                 let heroItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(124))
                 let heroItem = NSCollectionLayoutItem(layoutSize: heroItemSize)
                 let heroGroup = NSCollectionLayoutGroup.horizontal(layoutSize: heroItemSize, subitems: [heroItem])
                 let section = NSCollectionLayoutSection(group: heroGroup)
-                
-                // TOP INSET: Set to 0 to flush against the top; adjust to ~50 if you want it exactly below the status bar
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 return section
                 
@@ -187,19 +196,15 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         switch sectionType {
         case .hero:
             return collectionView.dequeueReusableCell(withReuseIdentifier: hiAlexCellID, for: indexPath)
-            
         case .studyPlan:
             return collectionView.dequeueReusableCell(withReuseIdentifier: studyPlanCellID, for: indexPath)
-            
         case .uploadContent:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: uploadContentCellID, for: indexPath) as! UploadContentCollectionViewCell
             cell.delegate = self
             cell.configure(with: uploadItems)
             return cell
-        
         case .continueLearning:
             return collectionView.dequeueReusableCell(withReuseIdentifier: continueLearningCellID, for: indexPath)
-            
         case .quickGames:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: quickGamesCellID, for: indexPath) as! QuickGamesCollectionViewCell
             cell.delegate = self
@@ -225,7 +230,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         return headerView
     }
 
-    // MARK: - Navigation
+    // MARK: - CollectionView Navigation
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let sectionType = HomeSection.allCases[indexPath.section]
         switch sectionType {
@@ -246,54 +251,23 @@ extension HomeViewController: QuickGamesCellDelegate {
     }
 }
 
-// MARK: - UploadContentCellDelegate Implementation
-//extension HomeViewController: UploadContentCellDelegate {
-//    private func presentUploadContent() {
-//        // Prefer storyboard instantiation if you have a scene for UploadContentViewController
-//        // Otherwise, init directly.
-//        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-//        if let vc = storyboard.instantiateViewController(withIdentifier: "UploadContentViewController") as? UploadContentViewController {
-//            self.navigationController?.pushViewController(vc, animated: true)
-//        } else {
-//            // Fallback if storyboard ID is not set; instantiate directly.
-//            let vc = UploadContentViewController()
-//            self.navigationController?.pushViewController(vc, animated: true)
-//        }
-//    }
+// MARK: - UploadContentCellDelegate & Picker Implementation
 extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
+    // -------------------------------------------------------------
+    // FIXED: Navigation using Segue to prevent "Storyboard ID" Crash
+    // -------------------------------------------------------------
     func navigateToConfirmation(with contentName: String) {
-        // 1. Save the new filename to the JSON "Database"
+        print("🚀 Navigating with file: \(contentName)")
+        
+        // 1. Save to Database
         JSONDatabaseManager.shared.addUploadedFile(name: contentName)
         
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        guard let confirmationVC = storyboard.instantiateViewController(withIdentifier: "ConfirmationVC") as? UploadConfirmationViewController else {
-            print("CRITICAL: Storyboard ID 'ConfirmationVC' not set!")
-            return
-        }
-        
-        // 2. Pass the name for the header label
-        confirmationVC.uploadedContentName = contentName
-        self.navigationController?.pushViewController(confirmationVC, animated: true)
+        // 2. Perform the Segue (Matches the arrow you created in Storyboard)
+        // Ensure the arrow identifier in Storyboard is "ShowUploadConfirmation"
+        performSegue(withIdentifier: showUploadConfirmationSegueID, sender: contentName)
     }
-//    func navigateToConfirmation(with contentName: String) {
-//            // 1. Access the Main Storyboard
-//            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-//            
-//            // 2. Instantiate the VC using the Storyboard ID "ConfirmationVC"
-//            // Ensure you have set this ID in the Identity Inspector in Xcode.
-//            guard let confirmationVC = storyboard.instantiateViewController(withIdentifier: "ConfirmationVC")as? UploadConfirmationViewController else {
-//                print("Error: Could not find UploadConfirmationViewController with identifier 'ConfirmationVC'")
-//                return
-//            }
-//            
-//            // 3. Inject the data into the destination controller
-//            confirmationVC.uploadedContentName = contentName
-//            
-//            // 4. Push onto the navigation stack
-//            // This requires the HomeViewController to be embedded in a UINavigationController
-//            self.navigationController?.pushViewController(confirmationVC, animated: true)
-//        }
+
     func uploadCellDidTapDocument(_ cell: UploadContentCollectionViewCell) {
         let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.pdf, .plainText], asCopy: true)
         picker.delegate = self
@@ -321,8 +295,6 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         alert.addAction(UIAlertAction(title: "Confirm", style: .default) { _ in
             if let text = alert.textFields?.first?.text, !text.isEmpty {
                 self.navigateToConfirmation(with: text)
-            } else {
-                self.performSegue(withIdentifier: "showUploadConfirmation", sender: nil)
             }
         })
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -331,26 +303,14 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
 
     // System Picker Callbacks
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        if let url = urls.first { navigateToConfirmation(with: url.lastPathComponent) }
+        guard let url = urls.first else { return }
+        print("✅ File Picked: \(url.lastPathComponent)")
+        navigateToConfirmation(with: url.lastPathComponent)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        picker.dismiss(animated: true) { self.navigateToConfirmation(with: "Media Asset") }
+        picker.dismiss(animated: true) {
+            self.navigateToConfirmation(with: "Media Asset")
+        }
     }
 }
-//    func uploadCellDidTapDocument(_ cell: UploadContentCollectionViewCell) {
-//        presentUploadContent()
-//    }
-//    
-//    func uploadCellDidTapMedia(_ cell: UploadContentCollectionViewCell) {
-//        presentUploadContent()
-//    }
-//    
-//    func uploadCellDidTapLink(_ cell: UploadContentCollectionViewCell) {
-//        presentUploadContent()
-//    }
-//    
-//    func uploadCellDidTapText(_ cell: UploadContentCollectionViewCell) {
-//        presentUploadContent()
-//    }
-//}

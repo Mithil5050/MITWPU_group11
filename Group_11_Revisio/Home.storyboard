@@ -13,7 +13,7 @@
         <!--Profile-->
         <scene sceneID="TUB-E4-WgM">
             <objects>
-                <viewController id="app-ce-bSr" customClass="ProfileViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="app-ce-bSr" customClass="ProfileViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="U63-0e-cz1">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="793"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -49,7 +49,7 @@
         <!--Word Fill View Controller-->
         <scene sceneID="hjh-J9-Bp2">
             <objects>
-                <viewController id="29q-b6-TaY" customClass="WordFillViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="29q-b6-TaY" customClass="WordFillViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="cJB-yH-dJA">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -194,7 +194,7 @@
         <!--Word Fill Launch View Controller-->
         <scene sceneID="YRA-50-TtV">
             <objects>
-                <viewController id="zbs-cn-zP7" customClass="WordFillLaunchViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="zbs-cn-zP7" customClass="WordFillLaunchViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="xfH-fU-NAd">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -270,7 +270,7 @@
         <!--Connections Launching Screen View Controller-->
         <scene sceneID="76M-xd-TRN">
             <objects>
-                <viewController id="DRA-Mm-MJo" customClass="ConnectionsLaunchingScreenViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="DRA-Mm-MJo" customClass="ConnectionsLaunchingScreenViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="m2Y-mO-f3Z">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -347,7 +347,7 @@
         <!--Connections-->
         <scene sceneID="S0G-jM-cV4">
             <objects>
-                <viewController id="OcD-Ae-olb" customClass="ConnectionsViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="OcD-Ae-olb" customClass="ConnectionsViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="n50-H9-pG1">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -395,7 +395,7 @@
         <!--Home-->
         <scene sceneID="tYZ-Br-z2I">
             <objects>
-                <viewController id="4ZY-0A-Wo4" customClass="HomeViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="4ZY-0A-Wo4" customClass="HomeViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="QFp-Kk-Ioy" customClass="UICollectionView">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -454,7 +454,7 @@
                         <segue destination="9gS-Nz-JOT" kind="show" identifier="showTodayTaskSegue" id="fks-Zx-VCD"/>
                         <segue destination="DRA-Mm-MJo" kind="show" identifier="ConnectionsSegue" id="WCv-mS-43e"/>
                         <segue destination="zbs-cn-zP7" kind="show" identifier="ShowWordFillSegue" id="vDe-vn-Hlx"/>
-                        <segue destination="WNP-DU-Qf0" kind="show" identifier="showUploadConfirmation" id="8xs-Zm-Bpf"/>
+                        <segue destination="WNP-DU-Qf0" kind="show" identifier="ShowUploadConfirmation" id="8xs-Zm-Bpf"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="S36-4S-LDv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -464,7 +464,7 @@
         <!--Study Plan-->
         <scene sceneID="jhv-vV-joN">
             <objects>
-                <viewController id="22e-rk-fk9" customClass="StudyPlanViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="22e-rk-fk9" customClass="StudyPlanViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="nMK-BI-7hE">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -592,7 +592,7 @@
         <!--Add to Material-->
         <scene sceneID="na4-Op-mpZ">
             <objects>
-                <viewController storyboardIdentifier="UploadContent" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ry9-kf-REg" customClass="SelectMaterialViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="UploadContent" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ry9-kf-REg" customClass="SelectMaterialViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eec-Sm-vQp">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -606,7 +606,7 @@
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="Done"/>
                                 <connections>
-                                    <action selector="DoneTapped:" destination="ry9-kf-REg" eventType="touchUpInside" id="Zd6-nW-bo8"/>
+                                    <action selector="doneTap:" destination="ry9-kf-REg" eventType="touchUpInside" id="OVd-hp-kCw"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -631,7 +631,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <segue destination="5F1-6M-WRb" kind="show" id="Ww0-F5-fbG"/>
+                        <segue destination="5F1-6M-WRb" kind="show" identifier="showGeneration" id="Ww0-F5-fbG"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="EWJ-XS-ZGI" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -641,7 +641,7 @@
         <!--Upload Content-->
         <scene sceneID="OBc-0S-qpG">
             <objects>
-                <viewController storyboardIdentifier="ConfirmationVC" useStoryboardIdentifierAsRestorationIdentifier="YES" id="WNP-DU-Qf0" customClass="UploadConfirmationViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ConfirmationVC" useStoryboardIdentifierAsRestorationIdentifier="YES" id="WNP-DU-Qf0" customClass="UploadConfirmationViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hnx-2M-7GR">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -689,10 +689,15 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Upload Content" largeTitleDisplayMode="never" id="I0Y-bt-6WG">
-                        <barButtonItem key="rightBarButtonItem" image="plus" catalog="system" id="VeQ-Z7-6uO"/>
+                        <barButtonItem key="rightBarButtonItem" image="plus" catalog="system" id="VeQ-Z7-6uO">
+                            <connections>
+                                <action selector="didTapAddButton:" destination="WNP-DU-Qf0" id="gHr-3r-84n"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="UploadedContent" destination="K2T-dE-sGz" id="yIm-MO-4Sq"/>
+                        <outlet property="addButton" destination="VeQ-Z7-6uO" id="Tjv-d3-j9w"/>
                         <outlet property="doneButton" destination="9qm-D3-DPE" id="hj5-6x-vOC"/>
                         <segue destination="ry9-kf-REg" kind="show" identifier="showGenerationScreenHome" id="67J-sT-579"/>
                     </connections>
@@ -704,7 +709,7 @@
         <!--Generation Screen-->
         <scene sceneID="KqS-LP-aKJ">
             <objects>
-                <viewController id="5F1-6M-WRb" customClass="GenerateHomeViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="5F1-6M-WRb" customClass="GenerateHomeViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="lgr-Vc-Vao">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -962,7 +967,7 @@
         <!--Big Data-->
         <scene sceneID="yGd-NL-qxy">
             <objects>
-                <viewController id="z8q-8S-FlA" customClass="FlashcardViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="z8q-8S-FlA" customClass="FlashcardViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Mar-51-CW7">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1048,7 +1053,7 @@
         <!--Add Flashcard-->
         <scene sceneID="e10-LL-N4Q">
             <objects>
-                <viewController id="5kv-o4-MUT" customClass="AddFlashcardViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="5kv-o4-MUT" customClass="AddFlashcardViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="jKR-Ft-EMT">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="793"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1179,7 +1184,7 @@
         <!--Today's Task-->
         <scene sceneID="szQ-mn-Qzr">
             <objects>
-                <viewController id="9gS-Nz-JOT" customClass="TodaysTaskViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="9gS-Nz-JOT" customClass="TodaysTaskViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="xJC-V1-4P4">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1226,7 +1231,7 @@
                                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                                 </collectionViewFlowLayout>
                                                 <cells>
-                                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="goy-vO-2il" customClass="InfoCollectionViewCell" customModule="MITWPU_group11_" customModuleProvider="target">
+                                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="goy-vO-2il" customClass="InfoCollectionViewCell" customModule="Group_11_Revisio" customModuleProvider="target">
                                                         <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="0pj-sf-vZ2">

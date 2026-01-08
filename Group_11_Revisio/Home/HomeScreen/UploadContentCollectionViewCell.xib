@@ -10,7 +10,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="UploadContentCollectionViewCell" customModule="MITWPU_group11_" customModuleProvider="target">
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="UploadContentCollectionViewCell" customModule="Group_11_Revisio" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="370" height="142"/>
             <autoresizingMask key="autoresizingMask"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
@@ -21,7 +21,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="370" height="142"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Upload Content" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z4b-NS-uH0">
-                                <rect key="frame" x="64" y="13" width="178.33333333333337" height="30"/>
+                                <rect key="frame" x="64.000000000000014" y="13" width="178.33333333333337" height="30"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="25"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -94,16 +94,16 @@ Text</string>
                                 </constraints>
                             </stackView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" verticalHuggingPriority="251" image="doc.badge.plus" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="nA2-TI-eEL">
-                                <rect key="frame" x="10.333333333333332" y="14.333333333333332" width="45.666666666666671" height="51.333333333333343"/>
+                                <rect key="frame" x="10.333333333333343" y="12.333333333333314" width="45.666666666665378" height="51.333333333334082"/>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemGray6Color"/>
                         <constraints>
-                            <constraint firstItem="okN-sT-ncX" firstAttribute="top" secondItem="nA2-TI-eEL" secondAttribute="bottom" constant="8" symbolic="YES" id="8aN-fK-f7b"/>
+                            <constraint firstItem="okN-sT-ncX" firstAttribute="top" secondItem="nA2-TI-eEL" secondAttribute="bottom" constant="9.999999999999261" id="8aN-fK-f7b"/>
                             <constraint firstItem="okN-sT-ncX" firstAttribute="top" secondItem="nXl-Bl-37p" secondAttribute="bottom" constant="8" id="G75-dJ-oYT"/>
                             <constraint firstItem="Z4b-NS-uH0" firstAttribute="leading" secondItem="nA2-TI-eEL" secondAttribute="trailing" constant="8" id="GIF-Az-Hd5"/>
                             <constraint firstItem="nXl-Bl-37p" firstAttribute="top" secondItem="Z4b-NS-uH0" secondAttribute="bottom" constant="2" id="Jcw-rF-0kA"/>
-                            <constraint firstItem="nA2-TI-eEL" firstAttribute="top" secondItem="SjA-Ya-yUK" secondAttribute="top" constant="14" id="WCQ-zG-p4g"/>
+                            <constraint firstItem="nA2-TI-eEL" firstAttribute="top" secondItem="SjA-Ya-yUK" secondAttribute="top" constant="11.999999999999982" id="WCQ-zG-p4g"/>
                             <constraint firstItem="nA2-TI-eEL" firstAttribute="leading" secondItem="SjA-Ya-yUK" secondAttribute="leading" constant="13.000000000000009" id="aWQ-bI-II8"/>
                             <constraint firstItem="Z4b-NS-uH0" firstAttribute="top" secondItem="SjA-Ya-yUK" secondAttribute="top" constant="13" id="fLt-81-zyG"/>
                             <constraint firstAttribute="height" constant="142" id="o6x-e1-8aG"/>
