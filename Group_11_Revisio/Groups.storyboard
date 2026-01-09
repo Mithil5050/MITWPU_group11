@@ -829,6 +829,11 @@
                                     <constraint firstItem="Xca-rz-5rQ" firstAttribute="top" secondItem="OP9-1g-lwR" secondAttribute="bottom" constant="16" id="vPm-na-4Sq"/>
                                 </constraints>
                             </view>
+                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R1w-ph-Mc3" userLabel="leaderboardView">
+                                <rect key="frame" x="81" y="373" width="240" height="128"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="TC9-eV-RK9"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>

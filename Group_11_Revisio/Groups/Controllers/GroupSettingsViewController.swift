@@ -193,9 +193,10 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
                 code: "ABC-123"
             )
             codeVC.isFromCreateGroup = false
-            codeVC.modalPresentationStyle = .pageSheet
-            present(codeVC, animated: true)
-        }
+            
+            let nav = UINavigationController(rootViewController: codeVC)
+            nav.modalPresentationStyle = .pageSheet
+            present(nav, animated: true)        }
     }
 
     func collectionView(_ collectionView: UICollectionView,
