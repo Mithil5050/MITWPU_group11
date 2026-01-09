@@ -1,6 +1,12 @@
+//
+//  UploadContentCollectionViewCell.swift
+//  Group_11_Revisio
+//
+//  Created by Mithil on 10/12/25.
+//
+
 import UIKit
 
-// MARK: - Delegate Protocol
 protocol UploadContentCellDelegate: AnyObject {
     func uploadCellDidTapDocument(_ cell: UploadContentCollectionViewCell)
     func uploadCellDidTapMedia(_ cell: UploadContentCollectionViewCell)
@@ -8,49 +14,81 @@ protocol UploadContentCellDelegate: AnyObject {
     func uploadCellDidTapText(_ cell: UploadContentCollectionViewCell)
 }
 
-// MARK: - Collection View Cell
 class UploadContentCollectionViewCell: UICollectionViewCell {
+
+    // MARK: - Outlets
+    @IBOutlet weak var containerView: UIView!
     
-    // MARK: - Properties
+    // The 4 White Button Containers
+    @IBOutlet weak var docContainer: UIView!
+    @IBOutlet weak var mediaContainer: UIView!
+    @IBOutlet weak var linkContainer: UIView!
+    @IBOutlet weak var textContainer: UIView!
+    
     weak var delegate: UploadContentCellDelegate?
-    
-    private var items: [ContentItem] = []
-    
-    // If you have outlets (labels, icons, etc.), declare them here and connect in the XIB.
-    // @IBOutlet weak var titleLabel: UILabel!
-    // @IBOutlet weak var stackView: UIStackView!
-    @IBOutlet var ViewCard: UIView!
-    
+
     override func awakeFromNib() {
         super.awakeFromNib()
-        // Style the cell if needed
-        contentView.layer.cornerRadius = 16
-        contentView.layer.masksToBounds = true
-        contentView.backgroundColor = .systemGray6
-        ViewCard.backgroundColor = UIColor(hex: "F5F5F5")
+        setupMainCard()
+        setupButtons()
+        addGestures()
+    }
+
+    // MARK: - Styling
+    
+    private func setupMainCard() {
+        // FIX: Use System Colors instead of hardcoded RGB
+        // .systemGray6 is Light Gray in Light Mode, and Dark Gray in Dark Mode.
+        containerView.backgroundColor = UIColor(hex: "F5F5F5")
+        
+        containerView.layer.cornerRadius = 20
+        containerView.clipsToBounds = true
     }
     
-    // Configure the cell with any data you want to show (e.g., recent uploads list)
+    private func setupButtons() {
+        let containers = [docContainer, mediaContainer, linkContainer, textContainer]
+        
+        for view in containers {
+            guard let view = view else { continue }
+            
+            // FIX: Use 'secondarySystemGroupedBackground'
+            // Light Mode: Pure White (Matches your design)
+            // Dark Mode: A lighter gray that stands out against the background
+            view.backgroundColor = .secondarySystemGroupedBackground
+            
+            view.layer.cornerRadius = 16
+            
+            // Shadows (iOS automatically handles shadow visibility, but they are subtle in Dark Mode)
+            view.layer.shadowColor = UIColor.black.cgColor
+            view.layer.shadowOpacity = 0.05
+            view.layer.shadowOffset = CGSize(width: 0, height: 2)
+            view.layer.shadowRadius = 4
+            view.layer.masksToBounds = false
+        }
+    }
+
+    // MARK: - Interaction (Tap Gestures)
+    
+    private func addGestures() {
+        let docTap = UITapGestureRecognizer(target: self, action: #selector(handleDocTap))
+        docContainer.addGestureRecognizer(docTap)
+        
+        let mediaTap = UITapGestureRecognizer(target: self, action: #selector(handleMediaTap))
+        mediaContainer.addGestureRecognizer(mediaTap)
+        
+        let linkTap = UITapGestureRecognizer(target: self, action: #selector(handleLinkTap))
+        linkContainer.addGestureRecognizer(linkTap)
+        
+        let textTap = UITapGestureRecognizer(target: self, action: #selector(handleTextTap))
+        textContainer.addGestureRecognizer(textTap)
+    }
+    
+    @objc private func handleDocTap() { delegate?.uploadCellDidTapDocument(self) }
+    @objc private func handleMediaTap() { delegate?.uploadCellDidTapMedia(self) }
+    @objc private func handleLinkTap() { delegate?.uploadCellDidTapLink(self) }
+    @objc private func handleTextTap() { delegate?.uploadCellDidTapText(self) }
+    
     func configure(with items: [ContentItem]) {
-        self.items = items
-        // Update UI from items as needed
-        // Example: titleLabel.text = "Upload Content"
-    }
-    
-    // MARK: - Button Actions (connect these in the XIB)
-    @IBAction func documentButtonTapped(_ sender: UIButton) {
-        delegate?.uploadCellDidTapDocument(self)
-    }
-    
-    @IBAction func mediaButtonTapped(_ sender: UIButton) {
-        delegate?.uploadCellDidTapMedia(self)
-    }
-    
-    @IBAction func linkButtonTapped(_ sender: UIButton) {
-        delegate?.uploadCellDidTapLink(self)
-    }
-    
-    @IBAction func textButtonTapped(_ sender: UIButton) {
-        delegate?.uploadCellDidTapText(self)
+        // No data config needed for static layout
     }
 }
