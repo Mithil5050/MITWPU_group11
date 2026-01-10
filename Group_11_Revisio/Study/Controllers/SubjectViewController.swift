@@ -639,8 +639,11 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         else if segue.identifier == "openFlashcards" {
             if let flashVC = segue.destination as? FlashcardsViewController, let topic = finalTopic {
-                // This sends "Partial Derivatives" and the cards to the player
+                // 1. Pass the topic data (questions/answers)
                 flashVC.currentTopic = topic
+                
+                // 2. Pass the folder name (Required for SAVING new cards to JSON)
+                flashVC.parentSubjectName = self.selectedSubject
             }
         }
         // --- REST OF YOUR CODE ---

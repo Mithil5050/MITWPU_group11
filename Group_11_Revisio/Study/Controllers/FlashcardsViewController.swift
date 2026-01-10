@@ -20,7 +20,7 @@ protocol AddFlashcardsDelegate: AnyObject {
 }
 
 // MARK: - 3. View Controller Implementation
-class FlashcardsViewController: UIViewController, AddFlashcardDelegate {
+class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
 
     // MARK: - View Controller Outlets (Connect these in your Storyboard)
     @IBOutlet weak var cardsView: UIView!
@@ -29,6 +29,7 @@ class FlashcardsViewController: UIViewController, AddFlashcardDelegate {
     @IBOutlet weak var nextButtonStudy: UIButton!
     
     var currentTopic : Topic?
+    var parentSubjectName: String?
     // MARK: - State Management
     private var flashcards: [Flashcard] = []
     
@@ -124,16 +125,16 @@ class FlashcardsViewController: UIViewController, AddFlashcardDelegate {
     }
     
     @IBAction func addFlashcardButtonTapped(_ sender: Any) {
-        performSegue(withIdentifier: "AddCardSegue", sender: self)
+        performSegue(withIdentifier: "addFlashcard", sender: self)
     }
     
     // MARK: - Segue Preparation (Injecting the Delegate)
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "AddCardSegue" {
+        if segue.identifier == "addFlashcard" {
             if let navigationController = segue.destination as? UINavigationController,
-               let destinationVC = navigationController.topViewController as? AddFlashcardViewController {
+               let destinationVC = navigationController.topViewController as? AddFlashcardsViewController {
                 destinationVC.delegate = self
-            } else if let destinationVC = segue.destination as? AddFlashcardViewController {
+            } else if let destinationVC = segue.destination as? AddFlashcardsViewController {
                 destinationVC.delegate = self
             }
         }
@@ -142,8 +143,26 @@ class FlashcardsViewController: UIViewController, AddFlashcardDelegate {
     //  AddFlashcardDelegate Protocol Implementation
     
     func didCreateNewFlashcard(card: Flashcard) {
+        
         flashcards.append(card)
         
+       
+        let newCardString = "\(card.term)|\(card.definition)"
+        
+       
+        if let currentBody = currentTopic?.largeContentBody, !currentBody.isEmpty {
+            currentTopic?.largeContentBody = currentBody + "\n" + newCardString
+        } else {
+            currentTopic?.largeContentBody = newCardString
+        }
+        
+        
+        if let subject = parentSubjectName, let topicName = currentTopic?.name {
+            let updatedText = currentTopic?.largeContentBody ?? ""
+            DataManager.shared.updateTopicContent(subject: subject, topicName: topicName, newText: updatedText)
+        }
+        
+       
         currentCardIndex = flashcards.count - 1
         isTermDisplayed = true
         updateCardContent(animated: true)

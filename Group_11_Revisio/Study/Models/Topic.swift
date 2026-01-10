@@ -6,15 +6,12 @@
 //
 
 import Foundation
-// Topic.swift
 
-
-struct Topic:Codable {
+struct Topic: Codable {
     let name: String
     let lastAccessed: String
     let materialType: String
-   
-    var parentSubjectName: String?
+    var largeContentBody: String? // Move this UP to position 4
     
-    var largeContentBody: String?
+    var parentSubjectName: String? // Move this DOWN to the end
 }

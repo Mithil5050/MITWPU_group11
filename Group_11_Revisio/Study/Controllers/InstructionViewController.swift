@@ -79,18 +79,20 @@ class InstructionViewController: UIViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "StartQuiz" {
-            
             if let quizVC = segue.destination as? QuizViewController {
                 
-               
-                let nameToPass = self.sourceNameForQuiz ?? self.quizTopic?.name ?? "DEFAULT_FALLBACK_SOURCE"
                 
+                quizVC.quizTopic = self.quizTopic
+                
+                quizVC.parentSubjectName = self.parentSubjectName
               
+                let nameToPass = self.sourceNameForQuiz ?? self.quizTopic?.name ?? "Quiz"
                 quizVC.selectedSourceName = nameToPass
-                  
-                print("InstructionVC forwarding source: \(nameToPass) to QuizVC.")
+                
+                print("InstructionVC: Forwarding \(quizTopic?.name ?? "nil") and Subject: \(parentSubjectName ?? "nil")")
             }
         }
+    }
     }
     /*
     // MARK: - Navigation
@@ -102,4 +104,4 @@ class InstructionViewController: UIViewController {
     }
     */
 
-}
+
