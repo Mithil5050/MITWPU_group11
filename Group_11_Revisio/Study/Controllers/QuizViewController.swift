@@ -38,24 +38,24 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
-        let sourceToLoad = self.selectedSourceName ?? "Taylor Series PDF"
-        
-        
-        allQuestions = QuizManager.getQuestions(for: sourceToLoad)
-        
-        
-        title = sourceToLoad
-        navigationItem.hidesBackButton = true
-        let quitButton = UIBarButtonItem(image: UIImage(systemName: "chevron.backward"), style: .plain, target: self, action: #selector(backButtonTapped))
-        navigationItem.leftBarButtonItem = quitButton
+       
+        title = selectedSourceName ?? quizTopic?.name ?? "Quiz"
         
        
+        if let contentBody = quizTopic?.largeContentBody, !contentBody.isEmpty {
+            
+            self.allQuestions = unpackQuestions(from: contentBody)
+            print(" Loaded \(allQuestions.count) dynamic questions from JSON")
+        } else {
+            // Fallback for your hardcoded PDF quizzes
+            let sourceToLoad = self.selectedSourceName ?? "Taylor Series PDF"
+            allQuestions = QuizManager.getQuestions(for: sourceToLoad)
+            print(" Falling back to static QuizManager")
+        }
+
         setupButtons()
         setupNavigationBarButtons()
         displayQuestion()
-        
-       
         startTimer()
     }
 
@@ -404,6 +404,42 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
                 resultsVC.finalResult = results
             }
         }
+    }
+    private func unpackQuestions(from content: String) -> [QuizQuestion] {
+        let lines = content.components(separatedBy: "\n")
+        var loadedQuestions: [QuizQuestion] = []
+        
+        for line in lines where !line.isEmpty {
+            let parts = line.components(separatedBy: "|")
+            
+            // Ensure we have at least Question + 4 Answers
+            if parts.count >= 5 {
+                let questionText = parts[0]
+                let ans1 = parts[1]
+                let ans2 = parts[2]
+                let ans3 = parts[3]
+                let ans4 = parts[4]
+                let answers = [ans1, ans2, ans3, ans4]
+                
+                // Handle Correct Index (Part 6) - Fallback to 0 if missing
+                let correctIndex = parts.count > 5 ? (Int(parts[5]) ?? 0) : 0
+                
+                // Handle Hint (Part 7) - Fallback to generic hint if missing
+                let hintText = parts.count > 6 ? parts[6] : "Focus on the core concepts."
+                
+                let question = QuizQuestion(
+                    questionText: questionText,
+                    answers: answers,
+                    correctAnswerIndex: correctIndex,
+                    userAnswerIndex: nil,
+                    isFlagged: false,
+                    hint: hintText
+                )
+                loadedQuestions.append(question)
+            }
+        }
+        print("✅ Successfully unpacked \(loadedQuestions.count) questions")
+        return loadedQuestions
     }
     
    

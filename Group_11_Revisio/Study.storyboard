@@ -154,6 +154,7 @@
                         <segue destination="gBa-Vc-8cR" kind="show" identifier="ShowMaterialDetail" id="L0f-JZ-E0N"/>
                         <segue destination="tqA-6H-qX5" kind="show" identifier="ShowGenerationScreen" id="hJR-Nn-mFf"/>
                         <segue destination="ER4-VE-j5w" kind="show" identifier="openFlashcards" id="V0u-uK-SPU"/>
+                        <segue destination="nO8-nf-sye" kind="show" identifier="ShowInstructionScreen" id="AHi-rX-QXW"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="YjQ-mL-6iv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -287,7 +288,7 @@
                             <constraint firstItem="5dE-Oa-vuK" firstAttribute="leading" secondItem="l9T-kL-1rZ" secondAttribute="leading" constant="20" id="oqe-J4-x7B"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="Wgb-Oz-1T4"/>
+                    <navigationItem key="navigationItem" largeTitleDisplayMode="never" id="Wgb-Oz-1T4"/>
                     <connections>
                         <outlet property="attemptQuizButton" destination="hrl-rm-nx4" id="pDk-zr-301"/>
                         <outlet property="instructionsTextView" destination="5dE-Oa-vuK" id="IcL-9B-GHS"/>
@@ -651,11 +652,8 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="B7G-UG-Iq2">
                                 <rect key="frame" x="40" y="188" width="313" height="346"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0eR-yI-SJN">
-                                        <rect key="frame" x="24" y="163" width="265" height="20"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="xN3-wH-kpq"/>
-                                        </constraints>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0eR-yI-SJN">
+                                        <rect key="frame" x="24" y="163" width="265" height="20.333333333333343"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -664,8 +662,8 @@
                                 <color key="backgroundColor" systemColor="systemGray6Color"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="346" id="2RO-dF-aPR"/>
+                                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="0eR-yI-SJN" secondAttribute="bottom" constant="20" id="GWT-gR-rlO"/>
                                     <constraint firstItem="0eR-yI-SJN" firstAttribute="leading" secondItem="B7G-UG-Iq2" secondAttribute="leading" constant="24" id="L0P-f4-pdC"/>
-                                    <constraint firstItem="0eR-yI-SJN" firstAttribute="centerY" secondItem="B7G-UG-Iq2" secondAttribute="centerY" id="fqq-w5-Wyc"/>
                                     <constraint firstItem="0eR-yI-SJN" firstAttribute="centerX" secondItem="B7G-UG-Iq2" secondAttribute="centerX" id="iTO-C3-zsW"/>
                                     <constraint firstItem="0eR-yI-SJN" firstAttribute="top" secondItem="B7G-UG-Iq2" secondAttribute="top" constant="163" id="xOY-3E-rLe"/>
                                     <constraint firstAttribute="trailing" secondItem="0eR-yI-SJN" secondAttribute="trailing" constant="24" id="zeZ-30-9jQ"/>
@@ -693,6 +691,9 @@
                                         </constraints>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="gray" title="Next"/>
+                                        <connections>
+                                            <action selector="nextCardButtonTapped:" destination="ER4-VE-j5w" eventType="touchUpInside" id="ZrD-Wc-LXi"/>
+                                        </connections>
                                     </button>
                                 </subviews>
                             </stackView>
@@ -708,7 +709,11 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Partial Derivatives" largeTitleDisplayMode="never" id="Mkb-aj-Nls">
-                        <barButtonItem key="rightBarButtonItem" title="Item" image="plus" catalog="system" id="Xrb-pm-LAv"/>
+                        <barButtonItem key="rightBarButtonItem" title="Item" image="plus" catalog="system" id="Xrb-pm-LAv">
+                            <connections>
+                                <action selector="addFlashcardButtonTapped:" destination="ER4-VE-j5w" id="Yz4-mH-Pui"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="cardsLabel" destination="0eR-yI-SJN" id="pSf-wy-JOk"/>
@@ -1065,7 +1070,7 @@
         <!--Add Flashcard-->
         <scene sceneID="yYQ-1N-Nru">
             <objects>
-                <viewController id="ZOG-We-Pos" customClass="AddFlashcardViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="ZOG-We-Pos" customClass="AddFlashcardsViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="xIE-jn-WZu">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="793"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1150,8 +1155,8 @@
                     </view>
                     <navigationItem key="navigationItem" title="Add Flashcard" id="TiB-JD-QpO"/>
                     <connections>
-                        <outlet property="definitionTextField" destination="hxl-Z6-dqb" id="Xai-BX-FNG"/>
-                        <outlet property="termTextField" destination="yOY-pp-8qv" id="6sB-dV-Fcs"/>
+                        <outlet property="definitionsTextField" destination="hxl-Z6-dqb" id="M7S-m4-Qk7"/>
+                        <outlet property="termsTextField" destination="yOY-pp-8qv" id="PIH-2D-MHI"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hUs-Rh-QtQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1177,6 +1182,9 @@
             <point key="canvasLocation" x="-393.12977099236639" y="1158.4507042253522"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="AHi-rX-QXW"/>
+    </inferredMetricsTieBreakers>
     <resources>
         <image name="book" catalog="system" width="128" height="99"/>
         <image name="book.pages" catalog="system" width="107" height="128"/>

@@ -115,17 +115,29 @@ class DataManager {
 
     private func setupDefaultData() {
         
-        // 1. CALCULUS - Featuring the Partial Derivatives reference cards
+        // 1. CALCULUS
         let calculusMaterials: [StudyItem] = [
             .topic(Topic(
                 name: "Partial Derivatives",
                 lastAccessed: "Just now",
                 materialType: "Flashcards",
-                // Formatting with pipes for your Flashcard engine
-                largeContentBody: "What is a Partial Derivative?|A derivative of a function of several variables with respect to one variable, holding others constant.\nNotation|The curly ∂ (del) symbol is used instead of 'd'.\nFirst-Order Partial f(x,y)|fₓ means differentiating with respect to x while treating y as a constant.\nChain Rule Application|Used when the variables themselves depend on other variables (e.g., x(t) and y(t))."
+                largeContentBody: "What is a Partial Derivative?|A derivative of a function of several variables with respect to one variable, holding others constant.\nNotation|The curly ∂ (del) symbol is used instead of 'd'.\nFirst-Order Partial f(x,y)|fₓ means differentiating with respect to x while treating y as a constant.\nChain Rule Application|Used when the variables themselves depend on other variables (e.g., x(t) and y(t)).",
+                parentSubjectName: "Calculus" // Position 5: Added to prevent crash
             )),
-            .topic(Topic(name: "Limits", lastAccessed: "7h ago", materialType: "Quiz", largeContentBody: "Notes on Limits...")),
-            .topic(Topic(name: "Multivariable Calculus", lastAccessed: "4 days ago", materialType: "Cheatsheet", largeContentBody: "Formula sheet for Multivariable..."))
+            .topic(Topic(
+                name: "Limits",
+                lastAccessed: "7h ago",
+                materialType: "Quiz",
+                largeContentBody: "What is the limit of 1/x as x approaches infinity?|0|1|Infinity|Undefined|0|Think of a very large denominator.\nWhat is the limit of (sin x)/x as x approaches 0?|1|0|Infinity|-1|0|This is a fundamental trig limit.",
+                parentSubjectName: "Calculus"
+            )),
+            .topic(Topic(
+                name: "Multivariable Calculus",
+                lastAccessed: "4 days ago",
+                materialType: "Cheatsheet",
+                largeContentBody: "Formula sheet for Multivariable Calculus operations.",
+                parentSubjectName: "Calculus"
+            ))
         ]
         
         let calculusSources: [StudyItem] = [
@@ -137,8 +149,8 @@ class DataManager {
         // 2. BIG DATA
         savedMaterials["Big Data"] = [
             DataManager.materialsKey: [
-                .topic(Topic(name: "Hadoop Fundamentals", lastAccessed: "1h ago", materialType: "Notes", largeContentBody: "Hadoop is an open-source framework...")),
-                .topic(Topic(name: "NoSQL Databases", lastAccessed: "3d ago", materialType: "Quiz", largeContentBody: "Key-Value, Document, Column..."))
+                .topic(Topic(name: "Hadoop Fundamentals", lastAccessed: "1h ago", materialType: "Notes", largeContentBody: "Hadoop is an open-source framework for distributed storage.", parentSubjectName: "Big Data")),
+                .topic(Topic(name: "NoSQL Databases", lastAccessed: "3d ago", materialType: "Quiz", largeContentBody: "Which NoSQL type is best for relationships?|Graph|Document|Key-Value|Column|0|Think of social network structures.", parentSubjectName: "Big Data"))
             ],
             DataManager.sourcesKey: [
                 .source(Source(name: "Hadoop Docs", fileType: "Link", size: "—"))
@@ -148,8 +160,8 @@ class DataManager {
         // 3. COMPUTER NETWORKS
         savedMaterials["Computer Networks"] = [
             DataManager.materialsKey: [
-                .topic(Topic(name: "OSI Model", lastAccessed: "1 day ago", materialType: "Quiz", largeContentBody: "7 Layers: Physical, Data Link, Network...")),
-                .topic(Topic(name: "TCP vs UDP", lastAccessed: "3 days ago", materialType: "Flashcards", largeContentBody: "TCP|Connection-oriented\nUDP|Connectionless"))
+                .topic(Topic(name: "OSI Model", lastAccessed: "1 day ago", materialType: "Quiz", largeContentBody: "Which layer is responsible for routing?|Network|Data Link|Transport|Physical|0|IP addresses live here.", parentSubjectName: "Computer Networks")),
+                .topic(Topic(name: "TCP vs UDP", lastAccessed: "3 days ago", materialType: "Flashcards", largeContentBody: "TCP|Connection-oriented and reliable.\nUDP|Connectionless and fast.", parentSubjectName: "Computer Networks"))
             ],
             DataManager.sourcesKey: []
         ]
@@ -157,13 +169,15 @@ class DataManager {
         // 4. MMA
         savedMaterials["MMA"] = [
             DataManager.materialsKey: [
-                .topic(Topic(name: "8051 Architecture", lastAccessed: "2 days ago", materialType: "Flashcards", largeContentBody: "8-bit microcontroller architecture...")),
-                .topic(Topic(name: "Interrupt Handling", lastAccessed: "4 days ago", materialType: "Notes", largeContentBody: "Hardware vs Software interrupts..."))
+                .topic(Topic(name: "8051 Architecture", lastAccessed: "2 days ago", materialType: "Flashcards", largeContentBody: "8051 Data Bus size?|8-bit.\n8051 Address Bus size?|16-bit.", parentSubjectName: "MMA")),
+                .topic(Topic(name: "Interrupt Handling", lastAccessed: "4 days ago", materialType: "Notes", largeContentBody: "Hardware interrupts stop the CPU execution immediately.", parentSubjectName: "MMA"))
             ],
             DataManager.sourcesKey: [
                 .source(Source(name: "Assembly Guide", fileType: "PDF", size: "5.1 mb"))
             ]
         ]
+        
+        migrateHardcodedQuizzes()
     }
     func getDetailedContent(for subjectName: String, topicName: String) -> String {
         guard let subjectData = savedMaterials[subjectName],
@@ -192,6 +206,40 @@ class DataManager {
         
         savedMaterials[subject]?[DataManager.materialsKey] = materials
         saveToDisk()
+    }
+    func migrateHardcodedQuizzes() {
+        for (sourceName, questions) in QuizManager.quizDataBySource {
+            let contentString = questions.map { q in
+                let answers = q.answers.joined(separator: "|")
+                return "\(q.questionText)|\(answers)|\(q.correctAnswerIndex)|\(q.hint)"
+            }.joined(separator: "\n")
+            
+            // Match your Topic.swift order exactly:
+            let newTopic = Topic(
+                name: sourceName,
+                lastAccessed: "Never",
+                materialType: "Quiz",
+                largeContentBody: contentString,     // contentBody is now 4th
+                parentSubjectName: "General Study"   // parentSubjectName is now 5th
+            )
+            
+            self.addTopic(to: "General Study", topic: newTopic)
+        }
+    }
+    func addTopic(to subjectName: String, topic: Topic) {
+       
+        if savedMaterials[subjectName] == nil {
+            savedMaterials[subjectName] = [DataManager.materialsKey: [], DataManager.sourcesKey: []]
+        }
+        
+       
+        savedMaterials[subjectName]?[DataManager.materialsKey]?.append(.topic(topic))
+        
+        
+        saveToDisk()
+        
+       
+        NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
     }
 }
 
