@@ -58,6 +58,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         super.viewDidLoad()
         setupData()
         setupCollectionView()
+        
     }
     
     private func setupData() {

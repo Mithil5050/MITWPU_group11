@@ -1,23 +1,23 @@
 //
 //  JSONDatabaseManager.swift
-//  MITWPU_group11 
+//  Updated for Study Plan Support
 //
-//  Created by Mithil on 08/01/26.
-//
-
 
 import Foundation
 
 class JSONDatabaseManager {
     static let shared = JSONDatabaseManager()
-    private let fileName = "StudyMaterials.json"
     
-    private var fileURL: URL {
+    // MARK: - Existing Properties
+    private let materialsFileName = "StudyMaterials.json"
+    private let planFileName = "StudyPlanData.json" // 🆕 New JSON File
+    
+    private func getFileURL(forName name: String) -> URL {
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        return documentDirectory.appendingPathComponent(fileName)
+        return documentDirectory.appendingPathComponent(name)
     }
 
-    // Adds a single file name to the JSON database
+    // MARK: - Study Materials Logic (Existing)
     func addUploadedFile(name: String) {
         var currentFiles = loadFiles()
         let newContent = StudyContent(filename: name)
@@ -28,39 +28,54 @@ class JSONDatabaseManager {
     func saveFiles(_ files: [StudyContent]) {
         do {
             let data = try JSONEncoder().encode(files)
-            try data.write(to: fileURL)
+            try data.write(to: getFileURL(forName: materialsFileName))
         } catch {
             print("Save Error: \(error)")
         }
     }
     
-    // Add this inside class JSONDatabaseManager
-
-    /// Removes the file at the specific index and saves the updated list
     func deleteFile(at index: Int) {
         var currentFiles = loadFiles()
-        
-        // Safety check to prevent crashing if index is out of bounds
         if index >= 0 && index < currentFiles.count {
             currentFiles.remove(at: index)
             saveFiles(currentFiles)
-            print("🗑️ Deleted file at index: \(index)")
         }
     }
     
     func loadFiles() -> [StudyContent] {
-        // If file doesn't exist in Documents yet, try to load from Bundle (the file you created above)
-        if !FileManager.default.fileExists(atPath: fileURL.path) {
+        let url = getFileURL(forName: materialsFileName)
+        if !FileManager.default.fileExists(atPath: url.path) {
+            // Fallback to Bundle if not in Documents
             guard let bundleURL = Bundle.main.url(forResource: "StudyMaterials", withExtension: "json"),
                   let data = try? Data(contentsOf: bundleURL) else { return [] }
             return (try? JSONDecoder().decode([StudyContent].self, from: data)) ?? []
         }
         
         do {
-            let data = try Data(contentsOf: fileURL)
+            let data = try Data(contentsOf: url)
             return try JSONDecoder().decode([StudyContent].self, from: data)
         } catch {
             return []
         }
+    }
+    
+    // MARK: - 🆕 Study Plan Logic
+    func loadStudyPlan() -> [PlanSubject] {
+        let url = getFileURL(forName: planFileName)
+        
+        // 1. Try loading from Documents (User specific data)
+        if let data = try? Data(contentsOf: url),
+           let subjects = try? JSONDecoder().decode([PlanSubject].self, from: data) {
+            return subjects
+        }
+        
+        // 2. Fallback: Load from App Bundle (Default data included with app)
+        if let bundleURL = Bundle.main.url(forResource: "StudyPlanData", withExtension: "json"),
+           let data = try? Data(contentsOf: bundleURL),
+           let subjects = try? JSONDecoder().decode([PlanSubject].self, from: data) {
+            return subjects
+        }
+        
+        return [] // Return empty if nothing found
     }
 }
