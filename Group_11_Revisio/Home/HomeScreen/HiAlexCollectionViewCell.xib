@@ -79,6 +79,7 @@ Streak breaks in 2 hours</string>
             <connections>
                 <outlet property="BgView" destination="pEI-84-TK2" id="aUx-Ix-J3d"/>
                 <outlet property="hiAlex" destination="uAA-C9-8id" id="R97-Uu-FAi"/>
+                <outlet property="robotImageView" destination="k4o-IY-NIR" id="5Sj-38-ALJ"/>
             </connections>
             <point key="canvasLocation" x="187.78625954198472" y="139.43661971830986"/>
         </collectionViewCell>

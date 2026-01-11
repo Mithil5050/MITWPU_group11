@@ -581,6 +581,7 @@
                         <outlet property="dateCollectionView" destination="8lN-Ft-m3H" id="oYE-5i-XPH"/>
                         <outlet property="mainScrollView" destination="tCO-Rz-llA" id="h5n-SZ-oAK"/>
                         <outlet property="subjectCollectionView" destination="AiG-cZ-1lM" id="CNp-Hj-rzK"/>
+                        <outlet property="subjectTitleLabel" destination="JFB-FI-s1O" id="eBp-Af-f8R"/>
                         <outlet property="taskTableView" destination="Z3c-am-0YP" id="5If-UZ-e1P"/>
                         <outlet property="taskTableViewHeightConstraint" destination="S0Y-Vl-ZZ6" id="aFx-hV-xqX"/>
                     </connections>
@@ -969,6 +970,7 @@
                         <outlet property="startCreationButton" destination="h7V-XT-mHS" id="ebo-DN-igi"/>
                         <segue destination="z8q-8S-FlA" kind="show" identifier="HomeToFlashcardView" id="raQ-KE-LNM"/>
                         <segue destination="7vE-Hi-Vgg" kind="show" identifier="HomeToQuizInstruction" id="vkc-OX-p76"/>
+                        <segue destination="CpU-fO-1mT" kind="show" identifier="HomeToNotesView" id="jMN-6D-mRs"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bo6-ID-gRs" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1330,11 +1332,58 @@
             </objects>
             <point key="canvasLocation" x="4744.2748091603053" y="-1639.4366197183099"/>
         </scene>
+        <!--Material Detail View Controller-->
+        <scene sceneID="ldG-cU-HUb">
+            <objects>
+                <viewController id="CpU-fO-1mT" customClass="MaterialDetailViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="EsF-pt-da5">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="HVz-6k-dv0">
+                                <rect key="frame" x="0.0" y="172" width="393" height="563"/>
+                                <color key="backgroundColor" systemColor="systemGray6Color"/>
+                                <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
+                                <color key="textColor" systemColor="labelColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="3wM-t8-eXM"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="HVz-6k-dv0" firstAttribute="top" secondItem="3wM-t8-eXM" secondAttribute="top" id="1jM-hA-E43"/>
+                            <constraint firstItem="3wM-t8-eXM" firstAttribute="bottom" secondItem="HVz-6k-dv0" secondAttribute="bottom" id="KNV-PI-ci5"/>
+                            <constraint firstItem="HVz-6k-dv0" firstAttribute="leading" secondItem="3wM-t8-eXM" secondAttribute="leading" id="L9h-GB-j3N"/>
+                            <constraint firstItem="3wM-t8-eXM" firstAttribute="trailing" secondItem="HVz-6k-dv0" secondAttribute="trailing" id="mS7-Zh-AZC"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="7LQ-Yc-CTs">
+                        <rightBarButtonItems>
+                            <barButtonItem title="Edit" id="oEf-dQ-nF2"/>
+                            <barButtonItem title="Item" image="ellipsis.circle" catalog="system" id="Rv4-H9-W42">
+                                <connections>
+                                    <action selector="shareContent:" destination="CpU-fO-1mT" id="7nP-ud-Jee"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="contentView" destination="HVz-6k-dv0" id="x6D-Ye-RPv"/>
+                        <outlet property="editDoneBarButton" destination="oEf-dQ-nF2" id="Ian-VD-TMa"/>
+                        <outlet property="optionsBarButton" destination="Rv4-H9-W42" id="J5Z-v6-Cg6"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ibA-y6-7No" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3056" y="-200"/>
+        </scene>
     </scenes>
     <resources>
         <image name="Screenshot 2025-12-09 at 3.06.21 PM" width="704" height="714"/>
         <image name="Screenshot_2025-12-15_at_3.58.26_PM-removebg-preview-2" width="503" height="496"/>
         <image name="book.pages" catalog="system" width="107" height="128"/>
+        <image name="ellipsis.circle" catalog="system" width="128" height="123"/>
         <image name="folder.badge.plus" catalog="system" width="128" height="93"/>
         <image name="house" catalog="system" width="128" height="104"/>
         <image name="list.bullet.clipboard" catalog="system" width="98" height="128"/>
@@ -1342,6 +1391,9 @@
         <image name="plus" catalog="system" width="128" height="113"/>
         <image name="rectangle.on.rectangle.angled" catalog="system" width="128" height="98"/>
         <image name="timer" catalog="system" width="128" height="123"/>
+        <systemColor name="labelColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
