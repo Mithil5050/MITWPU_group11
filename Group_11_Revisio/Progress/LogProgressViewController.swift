@@ -1,14 +1,9 @@
-//
-//  LogProgressViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Ashika Yadav on 09/12/25.
-//
-
 import UIKit
 
-protocol LogStudyTimeDelegate: AnyObject {
-    func didLogStudyTime(hours: Double, date: Date, subject: String?)
+// Represents a single entry in your history list
+struct LogHistoryItem {
+    let amount: String
+    let time: String
 }
 
 class LogProgressViewController: UIViewController {
@@ -16,101 +11,132 @@ class LogProgressViewController: UIViewController {
     // DELEGATE PROPERTY
     weak var delegate: LogStudyTimeDelegate?
     
+    // Local history to show in the table
+    var history: [LogHistoryItem] = []
     
     @IBOutlet weak var dateLabel: UILabel!
-    
     @IBOutlet weak var datePicker: UIDatePicker!
-    
     @IBOutlet weak var logHoursTextField: UITextField!
     
-    override func viewDidLoad() {
+    // 1. ADD THIS OUTLET: Connect a TableView from your Storyboard to this
+    @IBOutlet weak var historyTableView: UITableView!
+    
+    // MARK: - Lifecycle
+        override func viewDidLoad() {
             super.viewDidLoad()
             
-           
             setupNavigationBar()
             setupInitialData()
+            setupTableView()
             
+            // Listen for date changes to update the top label
             datePicker.addTarget(self, action: #selector(datePickerChanged(_:)), for: .valueChanged)
         }
         
-        // MARK: - Setup Methods
+        // MARK: - Setup
+        private func setupTableView() {
+            historyTableView.dataSource = self
+            historyTableView.delegate = self
+            // Standard cell registration
+            historyTableView.register(UITableViewCell.self, forCellReuseIdentifier: "HistoryCell")
+            historyTableView.backgroundColor = .clear
+            historyTableView.separatorStyle = .singleLine
+        }
         
-        func setupNavigationBar() {
+        private func setupNavigationBar() {
             navigationItem.title = "Log Study Time"
-                
-           
-           
-            let checkmarkSymbolConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .semibold, scale: .medium)
-            let checkmarkImage = UIImage(systemName: "checkmark", withConfiguration: checkmarkSymbolConfig)
-            let saveButton = UIBarButtonItem(image: checkmarkImage,
-                                             style: .plain,
-                                             target: self,
-                                             action: #selector(saveAndDismiss))
-            navigationItem.rightBarButtonItem = saveButton
-        
-            let xmarkConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .semibold, scale: .medium)
-            let xmarkImage = UIImage(systemName: "xmark", withConfiguration: xmarkConfig)
             
-            let cancelButton = UIBarButtonItem(image: xmarkImage,
-                                               style: .plain,
-                                               target: self,
-                                               action: #selector(dismissModal))
+            // Setup Checkmark (Save) Button
+            let checkmarkConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold)
+            let checkmarkImage = UIImage(systemName: "checkmark", withConfiguration: checkmarkConfig)
+            let saveButton = UIBarButtonItem(image: checkmarkImage, style: .plain, target: self, action: #selector(saveAndDismiss))
+            navigationItem.rightBarButtonItem = saveButton
+            
+            // Setup Xmark (Cancel) Button
+            let xmarkImage = UIImage(systemName: "xmark", withConfiguration: checkmarkConfig)
+            let cancelButton = UIBarButtonItem(image: xmarkImage, style: .plain, target: self, action: #selector(dismissModal))
             navigationItem.leftBarButtonItem = cancelButton
         }
         
-        func setupInitialData() {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "MMM d"
-            let todayString = dateFormatter.string(from: datePicker.date)
-            dateLabel.text = "Today, \(todayString)"
+        private func setupInitialData() {
+            updateDateLabel(for: datePicker.date)
             
-            logHoursTextField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: logHoursTextField.frame.height))
+            // Add padding to the text field
+            logHoursTextField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 1))
             logHoursTextField.leftViewMode = .always
+            logHoursTextField.keyboardType = .decimalPad
         }
         
+        // MARK: - Actions
         @objc private func datePickerChanged(_ sender: UIDatePicker) {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "MMM d"
-            let dateString = dateFormatter.string(from: sender.date)
-            
-            let calendar = Calendar.current
-            if calendar.isDateInToday(sender.date) {
-                dateLabel.text = "Today, \(dateString)"
-            } else {
-                dateLabel.text = dateString
-            }
+            updateDateLabel(for: sender.date)
         }
         
-       
+        private func updateDateLabel(for date: Date) {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "MMM d"
+            let dateString = formatter.string(from: date)
+            
+            dateLabel.text = Calendar.current.isDateInToday(date) ? "Today, \(dateString)" : dateString
+        }
         
         @objc func dismissModal() {
-            self.dismiss(animated: true, completion: nil)
+            self.dismiss(animated: true)
         }
         
         @objc func saveAndDismiss() {
-            
             let text = logHoursTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let hoursStudied = Double(text) ?? 0
-
-            guard hoursStudied > 0 else {
-                
-                self.dismiss(animated: true, completion: nil)
+            guard let hoursStudied = Double(text), hoursStudied > 0 else {
+                self.dismiss(animated: true)
                 return
             }
 
-          
-            let logDate: Date = datePicker.date
-            let subject: String? = nil
+            let logDate = datePicker.date
+            
+            // 1. Update the Local History Table
+            let timeString = DateFormatter.localizedString(from: logDate, dateStyle: .none, timeStyle: .short)
+            let newItem = LogHistoryItem(amount: "\(text) hours", time: timeString)
+            
+            // Insert at the top of the list
+            history.insert(newItem, at: 0)
+            
+            // 2. Refresh table with animation
+            historyTableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
 
-           
-            delegate?.didLogStudyTime(hours: hoursStudied, date: logDate, subject: subject)
+            // 3. Send data to ProgressViewController via delegate
+            delegate?.didLogStudyTime(hours: hoursStudied, date: logDate, subject: nil)
 
-           
-            self.dismiss(animated: true, completion: nil)
+            // Clear input for next entry
+            logHoursTextField.text = ""
+            
+            // If you want to log multiple entries, remove the line below.
+            // If you want to close immediately after one log, keep it.
+            self.dismiss(animated: true)
         }
         
-       
         override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
             self.view.endEditing(true)
+        }
+    }
+
+    // MARK: - TableView Protocols
+    extension LogProgressViewController: UITableViewDataSource, UITableViewDelegate {
+        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+            return history.count
+        }
+        
+        func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+            // Create a cell with a subtitle style to show hours and time
+            let cell = UITableViewCell(style: .value1, reuseIdentifier: "HistoryCell")
+            let item = history[indexPath.row]
+            
+            cell.textLabel?.text = "Logged Progress"
+            cell.detailTextLabel?.text = "\(item.amount) at \(item.time)"
+            
+            cell.textLabel?.font = .systemFont(ofSize: 16, weight: .regular)
+            cell.detailTextLabel?.font = .systemFont(ofSize: 14)
+            cell.detailTextLabel?.textColor = .secondaryLabel
+            
+            return cell
         }
     }
