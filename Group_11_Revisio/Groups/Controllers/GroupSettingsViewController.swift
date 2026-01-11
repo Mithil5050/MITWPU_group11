@@ -23,6 +23,7 @@ class GroupSettingsViewController: UIViewController {
     
     @IBOutlet weak var docsCollectionView: UICollectionView!
 
+    @IBOutlet weak var leaderboardTableView: UITableView!
 
     // Data
     var group: Group!
@@ -69,6 +70,8 @@ class GroupSettingsViewController: UIViewController {
         docsCollectionView.delegate = self
         membersCollectionView.dataSource = self
         membersCollectionView.delegate = self
+        leaderboardTableView.dataSource = self
+        leaderboardTableView.delegate = self
     }
     
     @objc private func editGroupTapped() {
@@ -239,55 +242,27 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
         return 6
     }
 }
-/*
-extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
-    func collectionView(_ collectionView: UICollectionView,
-                        numberOfItemsInSection section: Int) -> Int {
-        return documents.count
+// MARK: - Leaderboard Table
+extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegate {
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return leaderboard.count
     }
 
-    func collectionView(_ collectionView: UICollectionView,
-                        cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func tableView(_ tableView: UITableView,
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
-        let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: "DocumentCellIdentifier",
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: "LeaderboardCell",
             for: indexPath
-        ) as! DocumentCell
+        )
 
-        cell.configure(title: documents[indexPath.item])
+        let item = leaderboard[indexPath.row]
+        cell.textLabel?.text = "\(indexPath.row + 1). \(item.name)"
+        cell.detailTextLabel?.text = "\(item.score)"
+        cell.selectionStyle = .none
         return cell
     }
-
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        sizeForItemAt indexPath: IndexPath) -> CGSize {
-
-        let columns: CGFloat = 3
-        let spacing: CGFloat = 12
-
-        let totalSpacing = (columns - 1) * spacing + 24 // 12 left + 12 right
-        let width = (collectionView.bounds.width - totalSpacing) / columns
-
-        return CGSize(width: width, height: width * 0.85)
-    }
-
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
-    }
-
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 12
-    }
-
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 12
-    }
 }
-*/
+
