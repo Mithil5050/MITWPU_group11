@@ -13,7 +13,7 @@ class GroupSettingsViewController: UIViewController {
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     @IBOutlet weak var infoView: UIView!
     @IBOutlet weak var docsView: UIView!
-//    @IBOutlet weak var leaderboardView: UIView!
+    @IBOutlet weak var leaderboardView: UIView!
 
     @IBOutlet weak var groupImageView: UIImageView!
     @IBOutlet weak var groupNameLabel: UILabel!
@@ -85,6 +85,7 @@ class GroupSettingsViewController: UIViewController {
         UIView.animate(withDuration: 0.2) {
             self.infoView.isHidden = index != 0
             self.docsView.isHidden = index != 1
+            self.leaderboardView.isHidden = index != 2
         }
     }
 
