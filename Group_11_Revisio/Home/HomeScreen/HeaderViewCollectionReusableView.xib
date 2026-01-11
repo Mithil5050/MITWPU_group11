@@ -10,27 +10,39 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <collectionReusableView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="U6b-Vx-4bR" customClass="HeaderViewCollectionReusableView" customModule="Group_11_Revisio" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="320" height="50"/>
+            <rect key="frame" x="0.0" y="0.0" width="320" height="40"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r2p-Ec-kBz">
-                    <rect key="frame" x="0.0" y="5" width="320" height="6"/>
+                    <rect key="frame" x="0.0" y="5" width="233" height="30"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="233" id="HfN-cr-Geh"/>
+                    </constraints>
                     <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="25"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mtu-I0-0a7">
+                    <rect key="frame" x="233" y="5" width="82" height="35"/>
+                    <state key="normal" title="Button"/>
+                    <buttonConfiguration key="configuration" style="plain" title="View all"/>
+                    <connections>
+                        <action selector="viewAllTapped:" destination="U6b-Vx-4bR" eventType="touchUpInside" id="mbb-nA-n9N"/>
+                    </connections>
+                </button>
             </subviews>
             <viewLayoutGuide key="safeArea" id="VXr-Tz-HHm"/>
             <constraints>
-                <constraint firstItem="VXr-Tz-HHm" firstAttribute="bottom" secondItem="r2p-Ec-kBz" secondAttribute="bottom" constant="5" id="1SR-jx-byA"/>
-                <constraint firstItem="VXr-Tz-HHm" firstAttribute="trailing" secondItem="r2p-Ec-kBz" secondAttribute="trailing" id="ALh-Og-Hwe"/>
-                <constraint firstItem="r2p-Ec-kBz" firstAttribute="leading" secondItem="VXr-Tz-HHm" secondAttribute="leading" id="Xak-iZ-JLD"/>
-                <constraint firstItem="r2p-Ec-kBz" firstAttribute="top" secondItem="U6b-Vx-4bR" secondAttribute="top" constant="5" id="nct-o0-XVw"/>
+                <constraint firstItem="mtu-I0-0a7" firstAttribute="top" secondItem="U6b-Vx-4bR" secondAttribute="top" constant="5" id="FSo-6I-nPm"/>
+                <constraint firstItem="r2p-Ec-kBz" firstAttribute="top" secondItem="U6b-Vx-4bR" secondAttribute="top" constant="5" id="bvq-zI-Yjp"/>
+                <constraint firstItem="VXr-Tz-HHm" firstAttribute="trailing" secondItem="mtu-I0-0a7" secondAttribute="trailing" constant="5" id="gzi-AL-69Q"/>
+                <constraint firstItem="r2p-Ec-kBz" firstAttribute="leading" secondItem="VXr-Tz-HHm" secondAttribute="leading" id="yXF-iK-8ts"/>
             </constraints>
             <connections>
-                <outlet property="TitleName" destination="r2p-Ec-kBz" id="n2d-Xl-1lm"/>
+                <outlet property="titleLabel" destination="r2p-Ec-kBz" id="JYI-of-ago"/>
+                <outlet property="viewAllButton" destination="mtu-I0-0a7" id="0Vd-8T-Bo3"/>
             </connections>
-            <point key="canvasLocation" x="15" y="113"/>
+            <point key="canvasLocation" x="13.740458015267174" y="114.08450704225352"/>
         </collectionReusableView>
     </objects>
 </document>

@@ -1,6 +1,8 @@
 //
 //  JSONDatabaseManager.swift
-//  Updated for Study Plan Support
+//  Group_11_Revisio
+//
+//  FIXED: Restored 'deleteFile' and includes Today's Tasks logic
 //
 
 import Foundation
@@ -8,16 +10,18 @@ import Foundation
 class JSONDatabaseManager {
     static let shared = JSONDatabaseManager()
     
-    // MARK: - Existing Properties
+    // MARK: - File Names
     private let materialsFileName = "StudyMaterials.json"
-    private let planFileName = "StudyPlanData.json" // 🆕 New JSON File
+    private let planFileName = "StudyPlanData.json"
+    private let todaysTasksFileName = "TodaysTasks.json"
     
     private func getFileURL(forName name: String) -> URL {
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         return documentDirectory.appendingPathComponent(name)
     }
 
-    // MARK: - Study Materials Logic (Existing)
+    // MARK: - Study Materials (Uploads)
+    
     func addUploadedFile(name: String) {
         var currentFiles = loadFiles()
         let newContent = StudyContent(filename: name)
@@ -34,48 +38,69 @@ class JSONDatabaseManager {
         }
     }
     
+    // ⬇️ RESTORED FUNCTION
     func deleteFile(at index: Int) {
         var currentFiles = loadFiles()
         if index >= 0 && index < currentFiles.count {
             currentFiles.remove(at: index)
             saveFiles(currentFiles)
+            print("🗑️ Deleted file at index: \(index)")
         }
     }
     
     func loadFiles() -> [StudyContent] {
         let url = getFileURL(forName: materialsFileName)
-        if !FileManager.default.fileExists(atPath: url.path) {
-            // Fallback to Bundle if not in Documents
-            guard let bundleURL = Bundle.main.url(forResource: "StudyMaterials", withExtension: "json"),
-                  let data = try? Data(contentsOf: bundleURL) else { return [] }
-            return (try? JSONDecoder().decode([StudyContent].self, from: data)) ?? []
+        
+        // 1. Try Documents
+        if let data = try? Data(contentsOf: url),
+           let files = try? JSONDecoder().decode([StudyContent].self, from: data) {
+            return files
         }
         
-        do {
-            let data = try Data(contentsOf: url)
-            return try JSONDecoder().decode([StudyContent].self, from: data)
-        } catch {
-            return []
+        // 2. Fallback to Bundle
+        if let bundleURL = Bundle.main.url(forResource: "StudyMaterials", withExtension: "json"),
+           let data = try? Data(contentsOf: bundleURL),
+           let files = try? JSONDecoder().decode([StudyContent].self, from: data) {
+            return files
         }
+        
+        return []
     }
     
-    // MARK: - 🆕 Study Plan Logic
+    // MARK: - Study Plan Logic
     func loadStudyPlan() -> [PlanSubject] {
         let url = getFileURL(forName: planFileName)
         
-        // 1. Try loading from Documents (User specific data)
         if let data = try? Data(contentsOf: url),
            let subjects = try? JSONDecoder().decode([PlanSubject].self, from: data) {
             return subjects
         }
         
-        // 2. Fallback: Load from App Bundle (Default data included with app)
         if let bundleURL = Bundle.main.url(forResource: "StudyPlanData", withExtension: "json"),
            let data = try? Data(contentsOf: bundleURL),
            let subjects = try? JSONDecoder().decode([PlanSubject].self, from: data) {
             return subjects
         }
+        return []
+    }
+    
+    // MARK: - Today's Tasks Logic
+    func loadTodaysTasks() -> [TodaySubject] {
+        let url = getFileURL(forName: todaysTasksFileName)
         
-        return [] // Return empty if nothing found
+        // 1. Try Documents
+        if let data = try? Data(contentsOf: url),
+           let subjects = try? JSONDecoder().decode([TodaySubject].self, from: data) {
+            return subjects
+        }
+        
+        // 2. Try Bundle
+        if let bundleURL = Bundle.main.url(forResource: "TodaysTasks", withExtension: "json"),
+           let data = try? Data(contentsOf: bundleURL),
+           let subjects = try? JSONDecoder().decode([TodaySubject].self, from: data) {
+            return subjects
+        }
+        
+        return []
     }
 }
