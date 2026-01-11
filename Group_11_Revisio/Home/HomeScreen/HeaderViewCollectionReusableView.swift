@@ -2,29 +2,40 @@
 //  HeaderViewCollectionReusableView.swift
 //  Group_11_Revisio
 //
-//  Created by Mithil on 28/11/25.
-//
 
 import UIKit
 
+protocol HeaderViewDelegate: AnyObject {
+    func didTapViewAll(in section: Int)
+}
+
 class HeaderViewCollectionReusableView: UICollectionReusableView {
 
-    @IBOutlet weak var TitleName: UILabel!
+    @IBOutlet weak var titleLabel: UILabel!
+    @IBOutlet weak var viewAllButton: UIButton!
+    
+    weak var delegate: HeaderViewDelegate?
+    var sectionIndex: Int = 0
+
     override func awakeFromNib() {
         super.awakeFromNib()
-        // Initialization code
-    }
-    func configureHeader(with title: String) {
-        // Implement the logic to set the title text
-        TitleName.text = title
-        // If you want the title to appear bold, set a bold font:
-        if let currentSize = TitleName?.font?.pointSize {
-            TitleName.font = UIFont.boldSystemFont(ofSize: currentSize)
-        } else {
-            TitleName.font = UIFont.boldSystemFont(ofSize: UIFont.labelFontSize)
-        }
-        // If you also want it uppercased, uncomment the next line:
-        // TitleName.text = title.uppercased()
+        viewAllButton.setTitle("View all", for: .normal)
+        viewAllButton.setTitle("Close", for: .selected) // Text when expanded
+        viewAllButton.setTitleColor(.systemBlue, for: .normal)
     }
     
+    func configureHeader(with title: String, showViewAll: Bool, section: Int, isExpanded: Bool = false) {
+        titleLabel.text = title
+        viewAllButton.isHidden = !showViewAll
+        sectionIndex = section
+        
+        // Update button state based on expansion
+        viewAllButton.isSelected = isExpanded
+    }
+    
+    @IBAction func viewAllTapped(_ sender: UIButton) {
+        // Toggle visual state immediately for responsiveness
+        sender.isSelected.toggle()
+        delegate?.didTapViewAll(in: sectionIndex)
+    }
 }

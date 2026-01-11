@@ -2,7 +2,7 @@
 //  HomeViewController.swift
 //  Group_11_Revisio
 //
-//  Created by Mithil on 10/12/25.
+//  Updated for Dropdown Functionality
 //
 
 import UIKit
@@ -29,12 +29,12 @@ let continueLearningCellID = "ContinueLearningCellID"
 let quickGamesCellID = "QuickGamesCellID"
 let studyPlanCellID = "StudyPlanCellID"
 let headerID = "HeaderID"
+let taskCellID = "TaskCell" // Reuse the cell from Study Plan
 
 let showStudyPlanSegueID = "ShowStudyPlanSegue"
 let showTodayTaskSegueID = "showTodayTaskSegue"
 let showConnectionsSegueID = "ConnectionsSegue"
 let showWordFillSegueID = "ShowWordFillSegue"
-// NEW: Segue ID for the upload screen
 let showUploadConfirmationSegueID = "ShowUploadConfirmation"
 
 protocol QuickGamesCellDelegate: AnyObject {
@@ -43,12 +43,16 @@ protocol QuickGamesCellDelegate: AnyObject {
 
 class HomeViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
-    // Existing Properties
+    // MARK: - Properties
     var heroData: [ContentItem] = []
     var studyPlanData: [ContentItem] = [ContentItem(title: "Study Plan", iconName: "calendar", itemType: "PlanOverview")]
     var uploadItems: [ContentItem] = []
     var learningItems: [ContentItem] = []
     var gameItems: [GameItem] = []
+    
+    // 🆕 Dropdown Logic Properties
+    var incompleteTasks: [PlanTask] = []
+    var isLearningExpanded: Bool = false
 
     @IBOutlet weak var collectionView: UICollectionView!
     
@@ -57,8 +61,18 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     override func viewDidLoad() {
         super.viewDidLoad()
         setupData()
+        loadIncompleteTasks() // 🆕 Load tasks
         setupCollectionView()
-        
+    }
+    
+    // 🆕 Fetch tasks for the dropdown
+    private func loadIncompleteTasks() {
+        let allSubjects = JSONDatabaseManager.shared.loadStudyPlan()
+        incompleteTasks = allSubjects.flatMap { subject in
+            subject.days.flatMap { day in
+                day.tasks.filter { !$0.isComplete }
+            }
+        }
     }
     
     private func setupData() {
@@ -83,8 +97,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         collectionView.collectionViewLayout = generateLayout()
         collectionView.dataSource = self
         collectionView.delegate = self
-        
-        // CRITICAL: Remove the default safe area padding at the top
         collectionView.contentInsetAdjustmentBehavior = .never
     }
     
@@ -93,10 +105,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     }
     
     // MARK: - Navigation Preparation
-    // This is where data is passed to the next screen before the segue happens
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == showUploadConfirmationSegueID {
-            // Verify destination and cast sender to String
             if let destinationVC = segue.destination as? UploadConfirmationViewController,
                let filename = sender as? String {
                 destinationVC.uploadedContentName = filename
@@ -105,13 +115,14 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     }
     
     // MARK: - Layout Configuration
-    
     func generateLayout() -> UICollectionViewLayout {
         let horizontalPadding: CGFloat = 20
         let verticalSpacing: CGFloat = 20
 
-        return UICollectionViewCompositionalLayout { sectionIndex, env in
+        return UICollectionViewCompositionalLayout { [self] sectionIndex, env in
             let sectionType = HomeSection.allCases[sectionIndex]
+            
+            // Header Config
             let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(40))
             let headerItem = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
             
@@ -119,44 +130,56 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
 
             switch sectionType {
             case .hero:
-                let heroItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(124))
-                let heroItem = NSCollectionLayoutItem(layoutSize: heroItemSize)
-                let heroGroup = NSCollectionLayoutGroup.horizontal(layoutSize: heroItemSize, subitems: [heroItem])
-                let section = NSCollectionLayoutSection(group: heroGroup)
+                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(124))
+                let item = NSCollectionLayoutItem(layoutSize: size)
+                let group = NSCollectionLayoutGroup.horizontal(layoutSize: size, subitems: [item])
+                let section = NSCollectionLayoutSection(group: group)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 return section
                 
             case .uploadContent:
-                let listItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(142))
-                let listItemLayout = NSCollectionLayoutItem(layoutSize: listItemSize)
-                let listGroup = NSCollectionLayoutGroup.vertical(layoutSize: listItemSize, subitems: [listItemLayout])
-                let section = NSCollectionLayoutSection(group: listGroup)
+                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(142))
+                let item = NSCollectionLayoutItem(layoutSize: size)
+                let group = NSCollectionLayoutGroup.vertical(layoutSize: size, subitems: [item])
+                let section = NSCollectionLayoutSection(group: group)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 return section
                 
             case .continueLearning:
-                let itemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(60))
-                let item = NSCollectionLayoutItem(layoutSize: itemSize)
-                let group = NSCollectionLayoutGroup.vertical(layoutSize: itemSize, subitems: [item])
+                // Base height (Card) + Table Height (Tasks * 70) if expanded
+                // 1. Define the count first so it is available for use
+                let visibleCount = min(incompleteTasks.count, 3)
+
+                // 2. Now use 'visibleCount' in your calculation
+                let expandedHeight: CGFloat = isLearningExpanded ? (70 + CGFloat(visibleCount * 80)) : 70
+
+                // 3. Create the item size using the result
+                let size = NSCollectionLayoutSize(
+                    widthDimension: itemWidth,
+                    heightDimension: .absolute(expandedHeight)
+                )
+                let item = NSCollectionLayoutItem(layoutSize: size)
+                let group = NSCollectionLayoutGroup.vertical(layoutSize: size, subitems: [item])
+
                 let section = NSCollectionLayoutSection(group: group)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 section.boundarySupplementaryItems = [headerItem]
                 return section
                 
             case .quickGames:
-                let gameItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(130))
-                let gameItem = NSCollectionLayoutItem(layoutSize: gameItemSize)
-                let gameGroup = NSCollectionLayoutGroup.horizontal(layoutSize: gameItemSize, subitems: [gameItem])
-                let section = NSCollectionLayoutSection(group: gameGroup)
+                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(130))
+                let item = NSCollectionLayoutItem(layoutSize: size)
+                let group = NSCollectionLayoutGroup.horizontal(layoutSize: size, subitems: [item])
+                let section = NSCollectionLayoutSection(group: group)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 section.boundarySupplementaryItems = [headerItem]
                 return section
 
             case .studyPlan:
-                let studyPlanItemSize = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(100))
-                let studyPlanItem = NSCollectionLayoutItem(layoutSize: studyPlanItemSize)
-                let studyPlanGroup = NSCollectionLayoutGroup.horizontal(layoutSize: studyPlanItemSize, subitems: [studyPlanItem])
-                let section = NSCollectionLayoutSection(group: studyPlanGroup)
+                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(100))
+                let item = NSCollectionLayoutItem(layoutSize: size)
+                let group = NSCollectionLayoutGroup.horizontal(layoutSize: size, subitems: [item])
+                let section = NSCollectionLayoutSection(group: group)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 return section
             }
@@ -169,6 +192,9 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         collectionView.register(UINib(nibName: "ContinueLearningCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: continueLearningCellID)
         collectionView.register(UINib(nibName: "QuickGamesCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: quickGamesCellID)
         collectionView.register(UINib(nibName: "StudyPlanCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: studyPlanCellID)
+        // 🆕 Register TaskCell for the dropdown items
+        collectionView.register(UINib(nibName: "TaskCell", bundle: nil), forCellWithReuseIdentifier: taskCellID)
+        
         collectionView.register(UINib(nibName: "HeaderViewCollectionReusableView", bundle: nil),
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
                                 withReuseIdentifier: headerID)
@@ -186,7 +212,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         case .hero: return heroData.count
         case .studyPlan: return studyPlanData.count
         case .uploadContent: return 1
-        case .continueLearning: return learningItems.count
+        case .continueLearning:            return 1
         case .quickGames: return 1
         }
     }
@@ -205,7 +231,12 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             cell.configure(with: uploadItems)
             return cell
         case .continueLearning:
-            return collectionView.dequeueReusableCell(withReuseIdentifier: continueLearningCellID, for: indexPath)
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: continueLearningCellID, for: indexPath) as! ContinueLearningCollectionViewCell
+
+            // Pass the tasks and expansion state
+            cell.configure(with: self.incompleteTasks)
+
+            return cell
         case .quickGames:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: quickGamesCellID, for: indexPath) as! QuickGamesCollectionViewCell
             cell.delegate = self
@@ -221,10 +252,13 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         switch sectionType {
         case .continueLearning:
             headerView.isHidden = false
-            headerView.configureHeader(with: "Continue Learning")
+            // 🆕 Configure with expansion state
+            headerView.configureHeader(with: "Continue Learning", showViewAll: true, section: indexPath.section, isExpanded: isLearningExpanded)
+            headerView.delegate = self
         case .quickGames:
             headerView.isHidden = false
-            headerView.configureHeader(with: "Quick Games")
+            headerView.configureHeader(with: "Quick Games", showViewAll: false, section: indexPath.section)
+            headerView.delegate = nil
         default:
             headerView.isHidden = true
         }
@@ -234,17 +268,28 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // MARK: - CollectionView Navigation
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let sectionType = HomeSection.allCases[indexPath.section]
-        switch sectionType {
-        case .hero:
+        if sectionType == .hero {
             performSegue(withIdentifier: showTodayTaskSegueID, sender: nil)
-        case .studyPlan:
+        } else if sectionType == .studyPlan {
             performSegue(withIdentifier: showStudyPlanSegueID, sender: nil)
-        default: break
         }
     }
 }
 
-// MARK: - QuickGamesCellDelegate Implementation
+// MARK: - Header Delegate (The Dropdown Trigger)
+extension HomeViewController: HeaderViewDelegate {
+    func didTapViewAll(in section: Int) {
+        // Toggle state
+        isLearningExpanded.toggle()
+        
+        // Reload just the specific section with animation
+        collectionView.performBatchUpdates({
+            collectionView.reloadSections(IndexSet(integer: section))
+        }, completion: nil)
+    }
+}
+
+// MARK: - Existing Extensions
 extension HomeViewController: QuickGamesCellDelegate {
     func didSelectQuickGame(gameTitle: String) {
         let segueID = (gameTitle == "Word Fill") ? showWordFillSegueID : showConnectionsSegueID
@@ -252,20 +297,10 @@ extension HomeViewController: QuickGamesCellDelegate {
     }
 }
 
-// MARK: - UploadContentCellDelegate & Picker Implementation
 extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
-    // -------------------------------------------------------------
-    // FIXED: Navigation using Segue to prevent "Storyboard ID" Crash
-    // -------------------------------------------------------------
     func navigateToConfirmation(with contentName: String) {
-        print("🚀 Navigating with file: \(contentName)")
-        
-        // 1. Save to Database
         JSONDatabaseManager.shared.addUploadedFile(name: contentName)
-        
-        // 2. Perform the Segue (Matches the arrow you created in Storyboard)
-        // Ensure the arrow identifier in Storyboard is "ShowUploadConfirmation"
         performSegue(withIdentifier: showUploadConfirmationSegueID, sender: contentName)
     }
 
@@ -302,10 +337,8 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         present(alert, animated: true)
     }
 
-    // System Picker Callbacks
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
-        print("✅ File Picked: \(url.lastPathComponent)")
         navigateToConfirmation(with: url.lastPathComponent)
     }
     

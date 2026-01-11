@@ -139,11 +139,15 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     // MARK: - Navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "showGeneration" {
-            // Pass data to the next controller if needed
-            // let destVC = segue.destination as? GenerationViewController
-            // destVC?.folderName = selectedFolder
+        override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+            if segue.identifier == "showGeneration" {
+                if let destVC = segue.destination as? GenerateHomeViewController {
+                    // Pass the selected folder as a single-item array to match inputSourceData's type
+                    if let folder = selectedFolder {
+                        destVC.inputSourceData = [folder]
+                        destVC.contextSubjectTitle = folder // Also set the context title
+                    }
+                }
+            }
         }
-    }
 }
