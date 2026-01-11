@@ -829,10 +829,21 @@
                                     <constraint firstItem="Xca-rz-5rQ" firstAttribute="top" secondItem="OP9-1g-lwR" secondAttribute="bottom" constant="16" id="vPm-na-4Sq"/>
                                 </constraints>
                             </view>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R1w-ph-Mc3" userLabel="leaderboardView">
-                                <rect key="frame" x="81" y="373" width="240" height="128"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="R1w-ph-Mc3" userLabel="leaderboardView">
+                                <rect key="frame" x="0.0" y="312" width="402" height="494"/>
+                                <subviews>
+                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="hIz-kz-zrp">
+                                        <rect key="frame" x="0.0" y="0.0" width="402" height="494"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    </tableView>
+                                </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstItem="hIz-kz-zrp" firstAttribute="top" secondItem="R1w-ph-Mc3" secondAttribute="top" id="68w-c9-4ne"/>
+                                    <constraint firstAttribute="trailing" secondItem="hIz-kz-zrp" secondAttribute="trailing" id="9eA-ef-kk2"/>
+                                    <constraint firstItem="hIz-kz-zrp" firstAttribute="leading" secondItem="R1w-ph-Mc3" secondAttribute="leading" id="Pf6-mf-EK2"/>
+                                    <constraint firstAttribute="bottom" secondItem="hIz-kz-zrp" secondAttribute="bottom" id="RIh-Qg-ieR"/>
+                                </constraints>
                             </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="TC9-eV-RK9"/>
@@ -841,19 +852,23 @@
                             <constraint firstItem="TC9-eV-RK9" firstAttribute="trailing" secondItem="WDY-ZC-Suv" secondAttribute="trailing" id="0ll-Ma-E25"/>
                             <constraint firstItem="dlp-BL-A6d" firstAttribute="leading" secondItem="TC9-eV-RK9" secondAttribute="leading" constant="16" id="E2o-GI-gD4"/>
                             <constraint firstItem="TC9-eV-RK9" firstAttribute="bottom" secondItem="y4J-kT-zMw" secondAttribute="bottom" id="GQB-Ev-kcQ"/>
+                            <constraint firstItem="R1w-ph-Mc3" firstAttribute="leading" secondItem="TC9-eV-RK9" secondAttribute="leading" id="GZU-dh-S9V"/>
                             <constraint firstItem="y4J-kT-zMw" firstAttribute="leading" secondItem="L6Z-wY-jC1" secondAttribute="leading" id="Mtj-aP-egm"/>
                             <constraint firstItem="WDY-ZC-Suv" firstAttribute="leading" secondItem="TC9-eV-RK9" secondAttribute="leading" id="My9-1L-hb6"/>
                             <constraint firstAttribute="trailing" secondItem="y4J-kT-zMw" secondAttribute="trailing" id="PPR-gj-LGv"/>
                             <constraint firstItem="5Vo-dK-OQq" firstAttribute="top" secondItem="dlp-BL-A6d" secondAttribute="bottom" constant="12" id="PnR-6f-rm2"/>
+                            <constraint firstItem="R1w-ph-Mc3" firstAttribute="top" secondItem="dlp-BL-A6d" secondAttribute="bottom" constant="12" id="TBZ-ui-KoK"/>
                             <constraint firstItem="TC9-eV-RK9" firstAttribute="trailing" secondItem="5Vo-dK-OQq" secondAttribute="trailing" id="TYt-MX-tbK"/>
                             <constraint firstItem="WDY-ZC-Suv" firstAttribute="leading" secondItem="TC9-eV-RK9" secondAttribute="leading" id="VPy-yP-cAx"/>
                             <constraint firstItem="WDY-ZC-Suv" firstAttribute="trailing" secondItem="TC9-eV-RK9" secondAttribute="trailing" id="cjV-uv-3si"/>
                             <constraint firstItem="5Vo-dK-OQq" firstAttribute="leading" secondItem="TC9-eV-RK9" secondAttribute="leading" id="cmR-6v-97k"/>
                             <constraint firstItem="dlp-BL-A6d" firstAttribute="top" secondItem="WDY-ZC-Suv" secondAttribute="bottom" constant="12" id="lCs-rC-RJZ"/>
                             <constraint firstItem="TC9-eV-RK9" firstAttribute="trailing" secondItem="dlp-BL-A6d" secondAttribute="trailing" constant="16" id="lNW-bQ-Kab"/>
+                            <constraint firstItem="TC9-eV-RK9" firstAttribute="bottom" secondItem="R1w-ph-Mc3" secondAttribute="bottom" id="ldx-Sk-bSu"/>
                             <constraint firstItem="WDY-ZC-Suv" firstAttribute="top" secondItem="TC9-eV-RK9" secondAttribute="top" constant="8" id="vhh-UA-mj8"/>
                             <constraint firstItem="TC9-eV-RK9" firstAttribute="bottom" secondItem="5Vo-dK-OQq" secondAttribute="bottom" id="wGb-ba-5Ff"/>
                             <constraint firstItem="y4J-kT-zMw" firstAttribute="top" secondItem="dlp-BL-A6d" secondAttribute="bottom" constant="12" id="wOH-5N-sDS"/>
+                            <constraint firstAttribute="trailing" secondItem="R1w-ph-Mc3" secondAttribute="trailing" id="yww-MJ-Zpa"/>
                         </constraints>
                     </view>
                     <connections>
@@ -863,6 +878,7 @@
                         <outlet property="groupNameLabel" destination="y4X-6d-tio" id="QnP-i7-oyh"/>
                         <outlet property="hideAlertsSwitch" destination="96U-03-N4o" id="E9G-jh-5pm"/>
                         <outlet property="infoView" destination="5Vo-dK-OQq" id="ihB-0E-pIl"/>
+                        <outlet property="leaderboardView" destination="R1w-ph-Mc3" id="rWL-o3-4sZ"/>
                         <outlet property="membersCollectionView" destination="OP9-1g-lwR" id="5LL-3i-q9m"/>
                         <outlet property="membersCountLabel" destination="I5e-bN-Tbe" id="ATi-aB-sOG"/>
                         <outlet property="segmentedControl" destination="dlp-BL-A6d" id="Zwe-A2-gqi"/>
