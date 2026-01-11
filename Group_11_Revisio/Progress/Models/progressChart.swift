@@ -6,37 +6,8 @@
 //
 
 import Foundation
-
-//import Foundation
-//
-//struct StudyData: Identifiable {
-//    let id = UUID()
-//    let label: String
-//    let hours: Double
-//}
-//
-//struct StudyChartModel {
-//
-//    static let dayData: [StudyData] = [
-//        StudyData(label: "6 AM", hours: 2),
-//        StudyData(label: "9 AM", hours: 4),
-//        StudyData(label: "12 PM", hours: 6),
-//        StudyData(label: "3 PM", hours: 5),
-//        StudyData(label: "6 PM", hours: 3)
-//    ]
-//
-//    static let weekData: [StudyData] = [
-//        StudyData(label: "Mon", hours: 6),
-//        StudyData(label: "Tue", hours: 5),
-//        StudyData(label: "Wed", hours: 3),
-//        StudyData(label: "Thu", hours: 7),
-//        StudyData(label: "Fri", hours: 4),
-//        StudyData(label: "Sat", hours: 5),
-//        StudyData(label: "Sun", hours: 6)
-//    ]
-//}
-//
-// progressChart.swift
+import SwiftUI // Adds support for ObservableObject and @Published
+internal import Combine
 
 struct StudyData: Identifiable {
     let id = UUID()
@@ -45,39 +16,34 @@ struct StudyData: Identifiable {
     let extraMinutes: Double
 }
 
-struct StudyChartModel {
-    // Organize your data so each inner array represents ONE FULL DAY or ONE FULL WEEK
-    static var dailyHistory: [[StudyData]] = [
-        // Page 1: Two Days Ago (Full day data)
+class StudyChartModel: ObservableObject {
+    @Published var dailyHistory: [[StudyData]] = [
         [StudyData(label: "00", focusMinutes: 5, extraMinutes: 2), StudyData(label: "06", focusMinutes: 10, extraMinutes: 3), StudyData(label: "12", focusMinutes: 8, extraMinutes: 2), StudyData(label: "18", focusMinutes: 12, extraMinutes: 4)],
-        // Page 2: Yesterday (Full day data)
         [StudyData(label: "00", focusMinutes: 4, extraMinutes: 1), StudyData(label: "06", focusMinutes: 15, extraMinutes: 5), StudyData(label: "12", focusMinutes: 20, extraMinutes: 8), StudyData(label: "18", focusMinutes: 5, extraMinutes: 2)],
-        // Page 3: Today (Full day data)
         [StudyData(label: "00", focusMinutes: 8, extraMinutes: 2), StudyData(label: "06", focusMinutes: 25, extraMinutes: 10), StudyData(label: "12", focusMinutes: 18, extraMinutes: 6), StudyData(label: "18", focusMinutes: 6, extraMinutes: 2)]
     ]
     
-    static var weeklyHistory: [[StudyData]] = [
-        // Page 1: Last Week (Mon-Sun)
-        ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map { StudyData(label: $0, focusMinutes: 100, extraMinutes: 20) },
-        // Page 2: This Week (Mon-Sun)
-        ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map { StudyData(label: $0, focusMinutes: 120, extraMinutes: 30) }
+    @Published var weeklyHistory: [[StudyData]] = [
+        ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map { StudyData(label: $0, focusMinutes: 100, extraMinutes: 20) }
     ]
 }
 
-//    static let dayData: [StudyData] = [
-//        StudyData(label: "00", focusMinutes: 8,  extraMinutes: 2),
-//        StudyData(label: "02", focusMinutes: 5,  extraMinutes: 1),
-//        StudyData(label: "04", focusMinutes: 30, extraMinutes: 12),
-//        StudyData(label: "08", focusMinutes: 18, extraMinutes: 6),
-//        StudyData(label: "10", focusMinutes: 6,  extraMinutes: 2)
+
+//struct StudyChartModel {
+//    // Organize your data so each inner array represents ONE FULL DAY or ONE FULL WEEK
+//    static var dailyHistory: [[StudyData]] = [
+//        // Page 1: Two Days Ago (Full day data)
+//        [StudyData(label: "00", focusMinutes: 5, extraMinutes: 2), StudyData(label: "06", focusMinutes: 10, extraMinutes: 3), StudyData(label: "12", focusMinutes: 8, extraMinutes: 2), StudyData(label: "18", focusMinutes: 12, extraMinutes: 4)],
+//        // Page 2: Yesterday (Full day data)
+//        [StudyData(label: "00", focusMinutes: 4, extraMinutes: 1), StudyData(label: "06", focusMinutes: 15, extraMinutes: 5), StudyData(label: "12", focusMinutes: 20, extraMinutes: 8), StudyData(label: "18", focusMinutes: 5, extraMinutes: 2)],
+//        // Page 3: Today (Full day data)
+//        [StudyData(label: "00", focusMinutes: 8, extraMinutes: 2), StudyData(label: "06", focusMinutes: 25, extraMinutes: 10), StudyData(label: "12", focusMinutes: 18, extraMinutes: 6), StudyData(label: "18", focusMinutes: 6, extraMinutes: 2)]
 //    ]
-//
-//    static let weekData: [StudyData] = [
-//        StudyData(label: "Mon", focusMinutes: 40, extraMinutes: 10),
-//        StudyData(label: "Tue", focusMinutes: 35, extraMinutes: 8),
-//        StudyData(label: "Wed", focusMinutes: 20, extraMinutes: 5),
-//        StudyData(label: "Thu", focusMinutes: 50, extraMinutes: 12),
-//        StudyData(label: "Fri", focusMinutes: 30, extraMinutes: 6)
+//    
+//    static var weeklyHistory: [[StudyData]] = [
+//        // Page 1: Last Week (Mon-Sun)
+//        ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map { StudyData(label: $0, focusMinutes: 100, extraMinutes: 20) },
+//        // Page 2: This Week (Mon-Sun)
+//        ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map { StudyData(label: $0, focusMinutes: 120, extraMinutes: 30) }
 //    ]
 //}
-
