@@ -155,7 +155,6 @@
                                     </view>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="344" id="Be4-vQ-EMd"/>
                                     <constraint firstAttribute="height" constant="56" id="aMr-gF-LKM"/>
                                 </constraints>
                             </stackView>

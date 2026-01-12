@@ -17,7 +17,7 @@ class ContinueLearningCollectionViewCell: UICollectionViewCell, UITableViewDataS
         tableView.separatorStyle = .none
         tableView.isScrollEnabled = false
         ViewShow.layer.cornerRadius = 12
-        ViewShow.backgroundColor = UIColor(hex: "FFFFFF")
+        ViewShow.backgroundColor = UIColor(hex: "F5F5F5")
         LogoView.layer.cornerRadius = 8
         LogoView.backgroundColor = UIColor(hex: "74DA9B" , alpha: 0.15)
         quizlogo.tintColor = UIColor(hex: "74DA9B")
