@@ -29,8 +29,9 @@ class DateButtonCell: UICollectionViewCell {
         containerView.clipsToBounds = true
         
         // Font adjustments
-        dateLabel.font = UIFont.systemFont(ofSize: 22, weight: .bold)
-        dayLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        dateLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        dayLabel.font = UIFont.systemFont(ofSize: 17, weight: .medium)
+        dayLabel.textColor = .white
     }
     
     func configure(day: String, status: DayStatus, isSelected: Bool) {
@@ -38,20 +39,20 @@ class DateButtonCell: UICollectionViewCell {
         
         // 1. Determine which SF Symbol to use
         var symbolName = ""
-        var symbolColor: UIColor = .label
+        var symbolColor: UIColor = .white
         var symbolScale: CGFloat = 0.9 // Scale factor for the dot
         
         switch status {
         case .streak:
-            symbolName = "flame.fill"
-            symbolColor = isSelected ? .white : .systemOrange
+            symbolName = "flame"
+            symbolColor = isSelected ? .white : .white
         case .current:
             symbolName = "circle.fill" // Use circle.fill as the dot
-            symbolColor = isSelected ? .white : .label
+            symbolColor = isSelected ? .white : .white
             symbolScale = 0.3 // Make it smaller to look like a dot
         case .missed, .future:
             symbolName = "minus"
-            symbolColor = isSelected ? .white : .secondaryLabel
+            symbolColor = isSelected ? .white : .white
         }
         
         // 2. Create the Configuration
@@ -90,8 +91,8 @@ class DateButtonCell: UICollectionViewCell {
             dayLabel.textColor = .white
             containerView.layer.borderWidth = 0
         } else {
-            containerView.backgroundColor = UIColor(hex: "91C1EF").withAlphaComponent(0.4)
-            dayLabel.textColor = .label
+            containerView.backgroundColor = UIColor(hex: "91C1EF").withAlphaComponent(1.0)
+            dayLabel.textColor = .white
         }
     }
 }

@@ -10,21 +10,36 @@ class ContinueLearningCollectionViewCell: UICollectionViewCell, UITableViewDataS
     var incompleteTasks: [PlanTask] = []
     
     override func awakeFromNib() {
-        super.awakeFromNib()
-        
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.separatorStyle = .none
-        tableView.isScrollEnabled = false
-        ViewShow.layer.cornerRadius = 12
-        ViewShow.backgroundColor = UIColor(hex: "F5F5F5")
-        LogoView.layer.cornerRadius = 8
-        LogoView.backgroundColor = UIColor(hex: "74DA9B" , alpha: 0.15)
-        quizlogo.tintColor = UIColor(hex: "74DA9B")
-        // CRITICAL: Keep this registry line to prevent crashes
-        let nib = UINib(nibName: "LearningTaskCell", bundle: nil)
-        tableView.register(nib, forCellReuseIdentifier: "LearningTaskCell")
-    }
+            super.awakeFromNib()
+            
+            tableView.dataSource = self
+            tableView.delegate = self
+            tableView.separatorStyle = .none
+            tableView.isScrollEnabled = false
+            
+            // 1. Dynamic Background for the Card Container (ViewShow)
+            // Light Mode: #F5F5F5, Dark Mode: System Dark Gray
+            ViewShow.backgroundColor = UIColor { traitCollection in
+                if traitCollection.userInterfaceStyle == .dark {
+                    return .secondarySystemGroupedBackground
+                } else {
+                    return UIColor(hex: "F5F5F5")
+                }
+            }
+            ViewShow.layer.cornerRadius = 12
+            
+            // 2. Setup Mint Color for Logo (Works in both modes)
+            let mintColor = UIColor(hex: "74DA9B")
+            
+        LogoView.backgroundColor = mintColor.withAlphaComponent(0.15)
+            LogoView.layer.cornerRadius = 8
+            
+            quizlogo.tintColor = mintColor
+            
+            // CRITICAL: Keep this registry line to prevent crashes
+            let nib = UINib(nibName: "LearningTaskCell", bundle: nil)
+            tableView.register(nib, forCellReuseIdentifier: "LearningTaskCell")
+        }
     
     func configure(with tasks: [PlanTask]) {
         self.incompleteTasks = tasks

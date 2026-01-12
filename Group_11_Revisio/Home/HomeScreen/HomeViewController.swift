@@ -116,8 +116,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     
     // MARK: - Layout Configuration
     func generateLayout() -> UICollectionViewLayout {
-        let horizontalPadding: CGFloat = 20
-        let verticalSpacing: CGFloat = 20
+        let horizontalPadding: CGFloat = 16
+        let verticalSpacing: CGFloat = 16
 
         return UICollectionViewCompositionalLayout { [self] sectionIndex, env in
             let sectionType = HomeSection.allCases[sectionIndex]
@@ -146,25 +146,39 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .continueLearning:
-                // Base height (Card) + Table Height (Tasks * 70) if expanded
-                // 1. Define the count first so it is available for use
-                let visibleCount = min(incompleteTasks.count, 3)
+                            // Base row height matching LearningTaskCell (80pt)
+                            let rowHeight: CGFloat = 75
+                            
+                            // 1. Calculate items to show
+                            let visibleCount = min(incompleteTasks.count, 3)
 
-                // 2. Now use 'visibleCount' in your calculation
-                let expandedHeight: CGFloat = isLearningExpanded ? (70 + CGFloat(visibleCount * 80)) : 70
+                            // 2. Dynamic Height Calculation
+                            // Collapsed: 70pt (Matches visual card height tightly)
+                            // Expanded: Exact height for all rows
+                            let expandedHeight: CGFloat = isLearningExpanded
+                                ? CGFloat(visibleCount + 1) * rowHeight
+                                : 75
 
-                // 3. Create the item size using the result
-                let size = NSCollectionLayoutSize(
-                    widthDimension: itemWidth,
-                    heightDimension: .absolute(expandedHeight)
-                )
-                let item = NSCollectionLayoutItem(layoutSize: size)
-                let group = NSCollectionLayoutGroup.vertical(layoutSize: size, subitems: [item])
+                            // 3. Layout Definition
+                            let size = NSCollectionLayoutSize(
+                                widthDimension: itemWidth,
+                                heightDimension: .absolute(expandedHeight)
+                            )
+                            let item = NSCollectionLayoutItem(layoutSize: size)
+                            let group = NSCollectionLayoutGroup.vertical(layoutSize: size, subitems: [item])
 
-                let section = NSCollectionLayoutSection(group: group)
-                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
-                section.boundarySupplementaryItems = [headerItem]
-                return section
+                            let section = NSCollectionLayoutSection(group: group)
+                            
+                            // FIX: Reduced bottom padding from 'verticalSpacing' (20) to 5
+                            section.contentInsets = NSDirectionalEdgeInsets(
+                                top: 5,
+                                leading: horizontalPadding,
+                                bottom: 5,
+                                trailing: horizontalPadding
+                            )
+                            
+                            section.boundarySupplementaryItems = [headerItem]
+                            return section
                 
             case .quickGames:
                 let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(130))

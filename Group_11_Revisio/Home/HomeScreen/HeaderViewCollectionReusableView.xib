@@ -23,9 +23,9 @@
                     <nil key="highlightedColor"/>
                 </label>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mtu-I0-0a7">
-                    <rect key="frame" x="233" y="5" width="82" height="35"/>
+                    <rect key="frame" x="205" y="5" width="110" height="35"/>
                     <state key="normal" title="Button"/>
-                    <buttonConfiguration key="configuration" style="plain" title="View all"/>
+                    <buttonConfiguration key="configuration" style="plain" image="chevron.down" catalog="system" imagePlacement="trailing" title="View all "/>
                     <connections>
                         <action selector="viewAllTapped:" destination="U6b-Vx-4bR" eventType="touchUpInside" id="mbb-nA-n9N"/>
                     </connections>
@@ -45,4 +45,7 @@
             <point key="canvasLocation" x="13.740458015267174" y="114.08450704225352"/>
         </collectionReusableView>
     </objects>
+    <resources>
+        <image name="chevron.down" catalog="system" width="128" height="70"/>
+    </resources>
 </document>
