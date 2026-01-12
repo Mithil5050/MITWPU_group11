@@ -5,6 +5,7 @@ class StudyPlanCollectionViewCell: UICollectionViewCell {
     // MARK: - IBOutlets
     @IBOutlet weak var StudyPlan: UIView!
     
+    @IBOutlet var Logoview: UIView!
     // MARK: - Lifecycle
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -15,6 +16,7 @@ class StudyPlanCollectionViewCell: UICollectionViewCell {
     private func setupAdaptiveUI() {
         // 1. Define the Hybrid Background Color
         // Resolves to your hex in Light mode, and Secondary System Grouped in Dark mode.
+        
         StudyPlan.backgroundColor = UIColor { traitCollection in
             if traitCollection.userInterfaceStyle == .dark {
                 return .secondarySystemGroupedBackground
@@ -26,8 +28,7 @@ class StudyPlanCollectionViewCell: UICollectionViewCell {
         // 2. Modern Surface Smoothing
         StudyPlan.layer.cornerRadius = 16.0
         StudyPlan.layer.cornerCurve = .continuous
-        
-        // 3. Subtle adaptive border
+        Logoview.backgroundColor = UIColor.systemIndigo.withAlphaComponent(0.15)        // 3. Subtle adaptive border
 //        StudyPlan.layer.borderWidth = 1.0
 //        StudyPlan.layer.borderColor = UIColor.separator.cgColor
     }

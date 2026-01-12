@@ -1,97 +1,120 @@
-//
-//  UploadConfirmationViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Mithil on 26/11/25.
-//
-
 import UIKit
-import UniformTypeIdentifiers // Required for Document Picker
+import UniformTypeIdentifiers
 
-class UploadConfirmationViewController: UIViewController {
+class UploadConfirmationViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     // MARK: - Properties
     var uploadedContentName: String?
-    var uploadedMaterials: [StudyContent] = []
     var parentSubjectName: String?
     
-    // Header Label
-//    private let sourceHeaderLabel: UILabel = {
-//        let label = UILabel()
-//        label.translatesAutoresizingMaskIntoConstraints = false
-//        label.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-//        label.textColor = .secondaryLabel
-//        return label
-//    }()
+    // Internal data for the table
+    var fileURLs: [URL] = []
     
     // MARK: - IBOutlets
-    @IBOutlet var UploadedContent: UITableView!
-    @IBOutlet var doneButton: UIButton!
+    @IBOutlet weak var UploadedContent: UITableView!
+    @IBOutlet weak var doneButton: UIButton!
     
-    // ⭐️ NEW: Outlet for the Plus Button in your Navigation Bar or UI
-    // Make sure to connect this in Storyboard if it's a UIBarButtonItem
-    @IBOutlet weak var addButton: UIButton!
+    // Kept as AnyObject to prevent crash if connected to UIBarButtonItem
+    @IBOutlet weak var addButton: AnyObject!
     
     private let confirmationCellID = "ConfirmationContentCell"
     
-    // MARK: - View Lifecycle
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = .systemBackground
-        title = "Upload Confirmed"
+        // 1. Initial Data Load
+        if let name = uploadedContentName {
+            let dummyURL = URL(fileURLWithPath: name)
+            fileURLs = [dummyURL]
+        }
         
         setupUI()
         setupTable()
-//        setupDoneButton()
+    }
+    
+    // MARK: - UI Setup
+    private func setupUI() {
+        view.backgroundColor = .systemBackground
         
-        // Load Data
-        refreshData()
+        // Style Done Button
+        if let btn = doneButton {
+            btn.layer.cornerRadius = 12
+            btn.clipsToBounds = true
+        }
+        
+        // Safe check for Add Button styling
+        if let btn = addButton as? UIButton {
+            btn.layer.cornerRadius = 12
+        }
     }
     
-    private func refreshData() {
-        self.uploadedMaterials = JSONDatabaseManager.shared.loadFiles()
-//        sourceHeaderLabel.text = "Materials from: \(uploadedContentName ?? "Recent Uploads")"
-        UploadedContent?.reloadData()
+    private func setupTable() {
+        guard let table = UploadedContent else { return }
+        table.dataSource = self
+        table.delegate = self
+        table.register(UITableViewCell.self, forCellReuseIdentifier: confirmationCellID)
+        table.separatorStyle = .none
+        table.backgroundColor = .clear
     }
     
-    // MARK: - ⭐️ NEW: Add Button Logic (The Action Sheet)
+    // MARK: - Actions
     
-    // CONNECT THIS ACTION TO YOUR + BUTTON IN STORYBOARD
+    @IBAction func DoneTapped(_ sender: Any) {
+        let allFileNames = fileURLs.map { $0.lastPathComponent }
+        performSegue(withIdentifier: "showGenerationScreenHome", sender: allFileNames)
+    }
+    
+    // MARK: - Add Button Logic (Action Sheet)
     @IBAction func didTapAddButton(_ sender: Any) {
         let alert = UIAlertController(title: "Add Material", message: "Choose a source", preferredStyle: .actionSheet)
         
-        // Option 1: Document
         alert.addAction(UIAlertAction(title: "Document", style: .default, handler: { _ in
             self.openDocumentPicker()
         }))
         
-        // Option 2: Photo/Media
         alert.addAction(UIAlertAction(title: "Photo / Media", style: .default, handler: { _ in
             self.openPhotoPicker()
         }))
         
-        // Option 3: Link
         alert.addAction(UIAlertAction(title: "Web Link", style: .default, handler: { _ in
             self.showTextInput(title: "Add Web Link", placeholder: "https://example.com")
         }))
         
-        // Option 4: Text
         alert.addAction(UIAlertAction(title: "Text Note", style: .default, handler: { _ in
             self.showTextInput(title: "Add Quick Note", placeholder: "Enter note title...")
         }))
         
-        // Cancel
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
-                // This specific line forces the text color to Red
-                cancelAction.setValue(UIColor.systemRed, forKey: "titleTextColor")
-                alert.addAction(cancelAction)
+        cancelAction.setValue(UIColor.systemRed, forKey: "titleTextColor")
+        alert.addAction(cancelAction)
+        
+        if let popover = alert.popoverPresentationController {
+            if let btn = sender as? UIView {
+                popover.sourceView = btn
+                popover.sourceRect = btn.bounds
+            } else if let btn = sender as? UIBarButtonItem {
+                popover.barButtonItem = btn
+            }
+        }
         
         present(alert, animated: true)
     }
     
-    // MARK: - Helper Functions for Input
+    // MARK: - Processing Logic
+    private func processNewUpload(name: String) {
+        let newURL = URL(fileURLWithPath: name)
+        fileURLs.append(newURL)
+        JSONDatabaseManager.shared.addUploadedFile(name: name)
+        UploadedContent.reloadData()
+        
+        if !fileURLs.isEmpty {
+            let indexPath = IndexPath(row: fileURLs.count - 1, section: 0)
+            UploadedContent.scrollToRow(at: indexPath, at: .bottom, animated: true)
+        }
+    }
     
+    // MARK: - Helper Methods
     private func openDocumentPicker() {
         let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.pdf, .plainText], asCopy: true)
         picker.delegate = self
@@ -108,127 +131,47 @@ class UploadConfirmationViewController: UIViewController {
     private func showTextInput(title: String, placeholder: String) {
         let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
         alert.addTextField { $0.placeholder = placeholder }
+        
         alert.addAction(UIAlertAction(title: "Add", style: .default) { _ in
             if let text = alert.textFields?.first?.text, !text.isEmpty {
                 self.processNewUpload(name: text)
             }
         })
+        
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
     
-    /// Central function to save data and update UI
-    private func processNewUpload(name: String) {
-        // 1. Save to Database
-        JSONDatabaseManager.shared.addUploadedFile(name: name)
-        
-        // 2. Refresh local data and table
-        refreshData()
-        
-        // 3. Scroll to bottom (optional UI polish)
-        if !uploadedMaterials.isEmpty {
-            let indexPath = IndexPath(row: uploadedMaterials.count - 1, section: 0)
-            UploadedContent.scrollToRow(at: indexPath, at: .bottom, animated: true)
-        }
-    }
-
-    // MARK: - Setup UI (Existing Code)
-    private func setupUI() {
-        let guide = view.safeAreaLayoutGuide
-//        view.addSubview(sourceHeaderLabel)
-        
-        if let table = UploadedContent {
-            table.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-//                sourceHeaderLabel.topAnchor.constraint(equalTo: guide.topAnchor, constant: 20),
-//                sourceHeaderLabel.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
-//                sourceHeaderLabel.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
-                
-//                table.topAnchor.constraint(equalTo: sourceHeaderLabel.bottomAnchor, constant: 8),
-                table.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
-                table.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
-                table.bottomAnchor.constraint(equalTo: guide.bottomAnchor, constant: -100)
-            ])
-        }
-    }
-    
-    private func setupTable() {
-        guard let table = UploadedContent else { return }
-        table.dataSource = self
-        table.delegate = self
-        table.register(UITableViewCell.self, forCellReuseIdentifier: confirmationCellID)
-        table.separatorStyle = .none
-        table.backgroundColor = .systemBackground
-        table.layer.cornerRadius = 12.0
-        table.clipsToBounds = true
-    }
-    
-//    private func setupDoneButton() {
-//        guard let btn = doneButton else { return }
-//        var config = UIButton.Configuration.filled()
-//        config.cornerStyle = .capsule
-//        config.baseBackgroundColor = .systemBlue
-//        config.baseForegroundColor = .white
-//        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
-//            var outgoing = incoming
-//            outgoing.font = UIFont.systemFont(ofSize: 17, weight: .bold)
-//            return outgoing
-//        }
-//        config.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 20, bottom: 14, trailing: 20)
-//        btn.configuration = config
-//        
-//        btn.layer.shadowColor = UIColor.black.cgColor
-//        btn.layer.shadowOffset = CGSize(width: 0, height: 4)
-//        btn.layer.shadowRadius = 8
-//        btn.layer.shadowOpacity = 0.15
-//        btn.layer.masksToBounds = false
-//    }
-    
-    @IBAction func DoneTapped(_ sender: Any) {
-        performSegue(withIdentifier: "showGenerationScreenHome", sender: uploadedMaterials)
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "showGenerationScreenHome" {
-            if let destinationVC = segue.destination as? GenerateHomeViewController {
-                destinationVC.inputSourceData = sender as? [StudyContent]
-                destinationVC.contextSubjectTitle = self.parentSubjectName
-            }
-        }
-    }
-}
-
-// MARK: - Table View Data Source & Delegate (Existing)
-extension UploadConfirmationViewController: UITableViewDataSource, UITableViewDelegate {
+    // MARK: - UITableView Data Source (Card Style)
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return uploadedMaterials.count
-    }
-    
-    private func derivedDisplay(for item: StudyContent) -> (title: String, type: String) {
-        let title = item.filename.isEmpty ? "Untitled Content" : item.filename
-        var type = "Text Input"
-        if title.lowercased().hasSuffix(".pdf") { type = "PDF Document" }
-        else if title.lowercased().contains("http") { type = "Web Link" }
-        else if title == "Media Asset" { type = "Photo/Video" }
-        return (title, type)
+        return fileURLs.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: confirmationCellID, for: indexPath)
-        let item = uploadedMaterials[indexPath.row]
-        let display = derivedDisplay(for: item)
+        let url = fileURLs[indexPath.row]
+        let fileName = url.lastPathComponent
         
-        var content = cell.defaultContentConfiguration()
-        content.text = display.title
-        content.secondaryText = display.type
+        // --- 1. DETERMINE FILE TYPE ---
+        let lowerName = fileName.lowercased()
+        var detectedType = "text" // Default
         
+        if lowerName.hasSuffix("pdf") {
+            detectedType = "pdf document"
+        } else if lowerName.contains("http") || lowerName.contains("www.") {
+            detectedType = "web link"
+        } else if lowerName == "media asset" || lowerName.hasSuffix("jpg") || lowerName.hasSuffix("png") {
+            detectedType = "photo/video"
+        }
+        
+        // --- 2. RESTORED SWITCH LOGIC ---
         let symbolName: String
         let tintColor: UIColor
         
-        switch display.type.lowercased() {
+        switch detectedType {
         case "pdf document":
-            symbolName = "doc.fill"
+            symbolName = "doc.text"
             tintColor = .systemRed
         case "web link":
             symbolName = "link"
@@ -237,31 +180,88 @@ extension UploadConfirmationViewController: UITableViewDataSource, UITableViewDe
             symbolName = "photo"
             tintColor = .systemPurple
         default:
-            symbolName = "text.justify.left"
+            symbolName = "textformat"
             tintColor = .systemGray
         }
         
-        content.image = UIImage(systemName: symbolName)
-        content.imageProperties.tintColor = tintColor
-        
-        cell.contentConfiguration = content
-        cell.backgroundColor = .systemGray6
+        // --- 3. CARD STYLING ---
+        cell.backgroundColor = .clear
+        cell.contentView.backgroundColor = .clear
         cell.selectionStyle = .none
+        cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+        
+        // Container
+        let cardView = UIView()
+        cardView.translatesAutoresizingMaskIntoConstraints = false
+        cardView.backgroundColor = UIColor { trait in
+            return trait.userInterfaceStyle == .dark ? .secondarySystemGroupedBackground : .systemGray6
+        }
+        cardView.layer.cornerRadius = 12
+        cardView.clipsToBounds = true
+        
+        cell.contentView.addSubview(cardView)
+        
+        NSLayoutConstraint.activate([
+            cardView.widthAnchor.constraint(equalToConstant: 360),
+            cardView.heightAnchor.constraint(equalToConstant: 60),
+            cardView.centerXAnchor.constraint(equalTo: cell.contentView.centerXAnchor),
+            cardView.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 6),
+            cardView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -6)
+        ])
+        
+        // Stack (Icon + Text)
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 12
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Icon View
+        let icon = UIImageView()
+        icon.image = UIImage(systemName: symbolName) // Using the symbol from switch
+        icon.tintColor = tintColor // Using the color from switch
+        icon.contentMode = .scaleAspectFit
+        
+        NSLayoutConstraint.activate([
+            icon.widthAnchor.constraint(equalToConstant: 24),
+            icon.heightAnchor.constraint(equalToConstant: 24)
+        ])
+        
+        // Label
+        let label = UILabel()
+        label.text = fileName
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textColor = .label
+        label.numberOfLines = 1
+        
+        stack.addArrangedSubview(icon)
+        stack.addArrangedSubview(label)
+        
+        cardView.addSubview(stack)
+        
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16),
+            stack.centerYAnchor.constraint(equalTo: cardView.centerYAnchor)
+        ])
+        
         return cell
     }
     
-    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool { return true }
-    
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            JSONDatabaseManager.shared.deleteFile(at: indexPath.row)
-            uploadedMaterials.remove(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .fade)
+    // MARK: - Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showGenerationScreenHome" {
+            if let destinationVC = segue.destination as? GenerateHomeViewController {
+                if let nameArray = sender as? [String] {
+                    destinationVC.inputSourceData = nameArray
+                    destinationVC.contextSubjectTitle = self.parentSubjectName
+                }
+            }
         }
     }
 }
 
-// MARK: - ⭐️ NEW: Picker Delegates
+// MARK: - Picker Delegates
 extension UploadConfirmationViewController: UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
@@ -272,7 +272,6 @@ extension UploadConfirmationViewController: UIDocumentPickerDelegate, UIImagePic
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true) {
-            // You could handle actual image data here, but for now we just log the name
             self.processNewUpload(name: "Media Asset")
         }
     }

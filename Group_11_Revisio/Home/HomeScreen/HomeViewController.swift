@@ -173,7 +173,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                             section.contentInsets = NSDirectionalEdgeInsets(
                                 top: 5,
                                 leading: horizontalPadding,
-                                bottom: 5,
+                                bottom: 16,
                                 trailing: horizontalPadding
                             )
                             

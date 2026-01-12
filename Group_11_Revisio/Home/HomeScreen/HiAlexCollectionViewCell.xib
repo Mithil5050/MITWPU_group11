@@ -24,15 +24,15 @@
                                 <rect key="frame" x="0.0" y="0.0" width="370" height="124"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kfd-zb-NWZ">
-                                        <rect key="frame" x="14" y="24" width="356" height="61"/>
-                                        <string key="text">1 task due today
-Streak breaks in 2 hours</string>
-                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
+                                        <rect key="frame" x="16" y="20" width="356" height="61"/>
+                                        <string key="text">Streak on the line
+one task to go!</string>
+                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="24"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="View Tasks" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ow4-3r-GC1">
-                                        <rect key="frame" x="14" y="85" width="218.33333333333337" height="18"/>
+                                        <rect key="frame" x="16" y="88" width="218.33333333333337" height="18"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
                                         <nil key="textColor"/>
@@ -41,10 +41,10 @@ Streak breaks in 2 hours</string>
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="Kfd-zb-NWZ" secondAttribute="trailing" id="0gI-EN-L3X"/>
-                                    <constraint firstAttribute="bottom" secondItem="Kfd-zb-NWZ" secondAttribute="bottom" constant="39" id="EbC-Qg-Rve"/>
-                                    <constraint firstItem="Kfd-zb-NWZ" firstAttribute="leading" secondItem="pEI-84-TK2" secondAttribute="leading" constant="14" id="nlp-GS-UfZ"/>
-                                    <constraint firstItem="Kfd-zb-NWZ" firstAttribute="top" secondItem="pEI-84-TK2" secondAttribute="top" constant="24" id="sCW-03-ADT"/>
+                                    <constraint firstAttribute="trailing" secondItem="Kfd-zb-NWZ" secondAttribute="trailing" constant="-2" id="0gI-EN-L3X"/>
+                                    <constraint firstAttribute="bottom" secondItem="Kfd-zb-NWZ" secondAttribute="bottom" constant="43" id="EbC-Qg-Rve"/>
+                                    <constraint firstItem="Kfd-zb-NWZ" firstAttribute="leading" secondItem="pEI-84-TK2" secondAttribute="leading" constant="16" id="nlp-GS-UfZ"/>
+                                    <constraint firstItem="Kfd-zb-NWZ" firstAttribute="top" secondItem="pEI-84-TK2" secondAttribute="top" constant="20" id="sCW-03-ADT"/>
                                 </constraints>
                             </view>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" image="IMG_5173-removebg-preview" translatesAutoresizingMaskIntoConstraints="NO" id="k4o-IY-NIR">

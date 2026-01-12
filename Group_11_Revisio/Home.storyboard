@@ -679,17 +679,15 @@
                                 </connections>
                             </button>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="K2T-dE-sGz">
-                                <rect key="frame" x="16" y="216.33333333333337" width="361" height="389"/>
+                                <rect key="frame" x="16" y="216.33333333333334" width="361" height="436.66666666666663"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="389" id="G30-LS-Ae6"/>
-                                </constraints>
                             </tableView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Lc6-fG-NtE"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="zM4-vS-qg7" firstAttribute="top" secondItem="Lc6-fG-NtE" secondAttribute="top" constant="16" id="0ts-3O-g6g"/>
+                            <constraint firstItem="9qm-D3-DPE" firstAttribute="top" secondItem="K2T-dE-sGz" secondAttribute="bottom" constant="8" id="FsX-Fw-jaH"/>
                             <constraint firstItem="K2T-dE-sGz" firstAttribute="leading" secondItem="Lc6-fG-NtE" secondAttribute="leading" constant="16" id="Grs-ei-v4a"/>
                             <constraint firstItem="zM4-vS-qg7" firstAttribute="leading" secondItem="Lc6-fG-NtE" secondAttribute="leading" constant="20" id="Ihd-EY-6Pc"/>
                             <constraint firstItem="Lc6-fG-NtE" firstAttribute="trailing" secondItem="K2T-dE-sGz" secondAttribute="trailing" constant="16" id="OKd-tk-Wi9"/>
