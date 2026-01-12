@@ -37,34 +37,47 @@ class UploadContentCollectionViewCell: UICollectionViewCell {
     // MARK: - Styling
     
     private func setupMainCard() {
-        // FIX: Use System Colors instead of hardcoded RGB
-        // .systemGray6 is Light Gray in Light Mode, and Dark Gray in Dark Mode.
-        containerView.backgroundColor = UIColor(hex: "F5F5F5")
-        
-        containerView.layer.cornerRadius = 20
-        containerView.clipsToBounds = true
-    }
+            // Dynamic Background for the Main Container
+            // Light Mode: #F5F5F5, Dark Mode: System Secondary Grouped Background
+            containerView.backgroundColor = UIColor { traitCollection in
+                if traitCollection.userInterfaceStyle == .dark {
+                    return .secondarySystemGroupedBackground
+                } else {
+                    return UIColor(hex: "F5F5F5")
+                }
+            }
+            
+            containerView.layer.cornerRadius = 20
+            containerView.clipsToBounds = true
+        }
     
     private func setupButtons() {
-        let containers = [docContainer, mediaContainer, linkContainer, textContainer]
+            let containers = [docContainer, mediaContainer, linkContainer, textContainer]
+            
+            for view in containers {
+                guard let view = view else { continue }
+                
+                // Dynamic Background for the Buttons
+                // Light Mode: Pure White (Stands out on F5F5F5 container)
+                // Dark Mode: Tertiary Grouped (Stands out on Secondary container)
+                view.backgroundColor = UIColor { traitCollection in
+                    if traitCollection.userInterfaceStyle == .dark {
+                        return .tertiarySystemGroupedBackground
+                    } else {
+                        return .white
+                    }
+                }
+                
+                view.layer.cornerRadius = 16
+                
+                // Shadows
+                view.layer.shadowColor = UIColor.black.cgColor
+                view.layer.shadowOpacity = 0.05
+                view.layer.shadowOffset = CGSize(width: 0, height: 2)
+                view.layer.shadowRadius = 4
+                view.layer.masksToBounds = false
+            }
         
-        for view in containers {
-            guard let view = view else { continue }
-            
-            // FIX: Use 'secondarySystemGroupedBackground'
-            // Light Mode: Pure White (Matches your design)
-            // Dark Mode: A lighter gray that stands out against the background
-            view.backgroundColor = .secondarySystemGroupedBackground
-            
-            view.layer.cornerRadius = 16
-            
-            // Shadows (iOS automatically handles shadow visibility, but they are subtle in Dark Mode)
-            view.layer.shadowColor = UIColor.black.cgColor
-            view.layer.shadowOpacity = 0.05
-            view.layer.shadowOffset = CGSize(width: 0, height: 2)
-            view.layer.shadowRadius = 4
-            view.layer.masksToBounds = false
-        }
     }
 
     // MARK: - Interaction (Tap Gestures)

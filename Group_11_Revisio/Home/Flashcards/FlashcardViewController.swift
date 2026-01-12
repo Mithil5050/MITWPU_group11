@@ -49,6 +49,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         cardView.layer.shadowOpacity = 0.1
         cardView.layer.shadowOffset = CGSize(width: 0, height: 4)
         cardView.layer.shadowRadius = 8
+        cardView.backgroundColor = UIColor(hex: "91C1EF")
     }
 
     private func setupTapGesture() {
