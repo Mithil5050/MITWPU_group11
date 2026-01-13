@@ -16,6 +16,7 @@ class MaterialDetailViewController: UIViewController {
     
     @IBOutlet var editDoneBarButton: UIBarButtonItem!
     
+    var materialType: String?
     var materialName: String?
     var contentData: Topic?
     var parentSubjectName: String?
@@ -38,17 +39,25 @@ class MaterialDetailViewController: UIViewController {
     // MARK: - Content Loading & Management
     
     func displayContent() {
-        title = materialName
+        // Set the title to "Notes" or "Cheatsheet"
+        title = materialName ?? materialType
         
-        guard let topic = contentData,
-              let subject = parentSubjectName else {
-            contentView.text = "Material or Parent Subject not found."
+        guard let topic = contentData else {
+            contentView.text = "Topic not found."
             return
         }
-        
-        
-        contentView.text = DataManager.shared.getDetailedContent(for: subject, topicName: topic.name)
-        
+
+       
+        if materialType == "Notes" {
+            contentView.text = topic.notesContent
+        } else if materialType == "Cheatsheet" {
+            contentView.text = topic.cheatsheetContent // Assuming your Topic model has this
+        } else {
+            // Fallback to your existing DataManager logic if type is unknown
+            if let subject = parentSubjectName {
+                contentView.text = DataManager.shared.getDetailedContent(for: subject, topicName: topic.name)
+            }
+        }
         
         updateUIForState()
     }
@@ -57,9 +66,16 @@ class MaterialDetailViewController: UIViewController {
     func saveChanges() {
         guard let topic = contentData,
               let subject = parentSubjectName,
+              let type = materialType, // 1. Ensure we have the type (Notes/Cheatsheet)
               let updatedText = contentView.text else { return }
         
-        DataManager.shared.updateTopicContent(subject: subject, topicName: topic.name, newText: updatedText)
+        // 2. Pass 'type' as the fourth argument here
+        DataManager.shared.updateTopicContent(
+            subject: subject,
+            topicName: topic.name,
+            newText: updatedText,
+            type: type
+        )
     }
     
     // MARK: - Navigation Bar Actions

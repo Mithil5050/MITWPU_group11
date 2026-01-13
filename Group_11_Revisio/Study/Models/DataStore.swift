@@ -16,7 +16,7 @@ class DataManager {
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         return documentDirectory.appendingPathComponent("StudyData.json")
     }
-
+    
     private init() {
         if !FileManager.default.fileExists(atPath: fileURL.path) {
             // First time ever launch
@@ -27,7 +27,7 @@ class DataManager {
             loadFromDisk()
         }
     }
-
+    
     func saveToDisk() {
         do {
             let encoder = JSONEncoder()
@@ -38,7 +38,7 @@ class DataManager {
             print("Error saving: \(error)")
         }
     }
-
+    
     func loadFromDisk() {
         guard FileManager.default.fileExists(atPath: fileURL.path) else { return }
         do {
@@ -51,7 +51,7 @@ class DataManager {
             print("Error loading: \(error)")
         }
     }
-
+    
     func saveContent(subject: String, content: Any) {
         let segmentKey: String
         let wrappedItem: StudyItem
@@ -63,7 +63,7 @@ class DataManager {
             segmentKey = DataManager.sourcesKey
             wrappedItem = .source(source)
         } else { return }
-
+        
         if savedMaterials[subject] == nil {
             savedMaterials[subject] = [DataManager.materialsKey: [], DataManager.sourcesKey: []]
         }
@@ -72,19 +72,19 @@ class DataManager {
         saveToDisk()
         NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
     }
-
+    
     func createNewSubjectFolder(name: String) {
         savedMaterials[name] = [DataManager.materialsKey: [], DataManager.sourcesKey: []]
         saveToDisk()
         NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
     }
-
+    
     func deleteSubjectFolder(name: String) {
         savedMaterials.removeValue(forKey: name)
         saveToDisk()
         NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
     }
-
+    
     func renameSubject(oldName: String, newName: String) {
         guard oldName != newName, let data = savedMaterials[oldName] else { return }
         savedMaterials[newName] = data
@@ -92,12 +92,12 @@ class DataManager {
         saveToDisk()
         NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
     }
-
+    
     func deleteItems(subjectName: String, items: [Any]) {
         guard var subjectData = savedMaterials[subjectName] else { return }
         var materials = subjectData[DataManager.materialsKey] ?? []
         var sources = subjectData[DataManager.sourcesKey] ?? []
-
+        
         for item in items {
             if let topic = item as? Topic {
                 materials.removeAll { if case .topic(let t) = $0 { return t.name == topic.name }; return false }
@@ -112,7 +112,7 @@ class DataManager {
         saveToDisk()
         NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
     }
-
+    
     private func setupDefaultData() {
         
         // 1. CALCULUS
@@ -121,22 +121,24 @@ class DataManager {
                 name: "Partial Derivatives",
                 lastAccessed: "Just now",
                 materialType: "Flashcards",
-                largeContentBody: "What is a Partial Derivative?|A derivative of a function of several variables with respect to one variable, holding others constant.\nNotation|The curly ∂ (del) symbol is used instead of 'd'.\nFirst-Order Partial f(x,y)|fₓ means differentiating with respect to x while treating y as a constant.\nChain Rule Application|Used when the variables themselves depend on other variables (e.g., x(t) and y(t)).",
-                parentSubjectName: "Calculus" // Position 5: Added to prevent crash
+                largeContentBody: "What is a Partial Derivative?|A derivative of a function of several variables...",
+                parentSubjectName: "Calculus"
             )),
             .topic(Topic(
                 name: "Limits",
                 lastAccessed: "7h ago",
                 materialType: "Quiz",
-                largeContentBody: "What is the limit of 1/x as x approaches infinity?|0|1|Infinity|Undefined|0|Think of a very large denominator.\nWhat is the limit of (sin x)/x as x approaches 0?|1|0|Infinity|-1|0|This is a fundamental trig limit.",
+                largeContentBody: "What is the limit of 1/x as x approaches infinity?|0|1|Infinity|...",
                 parentSubjectName: "Calculus"
             )),
             .topic(Topic(
-                name: "Multivariable Calculus",
-                lastAccessed: "4 days ago",
-                materialType: "Cheatsheet",
-                largeContentBody: "Formula sheet for Multivariable Calculus operations.",
-                parentSubjectName: "Calculus"
+                name: "Taylor Series PDF",
+                lastAccessed: "Just now",
+                materialType: "Notes",
+                largeContentBody: "Taylor Series approximation for smooth functions.",
+                parentSubjectName: "Calculus",
+                notesContent: "--- NOTES ---\n\nTaylor Series represent functions as infinite sums of terms calculated from derivatives.\n\n1. Definition: f(x) = f(a) + f'(a)(x-a) + f''(a)/2! * (x-a)^2...\n2. Importance: Crucial for approximating complex functions like sin(x) or e^x.",
+                cheatsheetContent: "--- CHEATSHEET ---\n\n• Formula: Σ [f^(n)(a) / n!] * (x-a)^n\n• Maclaurin: Series centered at a=0.\n• e^x: 1 + x + x²/2! + x³/3!...\n• sin(x): x - x³/3! + x⁵/5!..."
             ))
         ]
         
@@ -145,32 +147,70 @@ class DataManager {
             .source(Source(name: "Prof. Leonard Channel", fileType: "Video", size: "—"))
         ]
         savedMaterials["Calculus"] = [DataManager.materialsKey: calculusMaterials, DataManager.sourcesKey: calculusSources]
-
+        
         // 2. BIG DATA
         savedMaterials["Big Data"] = [
             DataManager.materialsKey: [
-                .topic(Topic(name: "Hadoop Fundamentals", lastAccessed: "1h ago", materialType: "Notes", largeContentBody: "Hadoop is an open-source framework for distributed storage.", parentSubjectName: "Big Data")),
-                .topic(Topic(name: "NoSQL Databases", lastAccessed: "3d ago", materialType: "Quiz", largeContentBody: "Which NoSQL type is best for relationships?|Graph|Document|Key-Value|Column|0|Think of social network structures.", parentSubjectName: "Big Data"))
+                .topic(Topic(
+                    name: "Hadoop Fundamentals",
+                    lastAccessed: "1h ago",
+                    materialType: "Notes",
+                    largeContentBody: "Hadoop is an open-source framework for distributed storage.",
+                    parentSubjectName: "Big Data",
+                    notesContent: "--- NOTES ---\n\nHadoop allows for the distributed processing of large data sets across clusters of computers.\n\n1. HDFS: Distributed Storage.\n2. MapReduce: Parallel Processing.",
+                    cheatsheetContent: "--- CHEATSHEET ---\n\n• 3 Pillars: HDFS, MapReduce, YARN.\n• Fault Tolerance: Data is replicated 3x default."
+                )),
+                .topic(Topic(
+                    name: "NoSQL Databases",
+                    lastAccessed: "3d ago",
+                    materialType: "Quiz",
+                    largeContentBody: "Which NoSQL type is best for relationships?|Graph|...",
+                    parentSubjectName: "Big Data"
+                ))
             ],
             DataManager.sourcesKey: [
                 .source(Source(name: "Hadoop Docs", fileType: "Link", size: "—"))
             ]
         ]
-
+        
         // 3. COMPUTER NETWORKS
         savedMaterials["Computer Networks"] = [
             DataManager.materialsKey: [
-                .topic(Topic(name: "OSI Model", lastAccessed: "1 day ago", materialType: "Quiz", largeContentBody: "Which layer is responsible for routing?|Network|Data Link|Transport|Physical|0|IP addresses live here.", parentSubjectName: "Computer Networks")),
-                .topic(Topic(name: "TCP vs UDP", lastAccessed: "3 days ago", materialType: "Flashcards", largeContentBody: "TCP|Connection-oriented and reliable.\nUDP|Connectionless and fast.", parentSubjectName: "Computer Networks"))
+                .topic(Topic(
+                    name: "OSI Model",
+                    lastAccessed: "1 day ago",
+                    materialType: "Quiz",
+                    largeContentBody: "Which layer is responsible for routing?|Network|...",
+                    parentSubjectName: "Computer Networks"
+                )),
+                .topic(Topic(
+                    name: "TCP vs UDP",
+                    lastAccessed: "3 days ago",
+                    materialType: "Flashcards",
+                    largeContentBody: "TCP|Reliable.\nUDP|Fast.",
+                    parentSubjectName: "Computer Networks"
+                ))
             ],
             DataManager.sourcesKey: []
         ]
-
+        
         // 4. MMA
         savedMaterials["MMA"] = [
             DataManager.materialsKey: [
-                .topic(Topic(name: "8051 Architecture", lastAccessed: "2 days ago", materialType: "Flashcards", largeContentBody: "8051 Data Bus size?|8-bit.\n8051 Address Bus size?|16-bit.", parentSubjectName: "MMA")),
-                .topic(Topic(name: "Interrupt Handling", lastAccessed: "4 days ago", materialType: "Notes", largeContentBody: "Hardware interrupts stop the CPU execution immediately.", parentSubjectName: "MMA"))
+                .topic(Topic(
+                    name: "8051 Architecture",
+                    lastAccessed: "2 days ago",
+                    materialType: "Flashcards",
+                    largeContentBody: "8051 Data Bus size?|8-bit.",
+                    parentSubjectName: "MMA"
+                )),
+                .topic(Topic(
+                    name: "Interrupt Handling",
+                    lastAccessed: "4 days ago",
+                    materialType: "Notes",
+                    largeContentBody: "Hardware interrupts stop CPU execution.",
+                    parentSubjectName: "MMA"
+                ))
             ],
             DataManager.sourcesKey: [
                 .source(Source(name: "Assembly Guide", fileType: "PDF", size: "5.1 mb"))
@@ -192,13 +232,21 @@ class DataManager {
         }
         return "Topic not found."
     }
-
-    func updateTopicContent(subject: String, topicName: String, newText: String) {
+    
+    func updateTopicContent(subject: String, topicName: String, newText: String, type: String = "Notes") {
         guard var materials = savedMaterials[subject]?[DataManager.materialsKey] else { return }
         
         for (index, item) in materials.enumerated() {
             if case .topic(var topic) = item, topic.name == topicName {
-                topic.largeContentBody = newText
+                // Logic to decide which field to save to
+                if type == "Notes" {
+                    topic.notesContent = newText
+                } else if type == "Cheatsheet" {
+                    topic.cheatsheetContent = newText
+                } else {
+                    topic.largeContentBody = newText
+                }
+                
                 materials[index] = .topic(topic)
                 break
             }
@@ -227,19 +275,26 @@ class DataManager {
         }
     }
     func addTopic(to subjectName: String, topic: Topic) {
-       
         if savedMaterials[subjectName] == nil {
             savedMaterials[subjectName] = [DataManager.materialsKey: [], DataManager.sourcesKey: []]
         }
         
-       
-        savedMaterials[subjectName]?[DataManager.materialsKey]?.append(.topic(topic))
+        // Check if a topic with this name already exists in the folder
+        let alreadyExists = savedMaterials[subjectName]?[DataManager.materialsKey]?.contains(where: { item in
+            if case .topic(let existingTopic) = item {
+                return existingTopic.name == topic.name && existingTopic.materialType == topic.materialType
+            }
+            return false
+        }) ?? false
         
-        
-        saveToDisk()
-        
-       
-        NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+        // Only append if it's a new piece of material
+        if !alreadyExists {
+            savedMaterials[subjectName]?[DataManager.materialsKey]?.append(.topic(topic))
+            saveToDisk()
+            
+            // Notify the library to refresh the list
+            NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+        }
     }
 }
 
