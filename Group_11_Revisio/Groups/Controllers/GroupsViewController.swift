@@ -37,6 +37,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         groupsTableView.delegate = self
         // This removes the extra empty lines below the last group item
         groupsTableView.tableFooterView = UIView()
+        groupsTableView.isScrollEnabled = false
         
     }
     
