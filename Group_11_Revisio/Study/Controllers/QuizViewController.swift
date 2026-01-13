@@ -74,23 +74,21 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
             button.configuration = nil
 
             
-            button.layer.cornerRadius = 16
+            button.layer.cornerRadius = 12
             button.clipsToBounds = true
-            
-            
             button.layer.borderWidth = 1.0
-            button.layer.borderColor = UIColor.systemGray3.cgColor
+            button.layer.borderColor = UIColor.systemGray4.cgColor
+            button.backgroundColor = .clear // Or .secondarySystemBackground for a slight gray fill
             
             
-            button.titleLabel?.lineBreakMode = .byWordWrapping
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
-            button.contentEdgeInsets = UIEdgeInsets(top: 15, left: 15, bottom: 15, right: 15)
-            
-           
-            button.backgroundColor = .clear
+            button.setTitleColor(.label, for: .normal)
             
             
             button.contentHorizontalAlignment = .left
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .medium)
+            
+            
+            button.contentEdgeInsets = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
         }
     }
     
@@ -186,8 +184,11 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
     func resetAnswerButtonAppearance() {
         for button in answerButtons {
             button.backgroundColor = .clear
-            button.layer.borderColor = UIColor.systemGray3.cgColor
+            button.layer.borderColor = UIColor.systemGray4.cgColor
             button.layer.borderWidth = 1.0
+            
+            
+            button.setTitleColor(.label, for: .normal)
             button.isEnabled = true
         }
     }
@@ -268,27 +269,54 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
     }
 
     @objc func finishQuizTapped() {
-       
-        currentQuestionIndex += 1
-        displayQuestion()
+        // Stop the timer
+        countdownTimer?.invalidate()
+        
+        // Process results and move to results screen
+        let finalResults = processQuizResults()
+        performSegue(withIdentifier: "ShowQuizResults", sender: finalResults)
     }
-   
 
     @objc func backButtonTapped() {
-        let alert = UIAlertController(title: "Quit Quiz", message: "Exit the quiz? Your current progress will be saved for later.", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Save & Exit?", message: "Your progress will be saved to your subject folder.", preferredStyle: .alert)
         
-       
-        alert.addAction(UIAlertAction(title: "Yes", style: .destructive) { [weak self] _ in
+        alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak self] _ in
+            guard let self = self,
+                  var topic = self.quizTopic,
+                  let subject = self.parentSubjectName else { return }
             
-            self?.navigationController?.popViewController(animated: true)
+            // 1. Pack the current questions back into the string format
+            topic.largeContentBody = self.packQuestions()
+            
+            // 2. Ensure the material type is set to Quiz
+            // (This makes it show up in the library as a Quiz)
+            let updatedTopic = Topic(
+                name: topic.name,
+                lastAccessed: "Just now",
+                materialType: "Quiz",
+                largeContentBody: topic.largeContentBody,
+                parentSubjectName: subject,
+                notesContent: topic.notesContent,
+                cheatsheetContent: topic.cheatsheetContent
+            )
+            
+            // 3. Save to DataManager
+            DataManager.shared.addTopic(to: subject, topic: updatedTopic)
+            
+            // 4. Exit
+            self.navigationController?.popViewController(animated: true)
         })
         
-        
-        alert.addAction(UIAlertAction(title: "No", style: .cancel))
-        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
-    
+    private func packQuestions() -> String {
+        return allQuestions.map { q in
+            let answers = q.answers.joined(separator: "|")
+            // We save the user's answer index as well if you want to resume exactly where they left off
+            return "\(q.questionText)|\(answers)|\(q.correctAnswerIndex)|\(q.hint)"
+        }.joined(separator: "\n")
+    }
 
     @objc func hintButtonTapped() {
         let currentQuestion = allQuestions[currentQuestionIndex]
@@ -345,11 +373,13 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
         let seconds = Int(timeRemaining) % 60
         timerLabel.text = String(format: "%02i:%02i", minutes, seconds)
         
-       
-        if timeRemaining <= 60 {
+        
+        if timeRemaining <= 10 {
             timerLabel.textColor = .systemRed
+            timerLabel.font = UIFont.systemFont(ofSize: 14, weight: .bold) // Bolds just the numbers
         } else {
-            timerLabel.textColor = .darkGray
+            timerLabel.textColor = .secondaryLabel // Matches the static label
+            timerLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         }
     }
     

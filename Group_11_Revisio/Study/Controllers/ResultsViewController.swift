@@ -27,17 +27,35 @@ class ResultsViewController: UIViewController, UITableViewDataSource, UITableVie
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.hidesBackButton = true
-            detailTableView.isScrollEnabled = false
-            detailTableView.rowHeight = 55
-           
-            detailTableView.dataSource = self
-            detailTableView.delegate = self
-
+        
+        
+        
         detailTableView.dataSource = self
         detailTableView.delegate = self
+        detailTableView.isScrollEnabled = false
+        detailTableView.rowHeight = 60 // Slightly taller for a native feel
+        
+        // 2. Score Label Centering (The "Best" Way)
+        // This replaces your setupScoreLabelPosition frame-based code
+        scoreLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            scoreLabel.centerXAnchor.constraint(equalTo: gaugeContainerView.centerXAnchor),
+            scoreLabel.centerYAnchor.constraint(equalTo: gaugeContainerView.centerYAnchor)
+        ])
+        
+        // 3. Typography
+        scoreLabel.font = UIFont.systemFont(ofSize: 34, weight: .bold)
+        scoreLabel.textColor = .label // Adapts to Dark Mode automatically
+        
         displayResults()
-       
+    }
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        // This ensures the gauge is drawn only after the view has its final dimensions
+        if let results = self.finalResult {
+            drawScoreGauge(score: results.finalScore, total: results.totalQuestions)
+        }
     }
     
     

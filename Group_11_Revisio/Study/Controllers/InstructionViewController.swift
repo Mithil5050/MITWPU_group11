@@ -73,7 +73,36 @@ class InstructionViewController: UIViewController {
     }
     
     @IBAction func saveAndExitTapped(_ sender: Any) {
-        navigationController?.popViewController(animated: true)
+        guard let topic = quizTopic,
+                  let subject = parentSubjectName else {
+                print("❌ Error: Missing topic or subject name")
+                return
+            }
+            
+            // 2. Prepare the topic specifically as a Quiz type
+            // We use the existing largeContentBody which contains the packed questions
+            let quizToSave = Topic(
+                name: topic.name,
+                lastAccessed: "Just now",
+                materialType: "Quiz",
+                largeContentBody: topic.largeContentBody,
+                parentSubjectName: subject,
+                notesContent: topic.notesContent,
+                cheatsheetContent: topic.cheatsheetContent
+            )
+            
+            // 3. Save it to the DataManager
+            DataManager.shared.addTopic(to: subject, topic: quizToSave)
+            
+            // 4. Visual Feedback (Optional but recommended)
+            print("✅ Saved \(topic.name) to \(subject)")
+            
+            // 5. Dismiss or Pop back to the folder
+            if let nav = self.navigationController {
+                nav.popViewController(animated: true)
+            } else {
+                self.dismiss(animated: true)
+            }
     }
    
 

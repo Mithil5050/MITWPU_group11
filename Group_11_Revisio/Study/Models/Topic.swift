@@ -11,7 +11,8 @@ struct Topic: Codable {
     let name: String
     let lastAccessed: String
     let materialType: String
-    var largeContentBody: String? // Move this UP to position 4
-    
-    var parentSubjectName: String? // Move this DOWN to the end
+    var largeContentBody: String? 
+    var parentSubjectName: String?
+    var notesContent: String?
+    var cheatsheetContent: String?
 }
