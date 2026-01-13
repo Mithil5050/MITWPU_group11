@@ -143,14 +143,33 @@ class ChatViewController: MessagesViewController {
         navigationItem.largeTitleDisplayMode = .never
 
         let titleButton = UIButton(type: .system)
-        titleButton.setTitle(group?.name, for: .normal)
+
+        let chevron = UIImage(systemName: "chevron.right")
+        let config = UIImage.SymbolConfiguration(pointSize: 13, weight: .medium)
+
+        titleButton.setImage(chevron?.withConfiguration(config), for: .normal)
+        let groupTitle = group?.name ?? groupName
+        titleButton.setTitle("  \(groupTitle)", for: .normal)
+        titleButton.tintColor = .systemBlue
         titleButton.setTitleColor(.systemBlue, for: .normal)
         titleButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        titleButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
-        titleButton.sizeToFit()
+
+        titleButton.semanticContentAttribute = .forceRightToLeft
+        titleButton.imageEdgeInsets = UIEdgeInsets(top: 1, left: 0, bottom: 0, right: -6)
+
         titleButton.addTarget(self, action: #selector(groupTitleTapped), for: .touchUpInside)
 
         navigationItem.titleView = titleButton
+        
+//        let titleButton = UIButton(type: .system)
+//        titleButton.setTitle(group?.name, for: .normal)
+//        titleButton.setTitleColor(.systemBlue, for: .normal)
+//        titleButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+//        titleButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
+//        titleButton.sizeToFit()
+//        titleButton.addTarget(self, action: #selector(groupTitleTapped), for: .touchUpInside)
+//
+//        navigationItem.titleView = titleButton
 
         
         messagesCollectionView.scrollsToTop = false

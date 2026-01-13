@@ -13,15 +13,23 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
     
     var myGroups: [Group] = [
         Group(name: "iMAAC"),
-        Group(name: "Group 2"),
-        Group(name: "Group 3"),
-        Group(name: "Group 4"),
-        Group(name: "Group 5"),
-        Group(name: "Group 6"),
-        Group(name: "Group 7"),
-        Group(name: "Group 8"),
-        Group(name: "Group 9"),
-        Group(name: "Group 10"),
+        Group(name: "Study Squad"),
+        Group(name: "Project Phoenix"),
+        Group(name: "Late Night Coders"),
+        Group(name: "Math Wizards"),
+        Group(name: "Swift Masters"),
+        Group(name: "Exam Prep"),
+        Group(name: "Final Year Crew"),
+        Group(name: "Deep Learners"),
+        Group(name: "AI Enthusiasts"),
+        /* "Study Squad",
+         "Project Phoenix",
+         "Late Night Coders",
+         "Math Wizards",
+         "DBMS Gang",
+         "Swift Masters",
+         "Exam Prep",
+         "Final Year Crew"*/
     ]
     
     private let joinCodeMap: [String: String] = [
@@ -37,7 +45,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         groupsTableView.delegate = self
         // This removes the extra empty lines below the last group item
         groupsTableView.tableFooterView = UIView()
-        groupsTableView.isScrollEnabled = false
+        //groupsTableView.isScrollEnabled = false
         
     }
     
@@ -59,9 +67,6 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         let group = myGroups[indexPath.row]
         // Set the text using the outlet you created in GroupCell
         cell.groupNameLabel.text = group.name
-        // Set the accessory arrow
-        cell.accessoryType = .disclosureIndicator
-        
         return cell
     }
     
@@ -145,9 +150,10 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
             print("JoinGroupViewController not found")
             return
         }
+        joinVC.delegate = self
 
-        joinVC.delegate = self   // ✅ THIS WAS MISSING
-        present(joinVC, animated: true)
+        let nav = UINavigationController(rootViewController: joinVC)
+        present(nav, animated: true)
     }
     
     @IBAction func createGroupButtonTapped(_ sender: UIButton) {

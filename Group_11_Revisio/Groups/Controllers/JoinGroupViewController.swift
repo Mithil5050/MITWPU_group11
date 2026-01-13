@@ -24,9 +24,7 @@ class JoinGroupViewController: UIViewController {
             // Remove any leftBarButtonItem created in storyboard (avoid duplicates)
             navigationItem.leftBarButtonItem = nil
         } else {
-            // Presented modally: show a Close (X) button on the left.
-            // If you already added a storyboard Bar Button and wired it to closeButtonTapped,
-            // you can skip creating it programmatically. But to avoid duplicates we create here.
+
             if navigationItem.leftBarButtonItem == nil {
                 let close = UIBarButtonItem(barButtonSystemItem: .close,
                                             target: self,
@@ -56,15 +54,8 @@ class JoinGroupViewController: UIViewController {
 //                self.delegate?.didJoinGroup(groupName: groupName)
 //            }
         }
-    
-    // MARK: - Close / Back handling
-    @objc func closeButtonTapped(_ sender: UIBarButtonItem) {
-        // If inside a navigation controller and not the root -> pop
-        if let nav = navigationController, nav.viewControllers.count > 1 {
-            nav.popViewController(animated: true)
-            return
-        }
-        // Otherwise dismiss modally
-        dismiss(animated: true, completion: nil)
+    @IBAction func closeButtonTapped(_ sender: UIBarButtonItem) {
+        dismiss(animated: true)
     }
+
 }
