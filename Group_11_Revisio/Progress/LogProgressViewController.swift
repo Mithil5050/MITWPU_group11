@@ -17,11 +17,8 @@ class LogProgressViewController: UIViewController {
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var datePicker: UIDatePicker!
     @IBOutlet weak var logHoursTextField: UITextField!
-    
-    // 1. ADD THIS OUTLET: Connect a TableView from your Storyboard to this
     @IBOutlet weak var historyTableView: UITableView!
     
-    // MARK: - Lifecycle
         override func viewDidLoad() {
             super.viewDidLoad()
             
@@ -61,13 +58,11 @@ class LogProgressViewController: UIViewController {
         private func setupInitialData() {
             updateDateLabel(for: datePicker.date)
             
-            // Add padding to the text field
             logHoursTextField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 1))
             logHoursTextField.leftViewMode = .always
             logHoursTextField.keyboardType = .decimalPad
         }
-        
-        // MARK: - Actions
+       
         @objc private func datePickerChanged(_ sender: UIDatePicker) {
             updateDateLabel(for: sender.date)
         }
