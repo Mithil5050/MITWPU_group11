@@ -20,8 +20,8 @@
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qI9-jV-5yP">
                         <rect key="frame" x="0.0" y="0.0" width="370" height="100"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="O4m-PW-F74">
-                                <rect key="frame" x="8" y="8" width="354" height="84"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="O4m-PW-F74">
+                                <rect key="frame" x="0.0" y="8" width="370" height="84"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="4L8-hV-wqe">
                                         <rect key="frame" x="0.0" y="0.0" width="80" height="84"/>
@@ -31,7 +31,7 @@
                                         </constraints>
                                     </imageView>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="G4Z-Qc-LsC">
-                                        <rect key="frame" x="88" y="0.0" width="160" height="84"/>
+                                        <rect key="frame" x="96" y="0.0" width="160" height="84"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4cK-ip-vsX">
                                                 <rect key="frame" x="0.0" y="0.0" width="160" height="35.666666666666664"/>
@@ -58,7 +58,7 @@
                                         </constraints>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="zW0-uL-b1p">
-                                        <rect key="frame" x="256" y="0.0" width="98" height="84"/>
+                                        <rect key="frame" x="272" y="0.0" width="98" height="84"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="badge_showall_button" translatesAutoresizingMaskIntoConstraints="NO" id="H5N-cm-nGh">
                                                 <rect key="frame" x="0.0" y="0.0" width="98" height="64"/>
@@ -87,20 +87,18 @@
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="O4m-PW-F74" firstAttribute="leading" secondItem="qI9-jV-5yP" secondAttribute="leading" constant="8" id="8AH-Jd-AgD"/>
-                            <constraint firstItem="O4m-PW-F74" firstAttribute="top" secondItem="qI9-jV-5yP" secondAttribute="top" constant="8" id="CaR-0S-fxM"/>
-                            <constraint firstAttribute="bottom" secondItem="O4m-PW-F74" secondAttribute="bottom" constant="8" id="VkH-13-9fN"/>
-                            <constraint firstAttribute="trailing" secondItem="O4m-PW-F74" secondAttribute="trailing" constant="8" id="bGw-q6-iX9"/>
+                            <constraint firstAttribute="bottom" secondItem="O4m-PW-F74" secondAttribute="bottom" constant="8" id="Tpq-7h-2WU"/>
+                            <constraint firstItem="O4m-PW-F74" firstAttribute="top" secondItem="qI9-jV-5yP" secondAttribute="top" constant="8" id="cda-TB-fhU"/>
+                            <constraint firstItem="O4m-PW-F74" firstAttribute="leading" secondItem="qI9-jV-5yP" secondAttribute="leading" id="ma4-sM-LDW"/>
+                            <constraint firstAttribute="trailing" secondItem="O4m-PW-F74" secondAttribute="trailing" id="xxX-4S-Ja1"/>
                         </constraints>
                     </view>
                 </subviews>
             </view>
             <viewLayoutGuide key="safeArea" id="ZTg-uK-7eu"/>
             <constraints>
-                <constraint firstItem="qI9-jV-5yP" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="6f8-TA-idt"/>
-                <constraint firstItem="qI9-jV-5yP" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="70g-mt-fgv"/>
-                <constraint firstAttribute="bottom" secondItem="qI9-jV-5yP" secondAttribute="bottom" id="8rF-mu-ebX"/>
-                <constraint firstAttribute="trailing" secondItem="qI9-jV-5yP" secondAttribute="trailing" id="vgE-OP-Fkn"/>
+                <constraint firstItem="qI9-jV-5yP" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="DV5-1B-h4W"/>
+                <constraint firstItem="qI9-jV-5yP" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="Kkv-yg-DhD"/>
             </constraints>
             <connections>
                 <outlet property="allBadgesImageView" destination="H5N-cm-nGh" id="xwi-GH-rhC"/>

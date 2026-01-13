@@ -37,9 +37,6 @@ class ProgressViewContoller: UIViewController , LogStudyTimeDelegate {
             setupUI()
             refreshChartView()
         }
-        
-        /// This is the "Magic Fix" for Scrolling.
-        /// It ensures the ScrollView knows exactly how tall the StackView is.
         override func viewDidLayoutSubviews() {
             super.viewDidLayoutSubviews()
             
