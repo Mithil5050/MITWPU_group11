@@ -9,4 +9,5 @@ import Foundation
 
 protocol LeaveGroupDelegate: AnyObject {
     func didLeaveGroup(_ group: Group)
+    func didUpdateGroup(_ group: Group)
 }

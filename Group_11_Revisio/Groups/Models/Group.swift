@@ -8,5 +8,5 @@
 import Foundation
 
 struct Group {
-    let name: String
+    var name: String
 }
