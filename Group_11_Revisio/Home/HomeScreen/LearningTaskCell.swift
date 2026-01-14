@@ -54,8 +54,8 @@ class LearningTaskCell: UITableViewCell {
             symbolname = "timer" // 🆕 Changed icon
             iconColor = UIColor(hex: "74DA9B") // 🆕 Changed color
         case .notes:
-            symbolname = "book.pages.fill"   // Notes Icon
-            iconColor = .systemBlue
+            symbolname = "book.pages"   // Notes Icon
+            iconColor = UIColor(hex: "FFC445", alpha: 0.75)
         case .video:
             symbolname = "play.tv.fill"      // Video Icon
             iconColor = .systemIndigo

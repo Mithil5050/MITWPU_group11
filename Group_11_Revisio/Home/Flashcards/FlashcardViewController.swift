@@ -1,31 +1,38 @@
 import UIKit
 import Foundation
 
-// MARK: - 1. Flashcard Data Structure (Model)
+// MARK: - 1. Flashcard Data Structure
 struct Flashcard {
     let term: String
     let definition: String
 }
 
-// MARK: - 2. Delegation Protocol (Receives New Data)
+// MARK: - 2. Delegation Protocol
 protocol AddFlashcardDelegate: AnyObject {
     func didCreateNewFlashcard(card: Flashcard)
 }
 
-// MARK: - 3. View Controller Implementation
+// MARK: - 3. View Controller
 class FlashcardViewController: UIViewController, AddFlashcardDelegate {
 
-    // MARK: - View Controller Outlets (Connect these in your Storyboard)
+    // MARK: - Outlets
     @IBOutlet weak var cardView: UIView!
     @IBOutlet weak var cardLabel: UILabel!
     @IBOutlet weak var previousButton: UIButton!
     @IBOutlet weak var nextButton: UIButton!
     
-    // MARK: - State Management
+    // IMPORTANT: Connect this to the "1/5" label in Storyboard
+    @IBOutlet weak var countLabel: UILabel!
+    
+    // MARK: - Data Receivers
+    var currentTopic: Topic?
+    var parentSubjectName: String?
+    
+    // MARK: - State
     private var flashcards: [Flashcard] = [
         Flashcard(term: "UIKit", definition: "Apple's framework for building graphical user interfaces for iOS."),
-        Flashcard(term: "Auto Layout", definition: "A constraint-based layout system that allows you to define the position and size of your app's views based on rules."),
-        Flashcard(term: "View Controller", definition: "An object that manages a set of views and is a core component of your app's structure.")
+        Flashcard(term: "Auto Layout", definition: "A constraint-based layout system."),
+        Flashcard(term: "View Controller", definition: "Manages a set of views and app structure.")
     ]
     
     private var isTermDisplayed = true
@@ -35,21 +42,29 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        if let topicName = currentTopic?.name {
+            self.title = topicName
+        }
+        
         configureCardViewAppearance()
         setupTapGesture()
+        
+        // Initial Update
         updateCardContent(animated: false)
+        updateCountLabel()
     }
     
-    // MARK: - Private Configuration Methods
-    
+    // MARK: - Configuration
     private func configureCardViewAppearance() {
         cardView.layer.cornerRadius = 16
-        cardView.layer.masksToBounds = false
         cardView.layer.shadowColor = UIColor.black.cgColor
         cardView.layer.shadowOpacity = 0.1
         cardView.layer.shadowOffset = CGSize(width: 0, height: 4)
         cardView.layer.shadowRadius = 8
-        cardView.backgroundColor = UIColor(hex: "91C1EF")
+        
+        // ✅ FIXED: Using standard RGB values instead of Hex Extension to prevent errors.
+        // This is the same blue color (91C1EF)
+        cardView.backgroundColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0)
     }
 
     private func setupTapGesture() {
@@ -58,10 +73,10 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         cardView.addGestureRecognizer(tapGesture)
     }
     
+    // MARK: - UI Updates
     private func updateCardContent(animated: Bool = true) {
-
         guard !flashcards.isEmpty else {
-            cardLabel.text = "Tap Add to create a new flashcard."
+            cardLabel.text = "Empty"
             return
         }
         
@@ -77,14 +92,23 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         }
     }
     
-    // MARK: - User Interaction: Card Flip (Programmatic Handler)
+    // ✅ DYNAMIC LABEL LOGIC
+    private func updateCountLabel() {
+        guard !flashcards.isEmpty else {
+            countLabel.text = "0/0"
+            return
+        }
+        let currentIndex = currentCardIndex + 1
+        let total = flashcards.count
+        countLabel.text = "\(currentIndex)/\(total)"
+    }
     
+    // MARK: - Actions
     @objc func handleCardTap() {
         guard !flashcards.isEmpty else { return }
         
         let card = flashcards[currentCardIndex]
         let newText = isTermDisplayed ? card.definition : card.term
-        
         let animationOptions: UIView.AnimationOptions = isTermDisplayed ? .transitionFlipFromRight : .transitionFlipFromLeft
         
         UIView.transition(with: cardView, duration: 0.5, options: animationOptions, animations: {
@@ -94,27 +118,29 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         isTermDisplayed.toggle()
     }
     
-    // MARK: - User Interaction: Navigation (Storyboard Actions)
-    
     @IBAction func nextCardButtonTapped(_ sender: UIButton) {
         guard !flashcards.isEmpty else { return }
         isTermDisplayed = true
         currentCardIndex = (currentCardIndex + 1) % flashcards.count
+        
         updateCardContent()
+        updateCountLabel() // Update label
     }
 
     @IBAction func previousCardButtonTapped(_ sender: UIButton) {
         guard !flashcards.isEmpty else { return }
         isTermDisplayed = true
         currentCardIndex = (currentCardIndex - 1 + flashcards.count) % flashcards.count
+        
         updateCardContent()
+        updateCountLabel() // Update label
     }
     
     @IBAction func addFlashcardButtonTapped(_ sender: Any) {
         performSegue(withIdentifier: "AddCardSegue", sender: self)
     }
     
-    // MARK: - Segue Preparation (Injecting the Delegate)
+    // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "AddCardSegue" {
             if let navigationController = segue.destination as? UINavigationController,
@@ -126,13 +152,13 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         }
     }
     
-    //  AddFlashcardDelegate Protocol Implementation
-    
+    // MARK: - Delegate Method
     func didCreateNewFlashcard(card: Flashcard) {
         flashcards.append(card)
-        
         currentCardIndex = flashcards.count - 1
         isTermDisplayed = true
+        
         updateCardContent(animated: true)
+        updateCountLabel() // Update label
     }
 }
