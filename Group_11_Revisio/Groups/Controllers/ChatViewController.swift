@@ -9,8 +9,9 @@ import UIKit
 import MessageKit
 import InputBarAccessoryView
 
-class ChatViewController: MessagesViewController {
+class ChatViewController: MessagesViewController, GroupUpdateDelegate {
     
+    weak var updateDelegate: GroupUpdateDelegate?
     var group: Group?
     var groupName: String = ""
     
@@ -177,6 +178,8 @@ class ChatViewController: MessagesViewController {
         }
 
         settingsVC.group = group
+        settingsVC.updateDelegate = self
+        
         navigationController?.pushViewController(settingsVC, animated: true)
         settingsVC.delegate = navigationController?.viewControllers
             .first(where: { $0 is GroupsViewController }) as? LeaveGroupDelegate
