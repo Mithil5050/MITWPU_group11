@@ -21,15 +21,20 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         Group(name: "Exam Prep"),
         Group(name: "Final Year Crew"),
         Group(name: "Deep Learners"),
-        Group(name: "AI Enthusiasts"),
-        /* "Study Squad",
-         "Project Phoenix",
-         "Late Night Coders",
-         "Math Wizards",
-         "DBMS Gang",
-         "Swift Masters",
-         "Exam Prep",
-         "Final Year Crew"*/
+        Group(name: "AI Enthusiasts")
+    ]
+    
+    private let sampleLastMessages: [String] = [
+        "Did you upload the notes?",
+        "Deadline is tomorrow",
+        "Let’s meet after class",
+        "I pushed the final changes",
+        "Check the PDF I sent",
+        "Any update on this?",
+        "We’ll discuss this later",
+        "Did you submit the test?",
+        "Can someone explain Q3?",
+        "Meeting at 6?"
     ]
     
     private let joinCodeMap: [String: String] = [
@@ -63,16 +68,38 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
             return UITableViewCell()
         }
         
+        let group = myGroups[indexPath.row]
+        // Group name
+        cell.groupNameLabel.text = group.name
+        cell.groupNameLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+
+        // Subtitle (fake last message for aesthetics)
+        let messageIndex = indexPath.row % sampleLastMessages.count
+        cell.lastMessageLabel.text = sampleLastMessages[messageIndex]
+        cell.lastMessageLabel.textColor = .secondaryLabel
+        cell.lastMessageLabel.font = UIFont.systemFont(ofSize: 14)
+
+        // Avatar (safe fallback)
+        cell.avatarImageView.image =
+            UIImage(named: "pfp_group")
+            ?? UIImage(systemName: "person.3.fill")
+
+        cell.avatarImageView.layer.cornerRadius = 22
+        cell.avatarImageView.clipsToBounds = true
+
+        return cell
+        /*
         // Get the correct Group object for the current row
         let group = myGroups[indexPath.row]
         // Set the text using the outlet you created in GroupCell
         cell.groupNameLabel.text = group.name
         return cell
+        */
     }
     
     // 3. Set the height for each row
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 60.0
+        return 64.0
     }
     
     // Allow editing (necessary for older commit-style deletion)
@@ -225,6 +252,16 @@ extension GroupsViewController: LeaveGroupDelegate {
                 with: .automatic
             )
             groupsTableView.endUpdates()
+        }
+    }
+    
+    func didUpdateGroup(_ group: Group) {
+        if let index = myGroups.firstIndex(where: { $0.name == group.name }) {
+            myGroups[index] = group
+            groupsTableView.reloadRows(
+                at: [IndexPath(row: index, section: 0)],
+                with: .automatic
+            )
         }
     }
 }

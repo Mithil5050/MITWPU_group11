@@ -81,14 +81,14 @@ class ChatViewController: MessagesViewController {
                 sender: otherUsers["ayaana"]!,
                 messageId: UUID().uuidString,
                 sentDate: Date(timeIntervalSinceNow: -2800),
-                kind: .text("Guys don’t forget statistics viva tomorrow 😭")
+                kind: .text("Guys don’t forget statistics viva tomorrow")
             ),
             // You
             ChatMessage(
                 sender: currentUser,
                 messageId: UUID().uuidString,
                 sentDate: Date(timeIntervalSinceNow: -2600),
-                kind: .text("Oh damn, thanks for the reminder 💀")
+                kind: .text("Oh right, thanks for the reminder 👍🏻")
             )
         ]
         messagesCollectionView.reloadData()
@@ -160,17 +160,6 @@ class ChatViewController: MessagesViewController {
         titleButton.addTarget(self, action: #selector(groupTitleTapped), for: .touchUpInside)
 
         navigationItem.titleView = titleButton
-        
-//        let titleButton = UIButton(type: .system)
-//        titleButton.setTitle(group?.name, for: .normal)
-//        titleButton.setTitleColor(.systemBlue, for: .normal)
-//        titleButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-//        titleButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
-//        titleButton.sizeToFit()
-//        titleButton.addTarget(self, action: #selector(groupTitleTapped), for: .touchUpInside)
-//
-//        navigationItem.titleView = titleButton
-
         
         messagesCollectionView.scrollsToTop = false
         messagesCollectionView.contentInsetAdjustmentBehavior = .always
@@ -390,7 +379,20 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
 }
 
 extension ChatViewController: LeaveGroupDelegate {
+    
     func didLeaveGroup(_ group: Group) {
         navigationController?.popToRootViewController(animated: true)
     }
+    
+    func didUpdateGroup(_ group: Group) {
+            self.group = group
+
+            let updatedName = group.name
+
+            if let titleButton = navigationItem.titleView as? UIButton {
+                titleButton.setTitle("  \(updatedName)", for: .normal)
+            } else {
+                navigationItem.title = updatedName
+            }
+        }
 }

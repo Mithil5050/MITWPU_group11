@@ -18,7 +18,8 @@ class GroupSettingsViewController: UIViewController {
     @IBOutlet weak var groupImageView: UIImageView!
     @IBOutlet weak var groupNameLabel: UILabel!
     @IBOutlet weak var membersCountLabel: UILabel!
-
+    
+    //Collecton View outlets
     @IBOutlet weak var membersCollectionView: UICollectionView!
     
     @IBOutlet weak var docsCollectionView: UICollectionView!
@@ -59,12 +60,13 @@ class GroupSettingsViewController: UIViewController {
         groupImageView.tintColor = .white
         
         // Navigation bar edit button
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
+        let editButton = UIBarButtonItem(
             title: "Edit",
             style: .plain,
             target: self,
-            action: #selector(editGroupTapped)
+            action: #selector(editButtonTapped)
         )
+        navigationItem.rightBarButtonItem = editButton
 
         docsCollectionView.dataSource = self
         docsCollectionView.delegate = self
@@ -73,10 +75,71 @@ class GroupSettingsViewController: UIViewController {
         leaderboardTableView.dataSource = self
         leaderboardTableView.delegate = self
     }
+    @objc private func editButtonTapped() {
+        guard let menu = navigationItem.rightBarButtonItem?.menu else { return }
+        
+        let interaction = UIContextMenuInteraction(delegate: self)
+        view.addInteraction(interaction)
+        
+        interaction.updateVisibleMenu { _ in
+            return menu
+        }
+    }
     
-    @objc private func editGroupTapped() {
-        print("Edit group tapped")
-        // Later: push EditGroup screen
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        configureEditMenu()
+    }
+    private func configureEditMenu() {
+
+        let renameAction = UIAction(
+            title: "Change Group Name",
+            image: UIImage(systemName: "pencil")
+        ) { [weak self] _ in
+            self?.presentRenameGroup()
+        }
+
+        let avatarAction = UIAction(
+            title: "Change Group Avatar",
+            image: UIImage(systemName: "photo")
+        ) { _ in
+            // avatar later
+        }
+
+        let menu = UIMenu(children: [renameAction, avatarAction])
+
+        navigationItem.rightBarButtonItem?.menu = menu
+    }
+    
+    private func presentRenameGroup() {
+
+        let alert = UIAlertController(
+            title: "Edit Group Name",
+            message: nil,
+            preferredStyle: .alert
+        )
+
+        alert.addTextField { textField in
+            textField.placeholder = "Group name"
+            textField.text = self.group?.name
+        }
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        alert.addAction(UIAlertAction(title: "Done", style: .default) { [weak self] _ in
+            guard
+                let self = self,
+                let newName = alert.textFields?.first?.text,
+                !newName.isEmpty
+            else { return }
+
+            self.group.name = newName
+            self.groupNameLabel.text = newName
+            
+            self.delegate?.didUpdateGroup(self.group)
+        })
+
+        present(alert, animated: true)
     }
 
     // MARK: - Segment control
@@ -94,6 +157,7 @@ class GroupSettingsViewController: UIViewController {
 
     //MARK: - Hide Alerts
     @IBOutlet weak var hideAlertsSwitch: UISwitch!
+    
     // MARK: - Leave group
     @IBAction func leaveButtonTapped(_ sender: UIButton) {
         let ac = UIAlertController(title: "Leave Group", message: "Are you sure you want to leave this group?", preferredStyle: .alert)
@@ -113,11 +177,6 @@ class GroupSettingsViewController: UIViewController {
         navigationController?.popToRootViewController(animated: true)
     }
 
-    // MARK: - Edit group action (optional)
-    @IBAction func editButtonTapped(_ sender: UIButton) {
-        // placeholder: push edit UI later
-        print("Edit tapped")
-    }
 }
 
 // MARK: - Documents, Members Collection View
@@ -263,6 +322,22 @@ extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegat
         cell.detailTextLabel?.text = "\(item.score)"
         cell.selectionStyle = .none
         return cell
+    }
+}
+
+extension GroupSettingsViewController: UIContextMenuInteractionDelegate {
+
+    func contextMenuInteraction(
+        _ interaction: UIContextMenuInteraction,
+        configurationForMenuAtLocation location: CGPoint
+    ) -> UIContextMenuConfiguration? {
+
+        return UIContextMenuConfiguration(
+            identifier: nil,
+            previewProvider: nil
+        ) { _ in
+            self.navigationItem.rightBarButtonItem?.menu
+        }
     }
 }
 

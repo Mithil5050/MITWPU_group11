@@ -9,11 +9,15 @@ import UIKit
 
 class GroupCell: UITableViewCell {
 
-    
+    @IBOutlet weak var avatarImageView: UIImageView!
     @IBOutlet weak var groupNameLabel: UILabel!
+    @IBOutlet weak var lastMessageLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
+
+        avatarImageView.layer.cornerRadius = 22
+        avatarImageView.clipsToBounds = true
 
         self.accessoryType = .disclosureIndicator
         self.selectionStyle = .none
