@@ -18,7 +18,8 @@ class GroupSettingsViewController: UIViewController {
     @IBOutlet weak var groupImageView: UIImageView!
     @IBOutlet weak var groupNameLabel: UILabel!
     @IBOutlet weak var membersCountLabel: UILabel!
-
+    
+    //Collecton View outlets
     @IBOutlet weak var membersCollectionView: UICollectionView!
     
     @IBOutlet weak var docsCollectionView: UICollectionView!
