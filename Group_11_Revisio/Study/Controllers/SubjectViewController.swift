@@ -251,16 +251,23 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     
     func setupTableView() {
-        
         topicsTableView.delegate = self
         topicsTableView.dataSource = self
         
-       
+        // 1. Register the XIB correctly
+        let nib = UINib(nibName: "MaterialViewCell", bundle: nil)
+        topicsTableView.register(nib, forCellReuseIdentifier: "MaterialViewCell")
+        
+        // 2. Styling for the "Continue Learning" look
         topicsTableView.separatorStyle = .none
+        topicsTableView.backgroundColor = .systemBackground // or UIColor.black for true dark mode
+        
+        // 3. Set the height to 96 (80pt card + 16pt gap)
+        // This allows the layoutSubviews in the cell to create the spacing
+        topicsTableView.rowHeight = 76
+        
         topicsTableView.tableFooterView = UIView()
         topicsTableView.allowsMultipleSelectionDuringEditing = true
-        
-        
     }
    
     func setupSearchController() {
@@ -303,40 +310,24 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "TopicCardCell", for: indexPath) as? TopicCardCell else {
+        // 1. Dequeue the MaterialViewCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "MaterialViewCell", for: indexPath) as? MaterialViewCell else {
             return UITableViewCell()
         }
         
-        // 1. Get the item from the array
+        // 2. Get the StudyItem (Topic or Source)
         let contentItem = filteredContent[indexPath.row]
-        let separator = " • "
         
-        // 2. Use a switch to check if it's a Topic or a Source
         if let studyItem = contentItem as? StudyItem {
-            switch studyItem {
-                
-            case .topic(let topic):
-                let visuals = getMaterialVisuals(for: topic.materialType)
-                cell.titleLabel.text = topic.name
-                cell.subtitleLabel.text = topic.materialType + separator + "Last Accessed: \(topic.lastAccessed)"
-                cell.iconImageView.image = UIImage(systemName: visuals.symbolName)
-                cell.iconImageView.tintColor = visuals.color
-                
-            case .source(let source):
-                let visuals = getSourceVisuals(for: source.fileType)
-                cell.titleLabel.text = source.name
-                cell.subtitleLabel.text = "\(source.fileType) \(separator) \(source.size)"
-                cell.iconImageView.image = UIImage(systemName: visuals.symbolName)
-                cell.iconImageView.tintColor = visuals.color
-            }
-        } else {
-            // Fallback for unexpected data types
-            cell.titleLabel.text = "Error: Unknown Content"
-            cell.subtitleLabel.text = ""
-            cell.iconImageView.image = UIImage(systemName: "xmark.octagon.fill")
+            // 3. Use the logic replicated from LearningTaskCell
+            cell.configure(with: studyItem)
         }
         
         return cell
+    }
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        // This ensures that even when the cell is reused, the 'Card' look stays clean
+        cell.backgroundColor = .clear
     }
    
    
