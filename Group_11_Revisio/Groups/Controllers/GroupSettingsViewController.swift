@@ -28,8 +28,10 @@ class GroupSettingsViewController: UIViewController {
 
     // Data
     var group: Group!
+    
     weak var delegate: LeaveGroupDelegate?
-
+    weak var updateDelegate: GroupUpdateDelegate?
+    
     private let members: [(name: String, avatar: String)] = [
         ("You", "pfp_chirag"),
         ("Ashika", "pfp_ashika"),
@@ -59,7 +61,7 @@ class GroupSettingsViewController: UIViewController {
         groupImageView.image = UIImage(systemName: "person.3.fill")
         groupImageView.tintColor = .white
         
-        // Navigation bar edit button
+        //Edit Button
         let editButton = UIBarButtonItem(
             title: "Edit",
             style: .plain,
@@ -67,7 +69,7 @@ class GroupSettingsViewController: UIViewController {
             action: #selector(editButtonTapped)
         )
         navigationItem.rightBarButtonItem = editButton
-
+        
         docsCollectionView.dataSource = self
         docsCollectionView.delegate = self
         membersCollectionView.dataSource = self
@@ -75,42 +77,37 @@ class GroupSettingsViewController: UIViewController {
         leaderboardTableView.dataSource = self
         leaderboardTableView.delegate = self
     }
-    @objc private func editButtonTapped() {
-        guard let menu = navigationItem.rightBarButtonItem?.menu else { return }
-        
-        let interaction = UIContextMenuInteraction(delegate: self)
-        view.addInteraction(interaction)
-        
-        interaction.updateVisibleMenu { _ in
-            return menu
-        }
-    }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        configureEditMenu()
-    }
-    private func configureEditMenu() {
+    @objc private func editButtonTapped() {
 
-        let renameAction = UIAction(
+        let renameAction = UIAlertAction(
             title: "Change Group Name",
-            image: UIImage(systemName: "pencil")
+            style: .default
         ) { [weak self] _ in
             self?.presentRenameGroup()
         }
 
-        let avatarAction = UIAction(
+        let avatarAction = UIAlertAction(
             title: "Change Group Avatar",
-            image: UIImage(systemName: "photo")
+            style: .default
         ) { _ in
             // avatar later
         }
 
-        let menu = UIMenu(children: [renameAction, avatarAction])
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
 
-        navigationItem.rightBarButtonItem?.menu = menu
+        let sheet = UIAlertController(
+            title: nil,
+            message: nil,
+            preferredStyle: .actionSheet
+        )
+
+        sheet.addAction(renameAction)
+        sheet.addAction(avatarAction)
+        sheet.addAction(cancelAction)
+
+        present(sheet, animated: true)
     }
-    
     private func presentRenameGroup() {
 
         let alert = UIAlertController(
@@ -119,9 +116,9 @@ class GroupSettingsViewController: UIViewController {
             preferredStyle: .alert
         )
 
-        alert.addTextField { textField in
-            textField.placeholder = "Group name"
-            textField.text = self.group?.name
+        alert.addTextField {
+            $0.placeholder = "Group name"
+            $0.text = self.group.name
         }
 
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -133,10 +130,16 @@ class GroupSettingsViewController: UIViewController {
                 !newName.isEmpty
             else { return }
 
+            // Update local model
             self.group.name = newName
+
+            // Update UI
             self.groupNameLabel.text = newName
-            
-            self.delegate?.didUpdateGroup(self.group)
+
+            // Notify ChatVC
+            self.updateDelegate?.didUpdateGroup(self.group)
+
+            self.dismiss(animated: true)
         })
 
         present(alert, animated: true)
@@ -325,19 +328,4 @@ extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegat
     }
 }
 
-extension GroupSettingsViewController: UIContextMenuInteractionDelegate {
-
-    func contextMenuInteraction(
-        _ interaction: UIContextMenuInteraction,
-        configurationForMenuAtLocation location: CGPoint
-    ) -> UIContextMenuConfiguration? {
-
-        return UIContextMenuConfiguration(
-            identifier: nil,
-            previewProvider: nil
-        ) { _ in
-            self.navigationItem.rightBarButtonItem?.menu
-        }
-    }
-}
 

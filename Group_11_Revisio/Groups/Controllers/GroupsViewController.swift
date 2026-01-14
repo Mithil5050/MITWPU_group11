@@ -7,7 +7,7 @@
 
 import UIKit
 
-class GroupsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, JoinGroupDelegate {
+class GroupsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, JoinGroupDelegate, GroupUpdateDelegate {
     
     @IBOutlet weak var groupsTableView: UITableView!
     
@@ -54,6 +54,15 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         
     }
     
+    func didUpdateGroup(_ group: Group) {
+
+        if let index = myGroups.firstIndex(where: { $0.name == group.name }) {
+            myGroups[index] = group
+
+            let indexPath = IndexPath(row: index, section: 0)
+            groupsTableView.reloadRows(at: [indexPath], with: .automatic)
+        }
+    }
     
     // 1. Returns the total count of groups
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -218,6 +227,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         }
 
         chatVC.group = group
+        chatVC.updateDelegate = self
         navigationController?.pushViewController(chatVC, animated: true)
     }
 }
@@ -252,16 +262,6 @@ extension GroupsViewController: LeaveGroupDelegate {
                 with: .automatic
             )
             groupsTableView.endUpdates()
-        }
-    }
-    
-    func didUpdateGroup(_ group: Group) {
-        if let index = myGroups.firstIndex(where: { $0.name == group.name }) {
-            myGroups[index] = group
-            groupsTableView.reloadRows(
-                at: [IndexPath(row: index, section: 0)],
-                with: .automatic
-            )
         }
     }
 }
