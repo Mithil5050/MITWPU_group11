@@ -15,8 +15,7 @@ class StudyPlanViewController: UIViewController {
     @IBOutlet weak var subjectCollectionView: UICollectionView!
     @IBOutlet weak var taskTableView: UITableView!
     
-    // Kept to prevent crashes if still connected in Storyboard,
-    // but we won't actively manipulate it for scrolling anymore.
+    // Kept to prevent crashes if still connected in Storyboard
     @IBOutlet weak var taskTableViewHeightConstraint: NSLayoutConstraint!
     
     @IBOutlet weak var subjectTitleLabel: UILabel!
@@ -38,7 +37,6 @@ class StudyPlanViewController: UIViewController {
         return formatter
     }()
     
-    // We strictly use this for day comparison now, visuals are handled by logic
     private let calendar = Calendar.current
 
     // MARK: - View Lifecycle
@@ -62,11 +60,9 @@ class StudyPlanViewController: UIViewController {
     // MARK: - Logic
     
     private func generateDateData() {
-        // Generate dates starting from 2 days ago to simulate some history for the streaks
         let today = calendar.startOfDay(for: Date())
         
-        // Adjust -2 to see past days, or 0 to start today.
-        // Using -2 here to demonstrate the "Fire" streak logic immediately.
+        // Adjust -2 to see past days
         guard let startDate = calendar.date(byAdding: .day, value: -2, to: today) else { return }
         
         for i in 0..<10 {
@@ -75,7 +71,7 @@ class StudyPlanViewController: UIViewController {
             }
         }
         
-        // Auto-select "Today" if present in the list
+        // Auto-select "Today"
         if let todayIndex = dateData.firstIndex(where: { calendar.isDate($0, inSameDayAs: today) }) {
             selectedDateIndex = todayIndex
         }
@@ -86,12 +82,10 @@ class StudyPlanViewController: UIViewController {
         
         let currentSubject = subjects[selectedSubjectIndex]
         
-        // Update Heading
         if let label = subjectTitleLabel {
             label.text = currentSubject.name
         }
         
-        // Reload Tasks
         taskTableView.reloadData()
     }
 
@@ -109,12 +103,27 @@ class StudyPlanViewController: UIViewController {
     private func setupTableView() {
         taskTableView.dataSource = self
         taskTableView.delegate = self
-        
-        // ✅ ENABLE SCROLLING: Allows the user to swipe through the list independently
         taskTableView.isScrollEnabled = true
-        
         taskTableView.register(UINib(nibName: "TaskCell", bundle: nil), forCellReuseIdentifier: "TaskCell")
         taskTableView.separatorStyle = .none
+    }
+    
+    // MARK: - NEW: Navigation Bar Actions
+    
+    // Connect this to your Bar Button Item in Storyboard
+    @IBAction func addPlanTapped(_ sender: UIBarButtonItem) {
+        // Ensure you named your segue "ShowAddPlan" in Storyboard
+        performSegue(withIdentifier: "ShowAddPlan", sender: self)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowAddPlan" {
+            // If you need to pass data to AddStudyPlanViewController, do it here
+            // if let destVC = segue.destination as? AddStudyPlanViewController {
+            //      destVC.someProperty = someValue
+            // }
+            print("Navigating to Add Study Plan Screen")
+        }
     }
 }
 
@@ -139,27 +148,23 @@ extension StudyPlanViewController: UICollectionViewDataSource, UICollectionViewD
             let date = dateData[indexPath.row]
             let isSelected = (indexPath.row == selectedDateIndex)
             
-            // --- Streak / Status Logic ---
             let today = calendar.startOfDay(for: Date())
             let cellDate = calendar.startOfDay(for: date)
             
             var status: DateButtonCell.DayStatus = .future
             
             if cellDate == today {
-                status = .current // Show Dot •
+                status = .current
             } else if cellDate < today {
-                // Determine if it's a Streak or Missed day
-                // (Simulated logic: Recent 3 days = Fire, older = Missed)
                 let daysFromToday = calendar.dateComponents([.day], from: cellDate, to: today).day ?? 100
                 if daysFromToday <= 3 {
-                    status = .streak // Show Fire 🔥
+                    status = .streak
                 } else {
-                    status = .missed // Show Hyphen -
+                    status = .missed
                 }
             } else {
-                status = .future // Show Hyphen -
+                status = .future
             }
-            // -----------------------------
             
             cell.configure(day: dayFormatter.string(from: date), status: status, isSelected: isSelected)
             return cell
@@ -173,11 +178,10 @@ extension StudyPlanViewController: UICollectionViewDataSource, UICollectionViewD
             cell.subjectLabel.text = subject.name
             cell.nextTaskLabel.text = "Next Task = \(subject.nextTask)"
             
-            // Visual Selection State
             if indexPath.row == selectedSubjectIndex {
                 cell.layer.borderWidth = 2.0
                 cell.layer.borderColor = UIColor.systemBlue.cgColor
-                cell.layer.cornerRadius = 16 // Matches the XIB corner radius
+                cell.layer.cornerRadius = 16
             } else {
                 cell.layer.borderWidth = 0
             }
@@ -193,11 +197,9 @@ extension StudyPlanViewController: UICollectionViewDataSource, UICollectionViewD
             collectionView.reloadData()
             
         } else if collectionView == subjectCollectionView {
-            // Switch Subject Logic
             selectedSubjectIndex = indexPath.row
             updateViewForSelectedSubject()
             
-            // Update UI for selection border
             collectionView.reloadData()
             collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
         }
@@ -205,7 +207,7 @@ extension StudyPlanViewController: UICollectionViewDataSource, UICollectionViewD
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if collectionView == dateCollectionView {
-            return CGSize(width: 52, height: 80) // Matches XIB size
+            return CGSize(width: 52, height: 80)
         } else {
             return CGSize(width: collectionView.bounds.width * 0.85, height: 136)
         }
@@ -239,27 +241,18 @@ extension StudyPlanViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
         let task = subjects[selectedSubjectIndex].days[indexPath.section].tasks[indexPath.row]
-        
-        // Navigation Handler
         performTaskAction(task: task)
     }
     
     func performTaskAction(task: PlanTask) {
         if task.type.contains("Quiz") {
             print("🚀 Opening Quiz for: \(task.title)")
-            // let quizVC = storyboard?.instantiateViewController(withIdentifier: "QuizViewController") as! QuizViewController
-            // navigationController?.pushViewController(quizVC, animated: true)
-            
         } else if task.type.contains("Notes") || task.type.contains("Revision") {
             print("📝 Opening Notes for: \(task.title)")
-            // let notesVC = storyboard?.instantiateViewController(withIdentifier: "NotesViewController") as! NotesViewController
-            // navigationController?.pushViewController(notesVC, animated: true)
         }
     }
     
-    // MARK: - Table View Headers (Day 1, Day 2)
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let headerView = UIView()
         let label = UILabel()

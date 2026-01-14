@@ -3,12 +3,12 @@
 //  Group_11_Revisio
 //
 //  Created by Mithil on 15/12/25.
-//  Updated: Vertical Stack for Icon Top / Text Bottom Layout
+//  Updated: Icon Colors, Safe Hex Support, Removed Notes/Cheatsheet Segues
 //
 
 import UIKit
 
-// MARK: - Custom Tappable Card View
+// MARK: - 1. Tappable Card View (Custom Control)
 @IBDesignable
 class TappableCardView: UIControl {
     
@@ -16,10 +16,8 @@ class TappableCardView: UIControl {
     private let iconImageView = UIImageView()
     private let titleLabel = UILabel()
     
-    // Default background (unselected)
+    // Modern iOS Colors
     private var defaultBackgroundColor: UIColor = .secondarySystemGroupedBackground
-    // Selected/Highlighted background
-    private var highlightBackgroundColor: UIColor = .systemGray5
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -34,29 +32,27 @@ class TappableCardView: UIControl {
     private func setupView() {
         self.backgroundColor = defaultBackgroundColor
         self.layer.cornerRadius = 16
+        // Subtle iOS Shadow
         self.layer.shadowColor = UIColor.black.cgColor
         self.layer.shadowOpacity = 0.05
         self.layer.shadowOffset = CGSize(width: 0, height: 2)
         self.layer.shadowRadius = 4
         
-        // Icon Setup (Larger for Vertical Layout)
         iconImageView.contentMode = .scaleAspectFit
         NSLayoutConstraint.activate([
-            iconImageView.widthAnchor.constraint(equalToConstant: 48), // Increased size
+            iconImageView.widthAnchor.constraint(equalToConstant: 48),
             iconImageView.heightAnchor.constraint(equalToConstant: 48)
         ])
         
-        // Title Setup
         titleLabel.font = UIFont.systemFont(ofSize: 17, weight: .medium)
         titleLabel.textColor = .label
         titleLabel.numberOfLines = 1
-        titleLabel.textAlignment = .center // Center text below icon
+        titleLabel.textAlignment = .center
         
-        // Stack Setup - VERTICAL
         stackView.axis = .vertical
-        stackView.spacing = 8 // Space between Icon and Text
+        stackView.spacing = 8
         stackView.alignment = .center
-        stackView.isUserInteractionEnabled = false // Let the UIControl handle touches
+        stackView.isUserInteractionEnabled = false
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
         stackView.addArrangedSubview(iconImageView)
@@ -64,161 +60,270 @@ class TappableCardView: UIControl {
         
         addSubview(stackView)
         
-        // Constraints: Center the stack in the view
         NSLayoutConstraint.activate([
             stackView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
             stackView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            // Optional: Ensure it doesn't touch edges on very small screens
             stackView.leadingAnchor.constraint(greaterThanOrEqualTo: self.leadingAnchor, constant: 8),
             stackView.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: -8)
         ])
     }
     
-    // Updated: Accepts UIColor directly
-    func configure(iconName: String, title: String, highlightColor: UIColor) {
-        // Use a lighter weight for a clean look
+    // Accepts 'iconColor' to set the specific logo tint
+    func configure(iconName: String, title: String, iconColor: UIColor) {
         let config = UIImage.SymbolConfiguration(pointSize: 32, weight: .light)
         iconImageView.image = UIImage(systemName: iconName, withConfiguration: config)
         titleLabel.text = title
-        iconImageView.tintColor = .systemBlue
         
-        self.highlightBackgroundColor = highlightColor
+        // Apply the specific color requested
+        iconImageView.tintColor = iconColor
     }
     
-    // Updates appearance when selected
+    // Logic to keep background "Normal"
     override var isSelected: Bool {
         didSet {
-            self.backgroundColor = isSelected ? highlightBackgroundColor : defaultBackgroundColor
-            // Optional: Change border if desired
+            self.backgroundColor = defaultBackgroundColor
+            // Only toggle the border to indicate selection
             self.layer.borderWidth = isSelected ? 2 : 0
             self.layer.borderColor = isSelected ? UIColor.systemBlue.cgColor : nil
         }
     }
     
-    // Updates appearance when pressed
     override var isHighlighted: Bool {
         didSet {
             UIView.animate(withDuration: 0.1) {
                 self.transform = self.isHighlighted ? CGAffineTransform(scaleX: 0.98, y: 0.98) : .identity
-                // If not selected, show highlight color briefly
-                if !self.isSelected {
-                    self.backgroundColor = self.isHighlighted ? self.highlightBackgroundColor : self.defaultBackgroundColor
-                }
+                self.backgroundColor = self.defaultBackgroundColor
             }
         }
     }
 }
 
-// MARK: - View Controller
+// MARK: - 2. View Controller
 class GenerateHomeViewController: UIViewController {
 
-    // MARK: - Properties
+    // MARK: - Data Properties
     var selectedMaterialType: GenerationType = .none
     var inputSourceData: [Any]?
     var contextSubjectTitle: String?
+    
+    // Configuration State
+    var selectedCount: Int = 10
+    var selectedTime: Int = 15
+    var currentDifficulty: DifficultyLevel = .medium
 
-    // MARK: - IBOutlets
+    enum DifficultyLevel {
+        case easy, medium, hard
+    }
+
+    // MARK: - IBOutlets: Main UI
     @IBOutlet weak var startCreationButton: UIButton!
     
-    // IMPORTANT: Ensure these are Class: TappableCardView in Storyboard Identity Inspector
+    // Cards
     @IBOutlet weak var quizCardView: TappableCardView!
     @IBOutlet weak var flashcardsCardView: TappableCardView!
     @IBOutlet weak var notesCardView: TappableCardView!
     @IBOutlet weak var cheatsheetCardView: TappableCardView!
 
-    // Settings Containers
+    // Config Views (Containers)
     @IBOutlet weak var quizConfigurationView: UIView!
     @IBOutlet weak var flashcardConfigurationView: UIView!
     @IBOutlet weak var defaultConfigurationPlaceholder: UIView!
+    
+    // MARK: - IBOutlets: Steppers & Labels
+    @IBOutlet weak var flashcardCountStepper: UIStepper!
+    @IBOutlet weak var flashcardCountLabel: UILabel!
+    
+    @IBOutlet weak var quizCountStepper: UIStepper!
+    @IBOutlet weak var quizCountLabel: UILabel!
+    
+    @IBOutlet weak var quizTimerStepper: UIStepper!
+    @IBOutlet weak var quizTimerLabel: UILabel!
+    
+    // MARK: - IBOutlets: Difficulty Buttons
+    @IBOutlet weak var easyButton: UIButton!
+    @IBOutlet weak var mediumButton: UIButton!
+    @IBOutlet weak var hardButton: UIButton!
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCards()
+        setupSteppers()
+        setupDifficultyButtons()
         
-        // Initial State: Select Quiz by default
         handleCardSelection(selectedCard: quizCardView, type: .quiz)
+        updateDifficultyUI()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        setupDividers()
     }
 
+    // MARK: - Setup Methods
     private func setupCards() {
-        // 1. Configure Visuals with specific RGB values
+        // Define Custom Colors
+        // Using the safe initializer (extension below) to prevent crashes
+        let quizColor = UIColor(hex: "88D769")
+        let flashcardColor = UIColor(hex: "91C1EF")
+        let cheatsheetColor = UIColor(hex: "8A38F5").withAlphaComponent(0.50)
+        let notesColor = UIColor(hex: "FFC445").withAlphaComponent(0.75)
         
-        // Quiz: F0FFDB (240, 255, 219)
-        // Icon: "timer" or "clock" looks closer to your screenshot than checkmark
-        quizCardView.configure(
-            iconName: "timer",
-            title: "Quiz",
-            highlightColor: UIColor(red: 240/255, green: 255/255, blue: 219/255, alpha: 1.0)
-        )
+        // Configure Cards with new colors
+        quizCardView.configure(iconName: "timer", title: "Quiz", iconColor: quizColor)
+        flashcardsCardView.configure(iconName: "rectangle.on.rectangle.angled", title: "Flashcards", iconColor: flashcardColor)
+        notesCardView.configure(iconName: "doc.text", title: "Notes", iconColor: notesColor)
+        cheatsheetCardView.configure(iconName: "list.clipboard", title: "Cheatsheet", iconColor: cheatsheetColor)
         
-        // Flashcards: E3EFFB (227, 239, 251)
-        flashcardsCardView.configure(
-            iconName: "rectangle.on.rectangle.angled",
-            title: "Flashcards",
-            highlightColor: UIColor(red: 227/255, green: 239/255, blue: 251/255, alpha: 1.0)
-        )
-        
-        // Notes: FAFBD1 (250, 251, 209)
-        notesCardView.configure(
-            iconName: "doc.text",
-            title: "Notes",
-            highlightColor: UIColor(red: 250/255, green: 251/255, blue: 209/255, alpha: 1.0)
-        )
-        
-        // Cheatsheet: D9D1FF (217, 209, 255)
-        cheatsheetCardView.configure(
-            iconName: "list.clipboard",
-            title: "Cheatsheet",
-            highlightColor: UIColor(red: 217/255, green: 209/255, blue: 255/255, alpha: 1.0)
-        )
-        
-        // 2. Add Targets (Wire up touch events)
+        // Add Targets
         quizCardView.addTarget(self, action: #selector(quizTapped), for: .touchUpInside)
         flashcardsCardView.addTarget(self, action: #selector(flashcardsTapped), for: .touchUpInside)
         notesCardView.addTarget(self, action: #selector(notesTapped), for: .touchUpInside)
         cheatsheetCardView.addTarget(self, action: #selector(cheatsheetTapped), for: .touchUpInside)
         
-        // Style Start Button
         startCreationButton.layer.cornerRadius = 12
     }
-
-    // MARK: - Selection Logic
     
-    private func handleCardSelection(selectedCard: TappableCardView, type: GenerationType) {
-        // 1. Update State
-        self.selectedMaterialType = type
-        
-        // 2. Update Visuals (Only one card selected at a time)
-        let allCards = [quizCardView, flashcardsCardView, notesCardView, cheatsheetCardView]
-        allCards.forEach { card in
-            card?.isSelected = (card === selectedCard)
+    private func setupSteppers() {
+        if let fcStepper = flashcardCountStepper {
+            fcStepper.minimumValue = 5
+            fcStepper.maximumValue = 30
+            fcStepper.stepValue = 5
+            fcStepper.value = Double(selectedCount)
+            fcStepper.autorepeat = true
+            flashcardCountLabel.text = "\(Int(fcStepper.value))"
         }
         
-        // 3. Update Settings View Visibility
+        if let qcStepper = quizCountStepper {
+            qcStepper.minimumValue = 5
+            qcStepper.maximumValue = 30
+            qcStepper.stepValue = 5
+            qcStepper.value = Double(selectedCount)
+            qcStepper.autorepeat = true
+            quizCountLabel.text = "\(Int(qcStepper.value))"
+        }
+        
+        if let qtStepper = quizTimerStepper {
+            qtStepper.minimumValue = 5
+            qtStepper.maximumValue = 60
+            qtStepper.stepValue = 5
+            qtStepper.value = Double(selectedTime)
+            qtStepper.autorepeat = true
+            quizTimerLabel.text = "\(Int(qtStepper.value))"
+        }
+    }
+    
+    private func setupDifficultyButtons() {
+        let buttons = [easyButton, mediumButton, hardButton]
+        buttons.forEach {
+            $0?.layer.cornerRadius = 12
+            $0?.clipsToBounds = true
+            $0?.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .medium)
+        }
+    }
+    
+    private func setupDividers() {
+        guard let quizView = quizConfigurationView,
+              let countStepper = quizCountStepper else { return }
+        
+        quizView.subviews.filter { $0.tag == 888 }.forEach { $0.removeFromSuperview() }
+        
+        let divider = UIView()
+        divider.backgroundColor = .systemGray5
+        divider.tag = 888
+        divider.translatesAutoresizingMaskIntoConstraints = false
+        
+        quizView.addSubview(divider)
+        
+        NSLayoutConstraint.activate([
+            divider.heightAnchor.constraint(equalToConstant: 1),
+            divider.leadingAnchor.constraint(equalTo: quizView.leadingAnchor, constant: 16),
+            divider.trailingAnchor.constraint(equalTo: quizView.trailingAnchor, constant: -16),
+            divider.topAnchor.constraint(equalTo: countStepper.bottomAnchor, constant: 24)
+        ])
+    }
+
+    // MARK: - Logic: UI Updates for Difficulty
+    private func updateDifficultyUI() {
+        let allButtons = [easyButton, mediumButton, hardButton]
+        for button in allButtons {
+            button?.backgroundColor = UIColor.secondarySystemFill
+            button?.setTitleColor(UIColor.systemGray, for: .normal)
+        }
+        
+        switch currentDifficulty {
+        case .easy:
+            easyButton.backgroundColor = UIColor.systemGreen
+            easyButton.setTitleColor(.white, for: .normal)
+        case .medium:
+            mediumButton.backgroundColor = UIColor.systemYellow
+            mediumButton.setTitleColor(.black, for: .normal)
+        case .hard:
+            hardButton.backgroundColor = UIColor.systemRed
+            hardButton.setTitleColor(.white, for: .normal)
+        }
+    }
+
+    private func handleCardSelection(selectedCard: TappableCardView, type: GenerationType) {
+        self.selectedMaterialType = type
+        
+        let allCards = [quizCardView, flashcardsCardView, notesCardView, cheatsheetCardView]
+        allCards.forEach { $0?.isSelected = ($0 === selectedCard) }
+        
         quizConfigurationView.isHidden = (type != .quiz)
         flashcardConfigurationView.isHidden = (type != .flashcards)
         
-        // Notes & Cheatsheet share the placeholder view
         let isPlaceholderVisible = (type == .notes || type == .cheatsheet)
         defaultConfigurationPlaceholder.isHidden = !isPlaceholderVisible
         
-        // 4. Update Button Text
         let title = (type == .none) ? "Start Creation" : "Create \(type.description)"
         startCreationButton.setTitle(title, for: .normal)
-        startCreationButton.isEnabled = true
-        startCreationButton.alpha = 1.0
     }
 
-    // MARK: - Actions (Tapped Handlers)
+    // MARK: - IBActions: Steppers
+    @IBAction func stepperValueChanged(_ sender: UIStepper) {
+        let intValue = Int(sender.value)
+        
+        if sender == flashcardCountStepper {
+            flashcardCountLabel.text = "\(intValue)"
+            selectedCount = intValue
+        }
+        else if sender == quizCountStepper {
+            quizCountLabel.text = "\(intValue)"
+            selectedCount = intValue
+        }
+        else if sender == quizTimerStepper {
+            quizTimerLabel.text = "\(intValue)"
+            selectedTime = intValue
+        }
+        
+        let generator = UISelectionFeedbackGenerator()
+        generator.selectionChanged()
+    }
+    
+    // MARK: - IBActions: Difficulty
+    @IBAction func difficultyButtonTapped(_ sender: UIButton) {
+        if sender == easyButton {
+            currentDifficulty = .easy
+        } else if sender == mediumButton {
+            currentDifficulty = .medium
+        } else if sender == hardButton {
+            currentDifficulty = .hard
+        }
+        
+        UIView.animate(withDuration: 0.2) {
+            self.updateDifficultyUI()
+        }
+    }
+
+    // MARK: - IBActions: Card Taps
     @objc func quizTapped() { handleCardSelection(selectedCard: quizCardView, type: .quiz) }
     @objc func flashcardsTapped() { handleCardSelection(selectedCard: flashcardsCardView, type: .flashcards) }
     @objc func notesTapped() { handleCardSelection(selectedCard: notesCardView, type: .notes) }
     @objc func cheatsheetTapped() { handleCardSelection(selectedCard: cheatsheetCardView, type: .cheatsheet) }
 
-    // MARK: - Main Action (Navigation Logic)
+    // MARK: - Main Generation Action
     @IBAction func startCreationButtonTapped(_ sender: UIButton) {
-        
-        // 1. Determine Topic Name
         let topicName: String
         if let sourceItem = inputSourceData?.first {
             topicName = extractName(from: sourceItem)
@@ -226,37 +331,32 @@ class GenerateHomeViewController: UIViewController {
             topicName = "New Material"
         }
 
-        // 2. Create Topic Placeholder
         let newTopic = Topic(
             name: "\(topicName) \(selectedMaterialType.description)",
             lastAccessed: "Just now",
             materialType: selectedMaterialType.description,
-            largeContentBody: "", // Empty content
+            largeContentBody: "",
             parentSubjectName: self.contextSubjectTitle
         )
         
-        // 3. Save to DataManager
         DataManager.shared.addTopic(to: self.contextSubjectTitle ?? "General Study", topic: newTopic)
         
-        // 4. Navigate based on Type
         if selectedMaterialType == .quiz {
-            // Pack data for Quiz Instruction screen
             let payload = (topic: newTopic, sourceName: topicName)
             performSegue(withIdentifier: "HomeToQuizInstruction", sender: payload)
             
         } else if selectedMaterialType == .flashcards {
-            // Navigate to Flashcards
             performSegue(withIdentifier: "HomeToFlashcardView", sender: newTopic)
             
         } else {
-            // Fallback for Notes/Cheatsheet
+            // UPDATED: Notes and Cheatsheet fall into this "Coming Soon" block
+            // This prevents crashes by not attempting segues that don't exist yet
             let alert = UIAlertController(title: "Coming Soon", message: "\(selectedMaterialType.description) creation is under construction.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default))
             present(alert, animated: true)
         }
     }
 
-    // MARK: - Helper Methods
     private func extractName(from item: Any) -> String {
         if let content = item as? StudyContent { return content.filename }
         if let topic = item as? Topic { return topic.name }
@@ -266,26 +366,38 @@ class GenerateHomeViewController: UIViewController {
 
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        // Quiz Segue
         if segue.identifier == "HomeToQuizInstruction" {
             if let dest = segue.destination as? InstructionViewController,
                let data = sender as? (topic: Topic, sourceName: String) {
-                
                 dest.quizTopic = data.topic
                 dest.sourceNameForQuiz = data.sourceName
                 dest.parentSubjectName = self.contextSubjectTitle
             }
         }
-        
-        // Flashcard Segue
         else if segue.identifier == "HomeToFlashcardView" {
             if let dest = segue.destination as? FlashcardsViewController,
                let topic = sender as? Topic {
-                
                 dest.currentTopic = topic
                 dest.parentSubjectName = self.contextSubjectTitle
             }
         }
+        // Removed Segues for Notes and Cheatsheet to prevent crashes
+    }
+}
+
+// MARK: - Safe Hex Color Extension
+extension UIColor {
+    convenience init(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+
+        var rgb: UInt64 = 0
+        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+
+        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+        let blue = CGFloat(rgb & 0x0000FF) / 255.0
+
+        self.init(red: red, green: green, blue: blue, alpha: 1.0)
     }
 }
