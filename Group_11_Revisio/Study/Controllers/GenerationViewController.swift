@@ -1,21 +1,14 @@
-//
-//  GenerationViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Mithil on 27/11/25.
-//
-
 import UIKit
 
 
+// THIS MUST BE HERE TO FIX THE SCOPE ERRORS
 enum GenerationType {
     case quiz
     case flashcards
     case notes
     case cheatsheet
-    case none // Default state
+    case none
 }
-
 
 extension GenerationType: CustomStringConvertible {
     public var description: String {
@@ -28,253 +21,183 @@ extension GenerationType: CustomStringConvertible {
         }
     }
 }
+// MARK: - 1. Renamed Custom Control
+// Renamed to 'MaterialSelectionCard' to avoid redeclaration errors
+@IBDesignable
+class MaterialSelectionCard: UIControl {
+    private let stackView = UIStackView()
+    private let iconImageView = UIImageView()
+    private let titleLabel = UILabel()
+    
+    override init(frame: CGRect) { super.init(frame: frame); setupView() }
+    required init?(coder: NSCoder) { super.init(coder: coder); setupView() }
+    
+    private func setupView() {
+        self.backgroundColor = .secondarySystemGroupedBackground
+        self.layer.cornerRadius = 16
+        iconImageView.contentMode = .scaleAspectFit
+        titleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+        
+        stackView.axis = .vertical
+        stackView.spacing = 8
+        stackView.alignment = .center
+        stackView.isUserInteractionEnabled = false
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        stackView.addArrangedSubview(iconImageView)
+        stackView.addArrangedSubview(titleLabel)
+        addSubview(stackView)
+        
+        NSLayoutConstraint.activate([
+            iconImageView.widthAnchor.constraint(equalToConstant: 44),
+            iconImageView.heightAnchor.constraint(equalToConstant: 44),
+            stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            stackView.centerYAnchor.constraint(equalTo: centerYAnchor)
+        ])
+    }
+    
+    func configure(iconName: String, title: String, iconColor: UIColor) {
+        let config = UIImage.SymbolConfiguration(pointSize: 28, weight: .medium)
+        iconImageView.image = UIImage(systemName: iconName, withConfiguration: config)
+        titleLabel.text = title
+        iconImageView.tintColor = iconColor
+    }
+    
+    override var isSelected: Bool {
+        didSet {
+            self.layer.borderWidth = isSelected ? 2 : 0
+            self.layer.borderColor = isSelected ? iconImageView.tintColor.cgColor : nil
+            self.backgroundColor = isSelected ? iconImageView.tintColor.withAlphaComponent(0.05) : .secondarySystemGroupedBackground
+        }
+    }
+}
 
-
+// MARK: - 2. View Controller (Kept your original Class Name)
 class GenerationViewController: UIViewController {
     
-    // MARK: - Data Properties
-    var currentGenerationType: GenerationType = .none
+    // USES YOUR EXISTING ENUM AND DATA PROPERTIES
+    var currentGenerationType: GenerationType = .quiz
     var sourceItems: [Any]?
     var parentSubjectName: String?
     
-    // MARK: - IBOutlets
-    
-    // Main Action Button
-    @IBOutlet weak var generateButton: UIButton!
-    
+    // MARK: - IBOutlets (Connect these to your new UI)
+    @IBOutlet weak var quizCard: MaterialSelectionCard!
+    @IBOutlet weak var flashCard: MaterialSelectionCard!
+    @IBOutlet weak var noteCard: MaterialSelectionCard!
+    @IBOutlet weak var cheatCard: MaterialSelectionCard!
     
     @IBOutlet weak var QuizSettingsView: UIView!
     @IBOutlet weak var FlashcardSettingsView: UIView!
     @IBOutlet weak var emptySettingsPlaceholder: UIView!
-    @IBOutlet weak var quizButton: UIButton!
-    @IBOutlet weak var flashcardsButton: UIButton!
-    @IBOutlet weak var notesButton: UIButton!
-    @IBOutlet weak var cheatsheetButton: UIButton!
-    
-    // MARK: - View Lifecycle
-    
+    @IBOutlet weak var generateButton: UIButton!
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-       
-        showSettingsView(QuizSettingsView)
-        updateButtonHighlight(selectedButton: quizButton)
-        
-        
-        updateGenerateButton(for: .quiz)
+        setupUI()
+        // Default selection matches your old logic
+        updateUISelection(selected: quizCard, type: .quiz)
     }
     
-    // MARK: - Private Configuration Methods
-    
-   
-    private func showSettingsView(_ viewToShow: UIView) {
+    private func setupUI() {
+        // Professional colors to match 'Big Data' reference
+        quizCard.configure(iconName: "timer", title: "Quiz", iconColor: UIColor(red: 0.45, green: 0.85, blue: 0.61, alpha: 1.0))
+        flashCard.configure(iconName: "rectangle.on.rectangle.angled", title: "Flashcards", iconColor: .systemBlue)
+        noteCard.configure(iconName: "doc.text", title: "Notes", iconColor: .systemOrange)
+        cheatCard.configure(iconName: "list.clipboard", title: "Cheatsheet", iconColor: .systemPurple)
         
-        let allSettingsViews: [UIView?] = [
-            QuizSettingsView,
-            FlashcardSettingsView,
-            emptySettingsPlaceholder
-        ]
-        
-        
-        for view in allSettingsViews {
-            view?.isHidden = true
+        [quizCard, flashCard, noteCard, cheatCard].forEach {
+            $0?.addTarget(self, action: #selector(handleCardTap(_:)), for: .touchUpInside)
         }
-        
-        
-        viewToShow.isHidden = false
+        generateButton.layer.cornerRadius = 12
     }
     
+    @objc func handleCardTap(_ sender: MaterialSelectionCard) {
+        if sender == quizCard { updateUISelection(selected: quizCard, type: .quiz) }
+        else if sender == flashCard { updateUISelection(selected: flashCard, type: .flashcards) }
+        else if sender == noteCard { updateUISelection(selected: noteCard, type: .notes) }
+        else if sender == cheatCard { updateUISelection(selected: cheatCard, type: .cheatsheet) }
+    }
     
-    private func updateGenerateButton(for type: GenerationType) {
+    private func updateUISelection(selected: MaterialSelectionCard, type: GenerationType) {
         self.currentGenerationType = type
         
-        let title: String
-        let isEnabled: Bool
-        
-        if type == .none {
-            title = "Generate"
-            isEnabled = false
-        } else {
-            title = "Generate \(type.description)"
-            isEnabled = true
+        // FIX: Use a named variable instead of $0 to allow mutation
+        let allCards = [quizCard, flashCard, noteCard, cheatCard]
+        for card in allCards {
+            // This correctly compares the card objects and sets selection
+            card?.isSelected = (card === selected)
         }
         
-        generateButton.setTitle(title, for: .normal)
-        generateButton.isEnabled = isEnabled
+        // Maintain your existing visibility logic
+        QuizSettingsView.isHidden = (type != .quiz)
+        FlashcardSettingsView.isHidden = (type != .flashcards)
+        emptySettingsPlaceholder.isHidden = (type == .quiz || type == .flashcards)
         
-        // Apply professional, modern iOS 26 visual state
-        generateButton.alpha = isEnabled ? 1.0 : 0.5
+        generateButton.setTitle("Generate \(type.description)", for: .normal)
     }
-    
-    
-    private func updateButtonHighlight(selectedButton: UIButton) {
-        let allButtons: [UIButton?] = [
-            quizButton,
-            flashcardsButton,
-            notesButton,
-            cheatsheetButton
-        ]
-        
-        // Semantic Colors for Dark/Light Mode support
-        let unselectedBackground = UIColor.systemGray6
-        let selectedBackground = UIColor.systemGray4
-        let unselectedTitleColor = UIColor.secondaryLabel // Uses system gray text
-        let selectedTitleColor = UIColor.label          // Uses primary text color
-        
-        for button in allButtons {
-            let isSelected = (button === selectedButton)
-            
-            // Wrap in an animation block for a smooth transition
-            UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
-                if isSelected {
-                    button?.backgroundColor = selectedBackground
-                    button?.setTitleColor(selectedTitleColor, for: .normal)
-                    button?.tintColor = selectedTitleColor
-                    
-                    // 1. Add a slight "Pop" scale effect
-                    button?.transform = CGAffineTransform(scaleX: 1.05, y: 1.05)
-                    
-                    // 2. Add a subtle border to define the selection
-                    button?.layer.borderWidth = 2.0
-                    button?.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.3).cgColor
-                    
-                } else {
-                    button?.backgroundColor = unselectedBackground
-                    button?.setTitleColor(unselectedTitleColor, for: .normal)
-                    button?.tintColor = unselectedTitleColor
-                    
-                    // 3. Reset scale and remove border
-                    button?.transform = .identity
-                    button?.layer.borderWidth = 0
-                }
-                
-                button?.layer.cornerRadius = 12
-            }
-        }
-    }
-    
-    // MARK: - Action Handlers (Button Taps)
-    
-    @IBAction func quizButtonTapped(_ sender: UIButton) {
-        showSettingsView(QuizSettingsView)
-        updateButtonHighlight(selectedButton: sender)
-        updateGenerateButton(for: .quiz)
-    }
-    
-    @IBAction func flashCardsButtonTapped(_ sender: UIButton) {
-        showSettingsView(FlashcardSettingsView)
-        updateButtonHighlight(selectedButton: sender)
-        updateGenerateButton(for: .flashcards)
-    }
-    
-    @IBAction func notesButtonTapped(_ sender: UIButton) {
-        showSettingsView(emptySettingsPlaceholder)
-        updateButtonHighlight(selectedButton: sender)
-        updateGenerateButton(for: .notes)
-    }
-    
-    @IBAction func cheatsheetButtonTapped(_ sender: UIButton) {
-        showSettingsView(emptySettingsPlaceholder)
-        updateButtonHighlight(selectedButton: sender)
-        updateGenerateButton(for: .cheatsheet)
-    }
-    
+
+    // MARK: - THE CORE LOGIC (YOUR ORIGINAL DATA PROCESSING)
     @IBAction func generateButtonTapped(_ sender: UIButton) {
-        
         guard let sourceItem = sourceItems?.first else { return }
-            
-            var topicToPass: Topic?
-            var finalSpecificName: String?
-            
-            // 2. Identify the source and attempt to fetch existing data from DataManager
-            if let topic = sourceItem as? Topic {
-                // If selecting an existing topic from the library list
-                topicToPass = topic
-                finalSpecificName = topic.name
-            } else if let source = sourceItem as? Source {
-                // If selecting a raw Source (PDF/Link)
-                finalSpecificName = source.name
-                
-                // SEARCH: Try to find the hardcoded Topic in your library that matches the source name
-                if let subject = parentSubjectName,
-                   let materials = DataManager.shared.savedMaterials[subject]?[DataManager.materialsKey] {
-                    for item in materials {
-                        if case .topic(let existingTopic) = item, existingTopic.name == source.name {
-                            topicToPass = existingTopic
-                            break
-                        }
+        
+        var topicToPass: Topic?
+        var finalSpecificName: String?
+        
+        if let topic = sourceItem as? Topic {
+            topicToPass = topic
+            finalSpecificName = topic.name
+        } else if let source = sourceItem as? Source {
+            finalSpecificName = source.name
+            if let subject = parentSubjectName,
+               let materials = DataManager.shared.savedMaterials[subject]?[DataManager.materialsKey] {
+                for item in materials {
+                    if case .topic(let existingTopic) = item, existingTopic.name == source.name {
+                        topicToPass = existingTopic
+                        break
                     }
                 }
-                
-                // FALLBACK: If not found in library, create a blank placeholder
-                if topicToPass == nil {
-                    topicToPass = Topic(
-                        name: source.name,
-                        lastAccessed: "Just now",
-                        materialType: currentGenerationType.description,
-                        largeContentBody: "",
-                        parentSubjectName: parentSubjectName,
-                        notesContent: nil,
-                        cheatsheetContent: nil
-                    )
-                }
             }
-            
-            // 3. Validation and Payload preparation
-            guard let topic = topicToPass, let name = finalSpecificName else { return }
-            
-            // RECONSTRUCTION: Create a fresh copy to update 'materialType' (Fixes the 'let' constant error)
-            let updatedTopic = Topic(
-                name: topic.name,
-                lastAccessed: topic.lastAccessed,
-                materialType: currentGenerationType.description, // Updates to "Notes" or "Cheatsheet"
-                largeContentBody: topic.largeContentBody,
-                parentSubjectName: topic.parentSubjectName,
-                notesContent: topic.notesContent,
-                cheatsheetContent: topic.cheatsheetContent
-            )
-            
-            let payload = (topic: updatedTopic, sourceName: name)
-
-            // 4. Navigation
-            switch currentGenerationType {
-            case .quiz:
-                performSegue(withIdentifier: "ShowQuizInstructionsFromGen", sender: payload)
-                
-            case .notes, .cheatsheet:
-                performSegue(withIdentifier: "ShowMaterial", sender: payload)
-                
-            case .flashcards:
-                showComingSoonAlert()
-                
-            case .none:
-                break
-            }
-    }
-    private func showComingSoonAlert() {
-        let alert = UIAlertController(title: "Coming Soon", message: "Flashcard generation is currently in development for Group 11 Revision.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Got it", style: .default))
-        present(alert, animated: true)
-    }
-
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard let data = sender as? (topic: Topic, sourceName: String) else { return }
-        
-        if segue.identifier == "ShowQuizInstructionsFromGen" {
-            if let instructionVC = segue.destination as? InstructionViewController {
-                instructionVC.quizTopic = data.topic
-                instructionVC.sourceNameForQuiz = data.sourceName
-                instructionVC.parentSubjectName = self.parentSubjectName
+            if topicToPass == nil {
+                topicToPass = Topic(name: source.name, lastAccessed: "Just now", materialType: currentGenerationType.description, largeContentBody: "", parentSubjectName: parentSubjectName)
             }
         }
-       
-        else if segue.identifier == "ShowMaterial" {
-            if let materialVC = segue.destination as? MaterialGenerationViewController {
-                materialVC.contentData = data.topic
-                materialVC.parentSubjectName = self.parentSubjectName
-                
-                // Pass the type so the title and content switch correctly
-                materialVC.materialType = self.currentGenerationType.description
+        
+        guard let topic = topicToPass, let name = finalSpecificName else { return }
+        
+        let updatedTopic = Topic(
+            name: topic.name,
+            lastAccessed: topic.lastAccessed,
+            materialType: currentGenerationType.description,
+            largeContentBody: topic.largeContentBody,
+            parentSubjectName: topic.parentSubjectName
+        )
+        
+        let payload = (topic: updatedTopic, sourceName: name)
+        
+        switch currentGenerationType {
+        case .quiz: performSegue(withIdentifier: "ShowQuizInstructionsFromGen", sender: payload)
+        case .notes, .cheatsheet: performSegue(withIdentifier: "ShowMaterial", sender: payload)
+        case .flashcards:
+            let alert = UIAlertController(title: "Coming Soon", message: "Flashcard generation is coming soon.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+        case .none: break
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard let data = sender as? (topic: Topic, sourceName: String) else { return }
+        if segue.identifier == "ShowQuizInstructionsFromGen" {
+            if let dest = segue.destination as? InstructionViewController {
+                dest.quizTopic = data.topic
+                dest.sourceNameForQuiz = data.sourceName
+                dest.parentSubjectName = self.parentSubjectName
+            }
+        } else if segue.identifier == "ShowMaterial" {
+            if let dest = segue.destination as? MaterialGenerationViewController {
+                dest.contentData = data.topic
+                dest.parentSubjectName = self.parentSubjectName
+                dest.materialType = self.currentGenerationType.description
             }
         }
     }
