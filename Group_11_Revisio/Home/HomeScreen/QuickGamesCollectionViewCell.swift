@@ -7,12 +7,10 @@ class QuickGamesCollectionViewCell: UICollectionViewCell {
     weak var delegate: QuickGamesCellDelegate?
     
     // MARK: - IBOutlets
-    // Card 1: Word Fill
     @IBOutlet weak var gameCard: UIView!
     @IBOutlet weak var gameImage1: UIImageView!
     @IBOutlet weak var gameTitle1: UILabel!
     
-    // Card 2: Connections
     @IBOutlet weak var gameCard2: UIView!
     @IBOutlet weak var gameImage2: UIImageView!
     @IBOutlet weak var gameTitle2: UILabel!
@@ -22,11 +20,12 @@ class QuickGamesCollectionViewCell: UICollectionViewCell {
         super.awakeFromNib()
         configureStyle()
         setupGestureRecognizers()
+        gameImage1.layer.cornerRadius = 16
+        gameImage2.layer.cornerRadius = 16
     }
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        // Reset cell state for recycled use
         gameTitle1.text = nil
         gameTitle2.text = nil
         gameImage1.image = nil
@@ -35,18 +34,28 @@ class QuickGamesCollectionViewCell: UICollectionViewCell {
     
     // MARK: - UI Setup
     private func configureStyle() {
-        // Applying iOS 26 High-Fidelity Design Patterns
+        // Card Shape
         [gameCard, gameCard2].forEach { card in
             card?.layer.cornerRadius = 16
-            card?.layer.cornerCurve = .continuous // Smooth Apple-style corners
+            card?.layer.cornerCurve = .continuous
             card?.isUserInteractionEnabled = true
         }
         
-        // Semantic background colors for Light/Dark mode compatibility
-        gameCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.12)
-        gameCard2.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.12)
+        // MARK: - 🔒 FORCE LIGHT MODE COLORS
+        // We manually define the standard iOS Light Mode RGB values.
+        // This prevents the system from swapping them to "Dark Mode Green/Blue".
         
-        // Ensure images use a consistent content mode
+        // Light Mode System Green: #34C759 (R: 52, G: 199, B: 89)
+        let fixedLightGreen = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 1.0)
+        
+        // Light Mode System Blue: #007AFF (R: 0, G: 122, B: 255)
+        let fixedLightBlue = UIColor(red: 0/255, green: 122/255, blue: 255/255, alpha: 1.0)
+        
+        // Apply with low opacity for the pastel look
+        gameCard.backgroundColor = fixedLightGreen.withAlphaComponent(0.12)
+        gameCard2.backgroundColor = fixedLightBlue.withAlphaComponent(0.12)
+        
+        // Content Mode
         gameImage1.contentMode = .scaleAspectFit
         gameImage2.contentMode = .scaleAspectFit
     }
@@ -69,19 +78,15 @@ class QuickGamesCollectionViewCell: UICollectionViewCell {
     }
     
     // MARK: - Configuration
-    /// Populates the dual-card cell with game data.
     func configure(with item1: GameItem, and item2: GameItem) {
-        // Configure Card 1
         gameTitle1.text = item1.title.uppercased()
         gameImage1.image = fetchImage(named: item1.imageAsset)
         
-        // Configure Card 2
         gameTitle2.text = item2.title.uppercased()
         gameImage2.image = fetchImage(named: item2.imageAsset)
     }
     
     private func fetchImage(named name: String) -> UIImage? {
-        // Prioritize SF Symbols, fallback to Asset Catalog
         if let symbolImage = UIImage(systemName: name) {
             return symbolImage
         }

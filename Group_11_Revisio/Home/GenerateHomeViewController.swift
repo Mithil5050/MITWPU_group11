@@ -3,7 +3,7 @@
 //  Group_11_Revisio
 //
 //  Created by Mithil on 15/12/25.
-//  Updated: Icon Colors, Safe Hex Support, Removed Notes/Cheatsheet Segues
+//  Updated: Full Integration with Mock Data & Segues
 //
 
 import UIKit
@@ -151,6 +151,7 @@ class GenerateHomeViewController: UIViewController {
         setupSteppers()
         setupDifficultyButtons()
         
+        // Initial Selection
         handleCardSelection(selectedCard: quizCardView, type: .quiz)
         updateDifficultyUI()
     }
@@ -163,13 +164,12 @@ class GenerateHomeViewController: UIViewController {
     // MARK: - Setup Methods
     private func setupCards() {
         // Define Custom Colors
-        // Using the safe initializer (extension below) to prevent crashes
         let quizColor = UIColor(hex: "88D769")
         let flashcardColor = UIColor(hex: "91C1EF")
         let cheatsheetColor = UIColor(hex: "8A38F5").withAlphaComponent(0.50)
         let notesColor = UIColor(hex: "FFC445").withAlphaComponent(0.75)
         
-        // Configure Cards with new colors
+        // Configure Cards
         quizCardView.configure(iconName: "timer", title: "Quiz", iconColor: quizColor)
         flashcardsCardView.configure(iconName: "rectangle.on.rectangle.angled", title: "Flashcards", iconColor: flashcardColor)
         notesCardView.configure(iconName: "doc.text", title: "Notes", iconColor: notesColor)
@@ -322,6 +322,50 @@ class GenerateHomeViewController: UIViewController {
     @objc func notesTapped() { handleCardSelection(selectedCard: notesCardView, type: .notes) }
     @objc func cheatsheetTapped() { handleCardSelection(selectedCard: cheatsheetCardView, type: .cheatsheet) }
 
+    // MARK: - Helper: Mock Content Generator
+    private func generateDummyContent(topic: String, type: GenerationType) -> String {
+        switch type {
+        case .notes:
+            return """
+            # Notes: \(topic)
+            
+             1. Introduction
+            \(topic) is a fundamental concept in this field. It encompasses various methodologies and practices designed to optimize performance and scalability.
+            
+             2. Key Concepts
+            - Scalability: The ability to handle growing amounts of work.
+            - Efficiency: Performing in the best possible manner with the least waste of time and effort.
+            - Integration: The process of bringing together the component sub-systems into one system.
+            
+             3. Summary
+            Remember that mastering \(topic) requires consistent practice and understanding of the underlying principles.
+            """
+            
+        case .cheatsheet:
+            return """
+            # \(topic) Cheatsheet 🚀
+            
+            | Command | Description |
+            |---------|-------------|
+            | `init()` | Initializes the object |
+            | `start()` | Begins the primary process |
+            | `stop()`  | Halts execution immediately |
+            
+             Quick Formulas
+            - Speed = Distance / Time
+            - Efficiency = (Output / Input) * 100%
+            
+             Golden Rules
+            1. Always validate inputs.
+            2. DRY (Don't Repeat Yourself).
+            3. KISS (Keep It Simple, Stupid).
+            """
+            
+        default:
+            return ""
+        }
+    }
+
     // MARK: - Main Generation Action
     @IBAction func startCreationButtonTapped(_ sender: UIButton) {
         let topicName: String
@@ -331,16 +375,20 @@ class GenerateHomeViewController: UIViewController {
             topicName = "New Material"
         }
 
+        // Generate Content (so Notes/Cheatsheet aren't empty)
+        let generatedContent = generateDummyContent(topic: topicName, type: selectedMaterialType)
+
         let newTopic = Topic(
             name: "\(topicName) \(selectedMaterialType.description)",
             lastAccessed: "Just now",
             materialType: selectedMaterialType.description,
-            largeContentBody: "",
+            largeContentBody: generatedContent,
             parentSubjectName: self.contextSubjectTitle
         )
         
         DataManager.shared.addTopic(to: self.contextSubjectTitle ?? "General Study", topic: newTopic)
         
+        // Navigation Logic
         if selectedMaterialType == .quiz {
             let payload = (topic: newTopic, sourceName: topicName)
             performSegue(withIdentifier: "HomeToQuizInstruction", sender: payload)
@@ -348,9 +396,13 @@ class GenerateHomeViewController: UIViewController {
         } else if selectedMaterialType == .flashcards {
             performSegue(withIdentifier: "HomeToFlashcardView", sender: newTopic)
             
+        } else if selectedMaterialType == .notes {
+            performSegue(withIdentifier: "HomeToNotesView", sender: newTopic)
+            
+        } else if selectedMaterialType == .cheatsheet {
+            performSegue(withIdentifier: "HomeToCheatsheetView", sender: newTopic)
+            
         } else {
-            // UPDATED: Notes and Cheatsheet fall into this "Coming Soon" block
-            // This prevents crashes by not attempting segues that don't exist yet
             let alert = UIAlertController(title: "Coming Soon", message: "\(selectedMaterialType.description) creation is under construction.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default))
             present(alert, animated: true)
@@ -381,7 +433,20 @@ class GenerateHomeViewController: UIViewController {
                 dest.parentSubjectName = self.contextSubjectTitle
             }
         }
-        // Removed Segues for Notes and Cheatsheet to prevent crashes
+        else if segue.identifier == "HomeToNotesView" {
+            if let dest = segue.destination as? NotesViewController,
+               let topic = sender as? Topic {
+                dest.currentTopic = topic
+                dest.parentSubjectName = self.contextSubjectTitle
+            }
+        }
+        else if segue.identifier == "HomeToCheatsheetView" {
+            if let dest = segue.destination as? CheatsheetViewController,
+               let topic = sender as? Topic {
+                dest.currentTopic = topic
+                dest.parentSubjectName = self.contextSubjectTitle
+            }
+        }
     }
 }
 

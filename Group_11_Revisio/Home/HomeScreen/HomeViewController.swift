@@ -2,7 +2,7 @@
 //  HomeViewController.swift
 //  Group_11_Revisio
 //
-//  Updated for Dropdown Functionality
+//  Updated for Dropdown Functionality & Profile Icon
 //
 
 import UIKit
@@ -29,7 +29,7 @@ let continueLearningCellID = "ContinueLearningCellID"
 let quickGamesCellID = "QuickGamesCellID"
 let studyPlanCellID = "StudyPlanCellID"
 let headerID = "HeaderID"
-let taskCellID = "TaskCell" // Reuse the cell from Study Plan
+let taskCellID = "TaskCell"
 
 let showStudyPlanSegueID = "ShowStudyPlanSegue"
 let showTodayTaskSegueID = "showTodayTaskSegue"
@@ -50,7 +50,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     var learningItems: [ContentItem] = []
     var gameItems: [GameItem] = []
     
-    // 🆕 Dropdown Logic Properties
+    // Dropdown Logic Properties
     var incompleteTasks: [PlanTask] = []
     var isLearningExpanded: Bool = false
 
@@ -61,11 +61,44 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     override func viewDidLoad() {
         super.viewDidLoad()
         setupData()
-        loadIncompleteTasks() // 🆕 Load tasks
+        loadIncompleteTasks()
         setupCollectionView()
+        
+        // ✅ NEW: Setup the profile picture in the Nav Bar
+        setupProfileIcon()
     }
     
-    // 🆕 Fetch tasks for the dropdown
+    // MARK: - NEW: Profile Icon Setup
+    // MARK: - NEW: Profile Icon Setup
+        private func setupProfileIcon() {
+            // 1. Create a UIButton
+            let button = UIButton(type: .custom)
+            
+            // 2. Load the image
+            if let image = UIImage(named: "profileimage") {
+                button.setImage(image, for: .normal)
+            } else {
+                button.setImage(UIImage(systemName: "person.circle.fill"), for: .normal)
+            }
+            
+            // 3. FORCE SIZE constraints (This fixes the "Huge Image" issue)
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.widthAnchor.constraint(equalToConstant: 40).isActive = true
+            button.heightAnchor.constraint(equalToConstant: 40).isActive = true
+            
+            // 4. Configure Image Scaling & Circle Shape
+            button.imageView?.contentMode = .scaleAspectFill
+            button.layer.cornerRadius = 20 // Half of 40
+            button.layer.masksToBounds = true
+            
+            // 5. Add Action
+            button.addTarget(self, action: #selector(profileButtonTapped(_:)), for: .touchUpInside)
+            
+            // 6. Assign to Navigation Bar
+            let barItem = UIBarButtonItem(customView: button)
+            navigationItem.rightBarButtonItem = barItem
+        }
+    
     private func loadIncompleteTasks() {
         let allSubjects = JSONDatabaseManager.shared.loadStudyPlan()
         incompleteTasks = allSubjects.flatMap { subject in
@@ -87,8 +120,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         learningItems = [ContentItem(title: "Area under functions", iconName: "", itemType: "Topic")]
         
         gameItems = [
-            GameItem(title: "Word Fill", imageAsset: "Screenshot 2025-12-09 at 3.06.21 PM"),
-            GameItem(title: "Connections", imageAsset: "Screenshot_2025-12-15_at_3.58.26_PM-removebg-preview-2")
+            GameItem(title: "", imageAsset: "Gemini_Generated_Image_p66f9tp66f9tp66f-removebg-preview"),
+            GameItem(title: "", imageAsset: "Gemini_Generated_Image_y6xx8iy6xx8iy6xx-removebg-preview")
         ]
     }
 
@@ -100,7 +133,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         collectionView.contentInsetAdjustmentBehavior = .never
     }
     
-    @IBAction func profileButtonTapped(_ sender: UIButton) {
+    // ✅ MODIFIED: Changed sender type to 'Any' to support both UIButton and UIBarButtonItem
+    @IBAction func profileButtonTapped(_ sender: Any) {
         performSegue(withIdentifier: "showProfileSegue", sender: nil)
     }
     
@@ -146,39 +180,30 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .continueLearning:
-                            // Base row height matching LearningTaskCell (80pt)
-                            let rowHeight: CGFloat = 75
-                            
-                            // 1. Calculate items to show
-                            let visibleCount = min(incompleteTasks.count, 3)
+                let rowHeight: CGFloat = 75
+                let visibleCount = min(incompleteTasks.count, 3)
+                let expandedHeight: CGFloat = isLearningExpanded
+                    ? CGFloat(visibleCount + 1) * rowHeight
+                    : 75
 
-                            // 2. Dynamic Height Calculation
-                            // Collapsed: 70pt (Matches visual card height tightly)
-                            // Expanded: Exact height for all rows
-                            let expandedHeight: CGFloat = isLearningExpanded
-                                ? CGFloat(visibleCount + 1) * rowHeight
-                                : 75
+                let size = NSCollectionLayoutSize(
+                    widthDimension: itemWidth,
+                    heightDimension: .absolute(expandedHeight)
+                )
+                let item = NSCollectionLayoutItem(layoutSize: size)
+                let group = NSCollectionLayoutGroup.vertical(layoutSize: size, subitems: [item])
 
-                            // 3. Layout Definition
-                            let size = NSCollectionLayoutSize(
-                                widthDimension: itemWidth,
-                                heightDimension: .absolute(expandedHeight)
-                            )
-                            let item = NSCollectionLayoutItem(layoutSize: size)
-                            let group = NSCollectionLayoutGroup.vertical(layoutSize: size, subitems: [item])
-
-                            let section = NSCollectionLayoutSection(group: group)
-                            
-                            // FIX: Reduced bottom padding from 'verticalSpacing' (20) to 5
-                            section.contentInsets = NSDirectionalEdgeInsets(
-                                top: 5,
-                                leading: horizontalPadding,
-                                bottom: 16,
-                                trailing: horizontalPadding
-                            )
-                            
-                            section.boundarySupplementaryItems = [headerItem]
-                            return section
+                let section = NSCollectionLayoutSection(group: group)
+                
+                section.contentInsets = NSDirectionalEdgeInsets(
+                    top: 5,
+                    leading: horizontalPadding,
+                    bottom: 5,
+                    trailing: horizontalPadding
+                )
+                
+                section.boundarySupplementaryItems = [headerItem]
+                return section
                 
             case .quickGames:
                 let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(130))
@@ -206,7 +231,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         collectionView.register(UINib(nibName: "ContinueLearningCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: continueLearningCellID)
         collectionView.register(UINib(nibName: "QuickGamesCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: quickGamesCellID)
         collectionView.register(UINib(nibName: "StudyPlanCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: studyPlanCellID)
-        // 🆕 Register TaskCell for the dropdown items
         collectionView.register(UINib(nibName: "TaskCell", bundle: nil), forCellWithReuseIdentifier: taskCellID)
         
         collectionView.register(UINib(nibName: "HeaderViewCollectionReusableView", bundle: nil),
@@ -266,7 +290,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         switch sectionType {
         case .continueLearning:
             headerView.isHidden = false
-            // 🆕 Configure with expansion state
             headerView.configureHeader(with: "Continue Learning", showViewAll: true, section: indexPath.section, isExpanded: isLearningExpanded)
             headerView.delegate = self
         case .quickGames:
@@ -293,10 +316,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
 // MARK: - Header Delegate (The Dropdown Trigger)
 extension HomeViewController: HeaderViewDelegate {
     func didTapViewAll(in section: Int) {
-        // Toggle state
         isLearningExpanded.toggle()
-        
-        // Reload just the specific section with animation
         collectionView.performBatchUpdates({
             collectionView.reloadSections(IndexSet(integer: section))
         }, completion: nil)

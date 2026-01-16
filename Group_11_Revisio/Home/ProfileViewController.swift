@@ -7,22 +7,17 @@ enum ProfileSection: Int, CaseIterable {
     case actions // For Logout
 }
 
-// NOTE: Assume this custom class exists in your project with the required outlets (nameLabel, emailLabel, editProfileButton, profileImageView)
-// You MUST create this UserInfoCell.swift and UserInfoCell.xib
-class UserInfoCell: UITableViewCell { }
-
 class ProfileViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     @IBOutlet weak var tableView: UITableView!
     
-    // Settings data structure (title, initial state/type)
-    let settingsOptions: [(title: String, type: String)] = [
-        ("Study Reminder", "Switch"),
-        ("Mindful Breaks", "Switch"),
-        ("Show Achievements", "Switch"),
-        ("Notifications", "Switch"),
-        ("Privacy & Security", "Disclosure"),
-        ("Help & Support", "Disclosure")
+    // Updated Data Model: Includes Icon Name and Color
+    let settingsOptions: [(title: String, icon: String?, color: UIColor?, type: String)] = [
+        ("Study Reminder", "book", .systemBlue, "Switch"),
+        ("Show Achievements", "trophy", .systemYellow, "Switch"),
+        ("Notifications", "bell.badge", .systemRed, "Switch"),
+        ("Privacy & Security", nil, nil, "Disclosure"),
+        ("Help & Support", nil, nil, "Disclosure")
     ]
     
     // MARK: - Lifecycle
@@ -30,26 +25,22 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = "Profile"
+        self.title = ""
         
-        // ⬇️ NEW: Add Close Button for modal dismissal ⬇️
-        let closeButton = UIBarButtonItem(
+        // Back Button
+        let backButton = UIBarButtonItem(
             image: UIImage(systemName: "xmark"),
             style: .plain,
             target: self,
             action: #selector(closeTapped)
         )
-        self.navigationItem.leftBarButtonItem = closeButton
+        backButton.tintColor = .systemGray2
+        self.navigationItem.leftBarButtonItem = backButton
         
         setupTableView()
     }
     
-    // ⬇️ NEW: Action method to dismiss the modal view controller ⬇️
     @objc func closeTapped() {
-        self.dismiss(animated: true, completion: nil)
-    }
-    
-    @IBAction func cancelTapped(_ sender: UIBarButtonItem) {
         self.dismiss(animated: true, completion: nil)
     }
     
@@ -57,11 +48,12 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
         tableView.dataSource = self
         tableView.delegate = self
         
-        // FIX 1: Register the custom UserInfoCell XIB (Assuming name "UserInfoCell")
+        // Register your custom UserInfoCell XIB
+        // Make sure the file name is "UserInfoCell"
         let userInfoNib = UINib(nibName: "UserInfoCell", bundle: nil)
         tableView.register(userInfoNib, forCellReuseIdentifier: "UserInfoCellID")
         
-        // Register standard cell types for settings/actions
+        // Register standard cell for settings
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SettingCell")
     }
     
@@ -91,36 +83,33 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
         
         switch section {
         case .userInfo:
-            // FIX 2: Dequeue the custom UserInfoCell
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: "UserInfoCellID", for: indexPath) as? UserInfoCell else {
-                let placeholderCell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
-                placeholderCell.selectionStyle = .none
-                placeholderCell.textLabel?.text = "Alex Smith"
-                placeholderCell.detailTextLabel?.text = "alexsmith@gmail.com"
-                return placeholderCell
+            // FIX: Use 'UserInfoCellTableViewCell' instead of 'UserInfoCell'
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: "UserInfoCellID", for: indexPath) as? UserInfoCellTableViewCell else {
+                return UITableViewCell()
             }
-            
             cell.selectionStyle = .none
-            
-            // NOTE: In your real UserInfoCell, you would call a configure method here:
-            /* cell.configure(
-                 name: "Alex Smith",
-                 email: "alexsmith@gmail.com",
-                 image: UIImage(systemName: "person.circle.fill") ?? UIImage()
-             )
-             */
-            
             return cell
             
         case .settings:
             let cell = tableView.dequeueReusableCell(withIdentifier: "SettingCell", for: indexPath)
             let setting = settingsOptions[indexPath.row]
             
+            // Configure Text
             cell.textLabel?.text = setting.title
             
+            // Configure Icon
+            if let iconName = setting.icon, let iconColor = setting.color {
+                cell.imageView?.image = UIImage(systemName: iconName)
+                cell.imageView?.tintColor = iconColor
+            } else {
+                cell.imageView?.image = nil
+            }
+            
+            // Configure Accessory
             if setting.type == "Switch" {
                 let settingSwitch = UISwitch()
                 settingSwitch.isOn = true
+                settingSwitch.onTintColor = .systemGreen
                 cell.accessoryView = settingSwitch
                 cell.selectionStyle = .none
                 cell.accessoryType = .none
@@ -128,6 +117,10 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
                 cell.accessoryView = nil
                 cell.accessoryType = .disclosureIndicator
             }
+            
+            // Dark mode adaptation
+            cell.backgroundColor = UIColor.systemGroupedBackground
+            
             return cell
             
         case .actions:
@@ -136,8 +129,11 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
             cell.textLabel?.text = "Logout"
             cell.textLabel?.textColor = .systemRed
             cell.textLabel?.textAlignment = .center
+            
+            cell.imageView?.image = nil
             cell.accessoryView = nil
             cell.accessoryType = .none
+            cell.backgroundColor = UIColor.systemGroupedBackground
             return cell
         }
     }
@@ -146,44 +142,27 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let section = ProfileSection.allCases[indexPath.section]
-        
-        if section == .actions {
-            print("Logout Tapped: Initiate log out process.")
-        } else if section == .settings {
-            let settingTitle = settingsOptions[indexPath.row].title
-            if settingsOptions[indexPath.row].type == "Disclosure" {
-                print("Navigate to \(settingTitle) screen.")
-                // TODO: Perform Segue to the relevant detailed settings view
-            }
+        if indexPath.section == 2 {
+            print("Logout Tapped")
         }
     }
     
-    // Set heights for visual spacing
+    // MARK: - Heights
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         let section = ProfileSection.allCases[indexPath.section]
         switch section {
-        case .userInfo: return 140 // Taller cell for the profile card
-        case .settings, .actions: return 52 // Adds ~8 points of vertical space between settings rows
-            
+        case .userInfo: return 140
+        case .settings, .actions: return 52
         }
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        let sectionType = ProfileSection.allCases[section]
-        switch sectionType {
-        case .settings: return 40.0 // Space above the "Settings" title
-        default: return 0.0
-        }
+        if section == 1 { return 40.0 }
+        return 0.0
     }
     
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        let sectionType = ProfileSection.allCases[section]
-        switch sectionType {
-        case .userInfo: return 20.0 // Gap between User Info card and Settings header
-        case .settings: return 20.0 // Gap between Settings block and Logout button
-        default: return 1.0 // Minimal space after Logout
-        }
+        return 20.0
     }
 }

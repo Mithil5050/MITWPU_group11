@@ -91,6 +91,8 @@ class StudyPlanViewController: UIViewController {
 
     // MARK: - Setup
     private func setupCollectionViews() {
+        dateCollectionView.showsHorizontalScrollIndicator = false    // <--- ADD THIS
+                subjectCollectionView.showsHorizontalScrollIndicator = false
         dateCollectionView.dataSource = self
         dateCollectionView.delegate = self
         dateCollectionView.register(UINib(nibName: "DateButtonCell", bundle: nil), forCellWithReuseIdentifier: "DateButtonCell")
@@ -209,7 +211,8 @@ extension StudyPlanViewController: UICollectionViewDataSource, UICollectionViewD
         if collectionView == dateCollectionView {
             return CGSize(width: 52, height: 80)
         } else {
-            return CGSize(width: collectionView.bounds.width * 0.85, height: 136)
+            // UPDATED: Height changed from 136 to 149
+            return CGSize(width: collectionView.bounds.width * 0.85, height: 149)
         }
     }
 }
