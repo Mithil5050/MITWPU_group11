@@ -15,7 +15,14 @@ class UserInfoCellTableViewCell: UITableViewCell {
         super.awakeFromNib()
         // Initialization code
         Edit.layer.cornerRadius = 27
-        Edit.backgroundColor = UIColor(hex: "F7F7F7")
+        Edit.backgroundColor = UIColor { traitCollection in
+            // Return Light Mode Color if user is not in Dark Mode
+            if traitCollection.userInterfaceStyle == .dark {
+                return UIColor.secondarySystemBackground // Or your specific Dark Hex
+            } else {
+                return UIColor(hex: "F7F7F7") // Your specific Light Hex
+            }
+        }
         pfp.layer.cornerRadius = pfp.frame.size.width / 2
         
     }

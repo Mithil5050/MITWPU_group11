@@ -11,14 +11,14 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="SubjectCardCell" customModule="Group_11_Revisio" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="118" height="136"/>
+            <rect key="frame" x="0.0" y="0.0" width="118" height="149"/>
             <autoresizingMask key="autoresizingMask"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                <rect key="frame" x="0.0" y="0.0" width="118" height="136"/>
+                <rect key="frame" x="0.0" y="0.0" width="118" height="149"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bia-s7-AFa">
-                        <rect key="frame" x="0.0" y="0.0" width="118" height="136"/>
+                        <rect key="frame" x="0.0" y="0.0" width="118" height="149"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Calculus" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="y2h-5L-XmV">
                                 <rect key="frame" x="0.0" y="16" width="118" height="21"/>
@@ -45,7 +45,6 @@
                             <constraint firstItem="QIr-l1-a28" firstAttribute="top" secondItem="y2h-5L-XmV" secondAttribute="bottom" constant="8" id="Ntc-c6-T3t"/>
                             <constraint firstItem="y2h-5L-XmV" firstAttribute="leading" secondItem="bia-s7-AFa" secondAttribute="leading" id="Pya-D2-4ga"/>
                             <constraint firstItem="QIr-l1-a28" firstAttribute="leading" secondItem="bia-s7-AFa" secondAttribute="leading" id="Spw-uo-DQ1"/>
-                            <constraint firstAttribute="height" constant="136" id="Vcm-gE-z7w"/>
                             <constraint firstAttribute="trailing" secondItem="y2h-5L-XmV" secondAttribute="trailing" id="lfl-oQ-6Bv"/>
                             <constraint firstItem="y2h-5L-XmV" firstAttribute="top" secondItem="bia-s7-AFa" secondAttribute="top" constant="16" id="oh5-xI-7fi"/>
                         </constraints>
@@ -59,14 +58,14 @@
                 <constraint firstAttribute="trailing" secondItem="bia-s7-AFa" secondAttribute="trailing" id="7dl-1c-jdf"/>
                 <constraint firstItem="bia-s7-AFa" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="ZQF-bP-N5M"/>
             </constraints>
-            <size key="customSize" width="406" height="157"/>
+            <size key="customSize" width="406" height="170"/>
             <connections>
                 <outlet property="nextTaskLabel" destination="QIr-l1-a28" id="1sq-JP-KaE"/>
                 <outlet property="progressContainerView" destination="A0f-yt-CvL" id="pCL-AY-mAQ"/>
                 <outlet property="subjectCard" destination="bia-s7-AFa" id="uyQ-hD-1yl"/>
                 <outlet property="subjectLabel" destination="y2h-5L-XmV" id="hNp-KV-rtT"/>
             </connections>
-            <point key="canvasLocation" x="349.61832061068702" y="143.66197183098592"/>
+            <point key="canvasLocation" x="349.61832061068702" y="147.53521126760563"/>
         </collectionViewCell>
     </objects>
     <resources>

@@ -21,20 +21,19 @@ class SubjectCardCell: UICollectionViewCell {
         // 🍏 iOS 26 Aesthetic: Prominent Glass Card
         contentView.layer.cornerRadius = 16
         contentView.clipsToBounds = true
+        
+        // 1. Set the main card color
         subjectCard.backgroundColor = UIColor(hex: "91C1EF", alpha: 0.25)
-        // Add shadow for depth (optional, depends on specific iOS 26 style)
-//        layer.shadowColor = UIColor.black.cgColor
-//        layer.shadowOffset = CGSize(width: 0, height: 8)
-//        layer.shadowRadius = 8
-//        layer.shadowOpacity = 0.1
-//        layer.masksToBounds = false
         
         // Initialize and add the circular progress view
         let progressView = CircularProgressView(frame: progressContainerView.bounds)
         progressView.progressColor = .systemGreen
         progressView.lineWidth = 6.0
         progressContainerView.addSubview(progressView)
-        progressContainerView.backgroundColor = UIColor(hex: "91C1EF", alpha: 0.05)
+        
+        // 2. UPDATED: Set to .clear so it blends perfectly with subjectCard
+        progressContainerView.backgroundColor = .clear
+        
         // Set constraints to make the progress view fill the container
         progressView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -52,7 +51,5 @@ class SubjectCardCell: UICollectionViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        // Ensure the shadow path is updated when the cell's frame changes
-//        layer.shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: contentView.layer.cornerRadius).cgPath
     }
 }
