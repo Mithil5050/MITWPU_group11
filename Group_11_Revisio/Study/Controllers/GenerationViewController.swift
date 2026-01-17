@@ -90,12 +90,36 @@ class GenerationViewController: UIViewController {
     @IBOutlet weak var FlashcardSettingsView: UIView!
     @IBOutlet weak var emptySettingsPlaceholder: UIView!
     @IBOutlet weak var generateButton: UIButton!
+    // MARK: - Stepper Outlets
+        @IBOutlet weak var flashcardCountStepper: UIStepper!
+        @IBOutlet weak var flashcardCountLabel: UILabel!
+        
+        @IBOutlet weak var quizCountStepper: UIStepper!
+        @IBOutlet weak var quizCountLabel: UILabel!
+        
+        @IBOutlet weak var quizTimerStepper: UIStepper!
+        @IBOutlet weak var quizTimerLabel: UILabel!
+    
+    
+    @IBOutlet weak var easyButton: UIButton!
+    @IBOutlet weak var mediumButton: UIButton!
+    @IBOutlet weak var hardButton: UIButton!
 
+      
+        var selectedCount: Int = 10
+        var selectedTime: Int = 15
+    var currentDifficulty: String = "Medium"
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        // Default selection matches your old logic
+        setupSteppers()
         updateUISelection(selected: quizCard, type: .quiz)
+        // ADD THIS:
+            [easyButton, mediumButton, hardButton].forEach { $0?.layer.cornerRadius = 12 }
+            // Set default color for Medium
+            mediumButton.backgroundColor = .systemYellow
+            mediumButton.setTitleColor(.black, for: .normal)
     }
     
     private func setupUI() {
@@ -110,6 +134,22 @@ class GenerationViewController: UIViewController {
         }
         generateButton.layer.cornerRadius = 12
     }
+    private func setupSteppers() {
+            quizCountStepper.minimumValue = 5
+            quizCountStepper.maximumValue = 30
+            quizCountStepper.stepValue = 5
+            quizCountStepper.value = 10
+            
+            quizTimerStepper.minimumValue = 5
+            quizTimerStepper.maximumValue = 60
+            quizTimerStepper.stepValue = 5
+            quizTimerStepper.value = 15
+            
+            flashcardCountStepper.minimumValue = 5
+            flashcardCountStepper.maximumValue = 30
+            flashcardCountStepper.stepValue = 5
+            flashcardCountStepper.value = 10
+        }
     
     @objc func handleCardTap(_ sender: MaterialSelectionCard) {
         if sender == quizCard { updateUISelection(selected: quizCard, type: .quiz) }
@@ -175,30 +215,75 @@ class GenerationViewController: UIViewController {
         let payload = (topic: updatedTopic, sourceName: name)
         
         switch currentGenerationType {
-        case .quiz: performSegue(withIdentifier: "ShowQuizInstructionsFromGen", sender: payload)
-        case .notes, .cheatsheet: performSegue(withIdentifier: "ShowMaterial", sender: payload)
-        case .flashcards:
-            let alert = UIAlertController(title: "Coming Soon", message: "Flashcard generation is coming soon.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
-        case .none: break
+                case .quiz:
+                    performSegue(withIdentifier: "ShowQuizInstructionsFromGen", sender: payload)
+                case .notes, .cheatsheet:
+                    performSegue(withIdentifier: "ShowMaterial", sender: payload)
+                case .flashcards:
+                    performSegue(withIdentifier: "HomeToFlashcardView", sender: payload)
+                case .none:
+                    break
+                }
+    }
+    @IBAction func stepperValueChanged(_ sender: UIStepper) {
+        let val = Int(sender.value)
+            if sender == flashcardCountStepper {
+                flashcardCountLabel.text = "\(val)"
+                selectedCount = val
+            } else if sender == quizCountStepper {
+                quizCountLabel.text = "\(val)"
+                selectedCount = val
+            } else if sender == quizTimerStepper {
+                quizTimerLabel.text = "\(val)"
+                selectedTime = val
+            }
+        }
+    @IBAction func difficultyTapped(_ sender: UIButton) {
+        // 1. Reset all buttons to gray
+        [easyButton, mediumButton, hardButton].forEach {
+            $0?.backgroundColor = .systemGray6
+            $0?.setTitleColor(.label, for: .normal)
+        }
+        
+        // 2. Highlight the selected one
+        sender.setTitleColor(.white, for: .normal)
+        if sender == easyButton {
+            sender.backgroundColor = .systemGreen
+            currentDifficulty = "Easy"
+        } else if sender == mediumButton {
+            sender.backgroundColor = .systemYellow
+            sender.setTitleColor(.black, for: .normal)
+            currentDifficulty = "Medium"
+        } else if sender == hardButton {
+            sender.backgroundColor = .systemRed
+            currentDifficulty = "Hard"
         }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard let data = sender as? (topic: Topic, sourceName: String) else { return }
-        if segue.identifier == "ShowQuizInstructionsFromGen" {
-            if let dest = segue.destination as? InstructionViewController {
-                dest.quizTopic = data.topic
-                dest.sourceNameForQuiz = data.sourceName
-                dest.parentSubjectName = self.parentSubjectName
+            guard let data = sender as? (topic: Topic, sourceName: String) else { return }
+            
+            if segue.identifier == "ShowQuizInstructionsFromGen" {
+                if let dest = segue.destination as? InstructionViewController {
+                    dest.quizTopic = data.topic
+                    dest.sourceNameForQuiz = data.sourceName
+                    dest.parentSubjectName = self.parentSubjectName
+                }
+            } else if segue.identifier == "ShowMaterial" {
+                if let dest = segue.destination as? MaterialGenerationViewController {
+                    dest.contentData = data.topic
+                    dest.parentSubjectName = self.parentSubjectName
+                    dest.materialType = self.currentGenerationType.description
+                }
             }
-        } else if segue.identifier == "ShowMaterial" {
-            if let dest = segue.destination as? MaterialGenerationViewController {
-                dest.contentData = data.topic
-                dest.parentSubjectName = self.parentSubjectName
-                dest.materialType = self.currentGenerationType.description
+            
+            else if segue.identifier == "HomeToFlashcardView" {
+                if let dest = segue.destination as? FlashcardsViewController {
+                    dest.currentTopic = data.topic
+                    dest.parentSubjectName = self.parentSubjectName
+                    
+                    dest.isFromGenerationScreen = true
+                }
             }
         }
-    }
 }

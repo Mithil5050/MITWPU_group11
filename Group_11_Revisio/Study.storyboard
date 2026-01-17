@@ -53,7 +53,7 @@
                                     <action selector="segmentControlTapped:" destination="afG-iH-vMM" eventType="valueChanged" id="GfR-UC-sbi"/>
                                 </connections>
                             </segmentedControl>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="80" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="dOn-cc-IvK">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" allowsSelectionDuringEditing="YES" allowsMultipleSelectionDuringEditing="YES" rowHeight="80" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="dOn-cc-IvK">
                                 <rect key="frame" x="20" y="287" width="353" height="448"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <prototypes>
@@ -657,27 +657,24 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="B7G-UG-Iq2">
-                                <rect key="frame" x="40" y="188" width="313" height="346"/>
+                                <rect key="frame" x="40" y="188.00000000000003" width="313" height="357.66666666666674"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0eR-yI-SJN">
-                                        <rect key="frame" x="24" y="163" width="265" height="20.333333333333343"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0eR-yI-SJN">
+                                        <rect key="frame" x="24" y="35" width="265" height="33.666666666666657"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemGray6Color"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="346" id="2RO-dF-aPR"/>
-                                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="0eR-yI-SJN" secondAttribute="bottom" constant="20" id="GWT-gR-rlO"/>
-                                    <constraint firstItem="0eR-yI-SJN" firstAttribute="leading" secondItem="B7G-UG-Iq2" secondAttribute="leading" constant="24" id="L0P-f4-pdC"/>
-                                    <constraint firstItem="0eR-yI-SJN" firstAttribute="centerX" secondItem="B7G-UG-Iq2" secondAttribute="centerX" id="iTO-C3-zsW"/>
-                                    <constraint firstItem="0eR-yI-SJN" firstAttribute="top" secondItem="B7G-UG-Iq2" secondAttribute="top" constant="163" id="xOY-3E-rLe"/>
-                                    <constraint firstAttribute="trailing" secondItem="0eR-yI-SJN" secondAttribute="trailing" constant="24" id="zeZ-30-9jQ"/>
+                                    <constraint firstAttribute="trailing" secondItem="0eR-yI-SJN" secondAttribute="trailing" constant="24" id="lPO-8A-LGH"/>
+                                    <constraint firstItem="0eR-yI-SJN" firstAttribute="top" secondItem="B7G-UG-Iq2" secondAttribute="top" constant="35" id="qKw-He-meZ"/>
+                                    <constraint firstItem="0eR-yI-SJN" firstAttribute="leading" secondItem="B7G-UG-Iq2" secondAttribute="leading" constant="24" id="sOH-gm-8qF"/>
                                 </constraints>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="119" translatesAutoresizingMaskIntoConstraints="NO" id="LxG-Ej-IK3">
-                                <rect key="frame" x="40" y="610" width="313" height="56"/>
+                                <rect key="frame" x="40" y="649" width="313" height="56"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4sD-ja-wzp">
                                         <rect key="frame" x="0.0" y="0.0" width="97" height="56"/>
@@ -704,15 +701,25 @@
                                     </button>
                                 </subviews>
                             </stackView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1/5" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="w5E-sm-tL0">
+                                <rect key="frame" x="20" y="570.66666666666663" width="353" height="20.333333333333371"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="rTW-8x-EUS"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="LxG-Ej-IK3" firstAttribute="leading" secondItem="B7G-UG-Iq2" secondAttribute="leading" id="Fvi-fV-DOR"/>
+                            <constraint firstItem="rTW-8x-EUS" firstAttribute="bottom" secondItem="LxG-Ej-IK3" secondAttribute="bottom" constant="30" id="LAi-bM-pxg"/>
                             <constraint firstItem="B7G-UG-Iq2" firstAttribute="top" secondItem="rTW-8x-EUS" secondAttribute="top" constant="16" id="MOt-TH-GEO"/>
+                            <constraint firstItem="rTW-8x-EUS" firstAttribute="trailing" secondItem="w5E-sm-tL0" secondAttribute="trailing" constant="20" id="Mvy-S8-Z64"/>
+                            <constraint firstItem="rTW-8x-EUS" firstAttribute="bottom" secondItem="w5E-sm-tL0" secondAttribute="bottom" constant="144" id="RQ0-If-OVS"/>
+                            <constraint firstItem="w5E-sm-tL0" firstAttribute="leading" secondItem="rTW-8x-EUS" secondAttribute="leading" constant="20" id="SnH-eu-qpX"/>
                             <constraint firstItem="B7G-UG-Iq2" firstAttribute="leading" secondItem="rTW-8x-EUS" secondAttribute="leading" constant="40" id="U3e-Tw-TnC"/>
                             <constraint firstItem="rTW-8x-EUS" firstAttribute="trailing" secondItem="B7G-UG-Iq2" secondAttribute="trailing" constant="40" id="XGg-kU-YNR"/>
-                            <constraint firstItem="LxG-Ej-IK3" firstAttribute="top" secondItem="B7G-UG-Iq2" secondAttribute="bottom" constant="76" id="xOz-Zu-OE2"/>
+                            <constraint firstItem="w5E-sm-tL0" firstAttribute="top" secondItem="B7G-UG-Iq2" secondAttribute="bottom" constant="25" id="vlf-EE-oYb"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Partial Derivatives" largeTitleDisplayMode="never" id="Mkb-aj-Nls">
@@ -725,6 +732,7 @@
                     <connections>
                         <outlet property="cardsLabel" destination="0eR-yI-SJN" id="pSf-wy-JOk"/>
                         <outlet property="cardsView" destination="B7G-UG-Iq2" id="YCg-Le-dYI"/>
+                        <outlet property="counterLabel" destination="w5E-sm-tL0" id="1pW-Gj-qyu"/>
                         <outlet property="nextButtonStudy" destination="DGY-Dy-5sF" id="Amf-4Q-eaM"/>
                         <outlet property="previousButtonStudy" destination="4sD-ja-wzp" id="3xy-EQ-hyk"/>
                         <segue destination="xKO-Df-Dw4" kind="presentation" identifier="addFlashcard" id="BzV-3g-A6N"/>
@@ -1080,12 +1088,18 @@
                                                     </label>
                                                     <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="20" minimumValue="5" maximumValue="30" stepValue="5" translatesAutoresizingMaskIntoConstraints="NO" id="8Rc-2c-QHK">
                                                         <rect key="frame" x="237" y="93.333333333333371" width="94" height="32"/>
+                                                        <connections>
+                                                            <action selector="stepperValueChanged:" destination="hOG-JJ-Phq" eventType="valueChanged" id="7di-sQ-wcN"/>
+                                                        </connections>
                                                     </stepper>
                                                     <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="20" minimumValue="5" maximumValue="30" stepValue="5" translatesAutoresizingMaskIntoConstraints="NO" id="0Az-tq-1qG">
                                                         <rect key="frame" x="237" y="35.333333333333371" width="94" height="32"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="32" id="aLJ-Go-cxf"/>
                                                         </constraints>
+                                                        <connections>
+                                                            <action selector="stepperValueChanged:" destination="hOG-JJ-Phq" eventType="valueChanged" id="NHJ-Je-Fmx"/>
+                                                        </connections>
                                                     </stepper>
                                                 </subviews>
                                                 <constraints>
@@ -1130,16 +1144,25 @@
                                                                 <rect key="frame" x="0.0" y="0.0" width="89.666666666666671" height="30"/>
                                                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                                 <state key="normal" title="Easy"/>
+                                                                <connections>
+                                                                    <action selector="difficultyTapped:" destination="hOG-JJ-Phq" eventType="touchUpInside" id="icv-2X-ncw"/>
+                                                                </connections>
                                                             </button>
                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hgW-R6-JxS">
                                                                 <rect key="frame" x="113.66666666666666" y="0.0" width="89.666666666666657" height="30"/>
                                                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                                 <state key="normal" title="Medium"/>
+                                                                <connections>
+                                                                    <action selector="difficultyTapped:" destination="hOG-JJ-Phq" eventType="touchUpInside" id="XEQ-hJ-7Jk"/>
+                                                                </connections>
                                                             </button>
                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lhW-gS-R0g">
                                                                 <rect key="frame" x="227.33333333333329" y="0.0" width="89.666666666666657" height="30"/>
                                                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                                 <state key="normal" title="Hard"/>
+                                                                <connections>
+                                                                    <action selector="difficultyTapped:" destination="hOG-JJ-Phq" eventType="touchUpInside" id="rxv-UE-cHl"/>
+                                                                </connections>
                                                             </button>
                                                         </subviews>
                                                         <constraints>
@@ -1149,6 +1172,9 @@
                                                     </stackView>
                                                     <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="5" minimumValue="5" maximumValue="30" stepValue="5" translatesAutoresizingMaskIntoConstraints="NO" id="3xN-zj-lOC">
                                                         <rect key="frame" x="238" y="35.666666666666629" width="94" height="32"/>
+                                                        <connections>
+                                                            <action selector="stepperValueChanged:" destination="hOG-JJ-Phq" eventType="valueChanged" id="0ln-U1-dQH"/>
+                                                        </connections>
                                                     </stepper>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Number of flashcards" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="13L-sz-p0n">
                                                         <rect key="frame" x="16" y="44.333333333333371" width="164.33333333333334" height="20.333333333333329"/>
@@ -1245,13 +1271,23 @@
                         <outlet property="FlashcardSettingsView" destination="LPA-OR-iat" id="Qjc-gR-aSi"/>
                         <outlet property="QuizSettingsView" destination="Q2u-64-jQu" id="3mD-A4-4Yc"/>
                         <outlet property="cheatCard" destination="TcN-yl-2Tl" id="dQy-Xg-pws"/>
+                        <outlet property="easyButton" destination="sy2-sk-f9W" id="Qih-wV-blB"/>
                         <outlet property="emptySettingsPlaceholder" destination="Uf5-rm-dg1" id="3En-IV-PpI"/>
                         <outlet property="flashCard" destination="7QS-NU-zEx" id="yfj-xS-jq3"/>
+                        <outlet property="flashcardCountLabel" destination="9j0-k5-Wug" id="Cno-Zk-QfQ"/>
+                        <outlet property="flashcardCountStepper" destination="3xN-zj-lOC" id="aHM-zs-97u"/>
                         <outlet property="generateButton" destination="Bae-z2-VB5" id="rk5-Mo-sX2"/>
+                        <outlet property="hardButton" destination="lhW-gS-R0g" id="rdM-S3-eUQ"/>
+                        <outlet property="mediumButton" destination="hgW-R6-JxS" id="CIb-tL-Jvb"/>
                         <outlet property="noteCard" destination="Wyt-0q-spE" id="a8U-f5-dsn"/>
                         <outlet property="quizCard" destination="mN6-Jw-kPp" id="cRK-O1-rOi"/>
+                        <outlet property="quizCountLabel" destination="nJu-2f-fpD" id="zDc-xs-dsu"/>
+                        <outlet property="quizCountStepper" destination="0Az-tq-1qG" id="9VI-cl-1ZN"/>
+                        <outlet property="quizTimerLabel" destination="1xP-aH-spE" id="yTz-UQ-c35"/>
+                        <outlet property="quizTimerStepper" destination="8Rc-2c-QHK" id="AfR-c2-995"/>
                         <segue destination="nO8-nf-sye" kind="show" identifier="ShowQuizInstructionsFromGen" id="CXt-rD-auK"/>
                         <segue destination="e0W-95-A8k" kind="show" identifier="ShowMaterial" id="7u4-Kr-KSS"/>
+                        <segue destination="ER4-VE-j5w" kind="show" identifier="HomeToFlashcardView" id="Z4K-54-6K5"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Wwj-4B-abJ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1260,7 +1296,8 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="CXt-rD-auK"/>
+        <segue reference="V0u-uK-SPU"/>
+        <segue reference="AHi-rX-QXW"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="book" catalog="system" width="128" height="99"/>
