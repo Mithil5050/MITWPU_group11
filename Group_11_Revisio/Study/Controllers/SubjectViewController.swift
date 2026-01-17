@@ -20,20 +20,15 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
 
     func updateToolbarForSelection() {
-        
-        
         let selectedCount = topicsTableView.indexPathsForSelectedRows?.count ?? 0
         let isSelectionActive = selectedCount > 0
         
-       
         if !topicsTableView.isEditing {
             self.navigationController?.setToolbarHidden(true, animated: true)
             return
         }
         
-       
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        
         
         let primaryAction: UIBarButtonItem
         if activeSegmentTitle == "Sources" {
@@ -46,22 +41,19 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             primaryAction.tintColor = .systemBlue
         }
 
-        
         let deleteButton = UIBarButtonItem(title: "Delete", image: UIImage(systemName: "trash"), target: self, action: #selector(deleteSelectionAction))
         deleteButton.tintColor = .systemRed
 
         let moveButton = UIBarButtonItem(title: "Move", image: UIImage(systemName: "arrowshape.turn.up.right"), target: self, action: #selector(moveSelectionAction))
 
-                let buttons = [deleteButton, moveButton, primaryAction]
+        let buttons = [deleteButton, moveButton, primaryAction]
         for button in buttons {
-            
             button.isEnabled = isSelectionActive
         }
         
-       
+        // Restored to the original 3 items
         self.toolbarItems = [deleteButton, flexibleSpace, moveButton, flexibleSpace, primaryAction]
         
-       
         self.navigationController?.setToolbarHidden(false, animated: true)
     }
     @objc func generateAction() {
@@ -178,9 +170,9 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             self.originalRightBarButtonItems = self.navigationItem.rightBarButtonItems
         }
-        
-        topicsTableView.layer.cornerRadius = 12.0
-        topicsTableView.clipsToBounds = true
+//        
+//        topicsTableView.layer.cornerRadius = 12.0
+//        topicsTableView.clipsToBounds = true
         topicsTableView.backgroundColor = .systemBackground
 
         
@@ -268,6 +260,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         topicsTableView.tableFooterView = UIView()
         topicsTableView.allowsMultipleSelectionDuringEditing = true
+        topicsTableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
     }
    
     func setupSearchController() {
@@ -471,8 +464,9 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     func setupOptionsMenu() -> UIMenu {
         let isSelectModeActive = topicsTableView.isEditing
         
+        // Changing the image to be static "checkmark.circle" so it never fills
         let selectAction = UIAction(title: isSelectModeActive ? "Done" : "Select",
-                                    image: UIImage(systemName: isSelectModeActive ? "checkmark.circle.fill" : "checkmark.circle"),
+                                    image: UIImage(systemName: "checkmark.circle"),
                                     handler: { [weak self] action in
             guard let self = self else { return }
             
@@ -545,7 +539,62 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
         }
     }
-   
+    func renameMaterialAction(for item: Any) {
+        let currentName: String
+        if let topic = item as? Topic { currentName = topic.name }
+        else if let source = item as? Source { currentName = source.name }
+        else { return }
+
+        let alert = UIAlertController(title: "Rename Material", message: "Enter a new name", preferredStyle: .alert)
+        alert.addTextField { $0.text = currentName }
+
+        let rename = UIAlertAction(title: "Rename", style: .default) { [weak self] _ in
+            guard let self = self, let newName = alert.textFields?.first?.text, !newName.isEmpty else { return }
+            
+            DataManager.shared.renameMaterial(subjectName: self.selectedSubject ?? "", item: item, newName: newName)
+            
+            if let subject = self.selectedSubject {
+                self.loadContentForSubject(subject, segmentIndex: self.materialsSegmentedControl.selectedSegmentIndex)
+            }
+        }
+
+        alert.addAction(rename)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    @objc func handleRenameSelection() {
+        guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, selectedPaths.count == 1 else { return }
+        let item = filteredContent[selectedPaths[0].row]
+        
+        if let studyItem = item as? StudyItem {
+            switch studyItem {
+            case .topic(let topic): renameMaterialAction(for: topic)
+            case .source(let source): renameMaterialAction(for: source)
+            }
+        }
+    }
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        let item = filteredContent[indexPath.row]
+        
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
+            let rename = UIAction(title: "Rename", image: UIImage(systemName: "pencil")) { _ in
+                if let studyItem = item as? StudyItem {
+                    switch studyItem {
+                    case .topic(let topic): self?.renameMaterialAction(for: topic)
+                    case .source(let source): self?.renameMaterialAction(for: source)
+                    }
+                }
+            }
+            
+            let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                // Trigger your single delete logic here if you have one
+                self?.deleteSelectionAction()
+            }
+            
+            return UIMenu(title: "", children: [rename, delete])
+        }
+    }
 
     
 

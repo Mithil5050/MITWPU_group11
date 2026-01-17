@@ -67,6 +67,9 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
         cardsView.layer.shadowOpacity = 0.1
         cardsView.layer.shadowOffset = CGSize(width: 0, height: 4)
         cardsView.layer.shadowRadius = 8
+        cardsView.backgroundColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0)
+
+
         
     }
 
