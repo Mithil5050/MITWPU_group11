@@ -43,13 +43,13 @@
                         </userDefinedRuntimeAttributes>
                     </view>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Material Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lbl-title">
-                        <rect key="frame" x="72" y="18" width="282" height="20"/>
+                        <rect key="frame" x="72" y="18" width="282" height="28"/>
                         <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Subtitle Details" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lbl-sub">
-                        <rect key="frame" x="72" y="42" width="282" height="16"/>
+                        <rect key="frame" x="72" y="50" width="282" height="16"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="16" id="Kv7-tf-Okf"/>
                         </constraints>
@@ -59,14 +59,15 @@
                     </label>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="abc-container" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="c-center"/>
-                    <constraint firstItem="abc-container" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="c-lead"/>
-                    <constraint firstItem="lbl-sub" firstAttribute="bottom" secondItem="abc-container" secondAttribute="bottom" constant="-4" id="s-bot"/>
-                    <constraint firstItem="lbl-sub" firstAttribute="leading" secondItem="abc-container" secondAttribute="trailing" constant="12" id="s-lead"/>
-                    <constraint firstAttribute="trailing" secondItem="lbl-sub" secondAttribute="trailing" constant="16" id="s-trail"/>
-                    <constraint firstItem="lbl-title" firstAttribute="leading" secondItem="abc-container" secondAttribute="trailing" constant="12" id="t-lead"/>
-                    <constraint firstItem="lbl-title" firstAttribute="top" secondItem="abc-container" secondAttribute="top" id="t-top"/>
-                    <constraint firstAttribute="trailing" secondItem="lbl-title" secondAttribute="trailing" constant="16" id="t-trail"/>
+                    <constraint firstItem="lbl-sub" firstAttribute="top" secondItem="lbl-title" secondAttribute="bottom" constant="4" id="AVB-hO-zLs"/>
+                    <constraint firstItem="abc-container" firstAttribute="bottom" secondItem="lbl-sub" secondAttribute="bottom" constant="-4" id="BDG-Kw-eU5"/>
+                    <constraint firstItem="abc-container" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="Nek-0n-UwL"/>
+                    <constraint firstItem="abc-container" firstAttribute="top" secondItem="lbl-title" secondAttribute="top" id="Nsh-Wb-Yjv"/>
+                    <constraint firstItem="lbl-title" firstAttribute="leading" secondItem="abc-container" secondAttribute="trailing" constant="12" id="Sgj-fd-Y1r"/>
+                    <constraint firstAttribute="trailing" secondItem="lbl-title" secondAttribute="trailing" constant="16" id="Xb7-X0-pfa"/>
+                    <constraint firstAttribute="trailing" secondItem="lbl-sub" secondAttribute="trailing" constant="16" id="eyD-0Z-A26"/>
+                    <constraint firstItem="lbl-sub" firstAttribute="leading" secondItem="abc-container" secondAttribute="trailing" constant="12" id="p6M-Fe-1R0"/>
+                    <constraint firstItem="abc-container" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="uaw-F1-Otv"/>
                 </constraints>
             </tableViewCellContentView>
             <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
@@ -76,7 +77,7 @@
                 <outlet property="subtitleLabel" destination="lbl-sub" id="sub-out"/>
                 <outlet property="titleLabel" destination="lbl-title" id="tit-out"/>
             </connections>
-            <point key="canvasLocation" x="139" y="129"/>
+            <point key="canvasLocation" x="138.93129770992365" y="128.16901408450704"/>
         </tableViewCell>
     </objects>
     <resources>

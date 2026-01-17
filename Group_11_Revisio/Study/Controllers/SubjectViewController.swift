@@ -403,6 +403,13 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             updateToolbarForSelection()
         }
     }
+    func tableView(_ tableView: UITableView, shouldIndentWhileEditingRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+
+    func tableView(_ tableView: UITableView, indentationLevelForRowAt indexPath: IndexPath) -> Int {
+        return 1
+    }
    
 
     func setupFilterMenu() {
@@ -462,7 +469,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
    
 
     func setupOptionsMenu() -> UIMenu {
-        
         let isSelectModeActive = topicsTableView.isEditing
         
         let selectAction = UIAction(title: isSelectModeActive ? "Done" : "Select",
@@ -470,26 +476,19 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                                     handler: { [weak self] action in
             guard let self = self else { return }
             
-            let isEditing = self.topicsTableView.isEditing
-
-            if isEditing {
-                // If already editing (and tapping 'Done' in the menu), exit selection mode.
+            if self.topicsTableView.isEditing {
                 self.selectionDoneTapped()
             } else {
-                // ENTERING SELECTION MODE
-                self.topicsTableView.isEditing = true
+                self.topicsTableView.setEditing(true, animated: true)
+                self.topicsTableView.allowsMultipleSelectionDuringEditing = true
                 
-              
                 self.navigationItem.rightBarButtonItems = [self.doneSelectionButton]
-                
-                // 2. Left side: Replace Back button with CANCEL button
                 self.navigationItem.leftBarButtonItem = self.cancelSelectionButton
                 
                 self.updateToolbarForSelection()
                 self.tabBarController?.tabBar.isHidden = true
             }
             
-            // Rebuild menu for state change
             DispatchQueue.main.async {
                 self.optionsButton.menu = self.setupOptionsMenu()
             }
@@ -500,7 +499,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         let renameAction = UIAction(title: "Rename Subject", image: UIImage(systemName: "pencil")) { [weak self] _ in
             self?.renameCurrentSubject()
         }
-        // ... rest of menu actions ...
         
         let moveAllAction = UIAction(title: "Move All Content", image: UIImage(systemName: "arrow.turn.forward"), handler: { [weak self] _ in
             self?.moveAllContent()
@@ -552,13 +550,8 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     
 
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
-        // If we are in editing mode, allow the default selection tick style (.insert).
-        // Otherwise, suppress it.
-        if tableView.isEditing {
-            return .insert
-        } else {
-            return .none
-        }
+        
+        return .none
     }
 
     // Helper function to present the menu manually via target-action

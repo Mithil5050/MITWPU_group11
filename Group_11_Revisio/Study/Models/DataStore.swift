@@ -121,7 +121,7 @@ class DataManager {
                 name: "Partial Derivatives",
                 lastAccessed: "Just now",
                 materialType: "Flashcards",
-                largeContentBody: "What is a Partial Derivative?|A derivative of a function of several variables...",
+                largeContentBody: "What is a Partial Derivative?|A derivative of a function of several variables",
                 parentSubjectName: "Calculus"
             )),
             .topic(Topic(
@@ -160,6 +160,13 @@ class DataManager {
                     notesContent: "--- NOTES ---\n\nHadoop allows for the distributed processing of large data sets across clusters of computers.\n\n1. HDFS: Distributed Storage.\n2. MapReduce: Parallel Processing.",
                     cheatsheetContent: "--- CHEATSHEET ---\n\n• 3 Pillars: HDFS, MapReduce, YARN.\n• Fault Tolerance: Data is replicated 3x default."
                 )),
+                .topic(Topic(
+                            name: "Hadoop Docs", // Ensure this name matches what you select in Generation
+                            lastAccessed: "Just now",
+                            materialType: "Flashcards",
+                            largeContentBody: "HDFS|Hadoop Distributed File System for storing large files.\nMapReduce|A programming model for processing large data sets.\nYARN|Yet Another Resource Negotiator for scheduling.\nNameNode|The centerpiece of an HDFS file system.",
+                            parentSubjectName: "Big Data"
+                        )),
                 .topic(Topic(
                     name: "NoSQL Databases",
                     lastAccessed: "3d ago",
@@ -238,11 +245,12 @@ class DataManager {
         
         for (index, item) in materials.enumerated() {
             if case .topic(var topic) = item, topic.name == topicName {
-                // Logic to decide which field to save to
                 if type == "Notes" {
                     topic.notesContent = newText
                 } else if type == "Cheatsheet" {
                     topic.cheatsheetContent = newText
+                } else if type == "Flashcards" { 
+                    topic.largeContentBody = newText
                 } else {
                     topic.largeContentBody = newText
                 }

@@ -27,9 +27,11 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
     @IBOutlet weak var cardsLabel: UILabel!
     @IBOutlet weak var previousButtonStudy: UIButton!
     @IBOutlet weak var nextButtonStudy: UIButton!
+    @IBOutlet weak var counterLabel: UILabel!
     
     var currentTopic : Topic?
     var parentSubjectName: String?
+    var isFromGenerationScreen: Bool = false
     // MARK: - State Management
     private var flashcards: [Flashcard] = []
     
@@ -54,6 +56,7 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
         }
         
         updateCardContent(animated: false)
+        updateCounterLabel()
     }
     // MARK: - Private Configuration Methods
     
@@ -64,12 +67,37 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
         cardsView.layer.shadowOpacity = 0.1
         cardsView.layer.shadowOffset = CGSize(width: 0, height: 4)
         cardsView.layer.shadowRadius = 8
+        
     }
 
     private func setupTapGesture() {
         cardsView.isUserInteractionEnabled = true
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCardTap))
         cardsView.addGestureRecognizer(tapGesture)
+    }
+    private func updateCounterLabel() {
+        guard !flashcards.isEmpty else {
+            counterLabel?.text = "0/0"
+            return
+        }
+        counterLabel?.text = "\(currentCardIndex + 1)/\(flashcards.count)"
+        
+        
+        if isFromGenerationScreen && currentCardIndex == flashcards.count - 1 {
+           
+            nextButtonStudy.setTitle("Save", for: .normal)
+            
+            
+            nextButtonStudy.backgroundColor = .secondarySystemFill
+            nextButtonStudy.setTitleColor(.white, for: .normal)
+        } else {
+           
+            nextButtonStudy.setTitle("Next", for: .normal)
+            
+            
+            nextButtonStudy.backgroundColor = .secondarySystemFill
+            nextButtonStudy.setTitleColor(.label, for: .normal)
+        }
     }
     
     private func updateCardContent(animated: Bool = true) {
@@ -111,17 +139,27 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
     // MARK: - User Interaction: Navigation (Storyboard Actions)
     
     @IBAction func nextCardButtonTapped(_ sender: UIButton) {
-        guard !flashcards.isEmpty else { return }
-        isTermDisplayed = true
-        currentCardIndex = (currentCardIndex + 1) % flashcards.count
-        updateCardContent()
-    }
+        if isFromGenerationScreen && currentCardIndex == flashcards.count - 1 {
+                showSaveConfirmation()
+                return
+            }
+            
+            // Standard navigation logic
+            guard !flashcards.isEmpty else { return }
+            isTermDisplayed = true
+            
+            // Move to next card
+            currentCardIndex = (currentCardIndex + 1) % flashcards.count
+            
+            updateCardContent()
+            updateCounterLabel()    }
 
     @IBAction func previousCardButtonTapped(_ sender: UIButton) {
         guard !flashcards.isEmpty else { return }
         isTermDisplayed = true
         currentCardIndex = (currentCardIndex - 1 + flashcards.count) % flashcards.count
         updateCardContent()
+        updateCounterLabel()
     }
     
     @IBAction func addFlashcardButtonTapped(_ sender: Any) {
@@ -142,30 +180,27 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
     
     //  AddFlashcardDelegate Protocol Implementation
     
+    // MARK: - AddFlashcardDelegate Protocol Implementation
     func didCreateNewFlashcard(card: Flashcard) {
-        
         flashcards.append(card)
         
-       
-        let newCardString = "\(card.term)|\(card.definition)"
-        
-       
-        if let currentBody = currentTopic?.largeContentBody, !currentBody.isEmpty {
-            currentTopic?.largeContentBody = currentBody + "\n" + newCardString
-        } else {
-            currentTopic?.largeContentBody = newCardString
-        }
-        
+        let updatedText = flashcards.map { "\($0.term)|\($0.definition)" }.joined(separator: "\n")
+        currentTopic?.largeContentBody = updatedText
         
         if let subject = parentSubjectName, let topicName = currentTopic?.name {
-            let updatedText = currentTopic?.largeContentBody ?? ""
-            DataManager.shared.updateTopicContent(subject: subject, topicName: topicName, newText: updatedText)
+            // ADD "Flashcards" here too
+            DataManager.shared.updateTopicContent(
+                subject: subject,
+                topicName: topicName,
+                newText: updatedText,
+                type: "Flashcards"
+            )
         }
         
-       
         currentCardIndex = flashcards.count - 1
         isTermDisplayed = true
         updateCardContent(animated: true)
+        updateCounterLabel()
     }
     private func unpackFlashcards(from content: String) {
         let lines = content.components(separatedBy: "\n")
@@ -182,6 +217,45 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
             self.flashcards = loadedCards
             self.currentCardIndex = 0
         }
+    }
+    private func showSaveConfirmation() {
+        let alert = UIAlertController(title: "Save Flashcards", message: "These cards will be permanently added to your \(parentSubjectName ?? "Study") folder.", preferredStyle: .alert)
+        
+        let saveAction = UIAlertAction(title: "Yes, Save", style: .default) { _ in
+            self.persistGeneratedCards()
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+            self.navigationController?.popViewController(animated: true)
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        
+        alert.addAction(saveAction)
+        alert.addAction(cancelAction)
+        present(alert, animated: true)
+    }
+
+    private func persistGeneratedCards() {
+        guard let subject = parentSubjectName, let topic = currentTopic else { return }
+        
+        let finalContent = flashcards.map { "\($0.term)|\($0.definition)" }.joined(separator: "\n")
+        
+        let topicToSave = Topic(
+            name: topic.name,
+            lastAccessed: "Just now",
+            materialType: "Flashcards",
+            largeContentBody: finalContent,
+            parentSubjectName: subject
+        )
+        
+        DataManager.shared.addTopic(to: subject, topic: topicToSave)
+        
+        DataManager.shared.updateTopicContent(
+            subject: subject,
+            topicName: topic.name,
+            newText: finalContent,
+            type: "Flashcards"
+        )
     }
 }
 
