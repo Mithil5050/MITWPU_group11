@@ -386,16 +386,17 @@ extension ChatViewController: LeaveGroupDelegate {
     func didLeaveGroup(_ group: Group) {
         navigationController?.popToRootViewController(animated: true)
     }
-    
     func didUpdateGroup(_ group: Group) {
-            self.group = group
+        self.group = group
 
-            let updatedName = group.name
+        let updatedName = group.name
 
-            if let titleButton = navigationItem.titleView as? UIButton {
-                titleButton.setTitle("  \(updatedName)", for: .normal)
-            } else {
-                navigationItem.title = updatedName
-            }
+        if let titleButton = navigationItem.titleView as? UIButton {
+            titleButton.setTitle("  \(updatedName)", for: .normal)
         }
+
+        updateDelegate?.didUpdateGroup(group)
+    }
 }
+
+
