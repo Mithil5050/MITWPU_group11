@@ -13,7 +13,6 @@ class GroupSettingsViewController: UIViewController {
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     @IBOutlet weak var infoView: UIView!
     @IBOutlet weak var docsView: UIView!
-    @IBOutlet weak var leaderboardView: UIView!
 
     @IBOutlet weak var groupImageView: UIImageView!
     @IBOutlet weak var groupNameLabel: UILabel!
@@ -23,8 +22,6 @@ class GroupSettingsViewController: UIViewController {
     @IBOutlet weak var membersCollectionView: UICollectionView!
     
     @IBOutlet weak var docsCollectionView: UICollectionView!
-
-    @IBOutlet weak var leaderboardTableView: UITableView!
 
     // Data
     var group: Group!
@@ -45,7 +42,6 @@ class GroupSettingsViewController: UIViewController {
     ]
     
     private var documents: [String] = ["DBMS.pdf","Statistics.pdf","DS QB.jpg","DETT.pdf","Operating systems.jpg"]
-    private var leaderboard: [(name: String, score: Int)] = [("Chirag",650),("Ashika",590),("Ayaana",400)]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -74,8 +70,6 @@ class GroupSettingsViewController: UIViewController {
         docsCollectionView.delegate = self
         membersCollectionView.dataSource = self
         membersCollectionView.delegate = self
-        leaderboardTableView.dataSource = self
-        leaderboardTableView.delegate = self
     }
     
     @objc private func editButtonTapped() {
@@ -301,29 +295,6 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 6
-    }
-}
-
-// MARK: - Leaderboard Table
-extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegate {
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return leaderboard.count
-    }
-
-    func tableView(_ tableView: UITableView,
-                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
-        let cell = tableView.dequeueReusableCell(
-            withIdentifier: "LeaderboardCell",
-            for: indexPath
-        )
-
-        let item = leaderboard[indexPath.row]
-        cell.textLabel?.text = "\(indexPath.row + 1). \(item.name)"
-        cell.detailTextLabel?.text = "\(item.score)"
-        cell.selectionStyle = .none
-        return cell
     }
 }
 
