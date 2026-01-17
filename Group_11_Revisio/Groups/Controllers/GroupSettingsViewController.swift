@@ -154,7 +154,6 @@ class GroupSettingsViewController: UIViewController {
         UIView.animate(withDuration: 0.2) {
             self.infoView.isHidden = index != 0
             self.docsView.isHidden = index != 1
-            self.leaderboardView.isHidden = index != 2
         }
     }
 
