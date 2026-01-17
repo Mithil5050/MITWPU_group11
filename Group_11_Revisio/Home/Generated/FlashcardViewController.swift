@@ -19,9 +19,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     @IBOutlet weak var cardView: UIView!
     @IBOutlet weak var cardLabel: UILabel!
     @IBOutlet weak var previousButton: UIButton!
-    @IBOutlet weak var nextButton: UIButton!
-    
-    // IMPORTANT: Connect this to the "1/5" label in Storyboard
+    @IBOutlet weak var nextButton: UIButton! // Acts as Next AND Save
     @IBOutlet weak var countLabel: UILabel!
     
     // MARK: - Data Receivers
@@ -52,6 +50,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         // Initial Update
         updateCardContent(animated: false)
         updateCountLabel()
+        updateButtonState() // ✅ Initialize button text
     }
     
     // MARK: - Configuration
@@ -61,9 +60,6 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         cardView.layer.shadowOpacity = 0.1
         cardView.layer.shadowOffset = CGSize(width: 0, height: 4)
         cardView.layer.shadowRadius = 8
-        
-        // ✅ FIXED: Using standard RGB values instead of Hex Extension to prevent errors.
-        // This is the same blue color (91C1EF)
         cardView.backgroundColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0)
     }
 
@@ -92,7 +88,6 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         }
     }
     
-    // ✅ DYNAMIC LABEL LOGIC
     private func updateCountLabel() {
         guard !flashcards.isEmpty else {
             countLabel.text = "0/0"
@@ -101,6 +96,26 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         let currentIndex = currentCardIndex + 1
         let total = flashcards.count
         countLabel.text = "\(currentIndex)/\(total)"
+    }
+    
+    // ✅ NEW: Text-Based Button State Logic
+    private func updateButtonState() {
+        guard !flashcards.isEmpty else { return }
+        
+        let isLastCard = currentCardIndex == flashcards.count - 1
+        
+        if isLastCard {
+            // Change Text to "Save"
+            nextButton.setTitle("Save", for: .normal)
+            nextButton.setImage(nil, for: .normal) // Remove any image if present
+            nextButton.tintColor = .systemGreen // Optional: Green for Save
+        } else {
+            // Change Text to "Next" (or reset to arrow if you prefer)
+            nextButton.setTitle("Next", for: .normal)
+            // If you originally had an arrow image, you can uncomment the line below:
+            // nextButton.setImage(UIImage(systemName: "chevron.right"), for: .normal)
+            nextButton.tintColor = .systemBlue
+        }
     }
     
     // MARK: - Actions
@@ -120,24 +135,56 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     
     @IBAction func nextCardButtonTapped(_ sender: UIButton) {
         guard !flashcards.isEmpty else { return }
-        isTermDisplayed = true
-        currentCardIndex = (currentCardIndex + 1) % flashcards.count
         
-        updateCardContent()
-        updateCountLabel() // Update label
+        if currentCardIndex < flashcards.count - 1 {
+            // CASE 1: Go Next
+            currentCardIndex += 1
+            isTermDisplayed = true
+            updateCardContent()
+            updateCountLabel()
+            updateButtonState() // Update text to "Save" if we reached the end
+        } else {
+            // CASE 2: Trigger Save (Since we are at the end)
+            saveFlashcards()
+        }
     }
 
     @IBAction func previousCardButtonTapped(_ sender: UIButton) {
         guard !flashcards.isEmpty else { return }
-        isTermDisplayed = true
-        currentCardIndex = (currentCardIndex - 1 + flashcards.count) % flashcards.count
         
-        updateCardContent()
-        updateCountLabel() // Update label
+        if currentCardIndex > 0 {
+            currentCardIndex -= 1
+            isTermDisplayed = true
+            updateCardContent()
+            updateCountLabel()
+            updateButtonState() // Revert text to "Next"
+        }
     }
     
     @IBAction func addFlashcardButtonTapped(_ sender: Any) {
         performSegue(withIdentifier: "AddCardSegue", sender: self)
+    }
+    
+    // Helper: Save Logic
+    func saveFlashcards() {
+        // Save Logic (CoreData, etc.) goes here
+        showSaveConfirmation()
+    }
+    
+    // Alert Function
+    func showSaveConfirmation() {
+        let folderName = parentSubjectName ?? "Study"
+        
+        let alert = UIAlertController(
+            title: "Saved!",
+            message: "Flashcards have been successfully saved to '\(folderName)'.",
+            preferredStyle: .alert
+        )
+        
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(okAction)
+        
+        present(alert, animated: true, completion: nil)
     }
     
     // MARK: - Navigation
@@ -155,10 +202,8 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     // MARK: - Delegate Method
     func didCreateNewFlashcard(card: Flashcard) {
         flashcards.append(card)
-        currentCardIndex = flashcards.count - 1
-        isTermDisplayed = true
-        
         updateCardContent(animated: true)
-        updateCountLabel() // Update label
+        updateCountLabel()
+        updateButtonState() // Check if this new card is the last one
     }
 }

@@ -2,14 +2,6 @@
 //  NotesViewController.swift
 //  Group_11_Revisio
 //
-//  Created by Mithil on 14/01/26.
-//
-
-
-//
-//  NotesViewController.swift
-//  Group_11_Revisio
-//
 //  Created by Mithil on 13/01/26.
 //
 
@@ -23,7 +15,6 @@ class NotesViewController: UIViewController {
     @IBOutlet var editDoneBarButton: UIBarButtonItem!
     
     // MARK: - Data Properties
-    // These match the data passed from the Home/Generate screen
     var currentTopic: Topic?
     var parentSubjectName: String?
     
@@ -35,14 +26,13 @@ class NotesViewController: UIViewController {
         
         // Initial setup for the TextView
         contentView.isEditable = false
-        contentView.delegate = self // Set delegate to handle changes
+        contentView.delegate = self
         
         setupNavigationButtons()
         displayContent()
     }
     
     // MARK: - Content Loading & Management
-    
     func displayContent() {
         guard let topic = currentTopic,
               let subject = parentSubjectName else {
@@ -50,11 +40,8 @@ class NotesViewController: UIViewController {
             return
         }
         
-        // Set Title to Topic Name
         title = topic.name
         
-        // Fetch existing content (or largeContentBody if passed directly)
-        // If the topic is new, this might be empty, which is fine for a note.
         let savedContent = DataManager.shared.getDetailedContent(for: subject, topicName: topic.name)
         
         if savedContent.isEmpty {
@@ -80,20 +67,16 @@ class NotesViewController: UIViewController {
     }
     
     // MARK: - Navigation Bar Actions
-    
     func setupNavigationButtons() {
         guard let editButton = editDoneBarButton,
-              let optionsButton = optionsBarButton else {
-            print("CRITICAL ERROR: Edit or Options Bar Button Outlet is NOT CONNECTED in Storyboard!")
-            return
-        }
+              let optionsButton = optionsBarButton else { return }
 
-        // Configure Edit Button (Toggle Action)
+        // Configure Edit Button
         editButton.target = self
         editButton.action = #selector(editButtonTapped)
         editButton.menu = nil
         
-        // Configure Options Button (Menu)
+        // Configure Options Button
         optionsButton.target = nil
         optionsButton.action = nil
         optionsButton.menu = buildOptionsMenu()
@@ -117,10 +100,10 @@ class NotesViewController: UIViewController {
             print("Action: Delete Note")
         }
         
-        let utilityGroup = UIMenu(title: "Actions", options: .displayInline, children: [shareAction, pinAction])
-        let destructiveGroup = UIMenu(title: "", options: .displayInline, children: [deleteAction])
-        
-        return UIMenu(title: "", children: [utilityGroup, destructiveGroup])
+        return UIMenu(title: "", children: [
+            UIMenu(title: "Actions", options: .displayInline, children: [shareAction, pinAction]),
+            UIMenu(title: "", options: .displayInline, children: [deleteAction])
+        ])
     }
 
     @IBAction func shareContent(_ sender: UIBarButtonItem) {
@@ -132,11 +115,46 @@ class NotesViewController: UIViewController {
  
     @objc func editButtonTapped() {
         if isEditingMode {
+            // User clicked the Checkmark (Done)
             saveChanges()
+            // No alert here, just silent save
         }
         
         isEditingMode.toggle()
         updateUIForState()
+    }
+    
+    // MARK: - ✅ NEW: Bottom Save Button Action
+    // IMPORTANT: Connect this to the button in your Storyboard!
+    @IBAction func saveButtonTapped(_ sender: Any) {
+        // 1. Save data
+        saveChanges()
+        
+        // 2. Show Alert
+        showSaveConfirmation()
+        
+        // 3. Exit edit mode cleanly
+        if isEditingMode {
+            isEditingMode = false
+            updateUIForState()
+        }
+        view.endEditing(true)
+    }
+    
+    // Alert Function
+    func showSaveConfirmation() {
+        let folderName = parentSubjectName ?? "Files"
+        
+        let alert = UIAlertController(
+            title: "Saved!",
+            message: "Note has been successfully saved to '\(folderName)' in Study tab.",
+            preferredStyle: .alert
+        )
+        
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(okAction)
+        
+        present(alert, animated: true, completion: nil)
     }
 
     func updateUIForState() {
@@ -150,7 +168,6 @@ class NotesViewController: UIViewController {
             contentView.isEditable = true
             contentView.becomeFirstResponder()
             
-            // Clear placeholder if editing starts
             if contentView.text == "Start typing your notes here..." {
                 contentView.text = ""
                 contentView.textColor = .label
@@ -163,7 +180,6 @@ class NotesViewController: UIViewController {
             contentView.isEditable = false
             contentView.resignFirstResponder()
             
-            // Restore placeholder if empty
             if contentView.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 contentView.text = "Start typing your notes here..."
                 contentView.textColor = .secondaryLabel
@@ -176,10 +192,6 @@ class NotesViewController: UIViewController {
 
 // MARK: - UITextViewDelegate
 extension NotesViewController: UITextViewDelegate {
-    
-    func textViewDidChange(_ textView: UITextView) {
-        // Optional: Auto-save logic could go here if you don't want to wait for "Done"
-    }
     
     func textViewDidEndEditing(_ textView: UITextView) {
         saveChanges()
