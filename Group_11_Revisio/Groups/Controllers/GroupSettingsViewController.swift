@@ -13,7 +13,9 @@ class GroupSettingsViewController: UIViewController {
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     @IBOutlet weak var infoView: UIView!
     @IBOutlet weak var docsView: UIView!
-
+    @IBOutlet weak var linksView: UIView!
+    
+    
     @IBOutlet weak var groupImageView: UIImageView!
     @IBOutlet weak var groupNameLabel: UILabel!
     @IBOutlet weak var membersCountLabel: UILabel!
@@ -23,6 +25,11 @@ class GroupSettingsViewController: UIViewController {
     
     @IBOutlet weak var docsCollectionView: UICollectionView!
 
+    @IBOutlet weak var mediaView: UIView!
+    
+    @IBOutlet weak var linksTableView: UITableView!
+    
+    
     // Data
     var group: Group!
     
@@ -42,6 +49,13 @@ class GroupSettingsViewController: UIViewController {
     ]
     
     private var documents: [String] = ["DBMS.pdf","Statistics.pdf","DS QB.jpg","DETT.pdf","Operating systems.jpg"]
+    
+    private let links: [(title: String, url: String)] = [
+        ("Apple Developer", "https://developer.apple.com"),
+        ("Swift Documentation", "https://docs.swift.org"),
+        ("UIKit Guide", "https://developer.apple.com/documentation/uikit"),
+        ("Human Interface Guidelines", "https://developer.apple.com/design/human-interface-guidelines")
+    ]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -70,8 +84,11 @@ class GroupSettingsViewController: UIViewController {
         docsCollectionView.delegate = self
         membersCollectionView.dataSource = self
         membersCollectionView.delegate = self
+        linksTableView.dataSource = self
+        linksTableView.delegate = self
     }
     
+    //MARK: - Edit button
     @objc private func editButtonTapped() {
 
         let renameAction = UIAlertAction(
@@ -148,6 +165,9 @@ class GroupSettingsViewController: UIViewController {
         UIView.animate(withDuration: 0.2) {
             self.infoView.isHidden = index != 0
             self.docsView.isHidden = index != 1
+            self.mediaView.isHidden = index != 2
+            self.linksView.isHidden = index != 3
+
         }
     }
 
@@ -297,5 +317,66 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
         return 6
     }
 }
+//MARK: - Links View
+extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegate {
 
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+
+        if links.isEmpty {
+            let label = UILabel()
+            label.text = "No links shared yet"
+            label.textColor = .secondaryLabel
+            label.font = UIFont.systemFont(ofSize: 15)
+            label.textAlignment = .center
+            label.numberOfLines = 0
+            tableView.backgroundView = label
+            tableView.separatorStyle = .none
+        } else {
+            tableView.backgroundView = nil
+            tableView.separatorStyle = .singleLine
+        }
+
+        return links.count
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 60
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
+
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: "LinkCell",
+            for: indexPath
+        )
+
+        let item = links[indexPath.row]
+
+        cell.textLabel?.text = item.title
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+
+        cell.detailTextLabel?.text = item.url
+        cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 13)
+        cell.detailTextLabel?.textColor = .secondaryLabel
+
+        cell.accessoryType = .disclosureIndicator
+        cell.selectionStyle = .none
+        cell.imageView?.image = UIImage(systemName: "link")
+        cell.imageView?.tintColor = .systemBlue
+        cell.imageView?.contentMode = .scaleAspectFit
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+
+        let item = links[indexPath.row]
+        guard let url = URL(string: item.url) else { return }
+
+        UIApplication.shared.open(url)
+    }
+}
 
