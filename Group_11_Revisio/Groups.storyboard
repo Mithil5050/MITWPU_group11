@@ -691,7 +691,6 @@
                                 <segments>
                                     <segment title="Info"/>
                                     <segment title="Documents"/>
-                                    <segment title="Leaderboard"/>
                                 </segments>
                                 <connections>
                                     <action selector="segmentChanged:" destination="2Pg-j9-pa6" eventType="valueChanged" id="1Cm-L1-2BA"/>
