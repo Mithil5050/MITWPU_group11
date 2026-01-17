@@ -1,7 +1,7 @@
 import UIKit
 
 class MaterialViewCell: UITableViewCell {
-
+    
     @IBOutlet weak var iconImageView: UIImageView!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
@@ -10,18 +10,17 @@ class MaterialViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        // Restore your original clean look
-        self.selectionStyle = .default
-        self.tintColor = .systemBlue
+        self.selectionStyle = .default // Required for the blue tick
+        
+        // This removes the gray 'box' highlight
+        let clearView = UIView()
+        clearView.backgroundColor = .clear
+        self.selectedBackgroundView = clearView
+        
+        // Your existing card styling
         self.backgroundColor = .clear
-        
-        // This puts your gray card background back
-        self.contentView.backgroundColor = UIColor { traitCollection in
-            return traitCollection.userInterfaceStyle == .dark ? .secondarySystemGroupedBackground : UIColor(red: 0.96, green: 0.96, blue: 0.96, alpha: 1.0)
-        }
-        
+        self.contentView.backgroundColor = .secondarySystemGroupedBackground // Or your #F5F5F5
         self.contentView.layer.cornerRadius = 12
-        self.contentView.layer.masksToBounds = true
     }
     
     override func layoutSubviews() {
@@ -65,6 +64,21 @@ class MaterialViewCell: UITableViewCell {
         iconContainerView.backgroundColor = iconColor.withAlphaComponent(0.15)
         iconContainerView.layer.cornerRadius = 8
     }
-
-    // DELETE any setEditing function here so it doesn't mess up the background
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        
+        UIView.animate(withDuration: 0.3) {
+            if editing {
+                // 38-40 points is the 'sweet spot' for the iOS selection circle.
+                // This slides the icon and text over inside the card.
+                self.contentView.layoutMargins = UIEdgeInsets(top: 0, left: 40, bottom: 0, right: 8)
+            } else {
+                // Your original standard padding
+                self.contentView.layoutMargins = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+            }
+            self.layoutIfNeeded()
+        }
+    }
 }
+
+    

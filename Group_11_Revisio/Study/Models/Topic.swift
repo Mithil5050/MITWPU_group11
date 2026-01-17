@@ -8,7 +8,7 @@
 import Foundation
 
 struct Topic: Codable {
-    let name: String
+    var name: String
     let lastAccessed: String
     let materialType: String
     var largeContentBody: String? 

@@ -7,7 +7,7 @@
 
 import Foundation
 struct Source :Codable {
-    let name: String
+    var name: String
     let fileType: String
     let size: String     
 }

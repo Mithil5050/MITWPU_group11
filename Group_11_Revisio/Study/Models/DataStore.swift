@@ -249,7 +249,7 @@ class DataManager {
                     topic.notesContent = newText
                 } else if type == "Cheatsheet" {
                     topic.cheatsheetContent = newText
-                } else if type == "Flashcards" { 
+                } else if type == "Flashcards" {
                     topic.largeContentBody = newText
                 } else {
                     topic.largeContentBody = newText
@@ -302,6 +302,39 @@ class DataManager {
             
             // Notify the library to refresh the list
             NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+        }
+    }
+    func renameMaterial(subjectName: String, item: Any, newName: String) {
+        guard var subjectDict = savedMaterials[subjectName] else { return }
+        
+        let keys = [DataManager.materialsKey, DataManager.sourcesKey]
+        
+        for key in keys {
+            if var items = subjectDict[key] as? [StudyItem] {
+                if let index = items.firstIndex(where: { existingItem in
+                    switch (existingItem, item) {
+                    case (.topic(let t1), let t2 as Topic): return t1.name == t2.name
+                    case (.source(let s1), let s2 as Source): return s1.name == s2.name
+                    default: return false
+                    }
+                }) {
+                    let updatedItem: StudyItem
+                    switch items[index] {
+                    case .topic(var topic):
+                        topic.name = newName
+                        updatedItem = .topic(topic)
+                    case .source(var source):
+                        source.name = newName
+                        updatedItem = .source(source)
+                    }
+                    
+                    items[index] = updatedItem
+                    subjectDict[key] = items
+                    savedMaterials[subjectName] = subjectDict
+                    saveToDisk()
+                    return
+                }
+            }
         }
     }
 }
