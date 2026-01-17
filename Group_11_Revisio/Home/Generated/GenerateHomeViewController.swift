@@ -3,7 +3,7 @@
 //  Group_11_Revisio
 //
 //  Created by Mithil on 15/12/25.
-//  Updated: Full Integration with Mock Data & Segues
+//  Updated: UI matching specific screenshot fonts and dynamic border colors
 //
 
 import UIKit
@@ -15,6 +15,9 @@ class TappableCardView: UIControl {
     private let stackView = UIStackView()
     private let iconImageView = UIImageView()
     private let titleLabel = UILabel()
+    
+    // Store the specific color for this card to use on the border
+    private var highlightColor: UIColor = .systemBlue
     
     // Modern iOS Colors
     private var defaultBackgroundColor: UIColor = .secondarySystemGroupedBackground
@@ -40,17 +43,18 @@ class TappableCardView: UIControl {
         
         iconImageView.contentMode = .scaleAspectFit
         NSLayoutConstraint.activate([
-            iconImageView.widthAnchor.constraint(equalToConstant: 48),
-            iconImageView.heightAnchor.constraint(equalToConstant: 48)
+            iconImageView.widthAnchor.constraint(equalToConstant: 40), // Adjusted slightly to match screenshot ratio
+            iconImageView.heightAnchor.constraint(equalToConstant: 40)
         ])
         
-        titleLabel.font = UIFont.systemFont(ofSize: 17, weight: .medium)
+        // ✅ UPDATED FONT: Matches the bold/semibold look of the screenshot
+        titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         titleLabel.textColor = .label
         titleLabel.numberOfLines = 1
         titleLabel.textAlignment = .center
         
         stackView.axis = .vertical
-        stackView.spacing = 8
+        stackView.spacing = 10 // Increased spacing slightly
         stackView.alignment = .center
         stackView.isUserInteractionEnabled = false
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -70,12 +74,15 @@ class TappableCardView: UIControl {
     
     // Accepts 'iconColor' to set the specific logo tint
     func configure(iconName: String, title: String, iconColor: UIColor) {
-        let config = UIImage.SymbolConfiguration(pointSize: 32, weight: .light)
+        let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)
         iconImageView.image = UIImage(systemName: iconName, withConfiguration: config)
         titleLabel.text = title
         
         // Apply the specific color requested
         iconImageView.tintColor = iconColor
+        
+        // ✅ NEW: Store this color to use for the border later
+        self.highlightColor = iconColor
     }
     
     // Logic to keep background "Normal"
@@ -83,8 +90,10 @@ class TappableCardView: UIControl {
         didSet {
             self.backgroundColor = defaultBackgroundColor
             // Only toggle the border to indicate selection
-            self.layer.borderWidth = isSelected ? 2 : 0
-            self.layer.borderColor = isSelected ? UIColor.systemBlue.cgColor : nil
+            self.layer.borderWidth = isSelected ? 3 : 0 // Slightly thicker border (3) to match design
+            
+            // ✅ UPDATED: Use the specific card color for the border
+            self.layer.borderColor = isSelected ? highlightColor.cgColor : nil
         }
     }
     
@@ -150,6 +159,7 @@ class GenerateHomeViewController: UIViewController {
         setupCards()
         setupSteppers()
         setupDifficultyButtons()
+        setupFonts() // ✅ NEW: Standardize fonts across UI
         
         // Initial Selection
         handleCardSelection(selectedCard: quizCardView, type: .quiz)
@@ -160,14 +170,26 @@ class GenerateHomeViewController: UIViewController {
         super.viewDidLayoutSubviews()
         setupDividers()
     }
+    
+    // ✅ NEW: Setup Fonts to match the screenshot
+    private func setupFonts() {
+        let labels = [flashcardCountLabel, quizCountLabel, quizTimerLabel]
+        labels.forEach { label in
+            // Clean, large numbers for the stepper values
+            label?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        }
+        
+        startCreationButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+    }
 
     // MARK: - Setup Methods
     private func setupCards() {
         // Define Custom Colors
-        let quizColor = UIColor(hex: "88D769")
-        let flashcardColor = UIColor(hex: "91C1EF")
-        let cheatsheetColor = UIColor(hex: "8A38F5").withAlphaComponent(0.50)
-        let notesColor = UIColor(hex: "FFC445").withAlphaComponent(0.75)
+        // ✅ UPDATED: Removed Alpha components so colors are vibrant and borders pop
+        let quizColor = UIColor(hex: "88D769")       // Green
+        let flashcardColor = UIColor(hex: "5AC8FA")  // Blue (Tweaked to be brighter like screenshot)
+        let notesColor = UIColor(hex: "FF9F0A")      // Orange (System Orange-ish)
+        let cheatsheetColor = UIColor(hex: "BF5AF2") // Purple (System Purple-ish)
         
         // Configure Cards
         quizCardView.configure(iconName: "timer", title: "Quiz", iconColor: quizColor)
@@ -181,7 +203,7 @@ class GenerateHomeViewController: UIViewController {
         notesCardView.addTarget(self, action: #selector(notesTapped), for: .touchUpInside)
         cheatsheetCardView.addTarget(self, action: #selector(cheatsheetTapped), for: .touchUpInside)
         
-        startCreationButton.layer.cornerRadius = 12
+        startCreationButton.layer.cornerRadius = 14
     }
     
     private func setupSteppers() {
@@ -276,7 +298,7 @@ class GenerateHomeViewController: UIViewController {
         let isPlaceholderVisible = (type == .notes || type == .cheatsheet)
         defaultConfigurationPlaceholder.isHidden = !isPlaceholderVisible
         
-        let title = (type == .none) ? "Start Creation" : "Create \(type.description)"
+        let title = (type == .none) ? "Start Creation" : "Generate \(type.description)"
         startCreationButton.setTitle(title, for: .normal)
     }
 

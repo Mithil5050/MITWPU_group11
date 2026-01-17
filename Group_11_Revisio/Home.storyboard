@@ -1124,7 +1124,7 @@
             </objects>
             <point key="canvasLocation" x="3055.7251908396947" y="-926.05633802816908"/>
         </scene>
-        <!--Big Data-->
+        <!--Flashcards-->
         <scene sceneID="yGd-NL-qxy">
             <objects>
                 <viewController id="z8q-8S-FlA" customClass="FlashcardViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
@@ -1199,7 +1199,7 @@
                             <constraint firstItem="vNK-cQ-DFA" firstAttribute="centerX" secondItem="Mar-51-CW7" secondAttribute="centerX" id="rvW-Oz-vjz"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Big Data" id="teE-5v-4e7">
+                    <navigationItem key="navigationItem" title="Flashcards" id="teE-5v-4e7">
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="GvT-6o-reU">
                             <connections>
                                 <action selector="addFlashcardButtonTapped:" destination="z8q-8S-FlA" id="GUw-vX-yEa"/>
@@ -1547,7 +1547,7 @@
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="gray" title="Save"/>
                                 <connections>
-                                    <action selector="saveTapped:" destination="LBk-py-eDN" eventType="touchUpInside" id="uzE-Ak-na4"/>
+                                    <action selector="saveButtonTapped:" destination="LBk-py-eDN" eventType="touchUpInside" id="5vO-73-Rmp"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -1606,6 +1606,9 @@
                                 </constraints>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="gray" title="Save"/>
+                                <connections>
+                                    <action selector="saveButtonTapped:" destination="eKj-Mm-Ug8" eventType="touchUpInside" id="kIy-fq-tRC"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="EFn-7w-ybN"/>
