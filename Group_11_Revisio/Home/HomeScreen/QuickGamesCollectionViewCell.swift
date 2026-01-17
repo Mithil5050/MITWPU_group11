@@ -33,32 +33,34 @@ class QuickGamesCollectionViewCell: UICollectionViewCell {
     }
     
     // MARK: - UI Setup
-    private func configureStyle() {
-        // Card Shape
-        [gameCard, gameCard2].forEach { card in
-            card?.layer.cornerRadius = 16
-            card?.layer.cornerCurve = .continuous
-            card?.isUserInteractionEnabled = true
+    // MARK: - UI Setup
+        private func configureStyle() {
+            // Card Shape
+            [gameCard, gameCard2].forEach { card in
+                card?.layer.cornerRadius = 24 // Updated to match the smooth 24pt radius in the image
+                card?.layer.cornerCurve = .continuous
+                card?.isUserInteractionEnabled = true
+            }
+            
+            // MARK: - 🎨 DARK MODE THEME COLORS
+            // These colors match the deep background tones of the 3D assets provided.
+            
+            // WordFill: "Deep Azure" (#0F1724)
+            // RGB: 15, 23, 36
+            let wordFillTheme = UIColor(red: 15/255, green: 23/255, blue: 36/255, alpha: 1.0)
+            
+            // Connections: "Midnight Violet" (#151221)
+            // RGB: 21, 18, 33
+            let connectionsTheme = UIColor(red: 21/255, green: 18/255, blue: 33/255, alpha: 1.0)
+            
+            // Apply the solid theme colors
+            gameCard.backgroundColor = wordFillTheme
+            gameCard2.backgroundColor = connectionsTheme
+            
+            // Content Mode
+            gameImage1.contentMode = .scaleAspectFit
+            gameImage2.contentMode = .scaleAspectFit
         }
-        
-        // MARK: - 🔒 FORCE LIGHT MODE COLORS
-        // We manually define the standard iOS Light Mode RGB values.
-        // This prevents the system from swapping them to "Dark Mode Green/Blue".
-        
-        // Light Mode System Green: #34C759 (R: 52, G: 199, B: 89)
-        let fixedLightGreen = UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 1.0)
-        
-        // Light Mode System Blue: #007AFF (R: 0, G: 122, B: 255)
-        let fixedLightBlue = UIColor(red: 0/255, green: 122/255, blue: 255/255, alpha: 1.0)
-        
-        // Apply with low opacity for the pastel look
-        gameCard.backgroundColor = fixedLightGreen.withAlphaComponent(0.12)
-        gameCard2.backgroundColor = fixedLightBlue.withAlphaComponent(0.12)
-        
-        // Content Mode
-        gameImage1.contentMode = .scaleAspectFit
-        gameImage2.contentMode = .scaleAspectFit
-    }
     
     private func setupGestureRecognizers() {
         let wordFillTap = UITapGestureRecognizer(target: self, action: #selector(handleWordFillTap))

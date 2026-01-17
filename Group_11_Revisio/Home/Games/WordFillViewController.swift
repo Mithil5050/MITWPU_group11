@@ -1,38 +1,41 @@
 import UIKit
 
+// MARK: - Data Model
 struct Question {
     let text: String
     let options: [String]
     let correctAnswer: String
 }
 
+// MARK: - View Controller
 class WordFillViewController: UIViewController {
 
-    // MARK: - Outlets
+    // MARK: - IBOutlets
     @IBOutlet weak var timerLabel: UILabel!
     @IBOutlet weak var progressLabel: UILabel!
     @IBOutlet weak var progressView: UIProgressView!
     @IBOutlet weak var questionLabel: UILabel!
+    
     @IBOutlet var optionButtons: [UIButton]!
-
     @IBOutlet var Gamecard: UIView!
+
     // MARK: - Properties
     private var questions: [Question] = []
     private var currentQuestionIndex = 0
     private var timer: Timer?
     private var secondsRemaining = 60
-    private var isProcessingAnswer = false // Prevents double-tapping during transitions
+    private var isProcessingAnswer = false
 
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupQuestions()
         setupUI()
         loadQuestion()
         startTimer()
-        Gamecard.layer.cornerRadius = 20
-        Gamecard.backgroundColor = UIColor(hex: "E3EFFB")
     }
 
+    // MARK: - Setup
     private func setupQuestions() {
         questions = [
             Question(text: "A column, or set of columns, that uniquely identifies every tuple in a relation is formally known as a ________",
@@ -54,15 +57,23 @@ class WordFillViewController: UIViewController {
     }
 
     private func setupUI() {
+        // MARK: Card Style
+        Gamecard.layer.cornerRadius = 24
+        Gamecard.layer.cornerCurve = .continuous
+        
+        // RESTORED: Light Blue #91C1EF (R: 145, G: 193, B: 239)
+        Gamecard.backgroundColor = UIColor(red: 145/255, green: 193/255, blue: 239/255, alpha: 1.0)
+        
+        // MARK: Button Style
         for button in optionButtons {
             button.layer.cornerRadius = 20
+            button.layer.cornerCurve = .continuous
             button.layer.borderWidth = 1
             button.layer.borderColor = UIColor.systemGray5.cgColor
-            button.titleLabel?.numberOfLines = 0 // Allows text wrapping
+            
+            // Text Configuration
+            button.titleLabel?.numberOfLines = 0
             button.titleLabel?.textAlignment = .center
-            // Optional improvements for multi-line layout:
-            // button.titleLabel?.lineBreakMode = .byWordWrapping
-            // button.contentEdgeInsets = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
         }
     }
 
@@ -70,16 +81,27 @@ class WordFillViewController: UIViewController {
         isProcessingAnswer = false
         let currentQuestion = questions[currentQuestionIndex]
         
+        // Update Labels
         questionLabel.text = currentQuestion.text
         progressLabel.text = "Question \(currentQuestionIndex + 1)/\(questions.count)"
         progressView.setProgress(Float(currentQuestionIndex + 1) / Float(questions.count), animated: true)
         
+        // Reset Buttons
         for (index, button) in optionButtons.enumerated() {
-            button.setTitle(currentQuestion.options[index], for: .normal)
+            if index < currentQuestion.options.count {
+                button.setTitle(currentQuestion.options[index], for: .normal)
+                button.isHidden = false
+            } else {
+                button.isHidden = true
+            }
+            
+            // MARK: - RESET STATE
+            // Revert back to default styling for the new question
             button.backgroundColor = .systemBackground
-            button.layer.borderColor = UIColor.systemGray5.cgColor
-            button.isEnabled = true
             button.setTitleColor(.label, for: .normal)
+            button.layer.borderColor = UIColor.systemGray5.cgColor
+            button.layer.borderWidth = 1
+            button.isEnabled = true
         }
     }
 
@@ -88,40 +110,52 @@ class WordFillViewController: UIViewController {
         guard !isProcessingAnswer else { return }
         isProcessingAnswer = true
         
-        let userAnswer = sender.titleLabel?.text
-        let correctAnswer = questions[currentQuestionIndex].correctAnswer
+        guard let userAnswer = sender.titleLabel?.text else { return }
+        let currentQuestion = questions[currentQuestionIndex]
+        let correctAnswer = currentQuestion.correctAnswer
         
-        // Disable all buttons so user can't click others during the delay
+        // Disable user interaction
         optionButtons.forEach { $0.isEnabled = false }
 
+        // MARK: - SELECTION STYLE
+        // 1. Transparent background to show the #91C1EF card behind it
+        sender.backgroundColor = .clear
+        
+        // 2. White text (Note: This may have low contrast against #91C1EF)
+        sender.setTitleColor(.white, for: .normal)
+        
+        // 3. Thick Border
+        sender.layer.borderWidth = 3
+
         if userAnswer == correctAnswer {
-            // Correct Answer Styling
-            sender.backgroundColor = .systemGreen
-            sender.setTitleColor(.white, for: .normal)
+            // Correct: Green Border
+            sender.layer.borderColor = UIColor.systemGreen.cgColor
         } else {
-            // Wrong Answer Styling
-            sender.backgroundColor = .systemRed
-            sender.setTitleColor(.white, for: .normal)
+            // Wrong: Red Border
+            sender.layer.borderColor = UIColor.systemRed.cgColor
             
-            // Optionally highlight the correct one as well
+            // Highlight the correct answer
             highlightCorrectAnswer(correctAnswer)
         }
         
-        // Brief pause (0.8 seconds) so the user sees the feedback
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            self.moveToNextQuestion()
+        // Delay before next question
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
+            self?.moveToNextQuestion()
         }
     }
 
     private func highlightCorrectAnswer(_ answer: String) {
         for button in optionButtons {
             if button.titleLabel?.text == answer {
+                button.backgroundColor = .clear
+                button.setTitleColor(.white, for: .normal)
                 button.layer.borderColor = UIColor.systemGreen.cgColor
                 button.layer.borderWidth = 3
             }
         }
     }
 
+    // MARK: - Navigation
     private func moveToNextQuestion() {
         if currentQuestionIndex < questions.count - 1 {
             currentQuestionIndex += 1
@@ -134,7 +168,9 @@ class WordFillViewController: UIViewController {
     private func showFinalResults() {
         timer?.invalidate()
         questionLabel.text = "Quiz Complete!"
-        // Add logic here to navigate to a results screen or reset
+        progressLabel.text = "Done"
+        progressView.setProgress(1.0, animated: true)
+        optionButtons.forEach { $0.isHidden = true }
     }
 
     // MARK: - Timer Logic

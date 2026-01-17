@@ -3,6 +3,7 @@
 //  Group_11_Revisio
 //
 //  Updated for Dropdown Functionality & Profile Icon
+//  Updated with AI Floating Button Integration
 //
 
 import UIKit
@@ -36,6 +37,7 @@ let showTodayTaskSegueID = "showTodayTaskSegue"
 let showConnectionsSegueID = "ConnectionsSegue"
 let showWordFillSegueID = "ShowWordFillSegue"
 let showUploadConfirmationSegueID = "ShowUploadConfirmation"
+let showChatSegueID = "ShowChatSegue" // ✅ NEW: Segue ID for Chat
 
 protocol QuickGamesCellDelegate: AnyObject {
     func didSelectQuickGame(gameTitle: String)
@@ -56,6 +58,51 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
 
     @IBOutlet weak var collectionView: UICollectionView!
     
+    // ✅ NEW: Floating AI Button Property
+    // ✅ Floating AI Button with Padding for "Exora"
+    // ✅ Floating AI Button (Fixed: Manually Resizes Image)
+        private let aiFloatingButton: UIButton = {
+            let btn = UIButton(type: .custom)
+            btn.translatesAutoresizingMaskIntoConstraints = false
+            
+            // 1. Load the original image
+            // ⚠️ Make sure your asset is named "exora_icon" (or change this string)
+            guard let originalImage = UIImage(named: "exora_icon") else {
+                // Fallback if image not found
+                btn.setImage(UIImage(systemName: "sparkles"), for: .normal)
+                return btn
+            }
+
+            // 2. FORCE RESIZE the image to 40x40 points
+            // This ensures it fits inside the 60x60 button regardless of original file size
+            let targetSize = CGSize(width: 45, height: 45)
+            let renderer = UIGraphicsImageRenderer(size: targetSize)
+            let resizedImage = renderer.image { _ in
+                originalImage.draw(in: CGRect(origin: .zero, size: targetSize))
+            }
+
+            // 3. Configure the Button
+            var config = UIButton.Configuration.filled()
+            config.baseBackgroundColor = .label // Black (Light Mode) / White (Dark Mode)
+            config.cornerStyle = .capsule
+            
+            // Set the resized image
+            config.image = resizedImage.withRenderingMode(.alwaysOriginal) // .alwaysOriginal keeps original colors!
+            
+            // 4. Center it perfectly (No padding needed since we resized it)
+            config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+            
+            btn.configuration = config
+            
+            // 5. Add Shadow
+            btn.layer.shadowColor = UIColor.black.cgColor
+            btn.layer.shadowOpacity = 0.3
+            btn.layer.shadowOffset = CGSize(width: 0, height: 4)
+            btn.layer.shadowRadius = 6
+            
+            return btn
+        }()
+    
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
@@ -63,41 +110,65 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         setupData()
         loadIncompleteTasks()
         setupCollectionView()
-        
-        // ✅ NEW: Setup the profile picture in the Nav Bar
         setupProfileIcon()
+        
+        // ✅ NEW: Initialize Floating Button
+        setupFloatingAIButton()
     }
     
-    // MARK: - NEW: Profile Icon Setup
-    // MARK: - NEW: Profile Icon Setup
-        private func setupProfileIcon() {
-            // 1. Create a UIButton
-            let button = UIButton(type: .custom)
-            
-            // 2. Load the image
-            if let image = UIImage(named: "profileimage") {
-                button.setImage(image, for: .normal)
-            } else {
-                button.setImage(UIImage(systemName: "person.circle.fill"), for: .normal)
+    // MARK: - NEW: Floating AI Button Setup
+    private func setupFloatingAIButton() {
+        // Add to the main view so it floats ABOVE the collection view
+        view.addSubview(aiFloatingButton)
+        
+        NSLayoutConstraint.activate([
+            aiFloatingButton.widthAnchor.constraint(equalToConstant: 60),
+            aiFloatingButton.heightAnchor.constraint(equalToConstant: 60),
+            aiFloatingButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            aiFloatingButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+        ])
+        
+        aiFloatingButton.addTarget(self, action: #selector(didTapAIButton), for: .touchUpInside)
+    }
+    
+    @objc func didTapAIButton() {
+        // Bounce Animation
+        UIView.animate(withDuration: 0.1, animations: {
+            self.aiFloatingButton.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+        }) { _ in
+            UIView.animate(withDuration: 0.1) {
+                self.aiFloatingButton.transform = .identity
+            } completion: { _ in
+                // Trigger Segue to Chat Interface
+                // Ensure you have a Segue in Storyboard with ID: "ShowChatSegue"
+                self.performSegue(withIdentifier: showChatSegueID, sender: self)
             }
-            
-            // 3. FORCE SIZE constraints (This fixes the "Huge Image" issue)
-            button.translatesAutoresizingMaskIntoConstraints = false
-            button.widthAnchor.constraint(equalToConstant: 40).isActive = true
-            button.heightAnchor.constraint(equalToConstant: 40).isActive = true
-            
-            // 4. Configure Image Scaling & Circle Shape
-            button.imageView?.contentMode = .scaleAspectFill
-            button.layer.cornerRadius = 20 // Half of 40
-            button.layer.masksToBounds = true
-            
-            // 5. Add Action
-            button.addTarget(self, action: #selector(profileButtonTapped(_:)), for: .touchUpInside)
-            
-            // 6. Assign to Navigation Bar
-            let barItem = UIBarButtonItem(customView: button)
-            navigationItem.rightBarButtonItem = barItem
         }
+    }
+    
+    // MARK: - Profile Icon Setup
+    private func setupProfileIcon() {
+        let button = UIButton(type: .custom)
+        
+        if let image = UIImage(named: "profileimage") {
+            button.setImage(image, for: .normal)
+        } else {
+            button.setImage(UIImage(systemName: "person.circle.fill"), for: .normal)
+        }
+        
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        button.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        
+        button.imageView?.contentMode = .scaleAspectFill
+        button.layer.cornerRadius = 20
+        button.layer.masksToBounds = true
+        
+        button.addTarget(self, action: #selector(profileButtonTapped(_:)), for: .touchUpInside)
+        
+        let barItem = UIBarButtonItem(customView: button)
+        navigationItem.rightBarButtonItem = barItem
+    }
     
     private func loadIncompleteTasks() {
         let allSubjects = JSONDatabaseManager.shared.loadStudyPlan()
@@ -133,7 +204,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         collectionView.contentInsetAdjustmentBehavior = .never
     }
     
-    // ✅ MODIFIED: Changed sender type to 'Any' to support both UIButton and UIBarButtonItem
     @IBAction func profileButtonTapped(_ sender: Any) {
         performSegue(withIdentifier: "showProfileSegue", sender: nil)
     }
@@ -146,6 +216,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 destinationVC.uploadedContentName = filename
             }
         }
+        // NOTE: Handle ChatVC preparation here if you need to pass data (like user name)
     }
     
     // MARK: - Layout Configuration
@@ -156,7 +227,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         return UICollectionViewCompositionalLayout { [self] sectionIndex, env in
             let sectionType = HomeSection.allCases[sectionIndex]
             
-            // Header Config
             let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(40))
             let headerItem = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
             
@@ -313,7 +383,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     }
 }
 
-// MARK: - Header Delegate (The Dropdown Trigger)
+// MARK: - Header Delegate
 extension HomeViewController: HeaderViewDelegate {
     func didTapViewAll(in section: Int) {
         isLearningExpanded.toggle()
