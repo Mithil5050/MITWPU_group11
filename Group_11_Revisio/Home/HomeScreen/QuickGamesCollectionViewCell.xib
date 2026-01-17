@@ -25,7 +25,7 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Screenshot 2026-01-16 at 11.33.08 PM" translatesAutoresizingMaskIntoConstraints="NO" id="e1L-HQ-Fdr">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Gemini_Generated_Image_p66f9tp66f9tp66f-removebg-preview" translatesAutoresizingMaskIntoConstraints="NO" id="e1L-HQ-Fdr">
                                 <rect key="frame" x="0.0" y="0.0" width="177" height="130"/>
                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
@@ -96,7 +96,7 @@
         </collectionViewCell>
     </objects>
     <resources>
+        <image name="Gemini_Generated_Image_p66f9tp66f9tp66f-removebg-preview" width="500" height="500"/>
         <image name="Gemini_Generated_Image_y6xx8iy6xx8iy6xx-removebg-preview" width="583" height="428"/>
-        <image name="Screenshot 2026-01-16 at 11.33.08 PM" width="1684" height="1262"/>
     </resources>
 </document>
