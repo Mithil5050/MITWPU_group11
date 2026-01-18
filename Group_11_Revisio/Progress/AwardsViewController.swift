@@ -31,7 +31,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
             setupCollectionViews()
             registerCells()
             setupLayouts()
-            navigationItem.title = "Achievements"
+            navigationItem.title = "Awards"
         }
         
         private func setupCollectionViews() {
@@ -85,7 +85,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
             }
 
         func didTapShowAllButton() {
-            print("Navigate to Show All Screen")
+            self.performSegue(withIdentifier: "ShowAllBadges", sender: self)
         }
     }
 
