@@ -422,6 +422,8 @@
                         <segue destination="zbs-cn-zP7" kind="show" identifier="ShowWordFillSegue" id="vDe-vn-Hlx"/>
                         <segue destination="WNP-DU-Qf0" kind="show" identifier="ShowUploadConfirmation" id="8xs-Zm-Bpf"/>
                         <segue destination="m3S-Zg-TfN" kind="show" identifier="ShowChatSegue" id="dg2-yk-Fdx"/>
+                        <segue destination="LBk-py-eDN" kind="show" identifier="ShowNotesDetail" id="2L3-rr-sun"/>
+                        <segue destination="HNf-Dz-am1" kind="show" identifier="ShowQuizStart" id="Tr1-bA-tXf"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="S36-4S-LDv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1974,32 +1976,32 @@
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SummaryCell" id="FGe-L4-kZ9" customClass="SummaryTableViewCell" customModule="Group_11_Revisio" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="50" width="393" height="331.66665649414062"/>
+                                        <rect key="frame" x="0.0" y="50" width="393" height="332.66665649414062"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="FGe-L4-kZ9" id="h72-uO-f67">
-                                            <rect key="frame" x="0.0" y="0.0" width="393" height="331.66665649414062"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="393" height="332.66665649414062"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Tep-OH-G4p">
-                                                    <rect key="frame" x="8" y="8" width="377" height="315.66666666666669"/>
+                                                    <rect key="frame" x="8" y="8" width="377" height="316.66666666666669"/>
                                                     <subviews>
                                                         <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="auE-Dp-Ys8">
-                                                            <rect key="frame" x="0.0" y="0.0" width="377" height="213"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="377" height="214"/>
                                                             <subviews>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="O8d-9b-hnu">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="329" height="213"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="329" height="214"/>
                                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                                     <nil key="textColor"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Vft-6X-we4">
-                                                                    <rect key="frame" x="329" y="0.0" width="24" height="213"/>
+                                                                    <rect key="frame" x="329" y="0.0" width="24" height="214"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="width" constant="24" id="NHZ-0W-a7P"/>
                                                                     </constraints>
                                                                 </imageView>
                                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="leE-wz-VIr">
-                                                                    <rect key="frame" x="353" y="0.0" width="24" height="213"/>
+                                                                    <rect key="frame" x="353" y="0.0" width="24" height="214"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="width" constant="24" id="qdY-qv-xyJ"/>
                                                                     </constraints>
@@ -2007,7 +2009,7 @@
                                                             </subviews>
                                                         </stackView>
                                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="xfL-Wf-njH">
-                                                            <rect key="frame" x="0.0" y="212.99999999999997" width="377" height="102.66666666666666"/>
+                                                            <rect key="frame" x="0.0" y="213.99999999999997" width="377" height="102.66666666666666"/>
                                                             <subviews>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kin-ln-nRp">
                                                                     <rect key="frame" x="0.0" y="0.0" width="377" height="21"/>
@@ -2093,6 +2095,10 @@
             <point key="canvasLocation" x="6258.7786259541981" y="-926.05633802816908"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="Tr1-bA-tXf"/>
+        <segue reference="2L3-rr-sun"/>
+    </inferredMetricsTieBreakers>
     <resources>
         <image name="Gemini_Generated_Image_p66f9tp66f9tp66f-removebg-preview" width="500" height="500"/>
         <image name="Gemini_Generated_Image_y6xx8iy6xx8iy6xx-removebg-preview" width="583" height="428"/>

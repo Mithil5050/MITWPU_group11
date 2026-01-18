@@ -4,6 +4,7 @@
 //
 //  Updated for Dropdown Functionality & Profile Icon
 //  Updated with AI Floating Button Integration
+//  Updated: Big Data Card now opens Quiz directly
 //
 
 import UIKit
@@ -32,12 +33,16 @@ let studyPlanCellID = "StudyPlanCellID"
 let headerID = "HeaderID"
 let taskCellID = "TaskCell"
 
+// Segue Identifiers
 let showStudyPlanSegueID = "ShowStudyPlanSegue"
 let showTodayTaskSegueID = "showTodayTaskSegue"
 let showConnectionsSegueID = "ConnectionsSegue"
 let showWordFillSegueID = "ShowWordFillSegue"
 let showUploadConfirmationSegueID = "ShowUploadConfirmation"
-let showChatSegueID = "ShowChatSegue" // ✅ NEW: Segue ID for Chat
+let showChatSegueID = "ShowChatSegue"
+let showNotesDetailSegueID = "ShowNotesDetail"
+let showQuizStartSegueID = "ShowQuizStart"
+let showSubjectDetailSegueID = "ShowSubjectDetail"
 
 protocol QuickGamesCellDelegate: AnyObject {
     func didSelectQuickGame(gameTitle: String)
@@ -58,50 +63,41 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
 
     @IBOutlet weak var collectionView: UICollectionView!
     
-    // ✅ NEW: Floating AI Button Property
-    // ✅ Floating AI Button with Padding for "Exora"
-    // ✅ Floating AI Button (Fixed: Manually Resizes Image)
-        private let aiFloatingButton: UIButton = {
-            let btn = UIButton(type: .custom)
-            btn.translatesAutoresizingMaskIntoConstraints = false
-            
-            // 1. Load the original image
-            // ⚠️ Make sure your asset is named "exora_icon" (or change this string)
-            guard let originalImage = UIImage(named: "exora_icon") else {
-                // Fallback if image not found
-                btn.setImage(UIImage(systemName: "sparkles"), for: .normal)
-                return btn
-            }
-
-            // 2. FORCE RESIZE the image to 40x40 points
-            // This ensures it fits inside the 60x60 button regardless of original file size
-            let targetSize = CGSize(width: 45, height: 45)
-            let renderer = UIGraphicsImageRenderer(size: targetSize)
-            let resizedImage = renderer.image { _ in
-                originalImage.draw(in: CGRect(origin: .zero, size: targetSize))
-            }
-
-            // 3. Configure the Button
-            var config = UIButton.Configuration.filled()
-            config.baseBackgroundColor = .label // Black (Light Mode) / White (Dark Mode)
-            config.cornerStyle = .capsule
-            
-            // Set the resized image
-            config.image = resizedImage.withRenderingMode(.alwaysOriginal) // .alwaysOriginal keeps original colors!
-            
-            // 4. Center it perfectly (No padding needed since we resized it)
-            config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-            
-            btn.configuration = config
-            
-            // 5. Add Shadow
-            btn.layer.shadowColor = UIColor.black.cgColor
-            btn.layer.shadowOpacity = 0.3
-            btn.layer.shadowOffset = CGSize(width: 0, height: 4)
-            btn.layer.shadowRadius = 6
-            
+    // ✅ Floating AI Button
+    private let aiFloatingButton: UIButton = {
+        let btn = UIButton(type: .custom)
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        
+        // 1. Load the original image
+        guard let originalImage = UIImage(named: "exora_icon") else {
+            btn.setImage(UIImage(systemName: "sparkles"), for: .normal)
             return btn
-        }()
+        }
+
+        // 2. Resize image
+        let targetSize = CGSize(width: 45, height: 45)
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        let resizedImage = renderer.image { _ in
+            originalImage.draw(in: CGRect(origin: .zero, size: targetSize))
+        }
+
+        // 3. Configure the Button
+        var config = UIButton.Configuration.filled()
+        config.baseBackgroundColor = .label
+        config.cornerStyle = .capsule
+        config.image = resizedImage.withRenderingMode(.alwaysOriginal)
+        config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        
+        btn.configuration = config
+        
+        // 5. Add Shadow
+        btn.layer.shadowColor = UIColor.black.cgColor
+        btn.layer.shadowOpacity = 0.3
+        btn.layer.shadowOffset = CGSize(width: 0, height: 4)
+        btn.layer.shadowRadius = 6
+        
+        return btn
+    }()
     
     // MARK: - Lifecycle
 
@@ -111,14 +107,11 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         loadIncompleteTasks()
         setupCollectionView()
         setupProfileIcon()
-        
-        // ✅ NEW: Initialize Floating Button
         setupFloatingAIButton()
     }
     
     // MARK: - NEW: Floating AI Button Setup
     private func setupFloatingAIButton() {
-        // Add to the main view so it floats ABOVE the collection view
         view.addSubview(aiFloatingButton)
         
         NSLayoutConstraint.activate([
@@ -132,15 +125,12 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     }
     
     @objc func didTapAIButton() {
-        // Bounce Animation
         UIView.animate(withDuration: 0.1, animations: {
             self.aiFloatingButton.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
         }) { _ in
             UIView.animate(withDuration: 0.1) {
                 self.aiFloatingButton.transform = .identity
             } completion: { _ in
-                // Trigger Segue to Chat Interface
-                // Ensure you have a Segue in Storyboard with ID: "ShowChatSegue"
                 self.performSegue(withIdentifier: showChatSegueID, sender: self)
             }
         }
@@ -210,13 +200,41 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     
     // MARK: - Navigation Preparation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        // 1. Upload Confirmation
         if segue.identifier == showUploadConfirmationSegueID {
             if let destinationVC = segue.destination as? UploadConfirmationViewController,
                let filename = sender as? String {
                 destinationVC.uploadedContentName = filename
             }
         }
-        // NOTE: Handle ChatVC preparation here if you need to pass data (like user name)
+        
+        // 2. Navigation to Notes
+        if segue.identifier == showNotesDetailSegueID {
+            if let destVC = segue.destination as? NotesViewController,
+               let topic = sender as? Topic {
+                destVC.currentTopic = topic
+                destVC.parentSubjectName = topic.parentSubjectName
+            }
+        }
+        
+        // 3. Navigation to Quiz Start
+        if segue.identifier == showQuizStartSegueID {
+            if let destVC = segue.destination as? QuizStartViewController,
+               let topic = sender as? Topic {
+                destVC.currentTopic = topic
+                destVC.parentSubject = topic.parentSubjectName
+                destVC.quizSourceName = topic.name
+            }
+        }
+        
+        // 4. Open Subject Folder
+        if segue.identifier == showSubjectDetailSegueID {
+            if let destVC = segue.destination as? SubjectViewController,
+               let subjectName = sender as? String {
+                destVC.selectedSubject = subjectName
+            }
+        }
     }
     
     // MARK: - Layout Configuration
@@ -343,6 +361,9 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
 
             // Pass the tasks and expansion state
             cell.configure(with: self.incompleteTasks)
+            
+            // ✅ Connect the Delegate for Navigation
+            cell.delegate = self
 
             return cell
         case .quickGames:
@@ -375,10 +396,32 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // MARK: - CollectionView Navigation
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let sectionType = HomeSection.allCases[indexPath.section]
-        if sectionType == .hero {
+        
+        switch sectionType {
+        case .hero:
             performSegue(withIdentifier: showTodayTaskSegueID, sender: nil)
-        } else if sectionType == .studyPlan {
+            
+        case .studyPlan:
             performSegue(withIdentifier: showStudyPlanSegueID, sender: nil)
+            
+        // ✅ NEW: Handle Big Data Card Click
+        // Instead of opening the Subject Folder, we now open a QUIZ directly.
+        case .continueLearning:
+            
+            // Create a Topic object representing the "Big Data Quiz"
+            let quizTopic = Topic(
+                name: "Big Data Quiz",
+                lastAccessed: "Just now",
+                materialType: "Quiz",
+                largeContentBody: "", // Content will be loaded in QuizVC via DataManager or defaults
+                parentSubjectName: "Big Data"
+            )
+            
+            // Trigger the segue to start the quiz
+            performSegue(withIdentifier: showQuizStartSegueID, sender: quizTopic)
+            
+        default:
+            break
         }
     }
 }
@@ -390,6 +433,50 @@ extension HomeViewController: HeaderViewDelegate {
         collectionView.performBatchUpdates({
             collectionView.reloadSections(IndexSet(integer: section))
         }, completion: nil)
+    }
+}
+
+// MARK: - Continue Learning Delegate (Notes & Quiz)
+extension HomeViewController: ContinueLearningCellDelegate {
+    
+    func didSelectLearningTask(_ task: PlanTask) {
+        let subjectName = findSubjectName(for: task)
+        
+        // 1. NOTES Logic
+        if task.type.contains("Notes") || task.type.contains("Revision") {
+            let topic = Topic(
+                name: task.title,
+                lastAccessed: "Just now",
+                materialType: "Notes",
+                largeContentBody: "",
+                parentSubjectName: subjectName
+            )
+            performSegue(withIdentifier: showNotesDetailSegueID, sender: topic)
+        }
+        // 2. QUIZ Logic
+        else if task.type.contains("Quiz") {
+            let topic = Topic(
+                name: task.title,
+                lastAccessed: "Just now",
+                materialType: "Quiz",
+                largeContentBody: "",
+                parentSubjectName: subjectName
+            )
+            performSegue(withIdentifier: showQuizStartSegueID, sender: topic)
+        }
+    }
+    
+    // Helper to find the subject name for a specific task
+    private func findSubjectName(for task: PlanTask) -> String {
+        let allSubjects = JSONDatabaseManager.shared.loadStudyPlan()
+        for subject in allSubjects {
+            for day in subject.days {
+                if day.tasks.contains(where: { $0.title == task.title }) {
+                    return subject.name
+                }
+            }
+        }
+        return "General" // Fallback if not found
     }
 }
 
