@@ -13,6 +13,7 @@ class GroupSettingsViewController: UIViewController {
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     @IBOutlet weak var infoView: UIView!
     @IBOutlet weak var docsView: UIView!
+    @IBOutlet weak var mediaView: UIView!
     @IBOutlet weak var linksView: UIView!
     
     
@@ -25,7 +26,7 @@ class GroupSettingsViewController: UIViewController {
     
     @IBOutlet weak var docsCollectionView: UICollectionView!
 
-    @IBOutlet weak var mediaView: UIView!
+    @IBOutlet weak var mediaCollectionView: UICollectionView!
     
     @IBOutlet weak var linksTableView: UITableView!
     
@@ -36,6 +37,7 @@ class GroupSettingsViewController: UIViewController {
     weak var delegate: LeaveGroupDelegate?
     weak var updateDelegate: GroupUpdateDelegate?
     
+    //MARK: - Dummy Data
     private let members: [(name: String, avatar: String)] = [
         ("You", "pfp_chirag"),
         ("Ashika", "pfp_ashika"),
@@ -56,7 +58,17 @@ class GroupSettingsViewController: UIViewController {
         ("UIKit Guide", "https://developer.apple.com/documentation/uikit"),
         ("Human Interface Guidelines", "https://developer.apple.com/design/human-interface-guidelines")
     ]
+    
+    private let mediaImages: [UIImage] = [
+        UIImage(named: "media1"),
+        UIImage(named: "media2"),
+        UIImage(named: "media3"),
+        UIImage(named: "media4"),
+        UIImage(named: "media5"),
+        UIImage(named: "media6")
+    ].compactMap { $0 }
 
+    //MARK: - ViewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -80,12 +92,24 @@ class GroupSettingsViewController: UIViewController {
         )
         navigationItem.rightBarButtonItem = editButton
         
+        
         docsCollectionView.dataSource = self
         docsCollectionView.delegate = self
         membersCollectionView.dataSource = self
         membersCollectionView.delegate = self
         linksTableView.dataSource = self
         linksTableView.delegate = self
+        mediaCollectionView.dataSource = self
+        mediaCollectionView.delegate = self
+        
+        if let layout = mediaCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            layout.estimatedItemSize = .zero
+        }
+        mediaCollectionView.register(
+            MediaCell.self,
+            forCellWithReuseIdentifier: "MediaCell"
+        )
+        
     }
     
     //MARK: - Edit button
@@ -196,6 +220,7 @@ class GroupSettingsViewController: UIViewController {
 }
 
 // MARK: - Documents, Members Collection View
+
 extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView,
@@ -203,39 +228,38 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
 
         if collectionView == membersCollectionView {
             return members.count + 1
-        } else {
+        } else if collectionView == docsCollectionView {
             return documents.count
+        } else if collectionView == mediaCollectionView {
+            return mediaImages.count
         }
+
+        return 0
     }
 
     func collectionView(_ collectionView: UICollectionView,
                         cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
         if collectionView == membersCollectionView {
-
             let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: "MemberCellIdentifier",
                 for: indexPath
             ) as! MemberCell
 
-            
-        // LAST CELL → Add Member (+)
             if indexPath.item == members.count {
-                cell.nameLabel.text = "Add Members"
                 cell.nameLabel.text = "Add"
                 cell.avatarImageView.image = UIImage(systemName: "plus.circle.fill")
                 cell.avatarImageView.tintColor = .systemGray4
-                cell.avatarImageView.backgroundColor = .clear
                 return cell
             }
-            
+
             let member = members[indexPath.item]
             cell.configure(name: member.name)
             cell.avatarImageView.image = UIImage(named: member.avatar)
             return cell
+        }
 
-        } else {
-
+        if collectionView == docsCollectionView {
             let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: "DocumentCellIdentifier",
                 for: indexPath
@@ -244,40 +268,106 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
             cell.configure(title: documents[indexPath.item])
             return cell
         }
+
+        if collectionView == mediaCollectionView {
+            let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: "MediaCell",
+                for: indexPath
+            ) as! MediaCell
+
+            cell.configure(image: mediaImages[indexPath.item])
+            return cell
+        }
+
+        return UICollectionViewCell()
     }
+    
+//    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+//
+//        let feedback = UIImpactFeedbackGenerator(style: .light)
+//        feedback.impactOccurred()
+//
+//        // Only react for Members collection
+//        guard collectionView == membersCollectionView else { return }
+//
+//        // LAST CELL → Add Member (+)
+//        if indexPath.item == members.count {
+//            
+//            let storyboard = UIStoryboard(name: "Groups", bundle: nil)
+//            
+//            guard let codeVC = storyboard.instantiateViewController(
+//                withIdentifier: "GroupCodeVC"
+//            ) as? GroupCodeViewController else {
+//                print("ERROR: GroupCodeVC not found")
+//                return
+//            }
+//            
+//            // Pass existing group info
+//            codeVC.configure(
+//                withGroupName: group.name,
+//                code: "ABC-123"
+//            )
+//            codeVC.isFromCreateGroup = false
+//            
+//            let nav = UINavigationController(rootViewController: codeVC)
+//            nav.modalPresentationStyle = .pageSheet
+//            present(nav, animated: true)
+//        }
+//        
+//        if collectionView == mediaCollectionView {
+//            let previewVC = MediaPreviewViewController()
+//            previewVC.image = mediaImages[indexPath.item]
+//            previewVC.modalPresentationStyle = .fullScreen
+//            present(previewVC, animated: true)
+//        }
+//        
+//    }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
 
         let feedback = UIImpactFeedbackGenerator(style: .light)
         feedback.impactOccurred()
-        
-        // Only react for Members collection
-        guard collectionView == membersCollectionView else { return }
 
-        // LAST CELL → Add Member (+)
-        if indexPath.item == members.count {
+        // MARK: - Members (+ Add)
+        if collectionView == membersCollectionView {
 
-            let storyboard = UIStoryboard(name: "Groups", bundle: nil)
-            
-            guard let codeVC = storyboard.instantiateViewController(
-                withIdentifier: "GroupCodeVC"
-            ) as? GroupCodeViewController else {
-                print("ERROR: GroupCodeVC not found")
-                return
+            if indexPath.item == members.count {
+
+                let storyboard = UIStoryboard(name: "Groups", bundle: nil)
+
+                guard let codeVC = storyboard.instantiateViewController(
+                    withIdentifier: "GroupCodeVC"
+                ) as? GroupCodeViewController else {
+                    return
+                }
+
+                codeVC.configure(
+                    withGroupName: group.name,
+                    code: "ABC-123"
+                )
+                codeVC.isFromCreateGroup = false
+
+                let nav = UINavigationController(rootViewController: codeVC)
+                nav.modalPresentationStyle = .pageSheet
+                present(nav, animated: true)
             }
 
-            // Pass existing group info
-            codeVC.configure(
-                withGroupName: group.name,
-                code: "ABC-123"
-            )
-            codeVC.isFromCreateGroup = false
-            
-            let nav = UINavigationController(rootViewController: codeVC)
-            nav.modalPresentationStyle = .pageSheet
-            present(nav, animated: true)        }
-    }
+            return
+        }
 
+        // MARK: - Media Preview
+        if collectionView == mediaCollectionView {
+
+            let previewVC = MediaPreviewViewController()
+            previewVC.image = mediaImages[indexPath.item]
+
+            let nav = UINavigationController(rootViewController: previewVC)
+            nav.modalPresentationStyle = .fullScreen
+            present(nav, animated: true)
+
+            return
+        }
+    }
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -285,37 +375,56 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
         if collectionView == membersCollectionView {
             let columns: CGFloat = 3
             let spacing: CGFloat = 12
-            let totalSpacing = (columns - 1) * spacing + 24 // left + right insets
+            let totalSpacing = (columns - 1) * spacing + 24
             let width = (collectionView.bounds.width - totalSpacing) / columns
             return CGSize(width: width, height: width + 12)
         }
+        
+        if collectionView == mediaCollectionView {
 
-        let columns: CGFloat = 3
-        let spacing: CGFloat = 12
-        let totalSpacing = (columns - 1) * spacing + 24
-        let width = (collectionView.bounds.width - totalSpacing) / columns
+            let columns: CGFloat = 3
+            let spacing: CGFloat = 6
 
-        return CGSize(width: width, height: width * 0.85)
+            let totalSpacing = (columns - 1) * spacing
+            let horizontalInsets: CGFloat = 12 * 2
+
+            let width = (collectionView.bounds.width - totalSpacing - horizontalInsets) / columns
+
+            return CGSize(width: width, height: width)
+        }
+
+        return CGSize(width: 0, height: 0)
     }
-
+    
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {
 
+        if collectionView == mediaCollectionView {
+            return UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
+        }
+
         return UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
     }
 
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 12
-    }
+//    func collectionView(_ collectionView: UICollectionView,
+//                        layout collectionViewLayout: UICollectionViewLayout,
+//                        insetForSectionAt section: Int) -> UIEdgeInsets {
+//
+//        return UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+//    }
 
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 6
-    }
+//    func collectionView(_ collectionView: UICollectionView,
+//                        layout collectionViewLayout: UICollectionViewLayout,
+//                        minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+//        return 12
+//    }
+//
+//    func collectionView(_ collectionView: UICollectionView,
+//                        layout collectionViewLayout: UICollectionViewLayout,
+//                        minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+//        return 6
+//    }
 }
 //MARK: - Links View
 extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegate {
