@@ -11,9 +11,7 @@ class StreaksCalendarViewController: UIViewController, UICalendarSelectionSingle
     
     
     @IBOutlet weak var streakInfoCardView: UIView!
-    
     @IBOutlet weak var scrollView: UIScrollView!
-    
     @IBOutlet weak var calendarContainerView: UIView!
     
     // MARK: - Properties

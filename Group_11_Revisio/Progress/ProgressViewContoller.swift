@@ -13,18 +13,12 @@ class ProgressViewContoller: UIViewController , LogStudyTimeDelegate {
     
     
     @IBOutlet weak var scrollView: UIScrollView!
-    
     @IBOutlet weak var stackView: UIStackView!
-    
     @IBOutlet weak var chartContainerView: UIView!
-    
     @IBOutlet weak var segmentControl: UISegmentedControl!
     @IBOutlet weak var streaksCard: UIView!
-    
     @IBOutlet weak var awardsCard: UIView!
-    
     @IBOutlet weak var personalBestCard: UIView!
-    
     @IBOutlet weak var progressBarCard: UIView!
     
     
@@ -142,7 +136,7 @@ class ProgressViewContoller: UIViewController , LogStudyTimeDelegate {
             personalBestCard.layer.cornerRadius = 16
             progressBarCard.layer.cornerRadius = 16
         }
-        
+    
         @IBAction func segmentChanged(_ sender: UISegmentedControl) {
             refreshChartView()
         }
