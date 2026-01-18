@@ -77,7 +77,57 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         print("Action: Sharing selected materials.")
     }
     @objc func moveSelectionAction() {
-        print("Action: Moving selected items.")
+        guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else { return }
+        
+        let selectedRawItems: [Any] = selectedPaths.compactMap { indexPath in
+            let item = filteredContent[indexPath.row]
+            if let studyItem = item as? StudyItem {
+                switch studyItem {
+                case .topic(let topic): return topic
+                case .source(let source): return source
+                }
+            }
+            return nil
+        }
+
+        let allSubjects = DataManager.shared.savedMaterials.keys.sorted()
+        let otherSubjects = allSubjects.filter { $0 != selectedSubject }
+
+        if otherSubjects.isEmpty {
+            let alert = UIAlertController(title: "No Destination", message: "Create another subject folder first.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            return
+        }
+
+        let moveAlert = UIAlertController(title: "Move \(selectedRawItems.count) Items", message: "Select destination subject", preferredStyle: .actionSheet)
+
+        for subject in otherSubjects {
+            moveAlert.addAction(UIAlertAction(title: subject, style: .default) { [weak self] _ in
+                guard let self = self else { return }
+                
+                DataManager.shared.moveItems(
+                    items: selectedRawItems,
+                    from: self.selectedSubject ?? "",
+                    to: subject
+                )
+                
+                self.selectionDoneTapped()
+                
+                if let current = self.selectedSubject {
+                    self.loadContentForSubject(current, segmentIndex: self.materialsSegmentedControl.selectedSegmentIndex)
+                }
+            })
+        }
+
+        moveAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        
+        // Even for iPhone, this is the safest way to present to avoid 'Unsatisfied Constraints' warnings in the console
+        if let popover = moveAlert.popoverPresentationController {
+            popover.barButtonItem = self.toolbarItems?[2]
+        }
+
+        present(moveAlert, animated: true)
     }
     @objc func deleteSelectionAction() {
         guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else { return }
