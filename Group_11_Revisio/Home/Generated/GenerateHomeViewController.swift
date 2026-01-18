@@ -439,37 +439,46 @@ class GenerateHomeViewController: UIViewController {
     }
 
     // MARK: - Navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "HomeToQuizInstruction" {
-            if let dest = segue.destination as? InstructionViewController,
-               let data = sender as? (topic: Topic, sourceName: String) {
-                dest.quizTopic = data.topic
-                dest.sourceNameForQuiz = data.sourceName
-                dest.parentSubjectName = self.contextSubjectTitle
+    // MARK: - Navigation
+        override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+            
+            // Handling the transition to the Quiz Start Screen
+            if segue.identifier == "HomeToQuizInstruction" {
+                
+                // ✅ FIX 1: Cast to 'QuizStartViewController' (Your new class)
+                if let dest = segue.destination as? QuizStartViewController,
+                   let data = sender as? (topic: Topic, sourceName: String) {
+                    
+                    // ✅ FIX 2: Pass the Folder Name (contextSubjectTitle) to parentSubject
+                    dest.currentTopic = data.topic
+                    dest.quizSourceName = data.sourceName
+                    dest.parentSubject = self.contextSubjectTitle
+                    
+                    print("GenerateHomeVC: Passing subject '\(self.contextSubjectTitle ?? "nil")' to QuizStartVC")
+                }
+            }
+            else if segue.identifier == "HomeToFlashcardView" {
+                if let dest = segue.destination as? FlashcardsViewController,
+                   let topic = sender as? Topic {
+                    dest.currentTopic = topic
+                    dest.parentSubjectName = self.contextSubjectTitle
+                }
+            }
+            else if segue.identifier == "HomeToNotesView" {
+                if let dest = segue.destination as? NotesViewController,
+                   let topic = sender as? Topic {
+                    dest.currentTopic = topic
+                    dest.parentSubjectName = self.contextSubjectTitle
+                }
+            }
+            else if segue.identifier == "HomeToCheatsheetView" {
+                if let dest = segue.destination as? CheatsheetViewController,
+                   let topic = sender as? Topic {
+                    dest.currentTopic = topic
+                    dest.parentSubjectName = self.contextSubjectTitle
+                }
             }
         }
-        else if segue.identifier == "HomeToFlashcardView" {
-            if let dest = segue.destination as? FlashcardsViewController,
-               let topic = sender as? Topic {
-                dest.currentTopic = topic
-                dest.parentSubjectName = self.contextSubjectTitle
-            }
-        }
-        else if segue.identifier == "HomeToNotesView" {
-            if let dest = segue.destination as? NotesViewController,
-               let topic = sender as? Topic {
-                dest.currentTopic = topic
-                dest.parentSubjectName = self.contextSubjectTitle
-            }
-        }
-        else if segue.identifier == "HomeToCheatsheetView" {
-            if let dest = segue.destination as? CheatsheetViewController,
-               let topic = sender as? Topic {
-                dest.currentTopic = topic
-                dest.parentSubjectName = self.contextSubjectTitle
-            }
-        }
-    }
 }
 
 // MARK: - Safe Hex Color Extension
