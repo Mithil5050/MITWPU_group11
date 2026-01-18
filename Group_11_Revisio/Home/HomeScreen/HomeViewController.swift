@@ -150,7 +150,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     private func setupProfileIcon() {
         let button = UIButton(type: .custom)
         
-        if let image = UIImage(named: "profileimage") {
+        if let image = UIImage(named: "profile_placeholder") {
             button.setImage(image, for: .normal)
         } else {
             button.setImage(UIImage(systemName: "person.circle.fill"), for: .normal)

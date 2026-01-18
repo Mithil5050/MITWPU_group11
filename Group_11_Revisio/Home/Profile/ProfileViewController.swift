@@ -7,11 +7,17 @@ enum ProfileSection: Int, CaseIterable {
     case actions // For Logout
 }
 
-class ProfileViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class ProfileViewController: UIViewController {
     
+    // MARK: - Outlets
     @IBOutlet weak var tableView: UITableView!
     
-    // Updated Data Model: Includes Icon Name and Color
+    // MARK: - Properties
+    // 1. Data for the User Info
+    var userName: String = "Mithil"
+    var userProfileImage: UIImage? = UIImage(named: "profile_placeholder") // Or your asset name
+    
+    // 2. "Old Data" - The Settings Options
     let settingsOptions: [(title: String, icon: String?, color: UIColor?, type: String)] = [
         ("Study Reminder", "book", .systemBlue, "Switch"),
         ("Show Achievements", "trophy", .systemYellow, "Switch"),
@@ -21,13 +27,15 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
     ]
     
     // MARK: - Lifecycle
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         self.title = ""
-        
-        // Back Button
+        setupNavigationBar()
+        setupTableView()
+    }
+    
+    // MARK: - Setup
+    private func setupNavigationBar() {
         let backButton = UIBarButtonItem(
             image: UIImage(systemName: "xmark"),
             style: .plain,
@@ -36,28 +44,44 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
         )
         backButton.tintColor = .systemGray2
         self.navigationItem.leftBarButtonItem = backButton
-        
-        setupTableView()
     }
     
+    private func setupTableView() {
+        tableView.dataSource = self
+        tableView.delegate = self
+        
+        // Register Custom XIB for Top Cell
+        // Ensure "UserInfoCell" matches your XIB filename exactly
+        let userInfoNib = UINib(nibName: "UserInfoCell", bundle: nil)
+        tableView.register(userInfoNib, forCellReuseIdentifier: "UserInfoCellID")
+        
+        // Register Standard Cell for Settings
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SettingCell")
+    }
+    
+    // MARK: - Actions
     @objc func closeTapped() {
         self.dismiss(animated: true, completion: nil)
     }
     
-    func setupTableView() {
-        tableView.dataSource = self
-        tableView.delegate = self
+    // Function to open the Edit Modal
+    func openEditProfileModal() {
+        let editVC = EditProfileViewController() // Ensure this class exists from previous steps
+        editVC.delegate = self // Set delegate to receive updates
+        editVC.currentName = self.userName
+        editVC.currentImage = self.userProfileImage
         
-        // Register your custom UserInfoCell XIB
-        // Make sure the file name is "UserInfoCell"
-        let userInfoNib = UINib(nibName: "UserInfoCell", bundle: nil)
-        tableView.register(userInfoNib, forCellReuseIdentifier: "UserInfoCellID")
-        
-        // Register standard cell for settings
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SettingCell")
+        let nav = UINavigationController(rootViewController: editVC)
+        if let sheet = nav.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(nav, animated: true)
     }
-    
-    // MARK: - UITableViewDataSource
+}
+
+// MARK: - UITableView DataSource & Delegate
+extension ProfileViewController: UITableViewDataSource, UITableViewDelegate {
     
     func numberOfSections(in tableView: UITableView) -> Int {
         return ProfileSection.allCases.count
@@ -66,16 +90,16 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch ProfileSection.allCases[section] {
         case .userInfo: return 1
-        case .settings: return settingsOptions.count
+        case .settings: return settingsOptions.count // ✅ Restores your settings rows
         case .actions: return 1
         }
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch ProfileSection.allCases[section] {
-        case .settings: return "Settings"
-        default: return nil
+        if section == ProfileSection.settings.rawValue {
+            return "Settings"
         }
+        return nil
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -83,21 +107,29 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
         
         switch section {
         case .userInfo:
-            // FIX: Use 'UserInfoCellTableViewCell' instead of 'UserInfoCell'
+            // Top Card with Edit Button
             guard let cell = tableView.dequeueReusableCell(withIdentifier: "UserInfoCellID", for: indexPath) as? UserInfoCellTableViewCell else {
                 return UITableViewCell()
             }
+            
+            // 1. Configure with current data
+            cell.configure(name: userName, image: userProfileImage)
+            
+            // 2. Handle the "Edit" button tap from the cell
+            cell.didTapEditButton = { [weak self] in
+                self?.openEditProfileModal()
+            }
+            
             cell.selectionStyle = .none
             return cell
             
         case .settings:
+            // Your Settings List
             let cell = tableView.dequeueReusableCell(withIdentifier: "SettingCell", for: indexPath)
             let setting = settingsOptions[indexPath.row]
             
-            // Configure Text
             cell.textLabel?.text = setting.title
             
-            // Configure Icon
             if let iconName = setting.icon, let iconColor = setting.color {
                 cell.imageView?.image = UIImage(systemName: iconName)
                 cell.imageView?.tintColor = iconColor
@@ -105,7 +137,7 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
                 cell.imageView?.image = nil
             }
             
-            // Configure Accessory
+            // Accessories (Switch or Arrow)
             if setting.type == "Switch" {
                 let settingSwitch = UISwitch()
                 settingSwitch.isOn = true
@@ -118,51 +150,49 @@ class ProfileViewController: UIViewController, UITableViewDataSource, UITableVie
                 cell.accessoryType = .disclosureIndicator
             }
             
-            // Dark mode adaptation
             cell.backgroundColor = UIColor.systemGroupedBackground
-            
             return cell
             
         case .actions:
+            // Logout Button
             let cell = tableView.dequeueReusableCell(withIdentifier: "SettingCell", for: indexPath)
-            
-            cell.textLabel?.text = "Logout"
+            cell.textLabel?.text = "Log Out"
             cell.textLabel?.textColor = .systemRed
             cell.textLabel?.textAlignment = .center
-            
             cell.imageView?.image = nil
             cell.accessoryView = nil
-            cell.accessoryType = .none
             cell.backgroundColor = UIColor.systemGroupedBackground
             return cell
         }
     }
     
-    // MARK: - UITableViewDelegate
-    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        if indexPath.section == 2 {
-            print("Logout Tapped")
+        
+        // Handle Logout Tap
+        if indexPath.section == ProfileSection.actions.rawValue {
+            let alert = UIAlertController(title: "Log Out", message: "Are you sure?", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Log Out", style: .destructive))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            present(alert, animated: true)
         }
     }
-    
-    // MARK: - Heights
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        let section = ProfileSection.allCases[indexPath.section]
-        switch section {
-        case .userInfo: return 140
-        case .settings, .actions: return 52
-        }
+        if indexPath.section == 0 { return 140 } // Height for Top Card
+        return 52 // Height for standard rows
     }
-    
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if section == 1 { return 40.0 }
-        return 0.0
-    }
-    
-    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return 20.0
+}
+
+// MARK: - EditProfileDelegate
+// Receives data back from the Edit Screen
+extension ProfileViewController: EditProfileDelegate {
+    func didUpdateProfile(name: String, image: UIImage?) {
+        // 1. Update Data Source
+        self.userName = name
+        self.userProfileImage = image
+        
+        // 2. Refresh the Top Section Only
+        tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
     }
 }

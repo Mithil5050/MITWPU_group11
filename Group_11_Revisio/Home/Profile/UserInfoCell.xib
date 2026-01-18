@@ -29,7 +29,7 @@
                         <state key="normal" title="Button"/>
                         <buttonConfiguration key="configuration" style="plain" title="Edit Profile"/>
                     </button>
-                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="profileimage" translatesAutoresizingMaskIntoConstraints="NO" id="sx8-kp-uip">
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="profile_placeholder" translatesAutoresizingMaskIntoConstraints="NO" id="sx8-kp-uip">
                         <rect key="frame" x="24" y="8" width="60" height="60"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="60" id="Rrf-2S-j4k"/>
@@ -60,14 +60,15 @@
             </tableViewCellContentView>
             <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
             <connections>
-                <outlet property="Edit" destination="hN7-eq-mQT" id="9aT-LT-0va"/>
-                <outlet property="pfp" destination="sx8-kp-uip" id="2cK-BP-GZe"/>
+                <outlet property="Edit" destination="hN7-eq-mQT" id="DV9-MY-ddU"/>
+                <outlet property="nameLabel" destination="dJN-Y7-lbn" id="pw8-A0-wMy"/>
+                <outlet property="pfp" destination="sx8-kp-uip" id="dMP-Un-t8l"/>
             </connections>
             <point key="canvasLocation" x="77.862595419847324" y="114.08450704225352"/>
         </tableViewCell>
     </objects>
     <resources>
-        <image name="profileimage" width="216" height="226"/>
+        <image name="profile_placeholder" width="216" height="226"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
