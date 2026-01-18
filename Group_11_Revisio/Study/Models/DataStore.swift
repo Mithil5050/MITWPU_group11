@@ -161,12 +161,12 @@ class DataManager {
                     cheatsheetContent: "--- CHEATSHEET ---\n\n• 3 Pillars: HDFS, MapReduce, YARN.\n• Fault Tolerance: Data is replicated 3x default."
                 )),
                 .topic(Topic(
-                            name: "Hadoop Docs", // Ensure this name matches what you select in Generation
-                            lastAccessed: "Just now",
-                            materialType: "Flashcards",
-                            largeContentBody: "HDFS|Hadoop Distributed File System for storing large files.\nMapReduce|A programming model for processing large data sets.\nYARN|Yet Another Resource Negotiator for scheduling.\nNameNode|The centerpiece of an HDFS file system.",
-                            parentSubjectName: "Big Data"
-                        )),
+                    name: "Hadoop Docs", // Ensure this name matches what you select in Generation
+                    lastAccessed: "Just now",
+                    materialType: "Flashcards",
+                    largeContentBody: "HDFS|Hadoop Distributed File System for storing large files.\nMapReduce|A programming model for processing large data sets.\nYARN|Yet Another Resource Negotiator for scheduling.\nNameNode|The centerpiece of an HDFS file system.",
+                    parentSubjectName: "Big Data"
+                )),
                 .topic(Topic(
                     name: "NoSQL Databases",
                     lastAccessed: "3d ago",
@@ -336,6 +336,27 @@ class DataManager {
                 }
             }
         }
+    }
+    func moveItems(items: [Any], from sourceSubject: String, to destinationSubject: String) {
+        guard sourceSubject != destinationSubject else { return }
+        
+        deleteItems(subjectName: sourceSubject, items: items)
+        
+        for item in items {
+            if var topic = item as? Topic {
+                topic.parentSubjectName = destinationSubject
+                addTopic(to: destinationSubject, topic: topic)
+                
+            } else if let source = item as? Source {
+                if savedMaterials[destinationSubject] == nil {
+                    savedMaterials[destinationSubject] = [DataManager.materialsKey: [], DataManager.sourcesKey: []]
+                }
+                savedMaterials[destinationSubject]?[DataManager.sourcesKey]?.append(.source(source))
+            }
+        }
+        
+        saveToDisk()
+        NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
     }
 }
 
