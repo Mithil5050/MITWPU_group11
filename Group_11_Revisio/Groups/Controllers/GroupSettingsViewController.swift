@@ -364,7 +364,6 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
             let nav = UINavigationController(rootViewController: previewVC)
             nav.modalPresentationStyle = .fullScreen
             present(nav, animated: true)
-
             return
         }
     }
