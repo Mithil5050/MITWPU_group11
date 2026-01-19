@@ -43,15 +43,21 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Ensure the table view's data source and delegate are set
-        // (If not done in Storyboard, this makes it functional)
+
+        title = "Groups"
+
+        navigationItem.largeTitleDisplayMode = .never
+        navigationController?.navigationBar.prefersLargeTitles = false
+
+        let searchController = UISearchController(searchResultsController: nil)
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search Groups"
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+
         groupsTableView.dataSource = self
         groupsTableView.delegate = self
-        // This removes the extra empty lines below the last group item
         groupsTableView.tableFooterView = UIView()
-        //groupsTableView.isScrollEnabled = false
-        
     }
     
     func didUpdateGroup(_ group: Group) {
