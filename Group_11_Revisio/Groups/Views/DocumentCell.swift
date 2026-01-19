@@ -8,9 +8,10 @@
 import UIKit
 
 class DocumentCell: UICollectionViewCell {
+
     @IBOutlet weak var titleLabel: UILabel!
 
-    func configure(title: String) {
-        titleLabel.text = title
+    func configure(url: URL) {
+        titleLabel.text = url.lastPathComponent
     }
 }
