@@ -9,7 +9,7 @@ import Foundation
 
 struct Topic: Codable {
     var name: String
-    let lastAccessed: String
+    var lastAccessed: String
     let materialType: String
     var largeContentBody: String? 
     var parentSubjectName: String?

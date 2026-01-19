@@ -1,227 +1,182 @@
-//
-//  ResultsViewController.swift
-//  Group_11_Revisio
-//
-//  Created by SDC-USER on 12/12/25.
-//
-
 import UIKit
 
-class ResultsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-    
-    
+class ResultsViewController: UIViewController {
 
-    // The result to display on this screen
-    var finalResult : FinalQuizResult?
-    private var isGaugePositioned = false
+    // MARK: - Properties
+    var finalResult: FinalQuizResult?
+    var topicToSave: Topic?
+    var parentFolder: String?
     
+    // This is the NEW property that will bridge to your Detail screen
+    var summaryData: [QuizSummaryItem] = []
+    
+    // MARK: - Outlets
     @IBOutlet weak var scoreLabel: UILabel!
-    
-    @IBOutlet weak var gaugeContainerView: UIView!
-    
-    @IBOutlet weak var detailTableView: UITableView!
-    
+    @IBOutlet weak var detailTableView: UITableView! // Connect to your TableView
     @IBOutlet weak var retakeButton: UIButton!
-    
-    @IBOutlet weak var saveButton: UIButton!
+    @IBOutlet weak var saveButton: UIButton! // This is your 'Study' button
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        
-        
-        detailTableView.dataSource = self
-        detailTableView.delegate = self
-        detailTableView.isScrollEnabled = false
-        detailTableView.rowHeight = 60 // Slightly taller for a native feel
-        
-        // 2. Score Label Centering (The "Best" Way)
-        // This replaces your setupScoreLabelPosition frame-based code
-        scoreLabel.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            scoreLabel.centerXAnchor.constraint(equalTo: gaugeContainerView.centerXAnchor),
-            scoreLabel.centerYAnchor.constraint(equalTo: gaugeContainerView.centerYAnchor)
-        ])
-        
-        // 3. Typography
-        scoreLabel.font = UIFont.systemFont(ofSize: 34, weight: .bold)
-        scoreLabel.textColor = .label // Adapts to Dark Mode automatically
-        
-        displayResults()
-    }
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
-        // This ensures the gauge is drawn only after the view has its final dimensions
-        if let results = self.finalResult {
-            drawScoreGauge(score: results.finalScore, total: results.totalQuestions)
-        }
-    }
-    
-    
-    @IBAction func retakeButtonTapped(_ sender: Any) {
-        guard let navigationController = self.navigationController else {
-                return
-            }
+
+        navigationItem.backAction = UIAction { [weak self] _ in
+            let alert = UIAlertController(
+                title: "Unsaved Progress",
+                message: "Are you sure you want to leave? Your quiz results will not be saved.",
+                preferredStyle: .alert
+            )
             
-           
-            for viewController in navigationController.viewControllers {
-                
-                if viewController.isKind(of: InstructionViewController.self) {
-                    
-                    navigationController.popToViewController(viewController, animated: true)
-                    return
+            alert.addAction(UIAlertAction(title: "Stay", style: .cancel))
+            
+            alert.addAction(UIAlertAction(title: "Discard", style: .destructive) { _ in
+                if let nav = self?.navigationController {
+                    for vc in nav.viewControllers {
+                        if vc is SubjectViewController {
+                            nav.popToViewController(vc, animated: true)
+                            return
+                        }
+                    }
+                    nav.popToRootViewController(animated: true)
                 }
+            })
+            
+            self?.present(alert, animated: true)
+        }
+        setupUI()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = false
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+    }
+    
+    func setupUI() {
+        guard let result = finalResult else { return }
+        
+        // Update Score Label
+        scoreLabel.text = "You Scored \(result.finalScore) out of \(result.totalQuestions)."
+        
+        // Setup TableView
+        detailTableView.delegate = self
+        detailTableView.dataSource = self
+        detailTableView.tableFooterView = UIView()
+        detailTableView.backgroundColor = .clear
+        detailTableView.isScrollEnabled = false // Keep it tight
+        
+        // Button Styling
+        retakeButton.layer.cornerRadius = 14
+        saveButton.layer.cornerRadius = 14
+    }
+  
+    // MARK: - Actions
+    @IBAction func retakeButtonTapped(_ sender: Any) {
+        // Find your Study Tab's QuizViewController in the navigation stack
+        if let nav = navigationController,
+           let quizVC = nav.viewControllers.first(where: { $0 is QuizViewController }) as? QuizViewController {
+            
+            // Reset question states
+            quizVC.currentQuestionIndex = 0
+            quizVC.score = 0
+            for i in 0..<quizVC.allQuestions.count {
+                quizVC.allQuestions[i].userAnswerIndex = nil
             }
             
-           
-            navigationController.popToRootViewController(animated: true)
+            quizVC.displayQuestion()
+            quizVC.startTimer()
+            nav.popToViewController(quizVC, animated: true)
+        }
     }
     
     @IBAction func saveButtonTapped(_ sender: Any) {
-        navigationController?.popToRootViewController(animated: true)
-    }
-    func displayResults() {
-        guard let results = self.finalResult else {
-            scoreLabel.text = "N/A"
-            return
-        }
-        
-        title = "Score"
-        scoreLabel.text = "\(results.finalScore)/\(results.totalQuestions)"
-        drawScoreGauge(score: results.finalScore, total: results.totalQuestions)
-        
-        detailTableView.reloadData()
+        guard let result = finalResult,
+                  var topic = topicToSave,
+                  let folderName = parentFolder else { return }
+            
+            // 1. Convert current quiz questions back into the 'packed' string format for the JSON
+            let packedData = summaryData.map { item in
+                let answers = item.allOptions.joined(separator: "|")
+                return "\(item.questionText)|\(answers)|\(item.correctAnswerIndex)|\(item.explanation)"
+            }.joined(separator: "\n")
+            
+            // 2. Update the topic content
+            topic.largeContentBody = packedData
+            topic.lastAccessed = "Just now"
+            
+            // 3. Save to your JSON File via DataManager
+            DataManager.shared.addTopic(to: folderName, topic: topic)
+            
+            // 4. Show the "Saved!" Alert as seen in your screenshot
+            let alert = UIAlertController(
+                title: "Saved!",
+                message: "Quiz saved to '\(folderName)'.",
+                preferredStyle: .alert
+            )
+            
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            if let navigationController = self.navigationController {
+                let viewControllers = navigationController.viewControllers
+                
+                for vc in viewControllers {
+                    if vc is SubjectViewController {
+                        navigationController.popToViewController(vc, animated: true)
+                        return
+                    }
+                }
+                
+                navigationController.popViewController(animated: true)
+            }
+        })
+            present(alert, animated: true)
     }
     
-    func formatTimeInterval(_ interval: TimeInterval) -> String {
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.minute, .second]
-        formatter.unitsStyle = .positional
-        formatter.zeroFormattingBehavior = .pad
-        return formatter.string(from: interval) ?? "00:00"
+    // MARK: - Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Match the identifier to your Storyboard Segue
+        if segue.identifier == "ShowReviewDetail" {
+            if let destVC = segue.destination as? ReviewDetailViewController {
+                destVC.summaryList = self.summaryData
+            }
+        }
     }
-    func setupScoreLabelPosition() {
-       
-        scoreLabel.translatesAutoresizingMaskIntoConstraints = true
-        
-       
-        let centerX = gaugeContainerView.bounds.midX
-        let centerY = gaugeContainerView.bounds.midY
-        
-        
-        let labelWidth: CGFloat = 120
-        let labelHeight: CGFloat = 40
-        
-        
-        scoreLabel.frame = CGRect(
-            x: centerX - (labelWidth / 2),
-            y: centerY - (labelHeight / 2),
-            width: labelWidth,
-            height: labelHeight
-        )
-        
-        
-        scoreLabel.textAlignment = .center
-        scoreLabel.font = UIFont.systemFont(ofSize: 30, weight: .bold)
-        scoreLabel.textColor = .black // Make sure the color is visible
-    }
+}
 
-    // MARK: - DETAIL TABLE VIEW Data Source & Delegate
-
+// MARK: - TableView Handling
+extension ResultsViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 2
     }
-
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "DetailCell", for: indexPath)
+        // Use standard 'Value 1' style cell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "DetailCell") ?? UITableViewCell(style: .value1, reuseIdentifier: "DetailCell")
+        
+        cell.backgroundColor = .clear
+        cell.textLabel?.textColor = .label
+        cell.detailTextLabel?.textColor = .secondaryLabel
         
         if indexPath.row == 0 {
-            let timeString = formatTimeInterval(finalResult?.timeElapsed ?? 0)
             cell.textLabel?.text = "Time Taken"
-            cell.detailTextLabel?.text = timeString
-            cell.accessoryType = .none
+            let time = finalResult?.timeElapsed ?? 0
+            cell.detailTextLabel?.text = String(format: "%02d:%02d", Int(time)/60, Int(time)%60)
             cell.selectionStyle = .none
-            
-        } else if indexPath.row == 1 {
+        } else {
             cell.textLabel?.text = "See Summary"
-            cell.detailTextLabel?.text = nil
+            cell.detailTextLabel?.text = ""
             cell.accessoryType = .disclosureIndicator
             cell.selectionStyle = .default
         }
         return cell
     }
-
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
         if indexPath.row == 1 {
-            guard finalResult != nil else { return }
-            performSegue(withIdentifier: "ShowReviewDetail", sender: finalResult!.details)
+            performSegue(withIdentifier: "ShowReviewDetail", sender: nil)
         }
     }
-    
-
-    func drawScoreGauge(score: Int, total: Int) {
-        
-        gaugeContainerView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
-
-        let percentage = CGFloat(score) / CGFloat(total)
-        let center = CGPoint(x: gaugeContainerView.bounds.midX, y: gaugeContainerView.bounds.midY)
-        let radius: CGFloat = 80
-        let startAngle: CGFloat = -.pi / 2
-        let endAngle: CGFloat = startAngle + (2 * .pi * percentage)
-        
-        
-        let trackPath = UIBezierPath(arcCenter: center,
-                                     radius: radius,
-                                     startAngle: 0,
-                                     endAngle: 2 * .pi,
-                                     clockwise: true)
-        
-        let trackLayer = CAShapeLayer()
-        trackLayer.path = trackPath.cgPath
-        trackLayer.strokeColor = UIColor.systemGray4.cgColor
-        trackLayer.lineWidth = 15
-        trackLayer.fillColor = UIColor.clear.cgColor
-        
-        gaugeContainerView.layer.addSublayer(trackLayer)
-        
-        
-        let scorePath = UIBezierPath(arcCenter: center,
-                                     radius: radius,
-                                     startAngle: startAngle,
-                                     endAngle: endAngle,
-                                     clockwise: true)
-        
-        let scoreLayer = CAShapeLayer()
-        scoreLayer.path = scorePath.cgPath
-        scoreLayer.strokeColor = UIColor.systemBlue.cgColor
-        scoreLayer.lineWidth = 15
-        scoreLayer.lineCap = .round
-        scoreLayer.fillColor = UIColor.clear.cgColor
-        
-        gaugeContainerView.layer.addSublayer(scoreLayer)
-        
-        
-        let animation = CABasicAnimation(keyPath: "strokeEnd")
-        animation.fromValue = 0
-        animation.toValue = 1
-        animation.duration = 1.0
-        scoreLayer.add(animation, forKey: "scoreAnimation")
-    }
- override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-      if segue.identifier == "ShowReviewDetail" {
-            if let reviewVC = segue.destination as? ReviewDetailViewController,
-               let details = sender as? [QuestionResultDetail] {
-                
-                reviewVC.allQuestionDetails = details
-          }
-                 }
-    }
 }
-
- // Placeholder to satisfy compiler if the real ReviewDetailViewController exists elsewhere.
-//class ReViewController: UIViewController {
-//    var allQuestionDetails: [ResultsViewController.QuestionResultDetail] = []
-//}

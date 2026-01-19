@@ -100,9 +100,13 @@ class DataManager {
         
         for item in items {
             if let topic = item as? Topic {
-                materials.removeAll { if case .topic(let t) = $0 { return t.name == topic.name }; return false }
+                materials.removeAll { if case .topic(let t) = $0 {
+                    return t.name == topic.name && t.materialType == topic.materialType
+                }; return false }
             } else if let source = item as? Source {
-                sources.removeAll { if case .source(let s) = $0 { return s.name == source.name }; return false }
+                sources.removeAll { if case .source(let s) = $0 {
+                    return s.name == source.name && s.fileType == source.fileType
+                }; return false }
             }
         }
         
@@ -128,7 +132,14 @@ class DataManager {
                 name: "Limits",
                 lastAccessed: "7h ago",
                 materialType: "Quiz",
-                largeContentBody: "What is the limit of 1/x as x approaches infinity?|0|1|Infinity|...",
+                largeContentBody: """
+    What is the limit of (sin x)/x as x approaches 0?|0|1|Infinity|Undefined|1|This is a special trigonometric limit often proven by the Squeeze Theorem.
+    Evaluate the limit: lim (x→2) [ (x² - 4) / (x - 2) ]|0|2|4|Does not exist|2|Factor the numerator (x² - 4) into (x - 2)(x + 2).
+    What is the limit of 1/x as x approaches infinity?|0|1|Infinity|Undefined|0|Think about what happens to a fraction when the denominator becomes extremely large.
+    If lim f(x)/g(x) results in 0/0, L'Hôpital's Rule allows you to calculate the limit by:|Taking the derivative of the whole fraction|Multiplying by the conjugate|Taking the derivative of the numerator and denominator separately|Dividing by the highest power of x|2|L'Hôpital's Rule states lim f(x)/g(x) = lim f'(x)/g'(x).
+    A limit exists only if:|The function is defined at that point|The left-hand and right-hand limits are equal|The function is continuous|The result is a whole number|1|Check both sides: lim (x→a⁻) f(x) must equal lim (x→a⁺) f(x).
+    Evaluate: lim (x→∞) [ (3x² + 5) / (x² - 2) ]|0|Infinity|3|5|2|For limits at infinity of rational functions, compare leading coefficients.
+    """,
                 parentSubjectName: "Calculus"
             )),
             .topic(Topic(
@@ -161,7 +172,7 @@ class DataManager {
                     cheatsheetContent: "--- CHEATSHEET ---\n\n• 3 Pillars: HDFS, MapReduce, YARN.\n• Fault Tolerance: Data is replicated 3x default."
                 )),
                 .topic(Topic(
-                    name: "Hadoop Docs", // Ensure this name matches what you select in Generation
+                    name: "Hadoop Docs",
                     lastAccessed: "Just now",
                     materialType: "Flashcards",
                     largeContentBody: "HDFS|Hadoop Distributed File System for storing large files.\nMapReduce|A programming model for processing large data sets.\nYARN|Yet Another Resource Negotiator for scheduling.\nNameNode|The centerpiece of an HDFS file system.",
@@ -171,7 +182,11 @@ class DataManager {
                     name: "NoSQL Databases",
                     lastAccessed: "3d ago",
                     materialType: "Quiz",
-                    largeContentBody: "Which NoSQL type is best for relationships?|Graph|...",
+                    largeContentBody: """
+    Which NoSQL type is best for storing social media relationships?|Document|Key-Value|Graph|Column-family|2|Graph databases like Neo4j are designed specifically for relationship-heavy data.
+    What does the 'A' in the CAP theorem stand for?|Acidity|Availability|Atomicity|Aggregation|1|CAP theorem stands for Consistency, Availability, and Partition Tolerance.
+    Which database is an example of a Document Store?|MySQL|Redis|MongoDB|Cassandra|2|MongoDB stores data in JSON-like BSON documents.
+    """,
                     parentSubjectName: "Big Data"
                 ))
             ],
@@ -187,14 +202,18 @@ class DataManager {
                     name: "OSI Model",
                     lastAccessed: "1 day ago",
                     materialType: "Quiz",
-                    largeContentBody: "Which layer is responsible for routing?|Network|...",
+                    largeContentBody: """
+    Which layer is responsible for routing packets across different networks?|Data Link|Transport|Network|Session|2|The Network layer (Layer 3) handles IP addressing and routing.
+    Which device operates primarily at the Data Link layer?|Hub|Switch|Router|Repeater|1|Switches use MAC addresses to forward data at Layer 2.
+    Which protocol operates at the Application layer?|IP|TCP|HTTP|UDP|2|HTTP, FTP, and SMTP are all top-level Application layer protocols.
+    """,
                     parentSubjectName: "Computer Networks"
                 )),
                 .topic(Topic(
                     name: "TCP vs UDP",
                     lastAccessed: "3 days ago",
                     materialType: "Flashcards",
-                    largeContentBody: "TCP|Reliable.\nUDP|Fast.",
+                    largeContentBody: "TCP|Reliable connection-oriented.\nUDP|Fast connectionless.",
                     parentSubjectName: "Computer Networks"
                 ))
             ],
@@ -208,7 +227,7 @@ class DataManager {
                     name: "8051 Architecture",
                     lastAccessed: "2 days ago",
                     materialType: "Flashcards",
-                    largeContentBody: "8051 Data Bus size?|8-bit.",
+                    largeContentBody: "8051 Data Bus size?|8-bit.\nAddress Bus size?|16-bit.",
                     parentSubjectName: "MMA"
                 )),
                 .topic(Topic(
