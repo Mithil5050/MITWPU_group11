@@ -1,7 +1,7 @@
 //
 //  ConnectionsViewController.swift
 //
-//  Final code using programmatic Auto Layout for controls.
+//  Final code with Win/Loss Navigation logic
 //
 
 import UIKit
@@ -9,11 +9,10 @@ import UIKit
 // MARK: - Connections View Controller
 class ConnectionsViewController: UIViewController {
 
-    // MARK: - IBOutlets (ONLY the Collection View remains connected from Storyboard)
+    // MARK: - IBOutlets
     @IBOutlet weak var collectionView: UICollectionView!
     
     // MARK: - Programmatic UI Elements
-    // 1. Status Label
     private let mistakesLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
@@ -21,12 +20,10 @@ class ConnectionsViewController: UIViewController {
         return label
     }()
     
-    // 2. Control Buttons
     private let shuffleButton = UIButton(configuration: .plain())
     private let deselectButton = UIButton(configuration: .plain())
     private let submitButton = UIButton(configuration: .filled())
     
-    // 3. Stack View (Container for buttons)
     private let controlsStackView: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
@@ -43,13 +40,16 @@ class ConnectionsViewController: UIViewController {
             updateMistakesLabel()
         }
     }
+    
+    // ✅ NEW: Track if user won or lost to determine the result message
+    private var didWin: Bool = false
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCollectionView()
         setupUI()
-        setupProgrammaticLayout() // Defines all Auto Layout constraints
+        setupProgrammaticLayout()
         updateMistakesLabel()
         updateSubmitButtonState()
     }
@@ -62,7 +62,6 @@ class ConnectionsViewController: UIViewController {
         deselectButton.setTitle("Deselect All", for: .normal)
         submitButton.setTitle("Submit", for: .normal)
         
-        // Assign Targets
         shuffleButton.addTarget(self, action: #selector(shuffleButtonTapped(_:)), for: .touchUpInside)
         deselectButton.addTarget(self, action: #selector(deselectButtonTapped(_:)), for: .touchUpInside)
         submitButton.addTarget(self, action: #selector(submitButtonTapped(_:)), for: .touchUpInside)
@@ -72,21 +71,19 @@ class ConnectionsViewController: UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.register(WordCell.self, forCellWithReuseIdentifier: "WordCell")
+        
         let layout = createGridLayout()
         collectionView.setCollectionViewLayout(layout, animated: false)
     }
 
-    // MARK: - Programmatic Auto Layout Implementation
+    // MARK: - Layout
     private func setupProgrammaticLayout() {
-        
-        // 1. Add elements to the view hierarchy
         view.addSubview(mistakesLabel)
         controlsStackView.addArrangedSubview(shuffleButton)
         controlsStackView.addArrangedSubview(deselectButton)
         controlsStackView.addArrangedSubview(submitButton)
         view.addSubview(controlsStackView)
 
-        // Disable automatic translation to constraints for all controlled views
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         mistakesLabel.translatesAutoresizingMaskIntoConstraints = false
         controlsStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -94,56 +91,34 @@ class ConnectionsViewController: UIViewController {
         let safeArea = view.safeAreaLayoutGuide
         let padding: CGFloat = 16.0
         let controlsHeight: CGFloat = 48.0
-        
-        // Constants for the tight spacing at the bottom
-        let tightSpacing: CGFloat = 8.0 // Used for minimal spacing (8pt)
-        let minorSpacing: CGFloat = 4.0 // Used for the tiny gap between status and controls
+        let tightSpacing: CGFloat = 8.0
+        let minorSpacing: CGFloat = 4.0
 
-        // 2. Controls Stack View (Anchored very close to the bottom safe area)
         NSLayoutConstraint.activate([
-            // Horizontal constraints
             controlsStackView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: padding),
             controlsStackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -padding),
-            
-            // Vertical constraints (Tight anchor to the safe area bottom)
             controlsStackView.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor, constant: -tightSpacing),
-            controlsStackView.heightAnchor.constraint(equalToConstant: controlsHeight)
-        ])
-        
-        // 3. Mistakes Label (Anchored immediately above the Stack View)
-        NSLayoutConstraint.activate([
-            // Horizontal constraints
+            controlsStackView.heightAnchor.constraint(equalToConstant: controlsHeight),
+            
             mistakesLabel.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: padding),
             mistakesLabel.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -padding),
-            
-            // Vertical constraints (Minimal spacing above the Stack View)
-            mistakesLabel.bottomAnchor.constraint(equalTo: controlsStackView.topAnchor, constant: -minorSpacing)
-        ])
+            mistakesLabel.bottomAnchor.constraint(equalTo: controlsStackView.topAnchor, constant: -minorSpacing),
 
-        // 4. Collection View (Fills the remaining space)
-        NSLayoutConstraint.activate([
-            // Horizontal constraints
             collectionView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor),
-            
-            // Vertical constraints (Top to Navigation Bar bottom, Bottom to Mistakes Label top with tight spacing)
             collectionView.topAnchor.constraint(equalTo: safeArea.topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: mistakesLabel.topAnchor, constant: -tightSpacing)
         ])
     }
 
-    // MARK: - iOS 26 UICollectionView Layout
     private func createGridLayout() -> UICollectionViewLayout {
-        // Item configuration (Cell is 1/4 the width of the group)
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.25), heightDimension: .fractionalHeight(1.0))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
-        // Group configuration (4 items across)
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(80))
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         group.interItemSpacing = .fixed(8)
         
-        // Section configuration
         let section = NSCollectionLayoutSection(group: group)
         section.interGroupSpacing = 8
         section.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
@@ -156,9 +131,15 @@ class ConnectionsViewController: UIViewController {
         let bullets = String(repeating: "●", count: mistakesRemaining)
         mistakesLabel.text = "Mistakes Remaining: \(bullets)"
         
+        // ✅ NEW: Navigate to Results on 0 mistakes
         if mistakesRemaining <= 0 {
-            showAlert(title: "Game Over", message: "You ran out of mistakes! Better luck next time.")
+            didWin = false // User Lost
             collectionView.isUserInteractionEnabled = false
+            
+            // Show the result screen after a short delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.performSegue(withIdentifier: "ShowConnectionsResults", sender: nil)
+            }
         }
     }
 
@@ -171,15 +152,12 @@ class ConnectionsViewController: UIViewController {
         let selectedWords = words.filter { $0.isSelected }
         guard selectedWords.count == 4 else { return }
 
-        // Check if all four words share the same categoryID
         let firstCategoryID = selectedWords.first?.categoryID
         let isCorrect = selectedWords.allSatisfy { $0.categoryID == firstCategoryID }
 
         if isCorrect {
-            // SUCCESS: Found a category!
             let categoryTitle = CategoryModel.allCategories.first(where: { $0.id == firstCategoryID })?.title ?? "Unknown"
             
-            // 1. Update the game model
             for i in words.indices {
                 if words[i].isSelected {
                     words[i].isGuessed = true
@@ -187,21 +165,21 @@ class ConnectionsViewController: UIViewController {
                 }
             }
             
-            // 2. Provide feedback
             let successColor = CategoryModel.allCategories.first(where: { $0.id == firstCategoryID })?.color ?? .systemTeal
             showAlert(title: "Correct!", message: "Group: \(categoryTitle)", color: successColor)
             
-            // 3. Animate/Update the UI
             collectionView.reloadData()
             checkGameCompletion()
             
         } else {
-            // FAILURE
             mistakesRemaining -= 1
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.error)
             
-            showAlert(title: "Incorrect Group", message: "Try again!", color: .systemRed)
+            // Only show "Try again" if they still have mistakes left
+            if mistakesRemaining > 0 {
+                showAlert(title: "Incorrect Group", message: "Try again!", color: .systemRed)
+            }
         }
         
         updateSubmitButtonState()
@@ -209,9 +187,24 @@ class ConnectionsViewController: UIViewController {
     
     private func checkGameCompletion() {
         let solvedCount = words.filter { $0.isGuessed }.count
+        
         if solvedCount == 16 {
-            showAlert(title: "Congratulations!", message: "You solved all the connections!", color: .systemGreen)
-            collectionView.isUserInteractionEnabled = false
+            didWin = true // User Won
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.performSegue(withIdentifier: "ShowConnectionsResults", sender: nil)
+            }
+        }
+    }
+    
+    // MARK: - Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowConnectionsResults" {
+            if let destVC = segue.destination as? ConnectionsResultsViewController {
+                destVC.categories = CategoryModel.allCategories
+                
+                // ✅ NEW: Set title based on win/loss status
+                destVC.resultTitle = didWin ? "Great Job!" : "Better luck next time!"
+            }
         }
     }
     
@@ -248,7 +241,6 @@ extension ConnectionsViewController: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        // Assuming WordCell.swift is defined
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "WordCell", for: indexPath) as? WordCell else {
             return UICollectionViewCell()
         }
