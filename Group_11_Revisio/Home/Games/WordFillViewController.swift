@@ -25,6 +25,9 @@ class WordFillViewController: UIViewController {
     private var timer: Timer?
     private var secondsRemaining = 60
     private var isProcessingAnswer = false
+    
+    // ✅ NEW: Track user answers for the summary
+    private var userAnswers: [String?] = []
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -54,14 +57,15 @@ class WordFillViewController: UIViewController {
                      options: ["DELETE", "DROP", "REMOVE", "TRUNCATE"],
                      correctAnswer: "TRUNCATE")
         ]
+        
+        // ✅ Initialize user answers array with nil
+        userAnswers = Array(repeating: nil, count: questions.count)
     }
 
     private func setupUI() {
         // MARK: Card Style
         Gamecard.layer.cornerRadius = 24
         Gamecard.layer.cornerCurve = .continuous
-        
-        // RESTORED: Light Blue #91C1EF (R: 145, G: 193, B: 239)
         Gamecard.backgroundColor = UIColor(red: 145/255, green: 193/255, blue: 239/255, alpha: 1.0)
         
         // MARK: Button Style
@@ -70,8 +74,6 @@ class WordFillViewController: UIViewController {
             button.layer.cornerCurve = .continuous
             button.layer.borderWidth = 1
             button.layer.borderColor = UIColor.systemGray5.cgColor
-            
-            // Text Configuration
             button.titleLabel?.numberOfLines = 0
             button.titleLabel?.textAlignment = .center
         }
@@ -96,7 +98,6 @@ class WordFillViewController: UIViewController {
             }
             
             // MARK: - RESET STATE
-            // Revert back to default styling for the new question
             button.backgroundColor = .systemBackground
             button.setTitleColor(.label, for: .normal)
             button.layer.borderColor = UIColor.systemGray5.cgColor
@@ -114,31 +115,24 @@ class WordFillViewController: UIViewController {
         let currentQuestion = questions[currentQuestionIndex]
         let correctAnswer = currentQuestion.correctAnswer
         
+        // ✅ SAVE: Store user's answer
+        userAnswers[currentQuestionIndex] = userAnswer
+        
         // Disable user interaction
         optionButtons.forEach { $0.isEnabled = false }
 
         // MARK: - SELECTION STYLE
-        // 1. Transparent background to show the #91C1EF card behind it
         sender.backgroundColor = .clear
-        
-        // 2. White text (Note: This may have low contrast against #91C1EF)
         sender.setTitleColor(.white, for: .normal)
-        
-        // 3. Thick Border
         sender.layer.borderWidth = 3
 
         if userAnswer == correctAnswer {
-            // Correct: Green Border
             sender.layer.borderColor = UIColor.systemGreen.cgColor
         } else {
-            // Wrong: Red Border
             sender.layer.borderColor = UIColor.systemRed.cgColor
-            
-            // Highlight the correct answer
             highlightCorrectAnswer(correctAnswer)
         }
         
-        // Delay before next question
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
             self?.moveToNextQuestion()
         }
@@ -167,10 +161,63 @@ class WordFillViewController: UIViewController {
 
     private func showFinalResults() {
         timer?.invalidate()
-        questionLabel.text = "Quiz Complete!"
-        progressLabel.text = "Done"
-        progressView.setProgress(1.0, animated: true)
-        optionButtons.forEach { $0.isHidden = true }
+        
+        // 1. Calculate Results & Prepare Summary Data
+        let (result, summaryItems) = processQuizData()
+        
+        // 2. Perform Segue to the existing Result Sheet
+        // Pass both the result object and the summary array
+        performSegue(withIdentifier: "NavigateToResults", sender: (result, summaryItems))
+    }
+    
+    // ✅ NEW: Helper to format data for the Result Screen
+    private func processQuizData() -> (FinalQuizResult, [QuizSummaryItem]) {
+        var score = 0
+        var details: [QuestionResultDetail] = []
+        var summaryItems: [QuizSummaryItem] = []
+        
+        for (index, question) in questions.enumerated() {
+            let userAnswerText = userAnswers[index]
+            let isCorrect = (userAnswerText == question.correctAnswer)
+            
+            if isCorrect { score += 1 }
+            
+            // 1. Prepare Detail (Internal usage)
+            let detail = QuestionResultDetail(
+                questionText: question.text,
+                wasCorrect: isCorrect,
+                selectedAnswer: userAnswerText,
+                correctAnswerFullText: question.correctAnswer,
+                isFlagged: false
+            )
+            details.append(detail)
+            
+            // 2. Prepare Summary Item (For the Summary View)
+            let correctIndex = question.options.firstIndex(of: question.correctAnswer) ?? 0
+            let userIndex = question.options.firstIndex(of: userAnswerText ?? "")
+            
+            let item = QuizSummaryItem(
+                questionText: question.text,
+                userAnswerIndex: userIndex,
+                correctAnswerIndex: correctIndex,
+                allOptions: question.options,
+                explanation: "The correct answer is \(question.correctAnswer).", // Static explanation since model doesn't have one
+                isCorrect: isCorrect
+            )
+            summaryItems.append(item)
+        }
+        
+        let elapsed = TimeInterval(60 - secondsRemaining)
+        
+        let finalResult = FinalQuizResult(
+            finalScore: score,
+            totalQuestions: questions.count,
+            timeElapsed: elapsed,
+            sourceName: "Word Fill Game",
+            details: details
+        )
+        
+        return (finalResult, summaryItems)
     }
 
     // MARK: - Timer Logic
@@ -185,6 +232,23 @@ class WordFillViewController: UIViewController {
             } else {
                 self.timer?.invalidate()
                 self.showFinalResults()
+            }
+        }
+    }
+    
+    // MARK: - Navigation Prepare
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "NavigateToResults" {
+            if let destVC = segue.destination as? QuizResultsViewController,
+               let (result, summaryItems) = sender as? (FinalQuizResult, [QuizSummaryItem]) {
+                
+                // Pass the data to the reusable Result View Controller
+                destVC.finalResult = result
+                destVC.summaryData = summaryItems
+                
+                // Optional: Set these to nil or specific values so it doesn't save to a random subject folder
+                destVC.parentFolder = "Games"
+                destVC.topicToSave = nil
             }
         }
     }
