@@ -73,36 +73,44 @@ class InstructionViewController: UIViewController {
     }
     
     @IBAction func saveAndExitTapped(_ sender: Any) {
-        guard let topic = quizTopic,
-                  let subject = parentSubjectName else {
-                print("❌ Error: Missing topic or subject name")
+        guard let topic = quizTopic, let subject = parentSubjectName else {
+                print(" Error: Missing topic or subject name")
                 return
             }
             
-            // 2. Prepare the topic specifically as a Quiz type
-            // We use the existing largeContentBody which contains the packed questions
-            let quizToSave = Topic(
-                name: topic.name,
-                lastAccessed: "Just now",
-                materialType: "Quiz",
-                largeContentBody: topic.largeContentBody,
-                parentSubjectName: subject,
-                notesContent: topic.notesContent,
-                cheatsheetContent: topic.cheatsheetContent
+            let alert = UIAlertController(
+                title: "Saved!",
+                message: "Quiz has been successfully saved to '\(subject)'.",
+                preferredStyle: .alert
             )
             
-            // 3. Save it to the DataManager
-            DataManager.shared.addTopic(to: subject, topic: quizToSave)
+            alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+                let quizToSave = Topic(
+                    name: topic.name,
+                    lastAccessed: "Just now",
+                    materialType: "Quiz",
+                    largeContentBody: topic.largeContentBody,
+                    parentSubjectName: subject,
+                    notesContent: topic.notesContent,
+                    cheatsheetContent: topic.cheatsheetContent
+                )
+                
+                DataManager.shared.addTopic(to: subject, topic: quizToSave)
+                
+                if let nav = self?.navigationController {
+                    for vc in nav.viewControllers {
+                        if vc is SubjectViewController {
+                            nav.popToViewController(vc, animated: true)
+                            return
+                        }
+                    }
+                    nav.popViewController(animated: true)
+                } else {
+                    self?.dismiss(animated: true)
+                }
+            })
             
-            // 4. Visual Feedback (Optional but recommended)
-            print("✅ Saved \(topic.name) to \(subject)")
-            
-            // 5. Dismiss or Pop back to the folder
-            if let nav = self.navigationController {
-                nav.popViewController(animated: true)
-            } else {
-                self.dismiss(animated: true)
-            }
+            present(alert, animated: true)
     }
    
 

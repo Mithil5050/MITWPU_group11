@@ -38,19 +38,23 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-       
-        title = selectedSourceName ?? quizTopic?.name ?? "Quiz"
+        // 1. Get the name
+        let quizName = selectedSourceName ?? quizTopic?.name ?? ""
+        title = quizName
         
-       
-        if let contentBody = quizTopic?.largeContentBody, !contentBody.isEmpty {
-            
+        // 2. CHECK FOR UPDATES: If it's a known hardcoded quiz, always prioritize QuizManager
+        let updatedQuestions = QuizManager.getQuestions(for: quizName)
+        
+        if !updatedQuestions.isEmpty {
+            // This forces the 'Limits' quiz to use your new 6 questions
+            // even if it was already saved with only 1 question.
+            self.allQuestions = updatedQuestions
+            print("✅ Success: Forced update from QuizManager for \(quizName)")
+        }
+        // 3. FALLBACK: Only use the saved JSON string if it's NOT in QuizManager
+        else if let contentBody = quizTopic?.largeContentBody, !contentBody.isEmpty {
             self.allQuestions = unpackQuestions(from: contentBody)
-            print(" Loaded \(allQuestions.count) dynamic questions from JSON")
-        } else {
-            // Fallback for your hardcoded PDF quizzes
-            let sourceToLoad = self.selectedSourceName ?? "Taylor Series PDF"
-            allQuestions = QuizManager.getQuestions(for: sourceToLoad)
-            print(" Falling back to static QuizManager")
+            print("✅ Loaded from existing saved material")
         }
 
         setupButtons()
@@ -58,7 +62,6 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
         displayQuestion()
         startTimer()
     }
-
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
@@ -422,16 +425,29 @@ class QuizViewController: UIViewController,UINavigationControllerDelegate {
         return finalResult
     }
 
-    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
         if segue.identifier == "ShowQuizResults" {
-          
             if let resultsVC = segue.destination as? ResultsViewController,
                let results = sender as? FinalQuizResult {
                 
-               
+                
                 resultsVC.finalResult = results
+                
+               
+                resultsVC.topicToSave = self.quizTopic
+                resultsVC.parentFolder = self.parentSubjectName
+                
+                
+                resultsVC.summaryData = self.allQuestions.map { q in
+                    return QuizSummaryItem(
+                        questionText: q.questionText,
+                        userAnswerIndex: q.userAnswerIndex,
+                        correctAnswerIndex: q.correctAnswerIndex,
+                        allOptions: q.answers,
+                        explanation: q.hint, // We use the hint as the explanation on the summary card
+                        isCorrect: (q.userAnswerIndex == q.correctAnswerIndex)
+                    )
+                }
             }
         }
     }

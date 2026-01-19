@@ -6,13 +6,14 @@ struct SourceTopic: Codable {
     let name: String
 }
 
+
 struct QuizQuestion: Codable {
     let questionText: String
     let answers: [String]
     let correctAnswerIndex: Int
     var userAnswerIndex: Int? = nil
     var isFlagged: Bool = false
-    var hint: String            
+    var hint: String
 }
 
 // MARK: - 2. Source Array
@@ -28,6 +29,56 @@ let allQuizSources: [SourceTopic] = [
 struct QuizManager {
     
     static let quizDataBySource: [String: [QuizQuestion]] = [
+        "Limits ": [
+                    QuizQuestion(
+                        questionText: "What is the limit of (sin x)/x as x approaches 0?",
+                        answers: ["0", "1", "Infinity", "Undefined"],
+                        correctAnswerIndex: 1,
+                        userAnswerIndex: nil,
+                        isFlagged: false,
+                        hint: "This is a special trigonometric limit often proven by the Squeeze Theorem."
+                    ),
+                    QuizQuestion(
+                        questionText: "Evaluate the limit: lim (x→2) [ (x² - 4) / (x - 2) ]",
+                        answers: ["0", "2", "4", "Does not exist"],
+                        correctAnswerIndex: 2,
+                        userAnswerIndex: nil,
+                        isFlagged: false,
+                        hint: "Factor the numerator (x² - 4) into (x - 2)(x + 2) and cancel the common term."
+                    ),
+                    QuizQuestion(
+                        questionText: "What is the limit of 1/x as x approaches infinity?",
+                        answers: ["0", "1", "Infinity", "Undefined"],
+                        correctAnswerIndex: 0,
+                        userAnswerIndex: nil,
+                        isFlagged: false,
+                        hint: "Think about what happens to a fraction when the denominator becomes extremely large."
+                    ),
+                    QuizQuestion(
+                        questionText: "If lim f(x)/g(x) results in 0/0, L'Hôpital's Rule allows you to calculate the limit by:",
+                        answers: ["Taking the derivative of the whole fraction", "Multiplying by the conjugate", "Taking the derivative of the numerator and denominator separately", "Dividing by the highest power of x"],
+                        correctAnswerIndex: 2,
+                        userAnswerIndex: nil,
+                        isFlagged: false,
+                        hint: "L'Hôpital's Rule states lim f(x)/g(x) = lim f'(x)/g'(x)."
+                    ),
+                    QuizQuestion(
+                        questionText: "A limit exists only if:",
+                        answers: ["The function is defined at that point", "The left-hand and right-hand limits are equal", "The function is continuous", "The result is a whole number"],
+                        correctAnswerIndex: 1,
+                        userAnswerIndex: nil,
+                        isFlagged: false,
+                        hint: "Check both sides: lim (x→a⁻) f(x) must equal lim (x→a⁺) f(x)."
+                    ),
+                    QuizQuestion(
+                        questionText: "Evaluate: lim (x→∞) [ (3x² + 5) / (x² - 2) ]",
+                        answers: ["0", "Infinity", "3", "5"],
+                        correctAnswerIndex: 2,
+                        userAnswerIndex: nil,
+                        isFlagged: false,
+                        hint: "For limits at infinity of rational functions, compare the leading coefficients of the highest power."
+                    )
+                ],
         
         "Taylor Series PDF": [
             QuizQuestion(
