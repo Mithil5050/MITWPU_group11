@@ -8,46 +8,41 @@
 import UIKit
 
 class AllBadgesViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
-
+    
     @IBOutlet weak var allBadgesCollectionView: UICollectionView!
     
-    // Data passed from AwardsViewController
-    var badges: [Badge] = BadgeData.monthlyGridBadges
+    var badges: [Badge] = BadgeData.earnedBadges
         
-        // MARK: - Layout Constants (Matching your Awards Screen)
         private let sidePadding: CGFloat = 20.0
         private let horizontalSpacing: CGFloat = 16.0
         private let verticalSpacing: CGFloat = 20.0
-        private let cardHeightToWidthRatio: CGFloat = 1.3
-
+        private let cardHeightToWidthRatio: CGFloat = 1.0
+        
         override func viewDidLoad() {
             super.viewDidLoad()
             setupCollectionView()
             registerCells()
         }
-
+        
         private func setupCollectionView() {
             allBadgesCollectionView.dataSource = self
             allBadgesCollectionView.delegate = self
             
-            // Ensure the Storyboard layout is set to Flow
             if let layout = allBadgesCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
                 layout.minimumInteritemSpacing = horizontalSpacing
                 layout.minimumLineSpacing = verticalSpacing
-                layout.sectionInset = UIEdgeInsets(top: verticalSpacing, left: sidePadding, bottom: verticalSpacing, right: sidePadding)
+                layout.sectionInset = UIEdgeInsets(top: 0, left: sidePadding, bottom: verticalSpacing, right: sidePadding)
             }
         }
         
         func registerCells() {
-            // Register your specific grid cell
             allBadgesCollectionView.register(UINib(nibName: "AllBadgesCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "DetailCell")
         }
-
-        // MARK: - UICollectionViewDataSource
+        
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
             return badges.isEmpty ? 6 : badges.count
         }
-
+        
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DetailCell", for: indexPath) as? AllBadgesCollectionViewCell else {
                 return UICollectionViewCell()
@@ -55,12 +50,26 @@ class AllBadgesViewController: UIViewController, UICollectionViewDataSource, UIC
             cell.configure(with: badges[indexPath.row])
             return cell
         }
-
-        // MARK: - UICollectionViewDelegateFlowLayout (The 2-Column Math)
+        
+        // MARK: - Header Implementation
+        func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+            if kind == UICollectionView.elementKindSectionHeader {
+                // This loads the header from Storyboard using the "HeaderView" identifier
+                let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath)
+                return header
+            }
+            return UICollectionReusableView()
+        }
+        
+        // MARK: - Layout Math
         func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-            // This math forces 2 columns regardless of screen size
             let totalHorizontalSpacing = (sidePadding * 2) + horizontalSpacing
             let width = floor((collectionView.bounds.width - totalHorizontalSpacing) / 2)
             return CGSize(width: width, height: width * cardHeightToWidthRatio)
+        }
+
+        // This method makes the header appear with the correct height
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+            return CGSize(width: collectionView.frame.width, height: 80)
         }
     }

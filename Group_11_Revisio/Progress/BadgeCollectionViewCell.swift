@@ -15,7 +15,10 @@ class BadgeCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet weak var badgeTitleLabel: UILabel!
     
+    @IBOutlet weak var badgeProgressBar: UIProgressView!
+    
     @IBOutlet weak var badgeDetailLabel: UILabel!
+    
     
     override func awakeFromNib() {
             super.awakeFromNib()
@@ -24,22 +27,20 @@ class BadgeCollectionViewCell: UICollectionViewCell {
         
         // MARK: - Configuration Method
         
-        func configure(with badge: Badge) {
-            
-            badgeTitleLabel.text = badge.title
-            badgeDetailLabel.text = badge.detail
-            badgeImageView.image = UIImage(named: badge.imageAssetName)
-            
-            // Apply visual states based on lock status
-            if badge.isLocked {
-                badgeImageView.alpha = 0.5
-                badgeDetailLabel.textColor = .secondaryLabel
-            } else {
-                badgeImageView.alpha = 1.0
-                badgeDetailLabel.textColor = .systemGray
-            }
-        }
+    func configure(with badge: Badge) {
+        badgeTitleLabel.text = badge.title
+        badgeImageView.image = UIImage(named: badge.imageAssetName)
         
+        // Always use the detail label for your "6 out of 10" text
+        badgeDetailLabel.text = badge.detail
+        badgeDetailLabel.isHidden = false
+        
+        // Manage the progress bar separately if it exists in this cell
+        if let progressBar = badgeProgressBar {
+            progressBar.progress = 0.6 // You can still hardcode this or add it to the model later
+            progressBar.isHidden = false
+        }
+    }
         private func setupCardStyle() {
             
             let radius: CGFloat = 12

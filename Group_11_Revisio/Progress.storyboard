@@ -489,20 +489,54 @@
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="6HQ-bo-RRI">
                                     <size key="itemSize" width="128" height="128"/>
-                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="headerReferenceSize" width="50" height="50"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="A53-c6-8R2">
-                                        <rect key="frame" x="0.0" y="0.0" width="127.99999999999997" height="128"/>
+                                        <rect key="frame" x="0.0" y="50" width="128" height="128"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="ay3-BI-1OI">
-                                            <rect key="frame" x="0.0" y="0.0" width="127.99999999999997" height="128"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </collectionViewCellContentView>
                                     </collectionViewCell>
                                 </cells>
+                                <collectionReusableView key="sectionHeaderView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="nQl-Zg-ueb">
+                                    <rect key="frame" x="0.0" y="0.0" width="393" height="50"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="6go-hI-0wF">
+                                            <rect key="frame" x="20" y="5" width="353" height="40"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gYN-vr-frC">
+                                                    <rect key="frame" x="0.0" y="0.0" width="353" height="24.333333333333332"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hOE-mG-kUK">
+                                                    <rect key="frame" x="0.0" y="24.333333333333332" width="353" height="15.666666666666668"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="15.666666666666668" id="Qjz-dO-dJY"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                    <color key="textColor" systemColor="systemGrayColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="40" id="lsS-jM-ufV"/>
+                                            </constraints>
+                                        </stackView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="6go-hI-0wF" secondAttribute="trailing" constant="20" id="Mg3-hu-jJk"/>
+                                        <constraint firstItem="6go-hI-0wF" firstAttribute="centerY" secondItem="nQl-Zg-ueb" secondAttribute="centerY" id="WCG-Qy-r7Y"/>
+                                        <constraint firstItem="6go-hI-0wF" firstAttribute="leading" secondItem="nQl-Zg-ueb" secondAttribute="leading" constant="20" id="gj1-qb-Kr8"/>
+                                    </constraints>
+                                </collectionReusableView>
                             </collectionView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="SYr-kK-1ui"/>
@@ -528,7 +562,7 @@
             </objects>
             <point key="canvasLocation" x="-674.04580152671758" y="-1063.3802816901409"/>
         </scene>
-        <!--Keep Going-->
+        <!--Awards-->
         <scene sceneID="QBI-od-Ve3">
             <objects>
                 <viewController id="JXS-Di-Md0" customClass="AllBadgesViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
@@ -537,17 +571,17 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="DOa-hl-NXm">
-                                <rect key="frame" x="20" y="224" width="353" height="511"/>
+                                <rect key="frame" x="0.0" y="224" width="393" height="511"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="TnJ-C1-713">
                                     <size key="itemSize" width="128" height="128"/>
-                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="headerReferenceSize" width="50" height="50"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="" id="WVN-hl-Wdo">
-                                        <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
+                                        <rect key="frame" x="0.0" y="50" width="128" height="128"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="r0b-Ts-cRS">
                                             <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
@@ -555,18 +589,45 @@
                                         </collectionViewCellContentView>
                                     </collectionViewCell>
                                 </cells>
+                                <collectionReusableView key="sectionHeaderView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" reuseIdentifier="HeaderView" id="Yff-5j-NKd">
+                                    <rect key="frame" x="0.0" y="0.0" width="393" height="50"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="hNK-gA-t4f">
+                                            <rect key="frame" x="20" y="2.3333333333333321" width="142" height="45.333333333333343"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Unlocked" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Sk0-Tc-7yS">
+                                                    <rect key="frame" x="0.0" y="0.0" width="142" height="26.333333333333332"/>
+                                                    <fontDescription key="fontDescription" type="boldSystem" pointSize="22"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Awards you've earned" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kjw-dC-yIE">
+                                                    <rect key="frame" x="0.0" y="28.333333333333336" width="142" height="17"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                    <color key="textColor" systemColor="systemGrayColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </stackView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="hNK-gA-t4f" firstAttribute="centerY" secondItem="Yff-5j-NKd" secondAttribute="centerY" id="KIh-V5-myg"/>
+                                        <constraint firstItem="hNK-gA-t4f" firstAttribute="leading" secondItem="Yff-5j-NKd" secondAttribute="leading" constant="20" id="RdU-xV-KJx"/>
+                                    </constraints>
+                                </collectionReusableView>
                             </collectionView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="HUx-GF-qMH"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="DOa-hl-NXm" firstAttribute="leading" secondItem="HUx-GF-qMH" secondAttribute="leading" constant="20" id="NdV-Uh-559"/>
-                            <constraint firstItem="HUx-GF-qMH" firstAttribute="trailing" secondItem="DOa-hl-NXm" secondAttribute="trailing" constant="20" id="P1E-nD-8nV"/>
+                            <constraint firstItem="HUx-GF-qMH" firstAttribute="trailing" secondItem="DOa-hl-NXm" secondAttribute="trailing" id="Jzc-Lg-m5F"/>
+                            <constraint firstItem="DOa-hl-NXm" firstAttribute="leading" secondItem="HUx-GF-qMH" secondAttribute="leading" id="PBW-J8-UEo"/>
                             <constraint firstItem="DOa-hl-NXm" firstAttribute="top" secondItem="HUx-GF-qMH" secondAttribute="top" id="WYd-Ob-POV"/>
                             <constraint firstItem="HUx-GF-qMH" firstAttribute="bottom" secondItem="DOa-hl-NXm" secondAttribute="bottom" id="dtS-RA-P0L"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Keep Going" largeTitleDisplayMode="always" id="ahM-eU-To0"/>
+                    <navigationItem key="navigationItem" title="Awards" largeTitleDisplayMode="always" id="ahM-eU-To0"/>
                     <connections>
                         <outlet property="allBadgesCollectionView" destination="DOa-hl-NXm" id="TT7-DG-jgx"/>
                     </connections>
@@ -718,6 +779,9 @@
         </systemColor>
         <systemColor name="systemGray6Color">
             <color red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemGrayColor">
+            <color red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemOrangeColor">
             <color red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
