@@ -47,7 +47,7 @@ one task to go!</string>
                                     <constraint firstItem="Kfd-zb-NWZ" firstAttribute="top" secondItem="pEI-84-TK2" secondAttribute="top" constant="20" id="sCW-03-ADT"/>
                                 </constraints>
                             </view>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" image="IMG_5173-removebg-preview" translatesAutoresizingMaskIntoConstraints="NO" id="k4o-IY-NIR">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" image="IMG_5173-removebg-preview" translatesAutoresizingMaskIntoConstraints="NO" id="k4o-IY-NIR">
                                 <rect key="frame" x="232.33333333333337" y="-10" width="137.66666666666663" height="139"/>
                                 <constraints>
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="139" id="7rJ-cJ-rkV"/>
@@ -90,7 +90,7 @@ one task to go!</string>
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemBlueColor">
-            <color red="0.0" green="0.53333333333333333" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
