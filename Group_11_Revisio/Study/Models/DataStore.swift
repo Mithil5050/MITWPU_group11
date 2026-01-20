@@ -19,11 +19,11 @@ class DataManager {
     
     private init() {
         if !FileManager.default.fileExists(atPath: fileURL.path) {
-            // First time ever launch
+            
             setupDefaultData()
             saveToDisk()
         } else {
-            // Authoritative load from your saved JSON
+            
             loadFromDisk()
         }
     }
@@ -119,7 +119,6 @@ class DataManager {
     
     private func setupDefaultData() {
         
-        // 1. CALCULUS
         let calculusMaterials: [StudyItem] = [
             .topic(Topic(
                 name: "Partial Derivatives",
@@ -159,7 +158,6 @@ class DataManager {
         ]
         savedMaterials["Calculus"] = [DataManager.materialsKey: calculusMaterials, DataManager.sourcesKey: calculusSources]
         
-        // 2. BIG DATA
         savedMaterials["Big Data"] = [
             DataManager.materialsKey: [
                 .topic(Topic(
@@ -195,7 +193,6 @@ class DataManager {
             ]
         ]
         
-        // 3. COMPUTER NETWORKS
         savedMaterials["Computer Networks"] = [
             DataManager.materialsKey: [
                 .topic(Topic(
@@ -220,7 +217,6 @@ class DataManager {
             DataManager.sourcesKey: []
         ]
         
-        // 4. MMA
         savedMaterials["MMA"] = [
             DataManager.materialsKey: [
                 .topic(Topic(
@@ -289,13 +285,13 @@ class DataManager {
                 return "\(q.questionText)|\(answers)|\(q.correctAnswerIndex)|\(q.hint)"
             }.joined(separator: "\n")
             
-            // Match your Topic.swift order exactly:
+            
             let newTopic = Topic(
                 name: sourceName,
                 lastAccessed: "Never",
                 materialType: "Quiz",
-                largeContentBody: contentString,     // contentBody is now 4th
-                parentSubjectName: "General Study"   // parentSubjectName is now 5th
+                largeContentBody: contentString,
+                parentSubjectName: "General Study"
             )
             
             self.addTopic(to: "General Study", topic: newTopic)
@@ -306,7 +302,7 @@ class DataManager {
             savedMaterials[subjectName] = [DataManager.materialsKey: [], DataManager.sourcesKey: []]
         }
         
-        // Check if a topic with this name already exists in the folder
+       
         let alreadyExists = savedMaterials[subjectName]?[DataManager.materialsKey]?.contains(where: { item in
             if case .topic(let existingTopic) = item {
                 return existingTopic.name == topic.name && existingTopic.materialType == topic.materialType
@@ -314,12 +310,12 @@ class DataManager {
             return false
         }) ?? false
         
-        // Only append if it's a new piece of material
+        
         if !alreadyExists {
             savedMaterials[subjectName]?[DataManager.materialsKey]?.append(.topic(topic))
             saveToDisk()
             
-            // Notify the library to refresh the list
+            
             NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
         }
     }

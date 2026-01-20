@@ -10,17 +10,15 @@ class MaterialViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        self.selectionStyle = .default // Required for the blue tick
+        self.selectionStyle = .default
         
-        // This removes the gray 'box' highlight
         let clearView = UIView()
         clearView.backgroundColor = .clear
         self.selectedBackgroundView = clearView
         
-        // Your existing card styling
+       
         self.backgroundColor = .clear
-        self.contentView.backgroundColor = .secondarySystemGroupedBackground // Or your #F5F5F5
-        self.contentView.layer.cornerRadius = 12
+        self.contentView.backgroundColor = .secondarySystemGroupedBackground         self.contentView.layer.cornerRadius = 12
     }
     
     

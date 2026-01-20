@@ -45,12 +45,12 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
         configureCardViewAppearance()
         setupTapGesture()
         
-        // CHANGE 1: Set the Title to match the folder (e.g., "Partial Derivatives")
+       
         if let topicName = currentTopic?.name {
             self.title = topicName
         }
         
-        // CHANGE 2: Load the specific cards from the JSON body
+      
         if let savedContent = currentTopic?.largeContentBody {
             unpackFlashcards(from: savedContent)
         }

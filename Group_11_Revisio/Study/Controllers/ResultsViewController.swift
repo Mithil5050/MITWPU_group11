@@ -7,7 +7,7 @@ class ResultsViewController: UIViewController {
     var topicToSave: Topic?
     var parentFolder: String?
     
-    // This is the NEW property that will bridge to your Detail screen
+    
     var summaryData: [QuizSummaryItem] = []
     
     // MARK: - Outlets
@@ -108,20 +108,20 @@ class ResultsViewController: UIViewController {
                   var topic = topicToSave,
                   let folderName = parentFolder else { return }
             
-            // 1. Convert current quiz questions back into the 'packed' string format for the JSON
+           
             let packedData = summaryData.map { item in
                 let answers = item.allOptions.joined(separator: "|")
                 return "\(item.questionText)|\(answers)|\(item.correctAnswerIndex)|\(item.explanation)"
             }.joined(separator: "\n")
             
-            // 2. Update the topic content
+           
             topic.largeContentBody = packedData
             topic.lastAccessed = "Just now"
             
-            // 3. Save to your JSON File via DataManager
+            
             DataManager.shared.addTopic(to: folderName, topic: topic)
             
-            // 4. Show the "Saved!" Alert as seen in your screenshot
+            
             let alert = UIAlertController(
                 title: "Saved!",
                 message: "Quiz saved to '\(folderName)'.",
@@ -163,7 +163,7 @@ extension ResultsViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        // Use standard 'Value 1' style cell
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: "DetailCell") ?? UITableViewCell(style: .value1, reuseIdentifier: "DetailCell")
         
         cell.backgroundColor = .clear
