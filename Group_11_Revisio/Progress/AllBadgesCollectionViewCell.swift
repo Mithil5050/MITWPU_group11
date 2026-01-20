@@ -18,16 +18,17 @@ class AllBadgesCollectionViewCell: UICollectionViewCell {
     
     override func awakeFromNib() {
             super.awakeFromNib()
-            setupCardStyle() // Keeping your exact card style
+            setupCardStyle()
         }
         
-        // MARK: - Configuration Method
+        // Configured specifically for Title and Earned Date
         func configure(with badge: Badge) {
             allBadgeTitleLabel.text = badge.title
-            allBadgeDetailLabel.text = badge.detail
             allBadgeImageView.image = UIImage(named: badge.imageAssetName)
             
-            // Apply your exact lock status visual states
+            // Setting the subtitle to the badge's detail (the date)
+            allBadgeDetailLabel.text = badge.detail
+            
             if badge.isLocked {
                 allBadgeImageView.alpha = 0.5
                 allBadgeDetailLabel.textColor = .secondaryLabel
@@ -38,26 +39,21 @@ class AllBadgesCollectionViewCell: UICollectionViewCell {
         }
         
         private func setupCardStyle() {
-            let radius: CGFloat = 12
-            
-            // Match your systemGray6 background and corner radius
             allBadgeCardView.backgroundColor = .systemGray6
-            allBadgeCardView.layer.cornerRadius = radius
+            allBadgeCardView.layer.cornerRadius = 12
             allBadgeCardView.layer.masksToBounds = true
             
-            // Match your specific shadow configuration
+            // Shadow configuration to match your original design
             self.layer.shadowColor = UIColor.black.cgColor
             self.layer.shadowOpacity = 0.1
             self.layer.shadowOffset = CGSize(width: 0, height: 1)
             self.layer.shadowRadius = 3
             self.layer.masksToBounds = false
-            self.layer.shouldRasterize = true
-            self.layer.rasterizationScale = UIScreen.main.scale
         }
         
         override func layoutSubviews() {
             super.layoutSubviews()
-            // Ensure shadow path matches the rounded corners exactly
+            // Path must match the 12.0 corner radius
             self.layer.shadowPath = UIBezierPath(roundedRect: self.bounds, cornerRadius: 12).cgPath
         }
     }

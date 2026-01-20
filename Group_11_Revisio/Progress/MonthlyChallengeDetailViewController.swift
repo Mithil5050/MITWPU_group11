@@ -19,7 +19,7 @@ class MonthlyChallengeDetailViewController: UIViewController {
     
     override func viewDidLoad() {
             super.viewDidLoad()
-            navigationItem.title = "Awards"
+            navigationItem.title = "Monthly Challenge"
             setupUI()
         }
 
