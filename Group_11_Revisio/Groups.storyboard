@@ -18,11 +18,28 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="bU5-cZ-zaQ">
-                                <rect key="frame" x="0.0" y="409" width="402" height="465"/>
+                                <rect key="frame" x="0.0" y="376" width="402" height="498"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <view key="tableHeaderView" contentMode="scaleToFill" id="jh3-Rj-cQe">
+                                    <rect key="frame" x="0.0" y="0.0" width="402" height="44"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="My Groups" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UNq-a3-Q9p">
+                                            <rect key="frame" x="16" y="10" width="102" height="24"/>
+                                            <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    <constraints>
+                                        <constraint firstItem="UNq-a3-Q9p" firstAttribute="centerY" secondItem="jh3-Rj-cQe" secondAttribute="centerY" id="3hh-dF-PRt"/>
+                                        <constraint firstItem="UNq-a3-Q9p" firstAttribute="leading" secondItem="jh3-Rj-cQe" secondAttribute="leading" constant="16" id="RZr-jJ-gc9"/>
+                                    </constraints>
+                                </view>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" accessoryType="disclosureIndicator" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="GroupCellIdentifier" id="3t6-9J-qcy" customClass="GroupCell" customModule="Group_11_Revisio" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="50" width="402" height="65.333335876464844"/>
+                                        <rect key="frame" x="0.0" y="94" width="402" height="65.333335876464844"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="3t6-9J-qcy" id="WKh-BI-sVY">
                                             <rect key="frame" x="0.0" y="0.0" width="371.66666666666669" height="65.333335876464844"/>
@@ -93,7 +110,7 @@
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="plus.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="t39-0X-2M1">
-                                                        <rect key="frame" x="15" y="15.666666666666664" width="20" height="18.666666666666679"/>
+                                                        <rect key="frame" x="15" y="15.666666666666666" width="20" height="18.666666666666671"/>
                                                         <color key="tintColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" constant="20" id="Kse-7S-TCF"/>
@@ -221,27 +238,15 @@
                                     <constraint firstAttribute="height" constant="190" id="nGV-6Q-kPb"/>
                                 </constraints>
                             </view>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="My Groups" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="63k-iN-fsT">
-                                <rect key="frame" x="16" y="384" width="370" height="25"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="25" id="GoE-SA-ff5"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="ngb-Cl-aO1"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="bU5-cZ-zaQ" firstAttribute="leading" secondItem="ngb-Cl-aO1" secondAttribute="leading" id="1wX-TN-3v4"/>
                             <constraint firstItem="ngb-Cl-aO1" firstAttribute="trailing" secondItem="OZz-y0-cDf" secondAttribute="trailing" constant="16" id="1zs-6O-Uv1"/>
-                            <constraint firstItem="63k-iN-fsT" firstAttribute="top" secondItem="OZz-y0-cDf" secondAttribute="bottom" constant="16" id="AbI-jK-7PI"/>
                             <constraint firstItem="bU5-cZ-zaQ" firstAttribute="trailing" secondItem="ngb-Cl-aO1" secondAttribute="trailing" id="EVb-pq-6jf"/>
-                            <constraint firstItem="63k-iN-fsT" firstAttribute="leading" secondItem="ngb-Cl-aO1" secondAttribute="leading" constant="16" id="G9z-Wa-ndB"/>
                             <constraint firstItem="OZz-y0-cDf" firstAttribute="top" secondItem="ngb-Cl-aO1" secondAttribute="top" id="H6C-O0-cyp"/>
-                            <constraint firstItem="ngb-Cl-aO1" firstAttribute="trailing" secondItem="63k-iN-fsT" secondAttribute="trailing" constant="16" id="N8H-Pk-s8M"/>
-                            <constraint firstItem="bU5-cZ-zaQ" firstAttribute="top" secondItem="63k-iN-fsT" secondAttribute="bottom" id="ftc-O2-thq"/>
+                            <constraint firstItem="bU5-cZ-zaQ" firstAttribute="top" secondItem="OZz-y0-cDf" secondAttribute="bottom" constant="8" id="afV-HI-GBM"/>
                             <constraint firstAttribute="bottom" secondItem="bU5-cZ-zaQ" secondAttribute="bottom" id="ouj-wK-7ez"/>
                             <constraint firstItem="OZz-y0-cDf" firstAttribute="leading" secondItem="ngb-Cl-aO1" secondAttribute="leading" constant="16" id="tGT-m5-3lE"/>
                         </constraints>
