@@ -4,10 +4,7 @@
 //
 //  Created by Mithil on 17/01/26.
 //
-//  Updated for AI Assistant Feature: "Exora"
-//  - Custom Avatar
-//  - iMessage Style Upload Button UI
-//
+
 
 import UIKit
 import MessageKit
@@ -81,57 +78,43 @@ class AIChatViewController: MessagesViewController {
         configureInputBarItems()
     }
     
-    // ✅ UPDATED: iMessage Style Plust Button UI
     private func configureInputBarItems() {
         let plusButton = InputBarButtonItem()
         
-        // 1. Icon & Style
-        // Use a slightly bolder symbol for better visibility
         let configuration = UIImage.SymbolConfiguration(weight: .semibold)
         plusButton.setImage(UIImage(systemName: "plus", withConfiguration: configuration), for: .normal)
-        plusButton.tintColor = .white // White icon
-        plusButton.backgroundColor = .clear // Solid blue circle fill
+        plusButton.tintColor = .white
+        plusButton.backgroundColor = .clear
         
-        // 2. Sizing & Corner Radius (Perfect Circle)
         let buttonSize: CGFloat = 32
         plusButton.setSize(CGSize(width: buttonSize - 4, height: buttonSize), animated: false)
         plusButton.layer.cornerRadius = buttonSize / 2
         plusButton.clipsToBounds = true
         
-        // 3. Action
         plusButton.addTarget(self, action: #selector(handleUploadTap), for: .touchUpInside)
         
-        // 4. Spacing & Stacking
-        // Add fixed spacing to the right of the button so it doesn't touch the text field
         plusButton.spacing = .fixed(16)
         
-        // Ensure the button stays centered vertically in the stack view
         messageInputBar.leftStackView.alignment = .center
         
-        // Add to the left side of the input bar
         messageInputBar.setStackViewItems([plusButton], forStack: .left, animated: false)
         
-        // Adjust the width constant to account for button size + spacing
         messageInputBar.setLeftStackViewWidthConstant(to: buttonSize + 16, animated: false)
     }
     
     // MARK: - Actions
     
     @objc func handleUploadTap() {
-        // Show Action Sheet (iMessage Style)
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         
-        // Option 1: Photo Library
         alert.addAction(UIAlertAction(title: "Photo Library", style: .default, handler: { _ in
             self.presentPhotoPicker()
         }))
         
-        // Option 2: Documents
         alert.addAction(UIAlertAction(title: "Document", style: .default, handler: { _ in
             self.presentDocumentPicker()
         }))
         
-        // Cancel
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         
         present(alert, animated: true)

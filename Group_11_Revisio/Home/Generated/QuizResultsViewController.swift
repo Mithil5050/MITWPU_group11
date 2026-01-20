@@ -14,11 +14,13 @@ class QuizResultsViewController: UIViewController {
     var topicToSave: Topic?
     var parentFolder: String?
     
-    // ✅ NEW: This array receives data from the Session and passes it to Summary
+    // This array receives data from the Session and passes it to Summary
     var summaryData: [QuizSummaryItem] = []
     
     // MARK: - Outlets
+    @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet weak var scoreLabel: UILabel!
+    @IBOutlet weak var resultImageView: UIImageView! // ✅ NEW: Connect this to your Image View
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var retakeButton: UIButton!
     @IBOutlet weak var homeButton: UIButton!
@@ -31,15 +33,40 @@ class QuizResultsViewController: UIViewController {
     
     func setupUI() {
         guard let result = finalResult else { return }
+        
+        // 1. Set Score Text
         scoreLabel.text = "You Scored \(result.finalScore) out of \(result.totalQuestions)."
         
+        // 2. ✅ NEW: Handle Text & Image based on Score
+        let percentage = Double(result.finalScore) / Double(result.totalQuestions)
+        
+        if percentage < 0.5 {
+            // Low Score (< 50%)
+            headerLabel.text = "Better luck next time!"
+            resultImageView.image = UIImage(named: "BadMarks") // Show "Bad" Image
+        } else {
+            // High Score (>= 50%)
+            headerLabel.text = "Congratulations!"
+            resultImageView.image = UIImage(named: "GoodMarks") // Show "Good" Image
+        }
+        
+        // 3. Configure TableView
         tableView.delegate = self
         tableView.dataSource = self
         tableView.tableFooterView = UIView()
         tableView.backgroundColor = .clear
         
+        // 4. Style Buttons
         retakeButton.layer.cornerRadius = 14
         homeButton.layer.cornerRadius = 14
+        
+        // 5. Game Mode Check (Hide Retake for Games/WordFill)
+        if topicToSave == nil {
+            retakeButton.isHidden = true
+            homeButton.setTitle("Back to Home", for: .normal)
+        } else {
+            retakeButton.isHidden = false
+        }
     }
 
     // MARK: - Actions
@@ -60,20 +87,24 @@ class QuizResultsViewController: UIViewController {
     
     @IBAction func homeButtonTapped(_ sender: UIButton) {
         if let topic = topicToSave, let subject = parentFolder {
+            // Save logic for normal quizzes
              let updatedTopic = Topic(name: topic.name, lastAccessed: "Just now", materialType: "Quiz", largeContentBody: topic.largeContentBody, parentSubjectName: subject, notesContent: topic.notesContent, cheatsheetContent: topic.cheatsheetContent)
             DataManager.shared.addTopic(to: subject, topic: updatedTopic)
-        }
-        
-        let alert = UIAlertController(title: "Saved!", message: "Quiz saved to '\(parentFolder ?? "Study")'.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            
+            let alert = UIAlertController(title: "Saved!", message: "Quiz saved to '\(parentFolder ?? "Study")'.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                self.navigationController?.popToRootViewController(animated: true)
+            })
+            present(alert, animated: true)
+            
+        } else {
+            // Direct exit for Games (Word Fill)
             self.navigationController?.popToRootViewController(animated: true)
-        })
-        present(alert, animated: true)
+        }
     }
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // ✅ CRITICAL FIX: Actually pass the data here
         if segue.identifier == "ShowSummary" {
             if let destVC = segue.destination as? SummaryViewController {
                 destVC.summaryList = self.summaryData
@@ -110,7 +141,6 @@ extension QuizResultsViewController: UITableViewDataSource, UITableViewDelegate 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         if indexPath.row == 1 {
-            // This triggers the prepare method above
             performSegue(withIdentifier: "ShowSummary", sender: self)
         }
     }

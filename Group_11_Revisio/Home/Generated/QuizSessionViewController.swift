@@ -208,7 +208,7 @@ class QuizSessionViewController: UIViewController {
         guard let btn = flagItem else { return }
         let isFlagged = sessionQuestions[questionIndex].isFlagged
         btn.image = UIImage(systemName: isFlagged ? "flag.fill" : "flag")
-        btn.tintColor = isFlagged ? .systemRed : .systemBlue
+        btn.tintColor = isFlagged ? .systemRed : .white
     }
     
     @IBAction func optionSelected(_ sender: UIButton) {
