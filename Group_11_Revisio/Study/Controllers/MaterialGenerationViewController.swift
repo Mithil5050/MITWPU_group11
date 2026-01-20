@@ -23,42 +23,41 @@ class MaterialGenerationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         contentView.isEditable = false
-                contentView.delegate = self // Make sure to set delegate for auto-save
+                contentView.delegate = self
                 
                 setupNavigationButtons()
                 displayGeneratedContent()
                 
-                // Style your bottom button
+               
                 saveButton.layer.cornerRadius = 12
 
-        // Do any additional setup after loading the view.
     }
     
     @IBAction func saveTapped(_ sender: Any) {
         saveChanges()
             
-            // 2. Add the topic to the specific Subject folder in the library
+            
             if let topic = contentData, let subject = parentSubjectName {
-                // This ensures the topic is physically added to the Subject's material list
+                
                 DataManager.shared.addTopic(to: subject, topic: topic)
             }
             
-            // 3. Go back to the previous screen
+            
             self.navigationController?.popViewController(animated: true)
     }
     func displayGeneratedContent() {
-        // This ensures the title is just the Source Name as requested
+        
         self.title = contentData?.name ?? "Material"
         
         guard let topic = contentData else { return }
 
-        // Logic to pick which field to show based on what button was tapped
+      
         if materialType == "Notes" {
             contentView.text = topic.notesContent
         } else if materialType == "Cheatsheet" {
             contentView.text = topic.cheatsheetContent
         } else {
-            // Fallback for Quizzes or other types
+           
             contentView.text = topic.largeContentBody
         }
     }
@@ -115,7 +114,7 @@ class MaterialGenerationViewController: UIViewController {
               let type = materialType,
               let updatedText = contentView.text else { return }
         
-        // Using the explicit shared instance and named parameters
+        
         DataManager.shared.updateTopicContent(
             subject: subject,
             topicName: topic.name,
@@ -129,21 +128,9 @@ class MaterialGenerationViewController: UIViewController {
             activityVC.popoverPresentationController?.barButtonItem = sender
             present(activityVC, animated: true)
         }
-    
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
     }
-    */
-
-}
 extension MaterialGenerationViewController: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
-        saveChanges() // Auto-save while user types
+        saveChanges()
     }
 }

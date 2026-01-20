@@ -1,3 +1,8 @@
+//
+//  SubjectViewController.swift
+//  Group_11_Revisio
+//
+//  Created by SDC-USER on 26/11/25.
 import UIKit
 
 class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
@@ -14,6 +19,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     var currentFilterType: String = "All"
     var filteredContent: [Any] = []
     private let filterOptions: [String] = ["All", "Flashcards", "Quiz", "Cheatsheet", "Notes"]
+    private var notificationToken: NSObjectProtocol?
     
     var doneSelectionButton: UIBarButtonItem!
     var cancelSelectionButton: UIBarButtonItem!
@@ -30,17 +36,22 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         self.toolbarItems = []
         
-        
         let buttonColor: UIColor = .label
         
         doneSelectionButton = UIBarButtonItem(
             image: UIImage(systemName: "checkmark"),
-            style: .plain,
-            target: self,
-            action: #selector(selectionDoneTapped)
+            primaryAction: UIAction { [weak self] _ in
+                self?.selectionDoneTapped()
+            }
         )
         doneSelectionButton.tintColor = buttonColor
-        cancelSelectionButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(selectionCancelTapped))
+        
+        cancelSelectionButton = UIBarButtonItem(
+            systemItem: .cancel,
+            primaryAction: UIAction { [weak self] _ in
+                self?.selectionCancelTapped()
+            }
+        )
         cancelSelectionButton.tintColor = buttonColor
         
         if let selectedSubject {
@@ -59,22 +70,28 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // Reset view state when coming back to this screen
+        
         materialsSegmentedControl.selectedSegmentIndex = 0
         self.tabBarController?.tabBar.isHidden = false
         self.navigationController?.setToolbarHidden(true, animated: animated)
         
-        // Listen for data changes so the list stays updated
-        NotificationCenter.default.addObserver(self, selector: #selector(handleDataUpdate), name: .didUpdateStudyMaterials, object: nil)
+       
+        notificationToken = NotificationCenter.default.addObserver(forName: .didUpdateStudyMaterials, object: nil, queue: .main) { [weak self] _ in
+            if let subject = self?.selectedSubject {
+                self?.loadContentForSubject(subject, segmentIndex: self?.materialsSegmentedControl.selectedSegmentIndex ?? 0)
+            }
+        }
         
         if let subject = selectedSubject {
             loadContentForSubject(subject, segmentIndex: materialsSegmentedControl.selectedSegmentIndex)
         }
     }
-
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        NotificationCenter.default.removeObserver(self, name: .didUpdateStudyMaterials, object: nil)
+        
+        if let token = notificationToken {
+            NotificationCenter.default.removeObserver(token)
+        }
     }
 
     // MARK: - Data Logic (Loading & Filtering)
@@ -122,7 +139,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         return index == 0 ? DataManager.materialsKey : DataManager.sourcesKey
     }
 
-    @objc func handleDataUpdate() {
+     func handleDataUpdate() {
         if let subject = selectedSubject {
             loadContentForSubject(subject, segmentIndex: materialsSegmentedControl.selectedSegmentIndex)
         }
@@ -165,14 +182,12 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         let isSelectModeActive = topicsTableView.isEditing
         
         let selectAction = UIAction(title: isSelectModeActive ? "Done" : "Select",
-                                    image: UIImage(systemName: "checkmark.circle"),
-                                    handler: { [weak self] action in
+                                    image: UIImage(systemName: "checkmark.circle")) { [weak self] _ in
             guard let self = self else { return }
             
             if self.topicsTableView.isEditing {
                 self.selectionDoneTapped()
             } else {
-                // Enter Selection Mode
                 self.topicsTableView.setEditing(true, animated: true)
                 self.navigationItem.rightBarButtonItems = [self.doneSelectionButton]
                 self.navigationItem.leftBarButtonItem = self.cancelSelectionButton
@@ -180,30 +195,28 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                 self.tabBarController?.tabBar.isHidden = true
             }
             
-            DispatchQueue.main.async {
-                self.optionsButton.menu = self.setupOptionsMenu()
-            }
-        })
+            self.optionsButton.menu = self.setupOptionsMenu()
+        }
         
         let renameAction = UIAction(title: "Rename Subject", image: UIImage(systemName: "pencil")) { [weak self] _ in
             self?.renameCurrentSubject()
         }
         
-        let moveAllAction = UIAction(title: "Move All Content", image: UIImage(systemName: "arrow.turn.forward"), handler: { [weak self] _ in
+        let moveAllAction = UIAction(title: "Move All Content", image: UIImage(systemName: "arrow.turn.forward")) { [weak self] _ in
             self?.moveAllContent()
-        })
+        }
         
-        let deleteAllAction = UIAction(title: "Delete All Content", image: UIImage(systemName: "trash"), attributes: .destructive, handler: { [weak self] _ in
+        let deleteAllAction = UIAction(title: "Delete All Content", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
             self?.deleteAllContent()
-        })
+        }
         
         let menu = UIMenu(title: "Option", children: [
             selectAction,
             renameAction,
             UIMenu(title: "Management", children: [moveAllAction, deleteAllAction]),
             UIMenu(title: "Display Options", options: .displayInline, children: [
-                UIAction(title: "View as", image: UIImage(systemName: "list.bullet.indent"), handler: { _ in }),
-                UIAction(title: "Sort By", image: UIImage(systemName: "arrow.up.arrow.down"), handler: { _ in })
+                UIAction(title: "View as", image: UIImage(systemName: "list.bullet.indent")) { _ in },
+                UIAction(title: "Sort By", image: UIImage(systemName: "arrow.up.arrow.down")) { _ in }
             ])
         ])
         
@@ -306,12 +319,12 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.optionsButton.menu = self.setupOptionsMenu()
     }
 
-    @objc func selectionDoneTapped() {
+     func selectionDoneTapped() {
         topicsTableView.isEditing = false
         exitSelectionMode()
     }
 
-    @objc func selectionCancelTapped() {
+     func selectionCancelTapped() {
         if let selected = topicsTableView.indexPathsForSelectedRows {
             for indexPath in selected {
                 topicsTableView.deselectRow(at: indexPath, animated: false)
@@ -422,7 +435,27 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         performSegue(withIdentifier: "ShowGenerationScreen", sender: selectedRawItems)
     }
 
-    @objc func shareAction() { print("Sharing items...") }
+    @objc func shareAction() {
+            guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else { return }
+            
+            let selectedRawItems = getRawItems(from: selectedPaths)
+            var itemsToShare: [Any] = []
+            
+            for item in selectedRawItems {
+                if let topic = item as? Topic {
+                    let shareText = "Check out my \(topic.materialType) for \(selectedSubject ?? "Subject"): \(topic.name)"
+                    itemsToShare.append(shareText)
+                }
+            }
+            
+            let activityViewController = UIActivityViewController(activityItems: itemsToShare, applicationActivities: nil)
+            
+            if let popover = activityViewController.popoverPresentationController {
+                popover.barButtonItem = self.toolbarItems?.last
+            }
+            
+            present(activityViewController, animated: true)
+        }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         var finalTopic: Topic?

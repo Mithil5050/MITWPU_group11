@@ -9,7 +9,6 @@ import Foundation
 import UIKit
 extension UIViewController {
     
-    // This reusable function presents the Rename Subject alert and handles the logic.
     func presentRenameAlert(for subjectName: String, completion: @escaping (String) -> Void) {
         
         let alert = UIAlertController(title: "Rename Subject", message: "Enter a new name for '\(subjectName)':", preferredStyle: .alert)
@@ -26,7 +25,7 @@ extension UIViewController {
                 return
             }
             
-            // Execute the completion handler with the validated new name
+            
             completion(newName)
         }
         

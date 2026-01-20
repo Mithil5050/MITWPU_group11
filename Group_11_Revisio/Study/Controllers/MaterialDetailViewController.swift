@@ -28,7 +28,7 @@ class MaterialDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Initial setup for the TextView
+       
         contentView.isEditable = false
         
         setupNavigationButtons()
@@ -39,7 +39,7 @@ class MaterialDetailViewController: UIViewController {
     // MARK: - Content Loading & Management
     
     func displayContent() {
-        // Set the title to "Notes" or "Cheatsheet"
+        
         title = materialName ?? materialType
         
         guard let topic = contentData else {
@@ -51,9 +51,9 @@ class MaterialDetailViewController: UIViewController {
         if materialType == "Notes" {
             contentView.text = topic.notesContent
         } else if materialType == "Cheatsheet" {
-            contentView.text = topic.cheatsheetContent // Assuming your Topic model has this
+            contentView.text = topic.cheatsheetContent
         } else {
-            // Fallback to your existing DataManager logic if type is unknown
+          
             if let subject = parentSubjectName {
                 contentView.text = DataManager.shared.getDetailedContent(for: subject, topicName: topic.name)
             }
@@ -66,10 +66,10 @@ class MaterialDetailViewController: UIViewController {
     func saveChanges() {
         guard let topic = contentData,
               let subject = parentSubjectName,
-              let type = materialType, // 1. Ensure we have the type (Notes/Cheatsheet)
+              let type = materialType,
               let updatedText = contentView.text else { return }
         
-        // 2. Pass 'type' as the fourth argument here
+        
         DataManager.shared.updateTopicContent(
             subject: subject,
             topicName: topic.name,
