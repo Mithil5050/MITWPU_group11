@@ -487,7 +487,7 @@
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="am1-Bf-ns0">
                                 <rect key="frame" x="0.0" y="348" width="393" height="379"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="6HQ-bo-RRI">
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="6HQ-bo-RRI">
                                     <size key="itemSize" width="128" height="128"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
@@ -528,7 +528,7 @@
             </objects>
             <point key="canvasLocation" x="-674.04580152671758" y="-1063.3802816901409"/>
         </scene>
-        <!--All Badges View Controller-->
+        <!--Keep Going-->
         <scene sceneID="QBI-od-Ve3">
             <objects>
                 <viewController id="JXS-Di-Md0" customClass="AllBadgesViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
@@ -566,7 +566,7 @@
                             <constraint firstItem="HUx-GF-qMH" firstAttribute="bottom" secondItem="DOa-hl-NXm" secondAttribute="bottom" id="dtS-RA-P0L"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" largeTitleDisplayMode="always" id="ahM-eU-To0"/>
+                    <navigationItem key="navigationItem" title="Keep Going" largeTitleDisplayMode="always" id="ahM-eU-To0"/>
                     <connections>
                         <outlet property="allBadgesCollectionView" destination="DOa-hl-NXm" id="TT7-DG-jgx"/>
                     </connections>
@@ -705,7 +705,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="awards_monthly_main" width="1024" height="1536"/>
+        <image name="awards_monthly_main" width="500" height="500"/>
         <image name="chart.line.uptrend.xyaxis" catalog="system" width="128" height="102"/>
         <image name="chevron.forward.circle.fill" catalog="system" width="128" height="123"/>
         <image name="chevron.right.circle.fill" catalog="system" width="128" height="123"/>
