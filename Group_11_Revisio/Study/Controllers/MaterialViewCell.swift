@@ -23,14 +23,8 @@ class MaterialViewCell: UITableViewCell {
         self.contentView.layer.cornerRadius = 12
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        // This restores the vertical gap between your cards
-        contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: 6, right: 0))
-    }
     
     func configure(with item: StudyItem) {
-        // ... (Keep your existing configure logic for icons/text) ...
         let symbolname: String
         let iconColor: UIColor
         
@@ -64,21 +58,36 @@ class MaterialViewCell: UITableViewCell {
         iconContainerView.backgroundColor = iconColor.withAlphaComponent(0.15)
         iconContainerView.layer.cornerRadius = 8
     }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        let bottomGap: CGFloat = 6
+        contentView.frame = CGRect(
+            x: 0,
+            y: 0,
+            width: self.bounds.width,
+            height: self.bounds.height - bottomGap
+        )
+    }
+
     override func setEditing(_ editing: Bool, animated: Bool) {
         super.setEditing(editing, animated: animated)
         
-        UIView.animate(withDuration: 0.3) {
-            if editing {
-                // 38-40 points is the 'sweet spot' for the iOS selection circle.
-                // This slides the icon and text over inside the card.
-                self.contentView.layoutMargins = UIEdgeInsets(top: 0, left: 40, bottom: 0, right: 8)
-            } else {
-                // Your original standard padding
-                self.contentView.layoutMargins = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        if animated {
+            UIView.animate(withDuration: 0.3) {
+                self.applyInternalShift(isEditing: editing)
+                self.layoutIfNeeded()
             }
-            self.layoutIfNeeded()
+        } else {
+            self.applyInternalShift(isEditing: editing)
         }
     }
+
+    private func applyInternalShift(isEditing: Bool) {
+        let shift: CGFloat = isEditing ? 60 : 16
+        self.contentView.layoutMargins = UIEdgeInsets(top: 0, left: shift, bottom: 0, right: 16)
+    }
+
 }
 
     

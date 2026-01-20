@@ -12,9 +12,13 @@ class ResultsViewController: UIViewController {
     
     // MARK: - Outlets
     @IBOutlet weak var scoreLabel: UILabel!
-    @IBOutlet weak var detailTableView: UITableView! // Connect to your TableView
+    @IBOutlet weak var detailTableView: UITableView!
     @IBOutlet weak var retakeButton: UIButton!
-    @IBOutlet weak var saveButton: UIButton! // This is your 'Study' button
+    @IBOutlet weak var saveButton: UIButton!
+    
+    @IBOutlet weak var headerLabel: UILabel!
+    
+    @IBOutlet weak var resultImageView: UIImageView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,17 +62,24 @@ class ResultsViewController: UIViewController {
     func setupUI() {
         guard let result = finalResult else { return }
         
-        // Update Score Label
         scoreLabel.text = "You Scored \(result.finalScore) out of \(result.totalQuestions)."
         
-        // Setup TableView
+        let percentage = Double(result.finalScore) / Double(result.totalQuestions)
+        
+        if percentage < 0.5 {
+            headerLabel.text = "Better luck next time!"
+            resultImageView.image = UIImage(named: "BadMarks")
+        } else {
+            headerLabel.text = "Congratulations!"
+            resultImageView.image = UIImage(named: "GoodMarks")
+        }
+        
         detailTableView.delegate = self
         detailTableView.dataSource = self
         detailTableView.tableFooterView = UIView()
         detailTableView.backgroundColor = .clear
-        detailTableView.isScrollEnabled = false // Keep it tight
+        detailTableView.isScrollEnabled = false
         
-        // Button Styling
         retakeButton.layer.cornerRadius = 14
         saveButton.layer.cornerRadius = 14
     }
