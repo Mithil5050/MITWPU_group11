@@ -18,7 +18,7 @@ class MaterialViewCell: UITableViewCell {
         
        
         self.backgroundColor = .clear
-        self.contentView.backgroundColor = .secondarySystemGroupedBackground         self.contentView.layer.cornerRadius = 12
+        self.contentView.backgroundColor = .secondarySystemGroupedBackground;         self.contentView.layer.cornerRadius = 12
     }
     
     
