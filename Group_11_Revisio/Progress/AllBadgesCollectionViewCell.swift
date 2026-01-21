@@ -8,25 +8,35 @@
 import UIKit
 
 class AllBadgesCollectionViewCell: UICollectionViewCell {
+    
     @IBOutlet weak var allBadgeCardView: UIView!
-    
     @IBOutlet weak var allBadgeImageView: UIImageView!
-    
     @IBOutlet weak var allBadgeTitleLabel: UILabel!
-    
     @IBOutlet weak var allBadgeDetailLabel: UILabel!
     
     override func awakeFromNib() {
             super.awakeFromNib()
+            setupUI()
             setupCardStyle()
         }
         
-        // Configured specifically for Title and Earned Date
+    
+    private func setupUI() {
+        
+        allBadgeTitleLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        allBadgeTitleLabel.textColor = .label
+        allBadgeTitleLabel.textAlignment = .center
+        
+        allBadgeDetailLabel.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        allBadgeDetailLabel.textColor = .secondaryLabel
+        allBadgeDetailLabel.textAlignment = .center
+
+    }
         func configure(with badge: Badge) {
             allBadgeTitleLabel.text = badge.title
             allBadgeImageView.image = UIImage(named: badge.imageAssetName)
             
-            // Setting the subtitle to the badge's detail (the date)
+            
             allBadgeDetailLabel.text = badge.detail
             
             if badge.isLocked {
@@ -53,7 +63,6 @@ class AllBadgesCollectionViewCell: UICollectionViewCell {
         
         override func layoutSubviews() {
             super.layoutSubviews()
-            // Path must match the 12.0 corner radius
             self.layer.shadowPath = UIBezierPath(roundedRect: self.bounds, cornerRadius: 12).cgPath
         }
     }

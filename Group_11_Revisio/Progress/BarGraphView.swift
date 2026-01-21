@@ -7,13 +7,12 @@ struct BarChartView: View {
     
     @State private var scrolledID: Int?
 
-    // MARK: - Computed Properties
+
     private var history: [[StudyData]] {
         isShowingDaily ? model.dailyHistory : model.weeklyHistory
     }
 
     private var currentIdx: Int {
-        // Fallback to the latest data if scrollID is nil
         scrolledID ?? max(0, history.count - 1)
     }
 
@@ -40,7 +39,7 @@ struct BarChartView: View {
             let date = Calendar.current.date(byAdding: .day, value: -distance, to: Date()) ?? Date()
             return date.formatted(.dateTime.day().month(.wide))
         } else {
-            // FIX: Guaranteed "This Week" label for the current index
+        //week
             if distance == 0 { return "This Week" }
             if distance == 1 { return "Last Week" }
             return "\(distance) Weeks Ago"
@@ -48,7 +47,7 @@ struct BarChartView: View {
     }
         var body: some View {
             VStack(alignment: .leading, spacing: 0) {
-                // HEADER
+                // Header
                 HStack(alignment: .bottom) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(getDateLabel(for: currentIdx))
@@ -79,7 +78,7 @@ struct BarChartView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 14)
 
-                // CHART AREA
+                
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 0) {
                         ForEach(0..<history.count, id: \.self) { index in
@@ -92,8 +91,7 @@ struct BarChartView: View {
                 .scrollPosition(id: $scrolledID)
                 .scrollTargetBehavior(.paging)
             }
-            // This is the key fix: It monitors the history array.
-            // As soon as data loads, it snaps to the last item (Today).
+            
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     scrolledID = max(0, history.count - 1)
@@ -102,7 +100,7 @@ struct BarChartView: View {
             .onChange(of: isShowingDaily) { oldValue, newValue in
                 scrolledID = max(0, history.count - 1)
             }
-            // Extra safety: If history changes (data finishes loading), reset ID
+            
             .onChange(of: history.count) { oldValue, newValue in
                 scrolledID = max(0, newValue - 1)
             }

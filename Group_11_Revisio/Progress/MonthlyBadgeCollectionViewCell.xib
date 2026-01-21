@@ -11,17 +11,17 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="MonthlyBadgeCollectionViewCell" customModule="Group_11_Revisio" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="370" height="100"/>
+            <rect key="frame" x="0.0" y="0.0" width="370" height="108"/>
             <autoresizingMask key="autoresizingMask"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                <rect key="frame" x="0.0" y="0.0" width="370" height="100"/>
+                <rect key="frame" x="0.0" y="0.0" width="370" height="108"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
                     <view autoresizesSubviews="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qI9-jV-5yP">
-                        <rect key="frame" x="0.0" y="0.0" width="372" height="100"/>
+                        <rect key="frame" x="0.0" y="0.0" width="370" height="108"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" spacing="9" translatesAutoresizingMaskIntoConstraints="NO" id="O4m-PW-F74">
-                                <rect key="frame" x="8" y="8" width="356" height="84"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="9" translatesAutoresizingMaskIntoConstraints="NO" id="O4m-PW-F74">
+                                <rect key="frame" x="4" y="12" width="356" height="84"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="4L8-hV-wqe">
                                         <rect key="frame" x="0.0" y="0.0" width="80" height="84"/>
@@ -37,7 +37,7 @@
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="30" id="LOs-hp-8Jv"/>
                                                 </constraints>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
@@ -47,7 +47,7 @@
                                                     <constraint firstAttribute="height" constant="20" id="1Aw-es-GPY"/>
                                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="20" id="1fY-Ut-7nB"/>
                                                 </constraints>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
@@ -69,13 +69,13 @@
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="zW0-uL-b1p">
                                         <rect key="frame" x="258" y="0.0" width="98" height="84"/>
                                         <subviews>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="badge_showall_button" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="H5N-cm-nGh">
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="badge_showall_button" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="H5N-cm-nGh">
                                                 <rect key="frame" x="0.0" y="0.0" width="98" height="64"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="98" id="Nzn-dY-tws"/>
                                                     <constraint firstAttribute="height" constant="64" id="yJA-IA-RLN"/>
                                                 </constraints>
-                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="small"/>
+                                                <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="medium"/>
                                             </imageView>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DBR-RU-pFc">
                                                 <rect key="frame" x="0.0" y="64" width="98" height="20"/>
@@ -93,21 +93,32 @@
                                         </subviews>
                                     </stackView>
                                 </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="4L8-hV-wqe" secondAttribute="bottom" id="1MP-po-0xG"/>
+                                    <constraint firstAttribute="bottom" secondItem="zW0-uL-b1p" secondAttribute="bottom" id="52l-Rh-sru"/>
+                                    <constraint firstItem="4L8-hV-wqe" firstAttribute="top" secondItem="O4m-PW-F74" secondAttribute="top" id="FPr-hw-Jw8"/>
+                                    <constraint firstItem="G4Z-Qc-LsC" firstAttribute="top" secondItem="O4m-PW-F74" secondAttribute="top" id="TIR-Su-xw3"/>
+                                    <constraint firstAttribute="bottom" secondItem="G4Z-Qc-LsC" secondAttribute="bottom" id="eON-Xe-QfF"/>
+                                    <constraint firstItem="zW0-uL-b1p" firstAttribute="top" secondItem="O4m-PW-F74" secondAttribute="top" id="lpa-OQ-RmS"/>
+                                </constraints>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstAttribute="bottom" secondItem="O4m-PW-F74" secondAttribute="bottom" constant="8" id="Tpq-7h-2WU"/>
-                            <constraint firstItem="O4m-PW-F74" firstAttribute="top" secondItem="qI9-jV-5yP" secondAttribute="top" constant="8" id="cda-TB-fhU"/>
-                            <constraint firstItem="O4m-PW-F74" firstAttribute="leading" secondItem="qI9-jV-5yP" secondAttribute="leading" constant="8" id="lWG-VI-OGM"/>
-                            <constraint firstAttribute="trailing" secondItem="O4m-PW-F74" secondAttribute="trailing" constant="8" id="pAG-w7-FDG"/>
+                            <constraint firstItem="O4m-PW-F74" firstAttribute="leading" secondItem="qI9-jV-5yP" secondAttribute="leading" constant="4" id="1A8-jT-G9r"/>
+                            <constraint firstItem="O4m-PW-F74" firstAttribute="centerY" secondItem="qI9-jV-5yP" secondAttribute="centerY" id="CsA-eu-WWb"/>
+                            <constraint firstItem="O4m-PW-F74" firstAttribute="top" secondItem="qI9-jV-5yP" secondAttribute="top" constant="12" id="W2N-cT-eZl"/>
+                            <constraint firstAttribute="bottom" secondItem="O4m-PW-F74" secondAttribute="bottom" constant="12" id="bZN-NG-CAA"/>
+                            <constraint firstAttribute="trailing" secondItem="O4m-PW-F74" secondAttribute="trailing" constant="10" id="tJy-NM-wfl"/>
                         </constraints>
                     </view>
                 </subviews>
             </view>
             <viewLayoutGuide key="safeArea" id="ZTg-uK-7eu"/>
             <constraints>
+                <constraint firstAttribute="bottom" secondItem="qI9-jV-5yP" secondAttribute="bottom" id="6Tl-hE-8hm"/>
                 <constraint firstItem="qI9-jV-5yP" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="DV5-1B-h4W"/>
+                <constraint firstAttribute="trailing" secondItem="qI9-jV-5yP" secondAttribute="trailing" id="FW5-FK-QwQ"/>
                 <constraint firstItem="qI9-jV-5yP" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="Kkv-yg-DhD"/>
             </constraints>
             <connections>
@@ -115,6 +126,7 @@
                 <outlet property="challengeNameLabel" destination="sz4-Nl-pZW" id="ZhW-tv-f5q"/>
                 <outlet property="mainTitleLabel" destination="4cK-ip-vsX" id="B6Z-Du-rFi"/>
                 <outlet property="monthlyBadgeImageView" destination="4L8-hV-wqe" id="b4i-aS-DRR"/>
+                <outlet property="showAllButton" destination="DBR-RU-pFc" id="DFr-uP-JlU"/>
                 <outlet property="showAllContainerView" destination="qI9-jV-5yP" id="w7v-Lo-39c"/>
                 <outlet property="upcomingBadgeLabel" destination="zgo-ZG-9Mr" id="pHp-mu-gmt"/>
             </connections>
@@ -122,7 +134,7 @@
         </collectionViewCell>
     </objects>
     <resources>
-        <image name="badge_showall_button" width="1890" height="902"/>
+        <image name="badge_showall_button" width="1024" height="1536"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
