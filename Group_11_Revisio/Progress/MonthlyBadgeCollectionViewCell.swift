@@ -16,17 +16,12 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
 
     
     @IBOutlet weak var monthlyBadgeImageView: UIImageView!
-    
     @IBOutlet weak var mainTitleLabel: UILabel!
-    
     @IBOutlet weak var challengeNameLabel: UILabel!
-    
     @IBOutlet weak var upcomingBadgeLabel: UILabel!
-    
     @IBOutlet weak var allBadgesImageView: UIImageView!
-    
     @IBOutlet weak var showAllButton: UIButton!
-    
+
     @IBOutlet weak var showAllContainerView: UIView!
     
     
@@ -34,11 +29,24 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
         
         override func awakeFromNib() {
             super.awakeFromNib()
+            setupUI()
             setupCardStyle()
             setupShowAllStyle()
             setupTapGesture()
         }
+    private func setupUI() {
+        mainTitleLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+        challengeNameLabel.font = UIFont.systemFont(ofSize: 16, weight: .regular)
+        upcomingBadgeLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        showAllButton.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .medium)
         
+        upcomingBadgeLabel.textColor = .secondaryLabel
+        showAllButton.setTitleColor(.systemYellow, for: .normal)
+            
+            // 3. Keep your existing card styling
+            setupCardStyle()
+            setupShowAllStyle()
+    }
         func configure(with badge: Badge) {
             mainTitleLabel.text = "Go For It"
             challengeNameLabel.text = badge.title

@@ -7,11 +7,8 @@
 
 import UIKit
 
-// NOTE: The Badge struct must be available (e.g., defined in DataModels.swift)
-
 class AwardsViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, MonthlyBadgeCellDelegate {
     
-    // MARK: - Outlets (Similar to your example's single CollectionView outlet)
     @IBOutlet weak var featuredCollectionView: UICollectionView!
     @IBOutlet weak var gridCollectionView: UICollectionView!
     
@@ -43,7 +40,6 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
         featuredCollectionView.register(UINib(nibName: "MonthlyBadgeCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "MonthlyFeatureCell")
         gridCollectionView.register(UINib(nibName: "BadgeCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "BadgeGridCell")
         
-        // Register the header class for the grid
         gridCollectionView.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
     }
     
@@ -51,7 +47,6 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
         if let gridLayout = gridCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
             gridLayout.minimumInteritemSpacing = horizontalSpacing
             gridLayout.minimumLineSpacing = verticalSpacing
-            // Adjusted top inset to 0 because header handles its own spacing
             gridLayout.sectionInset = UIEdgeInsets(top: 0, left: sidePadding, bottom: verticalSpacing, right: sidePadding)
         }
         if let featuredLayout = featuredCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
@@ -59,7 +54,6 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
         }
     }
     
-    // MARK: - UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return collectionView == featuredCollectionView ? 1 : badges.count - 1
     }
@@ -75,26 +69,22 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
             
             // Use your existing badge data
             let badge = badges[indexPath.item + 1]
-//            
-//            // Pass the numeric value for the bar and the text for your label
             cell.configure(with: badge)
-//            
+           
             return cell
         }
     }
     
-    // Implementation for the "In Progress" header
+    // Header
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader && collectionView == gridCollectionView {
             let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as! SectionHeaderView
-            header.titleLabel.text = "In Progress"
-            header.subtitleLabel.text = "Awards you're close to earning"
+            
             return header
         }
         return UICollectionReusableView()
     }
     
-    // MARK: - Navigation / Segue Logic
     func didTapMonthlyBadgeCard() {
         let detailVC = MonthlyChallengeDetailViewController(nibName: "MonthlyChallengeDetailViewController", bundle: nil)
         self.navigationController?.pushViewController(detailVC, animated: true)
@@ -104,7 +94,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
         self.performSegue(withIdentifier: "ShowAllBadges", sender: self)
     }
 }
-    // MARK: - Layout Extension
+
     extension AwardsViewController: UICollectionViewDelegateFlowLayout {
         func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
             if collectionView == featuredCollectionView {
@@ -116,7 +106,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
             }
         }
 
-        // Set height for the "In Progress" header
+        // Header height
         func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
             if collectionView == gridCollectionView {
                 return CGSize(width: collectionView.frame.width, height: 70)
@@ -127,7 +117,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
 
 class SectionHeaderView: UICollectionReusableView {
     let titleLabel = UILabel()
-    let subtitleLabel = UILabel() // Add this
+    let subtitleLabel = UILabel()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -140,13 +130,15 @@ class SectionHeaderView: UICollectionReusableView {
     }
 
     private func setupHeader() {
+        titleLabel.text = "In Progress"
         titleLabel.textColor = .white
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 22)
+        titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
         
-        subtitleLabel.textColor = .lightGray
-        subtitleLabel.font = UIFont.systemFont(ofSize: 14)
+        subtitleLabel.text = "Awards you're close to earning"
+        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         
-        // Use a StackView to arrange them vertically
+        
         let stackView = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
         stackView.axis = .vertical
         stackView.spacing = 2

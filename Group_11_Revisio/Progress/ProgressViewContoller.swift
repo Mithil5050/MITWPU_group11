@@ -21,24 +21,23 @@ class ProgressViewContoller: UIViewController , LogStudyTimeDelegate {
     @IBOutlet weak var personalBestCard: UIView!
     @IBOutlet weak var progressBarCard: UIView!
     
+    @IBOutlet weak var personalBadgeImageView: UIImageView!
     
-    // MARK: - Properties
-        var studyModel = StudyChartModel()
+    @IBOutlet weak var mainMonthBagdeImageView: UIImageView!
+    
+    var studyModel = StudyChartModel()
         private var hostingController: UIHostingController<BarChartView>?
         
-        // MARK: - Lifecycle
         override func viewDidLoad() {
             super.viewDidLoad()
             setupUI()
-//            setupTodayGraph()
-            
-            // Initial load from DataManager (which reads your JSON)
+
+            // initial load
             loadDataAndRefreshChart()
         }
         
         override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
-            // Refresh every time the screen appears to catch deletions/edits
             loadDataAndRefreshChart()
         }
         
@@ -49,37 +48,17 @@ class ProgressViewContoller: UIViewController , LogStudyTimeDelegate {
             scrollView.contentSize = CGSize(width: view.frame.width, height: contentHeight)
         }
         
-        // MARK: - Data Management
         private func loadDataAndRefreshChart() {
-            // 1. Tell DataManager to load (from Storage or JSON)
+        
             ProgressDataManager.shared.loadInitialData()
             
-            // 2. Map the logs into the chart's bars
+           // map logs
             studyModel.updateChart(with: ProgressDataManager.shared.history)
-            
-            // 3. Update the UI
+    
             refreshChartView()
         }
     
-//    private func setupTodayGraph() {
-//        // 1. Get current date as a string (matching your DataManager format)
-//        let formatter = DateFormatter()
-//        formatter.dateFormat = "dd/MM/yyyy"
-//        let todayString = formatter.string(from: Date())
-//        
-//        // 2. Filter your data for today's entry
-//        // Assuming 'logs' comes from your DataManager
-//        if let todayData = DataManager.shared.logs.first(where: { $0.date == todayString }) {
-//            // 3. Update the bar graph with today's study hours
-//            BarGraphView.updateGraph(with: todayData.hours)
-//        } else {
-//            // Optional: Handle case where no data exists for today yet
-//            BarGraphView.updateGraph(with: [0, 0, 0, 0, 0, 0, 0])
-//        }
-//    }
-    
         
-        // MARK: - Navigation
         override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
             if let nav = segue.destination as? UINavigationController,
                let logVC = nav.topViewController as? LogProgressViewController {
@@ -87,16 +66,13 @@ class ProgressViewContoller: UIViewController , LogStudyTimeDelegate {
             }
         }
 
-        // MARK: - Delegate Method
-        /// This now just triggers a full reload from the DataManager
-        /// ensuring the Chart and List always match exactly.
+       
         func didLogStudyTime(hours: Double, date: Date, subject: String?) {
             DispatchQueue.main.async {
                 self.loadDataAndRefreshChart()
             }
         }
 
-        // MARK: - UI Logic
         private func refreshChartView() {
             let isDaily = segmentControl.selectedSegmentIndex == 0
             let chartView = BarChartView(model: studyModel, isShowingDaily: isDaily)
@@ -130,6 +106,10 @@ class ProgressViewContoller: UIViewController , LogStudyTimeDelegate {
             chartContainerView.backgroundColor = .systemGray6
             chartContainerView.layer.cornerRadius = 20
             chartContainerView.clipsToBounds = true
+
+            personalBadgeImageView.image = UIImage(named: "best subject")
+            
+            mainMonthBagdeImageView.image = UIImage(named: "awards_monthly_main")
             
             streaksCard.layer.cornerRadius = 16
             awardsCard.layer.cornerRadius = 16

@@ -3,8 +3,7 @@
 //  Group_11_Revisio
 //
 //  Created by Ashika Yadav on 17/01/26.
-//
-//return badges.isEmpty ? 10 : badges.count
+
 import UIKit
 
 class AllBadgesViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
@@ -23,7 +22,7 @@ class AllBadgesViewController: UIViewController, UICollectionViewDataSource, UIC
             setupCollectionView()
             registerCells()
         }
-        
+
         private func setupCollectionView() {
             allBadgesCollectionView.dataSource = self
             allBadgesCollectionView.delegate = self
@@ -51,7 +50,7 @@ class AllBadgesViewController: UIViewController, UICollectionViewDataSource, UIC
             return cell
         }
         
-        // MARK: - Header Implementation
+        // Header
         func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
             if kind == UICollectionView.elementKindSectionHeader {
                 // This loads the header from Storyboard using the "HeaderView" identifier
@@ -61,14 +60,13 @@ class AllBadgesViewController: UIViewController, UICollectionViewDataSource, UIC
             return UICollectionReusableView()
         }
         
-        // MARK: - Layout Math
         func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
             let totalHorizontalSpacing = (sidePadding * 2) + horizontalSpacing
             let width = floor((collectionView.bounds.width - totalHorizontalSpacing) / 2)
             return CGSize(width: width, height: width * cardHeightToWidthRatio)
         }
 
-        // This method makes the header appear with the correct height
+        // Header height
         func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
             return CGSize(width: collectionView.frame.width, height: 80)
         }
