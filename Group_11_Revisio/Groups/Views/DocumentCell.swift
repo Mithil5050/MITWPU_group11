@@ -11,7 +11,7 @@ class DocumentCell: UICollectionViewCell {
 
     @IBOutlet weak var titleLabel: UILabel!
 
-    func configure(url: URL) {
-        titleLabel.text = url.lastPathComponent
+    func configure(filename: String) {
+        titleLabel.text = filename
     }
 }
