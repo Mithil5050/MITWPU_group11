@@ -2,10 +2,7 @@
 //  HomeViewController.swift
 //  Group_11_Revisio
 //
-//  Updated for Dropdown Functionality & Profile Icon
-//  Updated with AI Floating Button Integration
-//  Updated: Big Data Card now opens Quiz directly
-//
+
 
 import UIKit
 import UniformTypeIdentifiers

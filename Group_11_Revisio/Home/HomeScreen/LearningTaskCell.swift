@@ -42,7 +42,7 @@ class LearningTaskCell: UITableViewCell {
         titleLabel.text = task.title
         
         // 2. Dynamic Subtitle: "X modules remaining"
-        subtitleLabel.text = "\(task.remainingModules) modules remaining"
+        subtitleLabel.text = "\(task.remainingModules) questions remaining"
         subtitleLabel.textColor = .secondaryLabel
         
         // 3. Icon Logic (Updated for Quiz Timer)
