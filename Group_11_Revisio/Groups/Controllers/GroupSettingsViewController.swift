@@ -355,7 +355,7 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
 
             let parts = filename.split(separator: ".")
             if parts.count != 2 {
-                print("❌ Invalid filename:", filename)
+                print("Invalid filename:", filename)
                 return
             }
 
@@ -363,7 +363,7 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
                 forResource: String(parts[0]),
                 withExtension: String(parts[1])
             ) else {
-                print("❌ File NOT in Copy Bundle Resources:", filename)
+                print("File NOT in Copy Bundle Resources:", filename)
                 return
             }
 
@@ -401,6 +401,11 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
         if collectionView == docsCollectionView {
             return 6
         }
+
+        if collectionView == mediaCollectionView {
+            return 8   // 👈 THIS increases gap between rows
+        }
+
         return 0
     }
     
@@ -421,12 +426,9 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
         if collectionView == mediaCollectionView {
 
             let columns: CGFloat = 3
-            let spacing: CGFloat = 6
-
-            let totalSpacing = (columns - 1) * spacing
-            let horizontalInsets: CGFloat = 12 * 2
-
-            let width = (collectionView.bounds.width - totalSpacing - horizontalInsets) / columns
+            let spacing: CGFloat = 8
+            let totalSpacing = (columns - 1) * spacing + 24
+            let width = (collectionView.bounds.width - totalSpacing) / columns
 
             return CGSize(width: width, height: width)
         }
@@ -454,10 +456,10 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
                         insetForSectionAt section: Int) -> UIEdgeInsets {
 
         if collectionView == mediaCollectionView {
-            return UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
+            return UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
         }
 
-        return UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
+        return UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
     }
 
 }

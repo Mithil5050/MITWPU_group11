@@ -43,15 +43,21 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        title = "Groups"
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.largeTitleDisplayMode = .always
 
         groupsTableView.dataSource = self
         groupsTableView.delegate = self
         groupsTableView.isScrollEnabled = true
         groupsTableView.tableFooterView = UIView()
+        
+        // 🔒 Freeze everything except groups table view
+        view.subviews.forEach {
+            if let scrollView = $0 as? UIScrollView,
+               scrollView != groupsTableView {
+                scrollView.isScrollEnabled = false
+            }
+        }
+
+        groupsTableView.isScrollEnabled = true
     }
     
     func didUpdateGroup(_ group: Group) {
