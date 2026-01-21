@@ -50,24 +50,12 @@ class GroupSettingsViewController: UIViewController {
         ("Smera", "pfp_ayaana")
     ]
     
-    private var documents: [URL] = {
-        let names = [
-            "flowchart.pdf",
-            "probstatements.docx",
-            "writeup.docx",
-            "flowchart2.pdf"
-        ]
-
-        return names.compactMap { fileName in
-            let parts = fileName.split(separator: ".")
-            guard parts.count == 2 else { return nil }
-
-            return Bundle.main.url(
-                forResource: String(parts[0]),
-                withExtension: String(parts[1])
-            )
-        }
-    }()
+    private let documents = [
+        "flowchart.pdf",
+        "probstatements.docx",
+        "writeup.docx",
+        "flowchart2.pdf"
+    ]
     
     private let links: [(title: String, url: String)] = [
         ("Apple Developer", "https://developer.apple.com"),
@@ -89,11 +77,16 @@ class GroupSettingsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        guard let group = group else {
+               print("❌ Group is NIL in GroupSettingsViewController")
+               navigationController?.popViewController(animated: true)
+               return
+           }
         segmentedControl.selectedSegmentIndex = 0
         showSegment(index: 0)
         
         // Header content
-        groupNameLabel.text = group?.name ?? "Group"
+        groupNameLabel.text = group.name
 
         membersCountLabel.text = "\(members.count) members"
         
@@ -122,10 +115,8 @@ class GroupSettingsViewController: UIViewController {
         if let layout = mediaCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
             layout.estimatedItemSize = .zero
         }
-        mediaCollectionView.register(
-            MediaCell.self,
-            forCellWithReuseIdentifier: "MediaCell"
-        )
+
+    
 
     }
     
@@ -209,6 +200,15 @@ class GroupSettingsViewController: UIViewController {
             self.mediaView.isHidden = index != 2
             self.linksView.isHidden = index != 3
 
+            if index == 1 {
+                self.docsCollectionView.reloadData()
+                self.docsCollectionView.collectionViewLayout.invalidateLayout()
+                }
+
+                if index == 2 {
+                    self.mediaCollectionView.reloadData()
+                    self.mediaCollectionView.collectionViewLayout.invalidateLayout()
+                }
         }
     }
 
@@ -282,7 +282,7 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
                 for: indexPath
             ) as! DocumentCell
 
-            cell.configure(url: documents[indexPath.item])
+            cell.configure(filename: documents[indexPath.item])
             return cell
         }
 
@@ -318,8 +318,12 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
                     return
                 }
 
+//                codeVC.configure(
+//                    withGroupName: group.name,
+//                    code: "ABC-123"
+//                )
                 codeVC.configure(
-                    withGroupName: group.name,
+                    withGroupName: group?.name ?? "Group",
                     code: "ABC-123"
                 )
                 codeVC.isFromCreateGroup = false
@@ -347,15 +351,30 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
         // MARK:  Document Preview
         if collectionView == docsCollectionView {
 
+            let filename = documents[indexPath.item]
+
+            let parts = filename.split(separator: ".")
+            if parts.count != 2 {
+                print("❌ Invalid filename:", filename)
+                return
+            }
+
+            guard let url = Bundle.main.url(
+                forResource: String(parts[0]),
+                withExtension: String(parts[1])
+            ) else {
+                print("❌ File NOT in Copy Bundle Resources:", filename)
+                return
+            }
+
             let previewVC = DocumentPreviewViewController()
-            previewVC.documentURL = documents[indexPath.item]
+            previewVC.documentURL = url
 
             let nav = UINavigationController(rootViewController: previewVC)
             nav.modalPresentationStyle = .fullScreen
-
             present(nav, animated: true)
-            return
         }
+        
         
     }
     
