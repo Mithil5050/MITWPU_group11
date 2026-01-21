@@ -393,6 +393,22 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+            
+            let item = self.filteredContent[indexPath.row]
+            
+            let rename = UIAction(title: "Rename", image: UIImage(systemName: "pencil")) { _ in
+                self.renameMaterialAction(for: item)
+            }
+            
+            let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                // Logic to delete a single item
+            }
+            
+            return UIMenu(title: "", children: [rename, delete])
+        }
+    }
 
     // MARK: - Global Folder Actions
     @objc func renameCurrentSubject() {
