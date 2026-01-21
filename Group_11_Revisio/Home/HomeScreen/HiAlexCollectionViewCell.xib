@@ -47,12 +47,12 @@ one task to go!</string>
                                     <constraint firstItem="Kfd-zb-NWZ" firstAttribute="top" secondItem="pEI-84-TK2" secondAttribute="top" constant="20" id="sCW-03-ADT"/>
                                 </constraints>
                             </view>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" image="IMG_5173-removebg-preview" translatesAutoresizingMaskIntoConstraints="NO" id="k4o-IY-NIR">
-                                <rect key="frame" x="232.33333333333337" y="-10" width="137.66666666666663" height="139"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" image="IMG_5173-removebg-preview" translatesAutoresizingMaskIntoConstraints="NO" id="k4o-IY-NIR">
+                                <rect key="frame" x="232" y="-3" width="138" height="135"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="139" id="7rJ-cJ-rkV"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="135" id="7rJ-cJ-rkV"/>
                                     <constraint firstAttribute="width" constant="137.66999999999999" id="Ax8-dW-H2b"/>
-                                    <constraint firstAttribute="height" constant="139" id="pAN-2f-SKf"/>
+                                    <constraint firstAttribute="height" constant="135" id="pAN-2f-SKf"/>
                                 </constraints>
                             </imageView>
                         </subviews>
@@ -60,10 +60,10 @@ one task to go!</string>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="k4o-IY-NIR" secondAttribute="trailing" id="2hu-Ls-gCU"/>
                             <constraint firstAttribute="trailing" secondItem="pEI-84-TK2" secondAttribute="trailing" id="FTd-EF-iNf"/>
-                            <constraint firstAttribute="bottom" secondItem="k4o-IY-NIR" secondAttribute="bottom" constant="-5" id="Pn8-w0-Dt7"/>
+                            <constraint firstAttribute="bottom" secondItem="k4o-IY-NIR" secondAttribute="bottom" constant="-8" id="Pn8-w0-Dt7"/>
                             <constraint firstItem="pEI-84-TK2" firstAttribute="leading" secondItem="uAA-C9-8id" secondAttribute="leading" id="X6v-Ik-C2f"/>
                             <constraint firstAttribute="bottom" secondItem="pEI-84-TK2" secondAttribute="bottom" id="XKT-2f-kZB"/>
-                            <constraint firstItem="k4o-IY-NIR" firstAttribute="top" secondItem="uAA-C9-8id" secondAttribute="top" constant="-10" id="cbo-gQ-fRl"/>
+                            <constraint firstItem="k4o-IY-NIR" firstAttribute="top" secondItem="uAA-C9-8id" secondAttribute="top" constant="-3" id="cbo-gQ-fRl"/>
                             <constraint firstItem="pEI-84-TK2" firstAttribute="top" secondItem="uAA-C9-8id" secondAttribute="top" id="cf0-2d-8j7"/>
                         </constraints>
                     </view>

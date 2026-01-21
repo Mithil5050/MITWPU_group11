@@ -1,25 +1,12 @@
-//
-//  GenerateHomeViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Mithil on 15/12/25.
-//  Updated: UI matching specific screenshot fonts and dynamic border colors
-//
-
 import UIKit
 
-// MARK: - 1. Tappable Card View (Custom Control)
 @IBDesignable
 class TappableCardView: UIControl {
     
     private let stackView = UIStackView()
     private let iconImageView = UIImageView()
     private let titleLabel = UILabel()
-    
-    // Store the specific color for this card to use on the border
     private var highlightColor: UIColor = .systemBlue
-    
-    // Modern iOS Colors
     private var defaultBackgroundColor: UIColor = .secondarySystemGroupedBackground
     
     override init(frame: CGRect) {
@@ -35,7 +22,6 @@ class TappableCardView: UIControl {
     private func setupView() {
         self.backgroundColor = defaultBackgroundColor
         self.layer.cornerRadius = 16
-        // Subtle iOS Shadow
         self.layer.shadowColor = UIColor.black.cgColor
         self.layer.shadowOpacity = 0.05
         self.layer.shadowOffset = CGSize(width: 0, height: 2)
@@ -43,18 +29,17 @@ class TappableCardView: UIControl {
         
         iconImageView.contentMode = .scaleAspectFit
         NSLayoutConstraint.activate([
-            iconImageView.widthAnchor.constraint(equalToConstant: 40), // Adjusted slightly to match screenshot ratio
+            iconImageView.widthAnchor.constraint(equalToConstant: 40),
             iconImageView.heightAnchor.constraint(equalToConstant: 40)
         ])
         
-        // ✅ UPDATED FONT: Matches the bold/semibold look of the screenshot
         titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         titleLabel.textColor = .label
         titleLabel.numberOfLines = 1
         titleLabel.textAlignment = .center
         
         stackView.axis = .vertical
-        stackView.spacing = 10 // Increased spacing slightly
+        stackView.spacing = 10
         stackView.alignment = .center
         stackView.isUserInteractionEnabled = false
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -72,27 +57,18 @@ class TappableCardView: UIControl {
         ])
     }
     
-    // Accepts 'iconColor' to set the specific logo tint
     func configure(iconName: String, title: String, iconColor: UIColor) {
         let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)
         iconImageView.image = UIImage(systemName: iconName, withConfiguration: config)
         titleLabel.text = title
-        
-        // Apply the specific color requested
         iconImageView.tintColor = iconColor
-        
-        // ✅ NEW: Store this color to use for the border later
         self.highlightColor = iconColor
     }
     
-    // Logic to keep background "Normal"
     override var isSelected: Bool {
         didSet {
             self.backgroundColor = defaultBackgroundColor
-            // Only toggle the border to indicate selection
-            self.layer.borderWidth = isSelected ? 3 : 0 // Slightly thicker border (3) to match design
-            
-            // ✅ UPDATED: Use the specific card color for the border
+            self.layer.borderWidth = isSelected ? 3 : 0
             self.layer.borderColor = isSelected ? highlightColor.cgColor : nil
         }
     }
@@ -107,15 +83,12 @@ class TappableCardView: UIControl {
     }
 }
 
-// MARK: - 2. View Controller
 class GenerateHomeViewController: UIViewController {
 
-    // MARK: - Data Properties
     var selectedMaterialType: GenerationType = .none
     var inputSourceData: [Any]?
     var contextSubjectTitle: String?
     
-    // Configuration State
     var selectedCount: Int = 10
     var selectedTime: Int = 15
     var currentDifficulty: DifficultyLevel = .medium
@@ -124,21 +97,17 @@ class GenerateHomeViewController: UIViewController {
         case easy, medium, hard
     }
 
-    // MARK: - IBOutlets: Main UI
     @IBOutlet weak var startCreationButton: UIButton!
     
-    // Cards
     @IBOutlet weak var quizCardView: TappableCardView!
     @IBOutlet weak var flashcardsCardView: TappableCardView!
     @IBOutlet weak var notesCardView: TappableCardView!
     @IBOutlet weak var cheatsheetCardView: TappableCardView!
 
-    // Config Views (Containers)
     @IBOutlet weak var quizConfigurationView: UIView!
     @IBOutlet weak var flashcardConfigurationView: UIView!
     @IBOutlet weak var defaultConfigurationPlaceholder: UIView!
     
-    // MARK: - IBOutlets: Steppers & Labels
     @IBOutlet weak var flashcardCountStepper: UIStepper!
     @IBOutlet weak var flashcardCountLabel: UILabel!
     
@@ -148,20 +117,17 @@ class GenerateHomeViewController: UIViewController {
     @IBOutlet weak var quizTimerStepper: UIStepper!
     @IBOutlet weak var quizTimerLabel: UILabel!
     
-    // MARK: - IBOutlets: Difficulty Buttons
     @IBOutlet weak var easyButton: UIButton!
     @IBOutlet weak var mediumButton: UIButton!
     @IBOutlet weak var hardButton: UIButton!
 
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCards()
         setupSteppers()
         setupDifficultyButtons()
-        setupFonts() // ✅ NEW: Standardize fonts across UI
+        setupFonts()
         
-        // Initial Selection
         handleCardSelection(selectedCard: quizCardView, type: .quiz)
         updateDifficultyUI()
     }
@@ -171,37 +137,44 @@ class GenerateHomeViewController: UIViewController {
         setupDividers()
     }
     
-    // ✅ NEW: Setup Fonts to match the screenshot
     private func setupFonts() {
         let labels = [flashcardCountLabel, quizCountLabel, quizTimerLabel]
         labels.forEach { label in
-            // Clean, large numbers for the stepper values
             label?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         }
-        
         startCreationButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
     }
 
-    // MARK: - Setup Methods
     private func setupCards() {
-        // Define Custom Colors
-        // ✅ UPDATED: Removed Alpha components so colors are vibrant and borders pop
-        let quizColor = UIColor(hex: "88D769")       // Green
-        let flashcardColor = UIColor(hex: "5AC8FA")  // Blue (Tweaked to be brighter like screenshot)
-        let notesColor = UIColor(hex: "FF9F0A")      // Orange (System Orange-ish)
-        let cheatsheetColor = UIColor(hex: "BF5AF2") // Purple (System Purple-ish)
+        let quizColor = UIColor(hex: "88D769")
+        let flashcardColor = UIColor(hex: "5AC8FA")
+        let notesColor = UIColor(hex: "FF9F0A")
+        let cheatsheetColor = UIColor(hex: "BF5AF2")
         
-        // Configure Cards
         quizCardView.configure(iconName: "timer", title: "Quiz", iconColor: quizColor)
         flashcardsCardView.configure(iconName: "rectangle.on.rectangle.angled", title: "Flashcards", iconColor: flashcardColor)
-        notesCardView.configure(iconName: "doc.text", title: "Notes", iconColor: notesColor)
+        notesCardView.configure(iconName: "book.pages", title: "Notes", iconColor: notesColor)
         cheatsheetCardView.configure(iconName: "list.clipboard", title: "Cheatsheet", iconColor: cheatsheetColor)
         
-        // Add Targets
-        quizCardView.addTarget(self, action: #selector(quizTapped), for: .touchUpInside)
-        flashcardsCardView.addTarget(self, action: #selector(flashcardsTapped), for: .touchUpInside)
-        notesCardView.addTarget(self, action: #selector(notesTapped), for: .touchUpInside)
-        cheatsheetCardView.addTarget(self, action: #selector(cheatsheetTapped), for: .touchUpInside)
+        quizCardView.addAction(UIAction { [weak self] _ in
+            guard let self = self else { return }
+            self.handleCardSelection(selectedCard: self.quizCardView, type: .quiz)
+        }, for: .touchUpInside)
+        
+        flashcardsCardView.addAction(UIAction { [weak self] _ in
+            guard let self = self else { return }
+            self.handleCardSelection(selectedCard: self.flashcardsCardView, type: .flashcards)
+        }, for: .touchUpInside)
+        
+        notesCardView.addAction(UIAction { [weak self] _ in
+            guard let self = self else { return }
+            self.handleCardSelection(selectedCard: self.notesCardView, type: .notes)
+        }, for: .touchUpInside)
+        
+        cheatsheetCardView.addAction(UIAction { [weak self] _ in
+            guard let self = self else { return }
+            self.handleCardSelection(selectedCard: self.cheatsheetCardView, type: .cheatsheet)
+        }, for: .touchUpInside)
         
         startCreationButton.layer.cornerRadius = 14
     }
@@ -265,7 +238,6 @@ class GenerateHomeViewController: UIViewController {
         ])
     }
 
-    // MARK: - Logic: UI Updates for Difficulty
     private func updateDifficultyUI() {
         let allButtons = [easyButton, mediumButton, hardButton]
         for button in allButtons {
@@ -302,7 +274,6 @@ class GenerateHomeViewController: UIViewController {
         startCreationButton.setTitle(title, for: .normal)
     }
 
-    // MARK: - IBActions: Steppers
     @IBAction func stepperValueChanged(_ sender: UIStepper) {
         let intValue = Int(sender.value)
         
@@ -323,7 +294,6 @@ class GenerateHomeViewController: UIViewController {
         generator.selectionChanged()
     }
     
-    // MARK: - IBActions: Difficulty
     @IBAction func difficultyButtonTapped(_ sender: UIButton) {
         if sender == easyButton {
             currentDifficulty = .easy
@@ -338,28 +308,21 @@ class GenerateHomeViewController: UIViewController {
         }
     }
 
-    // MARK: - IBActions: Card Taps
-    @objc func quizTapped() { handleCardSelection(selectedCard: quizCardView, type: .quiz) }
-    @objc func flashcardsTapped() { handleCardSelection(selectedCard: flashcardsCardView, type: .flashcards) }
-    @objc func notesTapped() { handleCardSelection(selectedCard: notesCardView, type: .notes) }
-    @objc func cheatsheetTapped() { handleCardSelection(selectedCard: cheatsheetCardView, type: .cheatsheet) }
-
-    // MARK: - Helper: Mock Content Generator
     private func generateDummyContent(topic: String, type: GenerationType) -> String {
         switch type {
         case .notes:
             return """
             # Notes: \(topic)
             
-             1. Introduction
+            1. Introduction
             \(topic) is a fundamental concept in this field. It encompasses various methodologies and practices designed to optimize performance and scalability.
             
-             2. Key Concepts
+            2. Key Concepts
             - Scalability: The ability to handle growing amounts of work.
             - Efficiency: Performing in the best possible manner with the least waste of time and effort.
             - Integration: The process of bringing together the component sub-systems into one system.
             
-             3. Summary
+            3. Summary
             Remember that mastering \(topic) requires consistent practice and understanding of the underlying principles.
             """
             
@@ -373,11 +336,11 @@ class GenerateHomeViewController: UIViewController {
             | `start()` | Begins the primary process |
             | `stop()`  | Halts execution immediately |
             
-             Quick Formulas
+            Quick Formulas
             - Speed = Distance / Time
             - Efficiency = (Output / Input) * 100%
             
-             Golden Rules
+            Golden Rules
             1. Always validate inputs.
             2. DRY (Don't Repeat Yourself).
             3. KISS (Keep It Simple, Stupid).
@@ -388,7 +351,6 @@ class GenerateHomeViewController: UIViewController {
         }
     }
 
-    // MARK: - Main Generation Action
     @IBAction func startCreationButtonTapped(_ sender: UIButton) {
         let topicName: String
         if let sourceItem = inputSourceData?.first {
@@ -397,7 +359,6 @@ class GenerateHomeViewController: UIViewController {
             topicName = "New Material"
         }
 
-        // Generate Content (so Notes/Cheatsheet aren't empty)
         let generatedContent = generateDummyContent(topic: topicName, type: selectedMaterialType)
 
         let newTopic = Topic(
@@ -410,7 +371,6 @@ class GenerateHomeViewController: UIViewController {
         
         DataManager.shared.addTopic(to: self.contextSubjectTitle ?? "General Study", topic: newTopic)
         
-        // Navigation Logic
         if selectedMaterialType == .quiz {
             let payload = (topic: newTopic, sourceName: topicName)
             performSegue(withIdentifier: "HomeToQuizInstruction", sender: payload)
@@ -438,50 +398,39 @@ class GenerateHomeViewController: UIViewController {
         return "General Knowledge"
     }
 
-    // MARK: - Navigation
-    // MARK: - Navigation
-        override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-            
-            // Handling the transition to the Quiz Start Screen
-            if segue.identifier == "HomeToQuizInstruction" {
-                
-                // ✅ FIX 1: Cast to 'QuizStartViewController' (Your new class)
-                if let dest = segue.destination as? QuizStartViewController,
-                   let data = sender as? (topic: Topic, sourceName: String) {
-                    
-                    // ✅ FIX 2: Pass the Folder Name (contextSubjectTitle) to parentSubject
-                    dest.currentTopic = data.topic
-                    dest.quizSourceName = data.sourceName
-                    dest.parentSubject = self.contextSubjectTitle
-                    
-                    print("GenerateHomeVC: Passing subject '\(self.contextSubjectTitle ?? "nil")' to QuizStartVC")
-                }
-            }
-            else if segue.identifier == "HomeToFlashcardView" {
-                if let dest = segue.destination as? FlashcardsViewController,
-                   let topic = sender as? Topic {
-                    dest.currentTopic = topic
-                    dest.parentSubjectName = self.contextSubjectTitle
-                }
-            }
-            else if segue.identifier == "HomeToNotesView" {
-                if let dest = segue.destination as? NotesViewController,
-                   let topic = sender as? Topic {
-                    dest.currentTopic = topic
-                    dest.parentSubjectName = self.contextSubjectTitle
-                }
-            }
-            else if segue.identifier == "HomeToCheatsheetView" {
-                if let dest = segue.destination as? CheatsheetViewController,
-                   let topic = sender as? Topic {
-                    dest.currentTopic = topic
-                    dest.parentSubjectName = self.contextSubjectTitle
-                }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "HomeToQuizInstruction" {
+            if let dest = segue.destination as? QuizStartViewController,
+               let data = sender as? (topic: Topic, sourceName: String) {
+                dest.currentTopic = data.topic
+                dest.quizSourceName = data.sourceName
+                dest.parentSubject = self.contextSubjectTitle
             }
         }
+        else if segue.identifier == "HomeToFlashcardView" {
+            if let dest = segue.destination as? FlashcardsViewController,
+               let topic = sender as? Topic {
+                dest.currentTopic = topic
+                dest.parentSubjectName = self.contextSubjectTitle
+            }
+        }
+        else if segue.identifier == "HomeToNotesView" {
+            if let dest = segue.destination as? NotesViewController,
+               let topic = sender as? Topic {
+                dest.currentTopic = topic
+                dest.parentSubjectName = self.contextSubjectTitle
+            }
+        }
+        else if segue.identifier == "HomeToCheatsheetView" {
+            if let dest = segue.destination as? CheatsheetViewController,
+               let topic = sender as? Topic {
+                dest.currentTopic = topic
+                dest.parentSubjectName = self.contextSubjectTitle
+            }
+        }
+    }
 }
 
-// MARK: - Safe Hex Color Extension
 extension UIColor {
     convenience init(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)

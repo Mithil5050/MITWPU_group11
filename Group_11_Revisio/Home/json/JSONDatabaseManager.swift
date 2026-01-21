@@ -2,7 +2,6 @@
 //  JSONDatabaseManager.swift
 //  Group_11_Revisio
 //
-//  FIXED: Restored 'deleteFile' and includes Today's Tasks logic
 //
 
 import Foundation
@@ -38,7 +37,6 @@ class JSONDatabaseManager {
         }
     }
     
-    // ⬇️ RESTORED FUNCTION
     func deleteFile(at index: Int) {
         var currentFiles = loadFiles()
         if index >= 0 && index < currentFiles.count {
@@ -51,13 +49,11 @@ class JSONDatabaseManager {
     func loadFiles() -> [StudyContent] {
         let url = getFileURL(forName: materialsFileName)
         
-        // 1. Try Documents
         if let data = try? Data(contentsOf: url),
            let files = try? JSONDecoder().decode([StudyContent].self, from: data) {
             return files
         }
         
-        // 2. Fallback to Bundle
         if let bundleURL = Bundle.main.url(forResource: "StudyMaterials", withExtension: "json"),
            let data = try? Data(contentsOf: bundleURL),
            let files = try? JSONDecoder().decode([StudyContent].self, from: data) {
@@ -88,13 +84,11 @@ class JSONDatabaseManager {
     func loadTodaysTasks() -> [TodaySubject] {
         let url = getFileURL(forName: todaysTasksFileName)
         
-        // 1. Try Documents
         if let data = try? Data(contentsOf: url),
            let subjects = try? JSONDecoder().decode([TodaySubject].self, from: data) {
             return subjects
         }
         
-        // 2. Try Bundle
         if let bundleURL = Bundle.main.url(forResource: "TodaysTasks", withExtension: "json"),
            let data = try? Data(contentsOf: bundleURL),
            let subjects = try? JSONDecoder().decode([TodaySubject].self, from: data) {

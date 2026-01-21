@@ -7,14 +7,12 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
     var uploadedContentName: String?
     var parentSubjectName: String?
     
-    // Internal data for the table
     var fileURLs: [URL] = []
     
     // MARK: - IBOutlets
     @IBOutlet weak var UploadedContent: UITableView!
     @IBOutlet weak var doneButton: UIButton!
     
-    // Kept as AnyObject to prevent crash if connected to UIBarButtonItem
     @IBOutlet weak var addButton: AnyObject!
     
     private let confirmationCellID = "ConfirmationContentCell"
@@ -23,7 +21,6 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // 1. Initial Data Load
         if let name = uploadedContentName {
             let dummyURL = URL(fileURLWithPath: name)
             fileURLs = [dummyURL]
@@ -37,13 +34,11 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
     private func setupUI() {
         view.backgroundColor = .systemBackground
         
-        // Style Done Button
         if let btn = doneButton {
             btn.layer.cornerRadius = 12
             btn.clipsToBounds = true
         }
         
-        // Safe check for Add Button styling
         if let btn = addButton as? UIButton {
             btn.layer.cornerRadius = 12
         }

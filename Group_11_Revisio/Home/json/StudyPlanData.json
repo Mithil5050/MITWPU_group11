@@ -1,0 +1,121 @@
+[
+  {
+    "id": "calc_001",
+    "name": "Calculus",
+    "nextTask": "Quiz",
+    "days": [
+      {
+        "dayNumber": 1,
+        "tasks": [
+          { "title": "Practice Problems - Limits", "type": "Quiz", "isComplete": true },
+          { "title": "Summarize Integral Concepts", "type": "Short Notes", "isComplete": true }
+        ]
+      },
+      {
+        "dayNumber": 2,
+        "tasks": [
+          { "title": "Differentiation Rules", "type": "Notes", "isComplete": false },
+          { "title": "Chain Rule Applications", "type": "Quiz", "isComplete": false }
+        ]
+      },
+      {
+        "dayNumber": 3,
+        "tasks": [
+          { "title": "Definite Integrals", "type": "Notes", "isComplete": false },
+          { "title": "Area Under Curves", "type": "Quiz", "isComplete": false }
+        ]
+      },
+      {
+        "dayNumber": 4,
+        "tasks": [
+          { "title": "Differential Equations Intro", "type": "Revision", "isComplete": false },
+          { "title": "Solve First Order ODEs", "type": "Quiz", "isComplete": false }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bd_002",
+    "name": "Big Data",
+    "nextTask": "Lab",
+    "days": [
+      {
+        "dayNumber": 1,
+        "tasks": [
+          { "title": "Hadoop Architecture", "type": "Notes", "isComplete": true },
+          { "title": "HDFS Commands Setup", "type": "Lab", "isComplete": false }
+        ]
+      },
+      {
+        "dayNumber": 2,
+        "tasks": [
+          { "title": "MapReduce Fundamentals", "type": "Notes", "isComplete": false },
+          { "title": "Write WordCount Program", "type": "Lab", "isComplete": false }
+        ]
+      },
+      {
+        "dayNumber": 3,
+        "tasks": [
+          { "title": "Apache Spark Intro", "type": "Revision", "isComplete": false },
+          { "title": "RDD Transformations", "type": "Quiz", "isComplete": false }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mma_003",
+    "name": "MMA",
+    "nextTask": "Project",
+    "days": [
+      {
+        "dayNumber": 1,
+        "tasks": [
+          { "title": "Multimedia Systems Intro", "type": "Notes", "isComplete": true },
+          { "title": "Compression Algorithms", "type": "Quiz", "isComplete": false }
+        ]
+      },
+      {
+        "dayNumber": 2,
+        "tasks": [
+          { "title": "Audio Processing Basics", "type": "Revision", "isComplete": false },
+          { "title": "Signal Analysis Lab", "type": "Lab", "isComplete": false }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "os_004",
+    "name": "OS",
+    "nextTask": "Quiz",
+    "days": [
+      {
+        "dayNumber": 1,
+        "tasks": [
+          { "title": "Process Scheduling Algorithms", "type": "Notes", "isComplete": false },
+          { "title": "CPU Scheduling Quiz", "type": "Quiz", "isComplete": false }
+        ]
+      },
+      {
+        "dayNumber": 2,
+        "tasks": [
+          { "title": "Deadlock Handling", "type": "Notes", "isComplete": false },
+          { "title": "Banker's Algorithm", "type": "Quiz", "isComplete": false }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "chem_005",
+    "name": "Chemistry",
+    "nextTask": "Lab",
+    "days": [
+      {
+        "dayNumber": 1,
+        "tasks": [
+          { "title": "Organic Reactions Review", "type": "Revision", "isComplete": true },
+          { "title": "Titration Experiment", "type": "Lab", "isComplete": false }
+        ]
+      }
+    ]
+  }
+]

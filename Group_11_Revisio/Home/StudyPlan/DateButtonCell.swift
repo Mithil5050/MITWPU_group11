@@ -13,22 +13,19 @@ class DateButtonCell: UICollectionViewCell {
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var containerView: UIView!
     
-    // Define the possible states for a day
     enum DayStatus {
-        case streak   // Flame SF Symbol
-        case missed   // -
-        case current  // •
-        case future   // -
+        case streak
+        case missed
+        case current
+        case future
     }
     
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        // 🍏 iOS 26 Aesthetic: Capsule Shape
         containerView.layer.cornerRadius = 28
         containerView.clipsToBounds = true
         
-        // Font adjustments
         dateLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         dayLabel.font = UIFont.systemFont(ofSize: 17, weight: .medium)
         dayLabel.textColor = .white
@@ -37,31 +34,27 @@ class DateButtonCell: UICollectionViewCell {
     func configure(day: String, status: DayStatus, isSelected: Bool) {
         dayLabel.text = day
         
-        // 1. Determine which SF Symbol to use
         var symbolName = ""
         var symbolColor: UIColor = .white
-        var symbolScale: CGFloat = 0.9 // Scale factor for the dot
+        var symbolScale: CGFloat = 0.9
         
         switch status {
         case .streak:
             symbolName = "flame"
             symbolColor = isSelected ? .white : .white
         case .current:
-            symbolName = "circle.fill" // Use circle.fill as the dot
+            symbolName = "circle.fill"
             symbolColor = isSelected ? .white : .white
-            symbolScale = 0.3 // Make it smaller to look like a dot
+            symbolScale = 0.3
         case .missed, .future:
             symbolName = "minus"
             symbolColor = isSelected ? .white : .white
         }
         
-        // 2. Create the Configuration
-        // using a heavy weight ensures the minus and dot are clearly visible
         let config = UIImage.SymbolConfiguration(pointSize: 22, weight: .black)
         
         if var image = UIImage(systemName: symbolName, withConfiguration: config) {
             
-            // Apply scaling if it's the dot (so it's not a giant circle)
             if symbolScale != 1.0 {
                 let newSize = CGSize(width: image.size.width * symbolScale, height: image.size.height * symbolScale)
                 UIGraphicsBeginImageContextWithOptions(newSize, false, 0.0)
@@ -70,22 +63,17 @@ class DateButtonCell: UICollectionViewCell {
                 UIGraphicsEndImageContext()
             }
             
-            // Tint the image manually
             let tintedImage = image.withTintColor(symbolColor, renderingMode: .alwaysOriginal)
             
-            // Create attachment
             let attachment = NSTextAttachment()
             attachment.image = tintedImage
             
-            // Fix vertical alignment (SF Symbols inside text can sometimes sit too high)
-            // A slight negative bound shifts it down to center it
             let yOffset = (dateLabel.font.capHeight - tintedImage.size.height) / 2
             attachment.bounds = CGRect(x: 0, y: yOffset, width: tintedImage.size.width, height: tintedImage.size.height)
             
             dateLabel.attributedText = NSAttributedString(attachment: attachment)
         }
         
-        // 3. Handle Container Colors
         if isSelected {
             containerView.backgroundColor = UIColor.systemBlue
             dayLabel.textColor = .white

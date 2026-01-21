@@ -15,7 +15,7 @@ struct CategoryModel {
     let id: Int
     let title: String
     let words: [String]
-    let color: UIColor // Used for the solved category banner
+    let color: UIColor
 
     static let allCategories: [CategoryModel] = [
         CategoryModel(
@@ -48,16 +48,15 @@ struct CategoryModel {
 // MARK: - 2. Word Data
 struct WordModel {
     let text: String
-    let categoryID: Int // Links word to a category
+    let categoryID: Int
     var isSelected: Bool = false
-    var isGuessed: Bool = false // True if its category has been solved
+    var isGuessed: Bool = false
 
     init(text: String, categoryID: Int) {
         self.text = text
         self.categoryID = categoryID
     }
 
-    // Static function to generate the initial shuffled array of 16 words
     static func generateInitialWords() -> [WordModel] {
         var allWords: [WordModel] = []
         for category in CategoryModel.allCategories {
@@ -65,7 +64,6 @@ struct WordModel {
                 allWords.append(WordModel(text: word, categoryID: category.id))
             }
         }
-        // Shuffles the words randomly
         return allWords.shuffled()
     }
 }

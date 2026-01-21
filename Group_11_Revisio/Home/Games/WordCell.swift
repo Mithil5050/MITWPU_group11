@@ -33,13 +33,11 @@ class WordCell: UICollectionViewCell {
     
     // MARK: Setup
     private func setupViews() {
-        // iOS-style soft button look
-        self.layer.cornerRadius = 12 // Modern, generous corner radius
+        self.layer.cornerRadius = 12
         self.layer.masksToBounds = true
         
         contentView.addSubview(wordLabel)
         
-        // Auto Layout for centering the label
         NSLayoutConstraint.activate([
             wordLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             wordLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
@@ -52,15 +50,11 @@ class WordCell: UICollectionViewCell {
     func configure(with word: WordModel) {
         wordLabel.text = word.text
         
-        // Configuration based on state
         if word.isGuessed {
-            // Already solved - should potentially be removed or handled by ViewController
-            // For now, let's make it look disabled/removed
             self.backgroundColor = .clear
             self.wordLabel.textColor = .clear
             self.isUserInteractionEnabled = false
         } else if word.isSelected {
-            // Selected state (darker background, professional contrast)
             self.backgroundColor = UIColor(hex: "91C1EF")
             self.wordLabel.textColor = .label // Black/White based on mode
             self.alpha = 1.0
