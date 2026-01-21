@@ -38,11 +38,10 @@ class QuestionSummaryCell: UITableViewCell {
     }
 
     private func setupInitialUI() {
-        // 1. Card Styling (Adaptive Background)
+
         backgroundColor = .clear
         selectionStyle = .none
         
-        // Use secondarySystemGroupedBackground so it is White in Light Mode, Dark Grey in Dark Mode
         cardContainerView.backgroundColor = .secondarySystemGroupedBackground
         cardContainerView.layer.cornerRadius = 16 // Increased radius for modern look
         cardContainerView.clipsToBounds = true

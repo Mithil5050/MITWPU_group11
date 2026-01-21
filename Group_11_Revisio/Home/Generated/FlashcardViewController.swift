@@ -1,32 +1,25 @@
 import UIKit
-import Foundation
 
-// MARK: - 1. Flashcard Data Structure
 struct Flashcard {
     let term: String
     let definition: String
 }
 
-// MARK: - 2. Delegation Protocol
 protocol AddFlashcardDelegate: AnyObject {
     func didCreateNewFlashcard(card: Flashcard)
 }
 
-// MARK: - 3. View Controller
 class FlashcardViewController: UIViewController, AddFlashcardDelegate {
 
-    // MARK: - Outlets
     @IBOutlet weak var cardView: UIView!
     @IBOutlet weak var cardLabel: UILabel!
     @IBOutlet weak var previousButton: UIButton!
-    @IBOutlet weak var nextButton: UIButton! // Acts as Next AND Save
+    @IBOutlet weak var nextButton: UIButton!
     @IBOutlet weak var countLabel: UILabel!
     
-    // MARK: - Data Receivers
     var currentTopic: Topic?
     var parentSubjectName: String?
     
-    // MARK: - State
     private var flashcards: [Flashcard] = [
         Flashcard(term: "UIKit", definition: "Apple's framework for building graphical user interfaces for iOS."),
         Flashcard(term: "Auto Layout", definition: "A constraint-based layout system."),
@@ -36,7 +29,6 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     private var isTermDisplayed = true
     private var currentCardIndex = 0
 
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -44,17 +36,12 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
             self.title = topicName
         }
         
-        configureCardViewAppearance()
-        setupTapGesture()
-        
-        // Initial Update
-        updateCardContent(animated: false)
-        updateCountLabel()
-        updateButtonState() // ✅ Initialize button text
+        setupCardView()
+        setupGesture()
+        updateUI(animated: false)
     }
     
-    // MARK: - Configuration
-    private func configureCardViewAppearance() {
+    private func setupCardView() {
         cardView.layer.cornerRadius = 16
         cardView.layer.shadowColor = UIColor.black.cgColor
         cardView.layer.shadowOpacity = 0.1
@@ -63,72 +50,59 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         cardView.backgroundColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0)
     }
 
-    private func setupTapGesture() {
+    private func setupGesture() {
         cardView.isUserInteractionEnabled = true
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCardTap))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCardFlip))
         cardView.addGestureRecognizer(tapGesture)
     }
     
-    // MARK: - UI Updates
-    private func updateCardContent(animated: Bool = true) {
+    private func updateUI(animated: Bool = true) {
         guard !flashcards.isEmpty else {
             cardLabel.text = "Empty"
+            countLabel.text = "0/0"
             return
         }
         
         let card = flashcards[currentCardIndex]
-        let newText = isTermDisplayed ? card.term : card.definition
+        let text = isTermDisplayed ? card.term : card.definition
         
         if animated {
             UIView.transition(with: cardLabel, duration: 0.2, options: .transitionCrossDissolve, animations: {
-                self.cardLabel.text = newText
-            }, completion: nil)
+                self.cardLabel.text = text
+            })
         } else {
-            self.cardLabel.text = newText
+            cardLabel.text = text
         }
-    }
-    
-    private func updateCountLabel() {
-        guard !flashcards.isEmpty else {
-            countLabel.text = "0/0"
-            return
-        }
-        let currentIndex = currentCardIndex + 1
-        let total = flashcards.count
-        countLabel.text = "\(currentIndex)/\(total)"
-    }
-    
-    // ✅ NEW: Text-Based Button State Logic
-    private func updateButtonState() {
-        guard !flashcards.isEmpty else { return }
         
+        countLabel.text = "\(currentCardIndex + 1)/\(flashcards.count)"
+        updateNavigationState()
+    }
+    
+    private func updateNavigationState() {
         let isLastCard = currentCardIndex == flashcards.count - 1
         
         if isLastCard {
-            // Change Text to "Save"
             nextButton.setTitle("Save", for: .normal)
-            nextButton.setImage(nil, for: .normal) // Remove any image if present
-            nextButton.tintColor = .systemGreen // Optional: Green for Save
+            nextButton.setImage(nil, for: .normal)
+            nextButton.tintColor = .systemGreen
         } else {
-            // Change Text to "Next" (or reset to arrow if you prefer)
             nextButton.setTitle("Next", for: .normal)
-            // If you originally had an arrow image, you can uncomment the line below:
-            // nextButton.setImage(UIImage(systemName: "chevron.right"), for: .normal)
             nextButton.tintColor = .systemBlue
         }
+        
+        previousButton.isEnabled = currentCardIndex > 0
     }
     
-    // MARK: - Actions
-    @objc func handleCardTap() {
+    @objc private func handleCardFlip() {
         guard !flashcards.isEmpty else { return }
         
         let card = flashcards[currentCardIndex]
         let newText = isTermDisplayed ? card.definition : card.term
-        let animationOptions: UIView.AnimationOptions = isTermDisplayed ? .transitionFlipFromRight : .transitionFlipFromLeft
+        let options: UIView.AnimationOptions = isTermDisplayed ? .transitionFlipFromRight : .transitionFlipFromLeft
         
-        UIView.transition(with: cardView, duration: 0.5, options: animationOptions, animations: {
+        UIView.transition(with: cardView, duration: 0.5, options: options, animations: {
             self.cardLabel.text = newText
-        }, completion: nil)
+        })
         
         isTermDisplayed.toggle()
     }
@@ -137,73 +111,49 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         guard !flashcards.isEmpty else { return }
         
         if currentCardIndex < flashcards.count - 1 {
-            // CASE 1: Go Next
             currentCardIndex += 1
             isTermDisplayed = true
-            updateCardContent()
-            updateCountLabel()
-            updateButtonState() // Update text to "Save" if we reached the end
+            updateUI()
         } else {
-            // CASE 2: Trigger Save (Since we are at the end)
-            saveFlashcards()
+            handleSave()
         }
     }
 
     @IBAction func previousCardButtonTapped(_ sender: UIButton) {
-        guard !flashcards.isEmpty else { return }
+        guard !flashcards.isEmpty, currentCardIndex > 0 else { return }
         
-        if currentCardIndex > 0 {
-            currentCardIndex -= 1
-            isTermDisplayed = true
-            updateCardContent()
-            updateCountLabel()
-            updateButtonState() // Revert text to "Next"
-        }
+        currentCardIndex -= 1
+        isTermDisplayed = true
+        updateUI()
     }
     
     @IBAction func addFlashcardButtonTapped(_ sender: Any) {
         performSegue(withIdentifier: "AddCardSegue", sender: self)
     }
     
-    // Helper: Save Logic
-    func saveFlashcards() {
-        // Save Logic (CoreData, etc.) goes here
-        showSaveConfirmation()
-    }
-    
-    // Alert Function
-    func showSaveConfirmation() {
+    private func handleSave() {
         let folderName = parentSubjectName ?? "Study"
-        
-        let alert = UIAlertController(
-            title: "Saved!",
-            message: "Flashcards have been successfully saved to '\(folderName)'.",
-            preferredStyle: .alert
-        )
-        
-        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-        alert.addAction(okAction)
-        
-        present(alert, animated: true, completion: nil)
+        let alert = UIAlertController(title: "Saved!", message: "Flashcards saved to '\(folderName)'.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
     
-    // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "AddCardSegue" {
-            if let navigationController = segue.destination as? UINavigationController,
-               let destinationVC = navigationController.topViewController as? AddFlashcardViewController {
-                destinationVC.delegate = self
-            } else if let destinationVC = segue.destination as? AddFlashcardViewController {
-                destinationVC.delegate = self
+            let destinationVC: AddFlashcardViewController?
+            
+            if let nav = segue.destination as? UINavigationController {
+                destinationVC = nav.topViewController as? AddFlashcardViewController
+            } else {
+                destinationVC = segue.destination as? AddFlashcardViewController
             }
+            
+            destinationVC?.delegate = self
         }
     }
     
-    // MARK: - Delegate Method
     func didCreateNewFlashcard(card: Flashcard) {
         flashcards.append(card)
-        updateCardContent(animated: true)
-        updateCountLabel()
-        updateButtonState() // Check if this new card is the last one
+        updateUI()
     }
 }

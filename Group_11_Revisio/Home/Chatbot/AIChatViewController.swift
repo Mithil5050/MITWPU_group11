@@ -15,11 +15,9 @@ class AIChatViewController: MessagesViewController {
     
     // MARK: - Properties
     
-    // Distinct Senders
     let currentUser = AIChatSender(senderId: "user_current", displayName: "Me")
     let aiAgent = AIChatSender(senderId: "ai_exora_agent", displayName: "Exora")
     
-    // Data Source
     var aiMessages: [AIChatMessage] = []
     
     // MARK: - Lifecycle
@@ -29,7 +27,6 @@ class AIChatViewController: MessagesViewController {
         setupMessageKit()
         setupInputBar()
         
-        // Initial Greeting
         let greeting = AIChatMessage(
             sender: aiAgent,
             messageId: UUID().uuidString,
@@ -38,7 +35,6 @@ class AIChatViewController: MessagesViewController {
         )
         insertMessage(greeting)
         
-        // Set initial title
         self.title = "Exora"
     }
     
@@ -49,11 +45,9 @@ class AIChatViewController: MessagesViewController {
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
         
-        // Aesthetics
         messagesCollectionView.backgroundColor = .systemBackground
         scrollsToLastItemOnKeyboardBeginsEditing = true
         
-        // Ensure avatar size is set for incoming messages
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             layout.textMessageSizeCalculator.outgoingAvatarSize = .zero
             layout.textMessageSizeCalculator.incomingAvatarSize = CGSize(width: 35, height: 35)
@@ -64,17 +58,14 @@ class AIChatViewController: MessagesViewController {
         messageInputBar.delegate = self
         messageInputBar.inputTextView.placeholder = "  Message Exora..."
         
-        // Style Send Button
         messageInputBar.sendButton.setTitleColor(.systemBlue, for: .normal)
         messageInputBar.sendButton.setTitleColor(.systemGray, for: .disabled)
         
-        // Style Input Field
         messageInputBar.inputTextView.layer.cornerRadius = 18
         messageInputBar.inputTextView.layer.borderWidth = 1.0
         messageInputBar.inputTextView.layer.borderColor = UIColor.systemGray5.cgColor
         messageInputBar.inputTextView.backgroundColor = .systemGray6
         
-        // Configure the Upload Button (Plus Icon)
         configureInputBarItems()
     }
     

@@ -24,7 +24,6 @@ class NotesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Initial setup for the TextView
         contentView.isEditable = false
         contentView.delegate = self
         
@@ -71,12 +70,10 @@ class NotesViewController: UIViewController {
         guard let editButton = editDoneBarButton,
               let optionsButton = optionsBarButton else { return }
 
-        // Configure Edit Button
         editButton.target = self
         editButton.action = #selector(editButtonTapped)
         editButton.menu = nil
         
-        // Configure Options Button
         optionsButton.target = nil
         optionsButton.action = nil
         optionsButton.menu = buildOptionsMenu()
@@ -115,25 +112,19 @@ class NotesViewController: UIViewController {
  
     @objc func editButtonTapped() {
         if isEditingMode {
-            // User clicked the Checkmark (Done)
             saveChanges()
-            // No alert here, just silent save
         }
         
         isEditingMode.toggle()
         updateUIForState()
     }
     
-    // MARK: - ✅ NEW: Bottom Save Button Action
-    // IMPORTANT: Connect this to the button in your Storyboard!
+    // MARK: - Bottom Save Button Action
     @IBAction func saveButtonTapped(_ sender: Any) {
-        // 1. Save data
         saveChanges()
         
-        // 2. Show Alert
         showSaveConfirmation()
         
-        // 3. Exit edit mode cleanly
         if isEditingMode {
             isEditingMode = false
             updateUIForState()
@@ -162,7 +153,6 @@ class NotesViewController: UIViewController {
               let optionsButton = optionsBarButton else { return }
 
         if isEditingMode {
-            // Editing State
             editButton.image = UIImage(systemName: "checkmark")
             editButton.title = nil
             contentView.isEditable = true
@@ -174,7 +164,6 @@ class NotesViewController: UIViewController {
             }
             
         } else {
-            // Viewing State
             editButton.image = nil
             editButton.title = "Edit"
             contentView.isEditable = false

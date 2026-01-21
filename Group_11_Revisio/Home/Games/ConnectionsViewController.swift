@@ -1,113 +1,109 @@
-//
-//  ConnectionsViewController.swift
-//
-//  Final code with Win/Loss Navigation logic
-//
-
 import UIKit
 
-// MARK: - Connections View Controller
 class ConnectionsViewController: UIViewController {
 
-    // MARK: - IBOutlets
     @IBOutlet weak var collectionView: UICollectionView!
     
-    // MARK: - Programmatic UI Elements
+    private var words: [WordModel] = WordModel.generateInitialWords()
+    private var didWin: Bool = false
+    private var mistakesRemaining: Int = 4 {
+        didSet { updateMistakesLabel() }
+    }
+    
     private let mistakesLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        label.font = .systemFont(ofSize: 16, weight: .semibold)
         label.textColor = .label
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
-    private let shuffleButton = UIButton(configuration: .plain())
-    private let deselectButton = UIButton(configuration: .plain())
-    private let submitButton = UIButton(configuration: .filled())
     
     private let controlsStackView: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
         stack.distribution = .fillEqually
         stack.alignment = .fill
-        stack.spacing = 8
+        stack.spacing = 0
+        stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
     }()
     
-    // MARK: - Game State
-    private var words: [WordModel] = WordModel.generateInitialWords()
-    private var mistakesRemaining: Int = 4 {
-        didSet {
-            updateMistakesLabel()
+    private lazy var shuffleButton: UIButton = {
+        var config = UIButton.Configuration.plain()
+        config.title = "Shuffle"
+        
+        let action = UIAction { [weak self] _ in
+            self?.handleShuffle()
         }
-    }
+        return UIButton(configuration: config, primaryAction: action)
+    }()
     
-    // ✅ NEW: Track if user won or lost to determine the result message
-    private var didWin: Bool = false
+    private lazy var deselectButton: UIButton = {
+        var config = UIButton.Configuration.plain()
+        config.title = "Deselect All"
+        
+        let action = UIAction { [weak self] _ in
+            self?.handleDeselect()
+        }
+        return UIButton(configuration: config, primaryAction: action)
+    }()
+    
+    private lazy var submitButton: UIButton = {
+        var config = UIButton.Configuration.filled()
+        config.title = "Submit"
+        
+        let action = UIAction { [weak self] _ in
+            self?.handleSubmit()
+        }
+        return UIButton(configuration: config, primaryAction: action)
+    }()
 
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.title = "Connections"
+        view.backgroundColor = .systemBackground
+        
         setupCollectionView()
-        setupUI()
-        setupProgrammaticLayout()
+        setupLayout()
+        
         updateMistakesLabel()
         updateSubmitButtonState()
     }
 
-    // MARK: - Setup
-    private func setupUI() {
-        self.title = "Connections"
-
-        shuffleButton.setTitle("Shuffle", for: .normal)
-        deselectButton.setTitle("Deselect All", for: .normal)
-        submitButton.setTitle("Submit", for: .normal)
-        
-        shuffleButton.addTarget(self, action: #selector(shuffleButtonTapped(_:)), for: .touchUpInside)
-        deselectButton.addTarget(self, action: #selector(deselectButtonTapped(_:)), for: .touchUpInside)
-        submitButton.addTarget(self, action: #selector(submitButtonTapped(_:)), for: .touchUpInside)
-    }
-    
     private func setupCollectionView() {
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.register(WordCell.self, forCellWithReuseIdentifier: "WordCell")
         
-        let layout = createGridLayout()
-        collectionView.setCollectionViewLayout(layout, animated: false)
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.setCollectionViewLayout(createGridLayout(), animated: false)
     }
 
-    // MARK: - Layout
-    private func setupProgrammaticLayout() {
+    private func setupLayout() {
         view.addSubview(mistakesLabel)
+        
         controlsStackView.addArrangedSubview(shuffleButton)
         controlsStackView.addArrangedSubview(deselectButton)
         controlsStackView.addArrangedSubview(submitButton)
         view.addSubview(controlsStackView)
 
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        mistakesLabel.translatesAutoresizingMaskIntoConstraints = false
-        controlsStackView.translatesAutoresizingMaskIntoConstraints = false
-
         let safeArea = view.safeAreaLayoutGuide
-        let padding: CGFloat = 16.0
-        let controlsHeight: CGFloat = 48.0
-        let tightSpacing: CGFloat = 8.0
-        let minorSpacing: CGFloat = 4.0
-
+        
         NSLayoutConstraint.activate([
-            controlsStackView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: padding),
-            controlsStackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -padding),
-            controlsStackView.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor, constant: -tightSpacing),
-            controlsStackView.heightAnchor.constraint(equalToConstant: controlsHeight),
+            controlsStackView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
+            controlsStackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
+            controlsStackView.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor, constant: -8),
+            controlsStackView.heightAnchor.constraint(equalToConstant: 48),
             
-            mistakesLabel.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: padding),
-            mistakesLabel.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -padding),
-            mistakesLabel.bottomAnchor.constraint(equalTo: controlsStackView.topAnchor, constant: -minorSpacing),
+            mistakesLabel.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
+            mistakesLabel.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
+            mistakesLabel.bottomAnchor.constraint(equalTo: controlsStackView.topAnchor, constant: -8),
 
             collectionView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor),
             collectionView.topAnchor.constraint(equalTo: safeArea.topAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: mistakesLabel.topAnchor, constant: -tightSpacing)
+            collectionView.bottomAnchor.constraint(equalTo: mistakesLabel.topAnchor, constant: -8)
         ])
     }
 
@@ -126,20 +122,80 @@ class ConnectionsViewController: UIViewController {
         return UICollectionViewCompositionalLayout(section: section)
     }
 
-    // MARK: - Game Logic
+    private func handleShuffle() {
+        words.shuffle()
+        collectionView.reloadData()
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+    }
+    
+    private func handleDeselect() {
+        for i in words.indices { words[i].isSelected = false }
+        collectionView.reloadData()
+        updateSubmitButtonState()
+    }
+    
+    private func handleSubmit() {
+        let selectedWords = words.filter { $0.isSelected }
+        guard selectedWords.count == 4 else { return }
+
+        let firstCategoryID = selectedWords.first?.categoryID
+        let isCorrect = selectedWords.allSatisfy { $0.categoryID == firstCategoryID }
+
+        // Unwrapping safely and ensuring ID is treated as Int
+        if isCorrect, let categoryID = firstCategoryID {
+            handleSuccess(for: categoryID)
+        } else {
+            handleMistake()
+        }
+        
+        updateSubmitButtonState()
+    }
+    
+    // Updated to accept Int
+    private func handleSuccess(for categoryID: Int) {
+        guard let category = CategoryModel.allCategories.first(where: { $0.id == categoryID }) else { return }
+        
+        for i in words.indices where words[i].isSelected {
+            words[i].isGuessed = true
+            words[i].isSelected = false
+        }
+        
+        showAlert(title: "Correct!", message: "Group: \(category.title)", color: category.color)
+        collectionView.reloadData()
+        checkGameCompletion()
+    }
+    
+    private func handleMistake() {
+        mistakesRemaining -= 1
+        UINotificationFeedbackGenerator().notificationOccurred(.error)
+        
+        if mistakesRemaining > 0 {
+            showAlert(title: "Incorrect Group", message: "Try again!", color: .systemRed)
+        }
+    }
+
     private func updateMistakesLabel() {
         let bullets = String(repeating: "●", count: mistakesRemaining)
         mistakesLabel.text = "Mistakes Remaining: \(bullets)"
         
-        // ✅ NEW: Navigate to Results on 0 mistakes
         if mistakesRemaining <= 0 {
-            didWin = false // User Lost
-            collectionView.isUserInteractionEnabled = false
-            
-            // Show the result screen after a short delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                self.performSegue(withIdentifier: "ShowConnectionsResults", sender: nil)
-            }
+            finishGame(won: false)
+        }
+    }
+    
+    private func checkGameCompletion() {
+        let solvedCount = words.filter { $0.isGuessed }.count
+        if solvedCount == 16 {
+            finishGame(won: true)
+        }
+    }
+    
+    private func finishGame(won: Bool) {
+        didWin = won
+        collectionView.isUserInteractionEnabled = false
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.performSegue(withIdentifier: "ShowConnectionsResults", sender: nil)
         }
     }
 
@@ -148,94 +204,22 @@ class ConnectionsViewController: UIViewController {
         submitButton.isEnabled = selectedCount == 4
     }
 
-    private func checkSubmittedWords() {
-        let selectedWords = words.filter { $0.isSelected }
-        guard selectedWords.count == 4 else { return }
-
-        let firstCategoryID = selectedWords.first?.categoryID
-        let isCorrect = selectedWords.allSatisfy { $0.categoryID == firstCategoryID }
-
-        if isCorrect {
-            let categoryTitle = CategoryModel.allCategories.first(where: { $0.id == firstCategoryID })?.title ?? "Unknown"
-            
-            for i in words.indices {
-                if words[i].isSelected {
-                    words[i].isGuessed = true
-                    words[i].isSelected = false
-                }
-            }
-            
-            let successColor = CategoryModel.allCategories.first(where: { $0.id == firstCategoryID })?.color ?? .systemTeal
-            showAlert(title: "Correct!", message: "Group: \(categoryTitle)", color: successColor)
-            
-            collectionView.reloadData()
-            checkGameCompletion()
-            
-        } else {
-            mistakesRemaining -= 1
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.error)
-            
-            // Only show "Try again" if they still have mistakes left
-            if mistakesRemaining > 0 {
-                showAlert(title: "Incorrect Group", message: "Try again!", color: .systemRed)
-            }
-        }
-        
-        updateSubmitButtonState()
-    }
-    
-    private func checkGameCompletion() {
-        let solvedCount = words.filter { $0.isGuessed }.count
-        
-        if solvedCount == 16 {
-            didWin = true // User Won
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.performSegue(withIdentifier: "ShowConnectionsResults", sender: nil)
-            }
-        }
-    }
-    
-    // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "ShowConnectionsResults" {
-            if let destVC = segue.destination as? ConnectionsResultsViewController {
-                destVC.categories = CategoryModel.allCategories
-                
-                // ✅ NEW: Set title based on win/loss status
-                destVC.resultTitle = didWin ? "Great Job!" : "Better luck next time!"
-            }
+        if segue.identifier == "ShowConnectionsResults",
+           let destVC = segue.destination as? ConnectionsResultsViewController {
+            destVC.categories = CategoryModel.allCategories
+            destVC.resultTitle = didWin ? "Great Job!" : "Better luck next time!"
         }
     }
     
-    // MARK: - Alert Helper
     private func showAlert(title: String, message: String, color: UIColor? = nil) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
-
-    // MARK: - IBActions
-    @objc func shuffleButtonTapped(_ sender: UIButton) {
-        words.shuffle()
-        collectionView.reloadData()
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
-    }
-
-    @objc func deselectButtonTapped(_ sender: UIButton) {
-        for i in words.indices { words[i].isSelected = false }
-        collectionView.reloadData()
-        updateSubmitButtonState()
-    }
-
-    @objc func submitButtonTapped(_ sender: UIButton) {
-        checkSubmittedWords()
-    }
 }
 
-// MARK: - UICollectionViewDataSource
-extension ConnectionsViewController: UICollectionViewDataSource {
+extension ConnectionsViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return words.count
     }
@@ -244,26 +228,19 @@ extension ConnectionsViewController: UICollectionViewDataSource {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "WordCell", for: indexPath) as? WordCell else {
             return UICollectionViewCell()
         }
-        let wordModel = words[indexPath.item]
-        cell.configure(with: wordModel)
+        cell.configure(with: words[indexPath.item])
         return cell
     }
-}
-
-// MARK: - UICollectionViewDelegate
-extension ConnectionsViewController: UICollectionViewDelegate {
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if words[indexPath.item].isGuessed {
-            return
-        }
+        guard !words[indexPath.item].isGuessed else { return }
         
         words[indexPath.item].isSelected.toggle()
         
         let selectedCount = words.filter { $0.isSelected }.count
         if selectedCount > 4 {
             words[indexPath.item].isSelected = false
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         }
         
         collectionView.reloadItems(at: [indexPath])

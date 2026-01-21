@@ -26,7 +26,6 @@ class WordFillViewController: UIViewController {
     private var secondsRemaining = 60
     private var isProcessingAnswer = false
     
-    // ✅ NEW: Track user answers for the summary
     private var userAnswers: [String?] = []
 
     // MARK: - Lifecycle
@@ -58,7 +57,6 @@ class WordFillViewController: UIViewController {
                      correctAnswer: "TRUNCATE")
         ]
         
-        // ✅ Initialize user answers array with nil
         userAnswers = Array(repeating: nil, count: questions.count)
     }
 
@@ -83,12 +81,10 @@ class WordFillViewController: UIViewController {
         isProcessingAnswer = false
         let currentQuestion = questions[currentQuestionIndex]
         
-        // Update Labels
         questionLabel.text = currentQuestion.text
         progressLabel.text = "Question \(currentQuestionIndex + 1)/\(questions.count)"
         progressView.setProgress(Float(currentQuestionIndex + 1) / Float(questions.count), animated: true)
         
-        // Reset Buttons
         for (index, button) in optionButtons.enumerated() {
             if index < currentQuestion.options.count {
                 button.setTitle(currentQuestion.options[index], for: .normal)
@@ -115,10 +111,8 @@ class WordFillViewController: UIViewController {
         let currentQuestion = questions[currentQuestionIndex]
         let correctAnswer = currentQuestion.correctAnswer
         
-        // ✅ SAVE: Store user's answer
         userAnswers[currentQuestionIndex] = userAnswer
         
-        // Disable user interaction
         optionButtons.forEach { $0.isEnabled = false }
 
         // MARK: - SELECTION STYLE
@@ -170,7 +164,6 @@ class WordFillViewController: UIViewController {
         performSegue(withIdentifier: "NavigateToResults", sender: (result, summaryItems))
     }
     
-    // ✅ NEW: Helper to format data for the Result Screen
     private func processQuizData() -> (FinalQuizResult, [QuizSummaryItem]) {
         var score = 0
         var details: [QuestionResultDetail] = []
@@ -182,7 +175,6 @@ class WordFillViewController: UIViewController {
             
             if isCorrect { score += 1 }
             
-            // 1. Prepare Detail (Internal usage)
             let detail = QuestionResultDetail(
                 questionText: question.text,
                 wasCorrect: isCorrect,
@@ -192,7 +184,6 @@ class WordFillViewController: UIViewController {
             )
             details.append(detail)
             
-            // 2. Prepare Summary Item (For the Summary View)
             let correctIndex = question.options.firstIndex(of: question.correctAnswer) ?? 0
             let userIndex = question.options.firstIndex(of: userAnswerText ?? "")
             
@@ -201,7 +192,7 @@ class WordFillViewController: UIViewController {
                 userAnswerIndex: userIndex,
                 correctAnswerIndex: correctIndex,
                 allOptions: question.options,
-                explanation: "The correct answer is \(question.correctAnswer).", // Static explanation since model doesn't have one
+                explanation: "The correct answer is \(question.correctAnswer).",
                 isCorrect: isCorrect
             )
             summaryItems.append(item)
@@ -242,11 +233,9 @@ class WordFillViewController: UIViewController {
             if let destVC = segue.destination as? QuizResultsViewController,
                let (result, summaryItems) = sender as? (FinalQuizResult, [QuizSummaryItem]) {
                 
-                // Pass the data to the reusable Result View Controller
                 destVC.finalResult = result
                 destVC.summaryData = summaryItems
                 
-                // Optional: Set these to nil or specific values so it doesn't save to a random subject folder
                 destVC.parentFolder = "Games"
                 destVC.topicToSave = nil
             }

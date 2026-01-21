@@ -36,17 +36,14 @@ class AddStudyPlanViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: - UI Setup
     private func setupUI() {
-        // 1. Setup the Card View Background (Adaptive)
         AddView.layer.cornerRadius = 16
         AddView.backgroundColor = .secondarySystemBackground
         
-        // 2. NEW: Configure Topic Name Text Field
         setupTextField(topicTextField, placeholder: "Enter Topic Name")
-        topicTextField.keyboardType = .default // Standard keyboard for names
+        topicTextField.keyboardType = .default
         
-        // 3. Configure Days Text Field
         setupTextField(daysTextField, placeholder: "e.g. 10")
-        daysTextField.keyboardType = .numberPad // Number pad for days
+        daysTextField.keyboardType = .numberPad 
         
         // 4. Style the Dropdown Buttons
         let buttons = [studyGoalButton, contentButton]
