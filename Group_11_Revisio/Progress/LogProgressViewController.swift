@@ -1,17 +1,9 @@
 import UIKit
 
-// Represents a single entry in your history list
-//struct LogHistoryItem {
-//    let amount: String
-//    let time: String
-//}
-
 class LogProgressViewController: UIViewController {
     
-    // DELEGATE PROPERTY
-    weak var delegate: LogStudyTimeDelegate?
     
-    // Local history to show in the table
+    weak var delegate: LogStudyTimeDelegate?
     var history: [LogHistoryItem] = []
  
     @IBOutlet weak var timePicker: UIDatePicker!
@@ -21,25 +13,14 @@ class LogProgressViewController: UIViewController {
     override func viewDidLoad() {
             super.viewDidLoad()
             
-//            // Safety check to prevent crashes if outlets are disconnected
-//            guard timePicker != nil, dateLabel != nil, datePicker != nil else {
-//                print("❌ Storyboard Connection Missing: check your Outlets!")
-//                return
-//            }
-//            
             setupNavigationBar()
             
-            // Set the timer mode
             timePicker.datePickerMode = .countDownTimer
-            
-            // Initial label update
+    
             updateDateLabel(for: datePicker.date)
             
-            // Listen for date changes
             datePicker.addTarget(self, action: #selector(datePickerChanged(_:)), for: .valueChanged)
         }
-        
-        // MARK: - Helper Functions (DO NOT DELETE THESE)
         
         @objc private func datePickerChanged(_ sender: UIDatePicker) {
             updateDateLabel(for: sender.date)
@@ -62,7 +43,7 @@ class LogProgressViewController: UIViewController {
             return
         }
 
-        // Create a new Log Item
+        //new log
         let newEntry = LogHistoryItem(
             id: UUID().uuidString,
             amount: hoursStudied >= 1 ? "\(Int(hoursStudied))h" : "\(Int(totalSeconds/60))m",
@@ -79,19 +60,7 @@ class LogProgressViewController: UIViewController {
         delegate?.didLogStudyTime(hours: hoursStudied, date: logDate, subject: nil)
         self.dismiss(animated: true)
     }
-//        @objc func saveAndDismiss() {
-//            let totalSeconds = timePicker.countDownDuration
-//            let hoursStudied = totalSeconds / 3600.0
-//            
-//            guard totalSeconds > 0 else {
-//                self.dismiss(animated: true)
-//                return
-//            }
-//
-//            delegate?.didLogStudyTime(hours: hoursStudied, date: datePicker.date, subject: nil)
-//            self.dismiss(animated: true)
-//        }
-        
+    
         @objc func dismissModal() {
             self.dismiss(animated: true)
         }
