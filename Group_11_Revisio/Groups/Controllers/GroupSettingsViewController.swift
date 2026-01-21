@@ -112,11 +112,15 @@ class GroupSettingsViewController: UIViewController {
         mediaCollectionView.dataSource = self
         mediaCollectionView.delegate = self
         
+        //Spacing for Media
         if let layout = mediaCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
             layout.estimatedItemSize = .zero
         }
-
-    
+        
+        //Spacing for Docs
+        if let layout = docsCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            layout.estimatedItemSize = .zero
+        }
 
     }
     
@@ -318,10 +322,6 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
                     return
                 }
 
-//                codeVC.configure(
-//                    withGroupName: group.name,
-//                    code: "ABC-123"
-//                )
                 codeVC.configure(
                     withGroupName: group?.name ?? "Group",
                     code: "ABC-123"
@@ -378,6 +378,32 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
         
     }
     
+    // MARK: Documents spacing
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        minimumInteritemSpacingForSectionAt section: Int
+    ) -> CGFloat {
+
+        if collectionView == docsCollectionView {
+            return 6
+        }
+        return 0
+    }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        minimumLineSpacingForSectionAt section: Int
+    ) -> CGFloat {
+
+        if collectionView == docsCollectionView {
+            return 6
+        }
+        return 0
+    }
+    
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -405,17 +431,22 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
             return CGSize(width: width, height: width)
         }
         
-        //Documents
+        // Documents
         if collectionView == docsCollectionView {
-            let columns: CGFloat = 2
-            let spacing: CGFloat = 12
+
+            let columns: CGFloat = 3
+            let spacing: CGFloat = 6
+
             let totalSpacing = (columns - 1) * spacing
             let horizontalInsets: CGFloat = 12 * 2
+
             let width = (collectionView.bounds.width - totalSpacing - horizontalInsets) / columns
-            return CGSize(width: width, height: 90)
+
+            return CGSize(width: width, height: width)
         }
 
         return CGSize(width: 0, height: 0)
+        
     }
     
     func collectionView(_ collectionView: UICollectionView,
@@ -426,7 +457,7 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
             return UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
         }
 
-        return UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+        return UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
     }
 
 }
