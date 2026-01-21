@@ -53,7 +53,7 @@
                         <constraints>
                             <constraint firstAttribute="height" constant="16" id="Kv7-tf-Okf"/>
                         </constraints>
-                        <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                        <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                         <color key="textColor" systemColor="secondaryLabelColor"/>
                         <nil key="highlightedColor"/>
                     </label>

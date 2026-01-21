@@ -115,7 +115,6 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
         
         nextButton.setTitle(isLastQuestion ? "Finish" : "Next", for: .normal)
         
-        // Remove old targets and add new ones based on state
         nextButton.removeTarget(nil, action: nil, for: .allEvents)
         if isLastQuestion {
             nextButton.addTarget(self, action: #selector(finishQuizTapped), for: .touchUpInside)

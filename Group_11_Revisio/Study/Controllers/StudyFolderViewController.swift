@@ -48,7 +48,10 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
         studyTableView.delegate = self
         studyTableView.register(UITableViewCell.self, forCellReuseIdentifier: "StudyCell")
         
-        // HIG Compliance: Ensures table content starts correctly below the navigation bar
+        if #available(iOS 15.0, *) {
+            studyTableView.sectionHeaderTopPadding = 0
+        }
+        
         studyTableView.contentInsetAdjustmentBehavior = .never
     }
 
@@ -110,6 +113,7 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
         let cell = tableView.dequeueReusableCell(withIdentifier: "StudyCell", for: indexPath)
         
         cell.textLabel?.text = subjectNames[indexPath.row]
+        cell.textLabel?.font = UIFont.preferredFont(forTextStyle: .body)
         cell.imageView?.image = UIImage(systemName: "folder")
         cell.imageView?.tintColor = .systemBlue
         cell.accessoryType = .disclosureIndicator
@@ -117,10 +121,30 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
         return cell
     }
 
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "Your Materials"
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UIView()
+        headerView.backgroundColor = .clear
+        
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 22, weight: .bold)
+        label.textColor = .label
+        label.text = "Your Materials"
+        
+        label.translatesAutoresizingMaskIntoConstraints = false
+        headerView.addSubview(label)
+        
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
+            label.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8),
+            label.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16)
+        ])
+        
+        return headerView
     }
 
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 60
+    }
     // MARK: - UITableViewDelegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
