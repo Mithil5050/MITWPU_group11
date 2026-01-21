@@ -22,7 +22,7 @@ extension GenerationType: CustomStringConvertible {
     }
 }
 // MARK: - 1. Renamed Custom Control
-// Renamed to 'MaterialSelectionCard' to avoid redeclaration errors
+
 @IBDesignable
 class MaterialSelectionCard: UIControl {
     private let stackView = UIStackView()
@@ -115,23 +115,25 @@ class GenerationViewController: UIViewController {
         setupUI()
         setupSteppers()
         updateUISelection(selected: quizCard, type: .quiz)
-        // ADD THIS:
+        
             [easyButton, mediumButton, hardButton].forEach { $0?.layer.cornerRadius = 12 }
-            // Set default color for Medium
+           
             mediumButton.backgroundColor = .systemYellow
             mediumButton.setTitleColor(.black, for: .normal)
     }
     
     private func setupUI() {
-        // Professional colors to match 'Big Data' reference
+       
         quizCard.configure(iconName: "timer", title: "Quiz", iconColor: UIColor(red: 0.45, green: 0.85, blue: 0.61, alpha: 1.0))
         flashCard.configure(iconName: "rectangle.on.rectangle.angled", title: "Flashcards", iconColor: .systemBlue)
-        noteCard.configure(iconName: "doc.text", title: "Notes", iconColor: .systemOrange)
+        noteCard.configure(iconName: "book.pages", title: "Notes", iconColor: .systemOrange)
         cheatCard.configure(iconName: "list.clipboard", title: "Cheatsheet", iconColor: .systemPurple)
         
         [quizCard, flashCard, noteCard, cheatCard].forEach {
             $0?.addTarget(self, action: #selector(handleCardTap(_:)), for: .touchUpInside)
         }
+        generateButton.titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
+        generateButton.titleLabel?.adjustsFontForContentSizeCategory = true
         generateButton.layer.cornerRadius = 12
     }
     private func setupSteppers() {
@@ -161,10 +163,10 @@ class GenerationViewController: UIViewController {
     private func updateUISelection(selected: MaterialSelectionCard, type: GenerationType) {
         self.currentGenerationType = type
         
-        // FIX: Use a named variable instead of $0 to allow mutation
+        
         let allCards = [quizCard, flashCard, noteCard, cheatCard]
         for card in allCards {
-            // This correctly compares the card objects and sets selection
+            
             card?.isSelected = (card === selected)
         }
         
