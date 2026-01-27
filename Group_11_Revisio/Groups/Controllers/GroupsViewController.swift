@@ -11,17 +11,23 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
     
     @IBOutlet weak var groupsTableView: UITableView!
     
+    //Dummy Data
     var myGroups: [Group] = [
-        Group(name: "iMAAC"),
-        Group(name: "Study Squad"),
-        Group(name: "Project Phoenix"),
-        Group(name: "Late Night Coders"),
-        Group(name: "Math Wizards"),
-        Group(name: "Swift Masters"),
-        Group(name: "Exam Prep"),
-        Group(name: "Final Year Crew"),
-        Group(name: "Deep Learners"),
-        Group(name: "AI Enthusiasts")
+        Group(name: "iMAAC", avatarName: "gpfp1"),
+        Group(name: "Study Squad", avatarName: "gpfp2"),
+        Group(name: "Project Phoenix", avatarName: "gpfp3"),
+        Group(name: "Late Night Coders", avatarName: "gpfp4"),
+        Group(name: "Math Wizards", avatarName: "gpfp5"),
+        Group(name: "Swift Masters", avatarName: "gpfp6"),
+        Group(name: "Exam Prep", avatarName: "gpfp7"),
+        Group(name: "Final Year Crew", avatarName: "gpfp8"),
+        Group(name: "Deep Learners", avatarName: "gpfp9"),
+        Group(name: "AI Enthusiasts", avatarName: "gpfp10")
+    ]
+    
+    private let groupAvatars = [
+        "gpfp1","gpfp2","gpfp3","gpfp4","gpfp5",
+        "gpfp6","gpfp7","gpfp8","gpfp9","gpfp10"
     ]
     
     private let sampleLastMessages: [String] = [
@@ -87,10 +93,9 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         cell.lastMessageLabel.textColor = .secondaryLabel
         cell.lastMessageLabel.font = UIFont.systemFont(ofSize: 14)
 
-        // Avatar (safe fallback)
-        cell.avatarImageView.image =
-            UIImage(named: "pfp_group")
-            ?? UIImage(systemName: "person.3.fill")
+        //Avatars
+        let avatarName = groupAvatars[indexPath.row % groupAvatars.count]
+        cell.avatarImageView.image = UIImage(named: group.avatarName)
 
         cell.avatarImageView.layer.cornerRadius = 22
         cell.avatarImageView.clipsToBounds = true

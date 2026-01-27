@@ -17,6 +17,12 @@
                         <rect key="frame" x="0.0" y="0.0" width="402" height="874"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="My Groups" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UNq-a3-Q9p">
+                                <rect key="frame" x="16" y="440" width="102" height="24"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="fUu-zp-TvM">
                                 <rect key="frame" x="16" y="238" width="370" height="186"/>
                                 <subviews>
@@ -155,28 +161,11 @@
                                 </subviews>
                             </stackView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="bU5-cZ-zaQ">
-                                <rect key="frame" x="0.0" y="424" width="402" height="450"/>
+                                <rect key="frame" x="0.0" y="464" width="402" height="410"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                <view key="tableHeaderView" contentMode="scaleToFill" id="jh3-Rj-cQe">
-                                    <rect key="frame" x="0.0" y="0.0" width="402" height="44"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="My Groups" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UNq-a3-Q9p">
-                                            <rect key="frame" x="16" y="10" width="102" height="24"/>
-                                            <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
-                                            <nil key="textColor"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                    </subviews>
-                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                    <constraints>
-                                        <constraint firstItem="UNq-a3-Q9p" firstAttribute="centerY" secondItem="jh3-Rj-cQe" secondAttribute="centerY" id="3hh-dF-PRt"/>
-                                        <constraint firstItem="UNq-a3-Q9p" firstAttribute="leading" secondItem="jh3-Rj-cQe" secondAttribute="leading" constant="16" id="RZr-jJ-gc9"/>
-                                    </constraints>
-                                </view>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" accessoryType="disclosureIndicator" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="GroupCellIdentifier" id="3t6-9J-qcy" customClass="GroupCell" customModule="Group_11_Revisio" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="94" width="402" height="65.333335876464844"/>
+                                        <rect key="frame" x="0.0" y="50" width="402" height="65.333335876464844"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="3t6-9J-qcy" id="WKh-BI-sVY">
                                             <rect key="frame" x="0.0" y="0.0" width="371.66666666666669" height="65.333335876464844"/>
@@ -230,12 +219,14 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="bU5-cZ-zaQ" firstAttribute="trailing" secondItem="ngb-Cl-aO1" secondAttribute="trailing" id="26Z-gr-WKy"/>
+                            <constraint firstItem="UNq-a3-Q9p" firstAttribute="leading" secondItem="ngb-Cl-aO1" secondAttribute="leading" constant="16" id="2J0-ed-YXq"/>
                             <constraint firstItem="fUu-zp-TvM" firstAttribute="leading" secondItem="ngb-Cl-aO1" secondAttribute="leading" constant="16" id="7I1-sh-riM"/>
                             <constraint firstAttribute="bottom" secondItem="bU5-cZ-zaQ" secondAttribute="bottom" id="Nml-Ej-ZlW"/>
-                            <constraint firstItem="bU5-cZ-zaQ" firstAttribute="top" secondItem="fUu-zp-TvM" secondAttribute="bottom" id="SB9-ho-1aM"/>
+                            <constraint firstItem="bU5-cZ-zaQ" firstAttribute="top" secondItem="UNq-a3-Q9p" secondAttribute="bottom" id="SB9-ho-1aM"/>
                             <constraint firstItem="ngb-Cl-aO1" firstAttribute="trailing" secondItem="fUu-zp-TvM" secondAttribute="trailing" constant="16" id="UpZ-MY-lAH"/>
                             <constraint firstItem="bU5-cZ-zaQ" firstAttribute="leading" secondItem="ngb-Cl-aO1" secondAttribute="leading" id="VEw-fs-tRe"/>
                             <constraint firstItem="fUu-zp-TvM" firstAttribute="top" secondItem="ngb-Cl-aO1" secondAttribute="top" constant="8" id="hZC-jT-t0G"/>
+                            <constraint firstItem="UNq-a3-Q9p" firstAttribute="top" secondItem="fUu-zp-TvM" secondAttribute="bottom" constant="16" id="osw-dH-8PE"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Groups" largeTitleDisplayMode="always" id="Mga-Zw-gO2"/>

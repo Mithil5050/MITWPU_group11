@@ -50,6 +50,7 @@ class GroupSettingsViewController: UIViewController {
         ("Smera", "pfp_ayaana")
     ]
     
+    
     private let documents = [
         "flowchart.pdf",
         "probstatements.docx",
@@ -90,7 +91,7 @@ class GroupSettingsViewController: UIViewController {
 
         membersCountLabel.text = "\(members.count) members"
         
-        groupImageView.image = UIImage(systemName: "person.3.fill")
+        groupImageView.image = UIImage(named: group.avatarName)
         groupImageView.tintColor = .white
         
         //Edit Button
