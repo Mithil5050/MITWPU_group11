@@ -3,10 +3,9 @@ import Charts
 
 struct BarChartView: View {
     @ObservedObject var model: StudyChartModel
-    let isShowingDaily: Bool
-    
+    // Use @State so the Picker can manage the view's data selection directly
+    @State private var isShowingDaily: Bool = true
     @State private var scrolledID: Int?
-
 
     private var history: [[StudyData]] {
         isShowingDaily ? model.dailyHistory : model.weeklyHistory
@@ -39,74 +38,81 @@ struct BarChartView: View {
             let date = Calendar.current.date(byAdding: .day, value: -distance, to: Date()) ?? Date()
             return date.formatted(.dateTime.day().month(.wide))
         } else {
-        //week
             if distance == 0 { return "This Week" }
             if distance == 1 { return "Last Week" }
             return "\(distance) Weeks Ago"
         }
     }
-        var body: some View {
-            VStack(alignment: .leading, spacing: 0) {
-                // Header
-                HStack(alignment: .bottom) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(getDateLabel(for: currentIdx))
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.secondary)
-                        
-                        Text(getTotalHours(for: currentIdx))
-                            .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                    }
-                    Spacer()
-                    
-                    if isViewingPast {
-                        Button(action: {
-                            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                scrolledID = history.count - 1
-                            }
-                        }) {
-                            HStack(spacing: 4) {
-                                Text(isShowingDaily ? "Show Today" : "Show This Week")
-                                Image(systemName: "chevron.right")
-                            }
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.blue)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 14)
 
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 0) {
-                        ForEach(0..<history.count, id: \.self) { index in
-                            chartPage(for: index)
-                                .containerRelativeFrame(.horizontal)
-                        }
-                    }
-                    .scrollTargetLayout()
-                }
-                .scrollPosition(id: $scrolledID)
-                .scrollTargetBehavior(.paging)
-            }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
             
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    scrolledID = max(0, history.count - 1)
+            // 1. Integrated Segmented Picker
+            Picker("Time Frame", selection: $isShowingDaily) {
+                Text("Day").tag(true)
+                Text("Week").tag(false)
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+
+            // 2. Header Section
+            HStack(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(getDateLabel(for: currentIdx))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                    
+                    Text(getTotalHours(for: currentIdx))
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                
+                Spacer()
+                
+                if isViewingPast {
+                    Button(action: {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                            scrolledID = history.count - 1
+                        }
+                    }) {
+                        HStack(spacing: 0) {
+                            Text(isShowingDaily ? "Today" : "This Week")
+                            Image(systemName: "chevron.right")
+                        }
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.blue)
+                    }
                 }
             }
-            .onChange(of: isShowingDaily) { oldValue, newValue in
+            .padding(.horizontal)
+            .padding(.bottom, 12)
+
+            // 3. Chart Section
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: 0) {
+                    ForEach(0..<history.count, id: \.self) { index in
+                        chartPage(for: index)
+                            .containerRelativeFrame(.horizontal)
+                    }
+                }
+                .scrollTargetLayout()
+            }
+            .scrollPosition(id: $scrolledID)
+            .scrollTargetBehavior(.paging)
+            .frame(height: 160)
+        }
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 scrolledID = max(0, history.count - 1)
             }
-            
-            .onChange(of: history.count) { oldValue, newValue in
-                scrolledID = max(0, newValue - 1)
-            }
         }
-    
-    
+        .onChange(of: isShowingDaily) { oldValue, newValue in
+            scrolledID = max(0, history.count - 1)
+        }
+    }
+
     @ViewBuilder
     private func chartPage(for index: Int) -> some View {
         Chart {
@@ -121,7 +127,7 @@ struct BarChartView: View {
         }
         .chartYScale(domain: 0...480)
         .chartYAxis {
-            AxisMarks(position: .trailing, values: [0, 120, 240, 360, 480]) { value in
+            AxisMarks(position: .trailing, values: [0, 240, 480]) { value in
                 AxisGridLine().foregroundStyle(.white.opacity(0.15))
                 AxisValueLabel {
                     if let mins = value.as(Int.self) {
@@ -136,12 +142,12 @@ struct BarChartView: View {
                 AxisGridLine().foregroundStyle(.white.opacity(0.1))
                 AxisValueLabel {
                     if let label = value.as(String.self) {
-                        Text(label).font(.system(size: 10))
+                        Text(label).font(.system(size: 9))
                     }
                 }
             }
         }
-        .frame(height: 140)
+        .frame(height: 125)
         .padding(.horizontal)
     }
 }

@@ -32,59 +32,55 @@ class StreaksCalendarViewController: UIViewController, UICalendarSelectionSingle
         setupCalendar()
     }
     
-    // MARK: - Info Card Styling
-    private func setupInfoCard() {
-        streakInfoCardView.layer.cornerRadius = 16
-        streakInfoCardView.clipsToBounds = true
-    }
-    
-    // MARK: - Calendar Setup
-    private func setupCalendar() {
-        calendarView = UICalendarView()
-        calendarView.translatesAutoresizingMaskIntoConstraints = false
-        calendarContainerView.addSubview(calendarView)
+    override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            // Refresh decorations in case new study logs were added
+            calendarView.reloadDecorations(forDateComponents: [], animated: true)
+        }
         
-        NSLayoutConstraint.activate([
-            calendarView.topAnchor.constraint(equalTo: calendarContainerView.topAnchor),
-            calendarView.leadingAnchor.constraint(equalTo: calendarContainerView.leadingAnchor),
-            calendarView.trailingAnchor.constraint(equalTo: calendarContainerView.trailingAnchor),
-            calendarView.bottomAnchor.constraint(equalTo: calendarContainerView.bottomAnchor)
-        ])
+        private func setupInfoCard() {
+            streakInfoCardView.layer.cornerRadius = 16
+            streakInfoCardView.clipsToBounds = true
+        }
         
-        // Enable single date selection (today circle)
-        let selection = UICalendarSelectionSingleDate(delegate: self)
-        selection.selectedDate = Calendar.current.dateComponents(
-            [.year, .month, .day],
-            from: Date()
-        )
-        calendarView.selectionBehavior = selection
+        private func setupCalendar() {
+            calendarView = UICalendarView()
+            calendarView.translatesAutoresizingMaskIntoConstraints = false
+            calendarContainerView.addSubview(calendarView)
+            
+            NSLayoutConstraint.activate([
+                calendarView.topAnchor.constraint(equalTo: calendarContainerView.topAnchor),
+                calendarView.leadingAnchor.constraint(equalTo: calendarContainerView.leadingAnchor),
+                calendarView.trailingAnchor.constraint(equalTo: calendarContainerView.trailingAnchor),
+                calendarView.bottomAnchor.constraint(equalTo: calendarContainerView.bottomAnchor)
+            ])
+            
+            let selection = UICalendarSelectionSingleDate(delegate: self)
+            selection.selectedDate = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+            calendarView.selectionBehavior = selection
+            
+            calendarView.delegate = self
+        }
         
-        // Enable decorations
-        calendarView.delegate = self
-    }
-    
-    // MARK: - Calendar Decoration (🔥 streaks)
-    func calendarView(_ calendarView: UICalendarView,
-                      decorationFor dateComponents: DateComponents)
-    -> UICalendarView.Decoration? {
+        // MARK: - Calendar Decoration (Real Study Logs)
+        func calendarView(_ calendarView: UICalendarView, decorationFor dateComponents: DateComponents) -> UICalendarView.Decoration? {
+            let calendar = Calendar.current
+            guard let date = calendar.date(from: dateComponents) else { return nil }
 
-        let calendar = Calendar.current
-        guard let date = calendar.date(from: dateComponents) else {
+            // ✅ Check real history instead of demo dates
+            let hasStudied = ProgressDataManager.shared.history.contains { log in
+                calendar.isDate(log.date, inSameDayAs: date)
+            }
+
+            if hasStudied {
+                // Orange dot for days with study logs
+                return .default(color: .systemOrange, size: .medium)
+            }
+
             return nil
         }
-
-        if streakDates.contains(where: {
-            calendar.isDate($0, inSameDayAs: date)
-        }) {
-            return .default(color: .systemOrange, size: .small)
+        
+        func dateSelection(_ selection: UICalendarSelectionSingleDate, didSelectDate dateComponents: DateComponents?) {
+            // Optional: Show logs for the specific selected day
         }
-
-        return nil
     }
-    
-    // MARK: - Date Selection Delegate
-    func dateSelection(_ selection: UICalendarSelectionSingleDate,
-                       didSelectDate dateComponents: DateComponents?) {
-       
-    }
-}
