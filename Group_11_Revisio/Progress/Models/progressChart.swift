@@ -27,11 +27,11 @@ struct StudyData: Identifiable, Codable, Hashable {
 }
 
 struct LogHistoryItem: Codable, Identifiable {
-    var id: String
-    let amount: String
-    let hours: Double
-    let time: String
-    let date: Date
+    var id: String      // Matches "id": "101"
+    let amount: String  // Matches "amount": "2h 0m"
+    let hours: Double   // Matches "hours": 2.0
+    let time: String    // Matches "time": "10:30 AM"
+    let date: Date      // Matches "date": "2026-01-28T..."
 }
 
 struct LogDataWrapper: Codable {
