@@ -92,6 +92,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
                 kind: .text("Oh right, thanks for the reminder 👍🏻")
             )
         ]
+        
         messagesCollectionView.reloadData()
         messagesCollectionView.scrollToLastItem(animated: false)
         
@@ -99,44 +100,115 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         messageInputBar.setStackViewItems([micButton], forStack: .right, animated: false)
         messageInputBar.setRightStackViewWidthConstant(to: 42, animated: false)
         
-        // Style input bar (iMessage-like)
-        messageInputBar.inputTextView.placeholder = "Message"
-        messageInputBar.inputTextView.font = UIFont.systemFont(ofSize: 16)
-        messageInputBar.sendButton.setTitle("", for: .normal)
-        messageInputBar.sendButton.setImage(
-            UIImage(systemName: "arrow.up.circle.fill"),
-            for: .normal
-        )
-        messageInputBar.sendButton.tintColor = .systemBlue
-        messageInputBar.sendButton.setSize(
-            CGSize(width: 48, height: 48),
-            animated: true
-        )
-        
-        // MARK: - iMessage input bar appearance
+        //MARK: - Message Input Bar
+//        messageInputBar.inputTextView.placeholder = "Message"
+//        messageInputBar.inputTextView.font = UIFont.systemFont(ofSize: 16)
+//        messageInputBar.sendButton.setTitle("", for: .normal)
+//        messageInputBar.sendButton.setImage(
+//            UIImage(systemName: "arrow.up.circle.fill"),
+//            for: .normal
+//        )
+//        messageInputBar.sendButton.tintColor = .systemBlue
+//        messageInputBar.sendButton.setSize(
+//            CGSize(width: 48, height: 48),
+//            animated: true
+//        )
+//
+//        messageInputBar.backgroundView.backgroundColor = .clear
+//        messageInputBar.backgroundView.layer.shadowColor = UIColor.clear.cgColor
+//        
+//        // Capsule text field
+//        let tv = messageInputBar.inputTextView
+//        tv.backgroundColor = UIColor.secondarySystemBackground
+//        tv.layer.cornerRadius = 20
+//        tv.layer.masksToBounds = true
+//        tv.font = UIFont.systemFont(ofSize: 16)
+//        tv.textContainerInset = UIEdgeInsets(
+//            top: 10,
+//            left: 14,
+//            bottom: 10,
+//            right: 14
+//        )
+//
+//        // Reduce overall bar height
+//        messageInputBar.padding.top = 6
+//        messageInputBar.padding.bottom = 6
+//        messageInputBar.padding.left = 8
+//        messageInputBar.padding.right = 8
+//        messageInputBar.middleContentViewPadding.right = 6
+//        
+//        //Attach Button
+//        let attachButton = InputBarButtonItem()
+//        attachButton.image = UIImage(systemName: "paperclip")
+//        attachButton.setSize(CGSize(width: 32, height: 32), animated: false)
+//        attachButton.tintColor = .systemBlue
+//
+//        // TEMP: Attach button does nothing (UI only)
+//        attachButton.onTouchUpInside { _ in
+//            // intentionally left empty
+//        }
+//        messageInputBar.setLeftStackViewWidthConstant(to: 36, animated: false)
+//        messageInputBar.leftStackView.addArrangedSubview(attachButton)
 
         messageInputBar.backgroundView.backgroundColor = .clear
         messageInputBar.backgroundView.layer.shadowColor = UIColor.clear.cgColor
-        // Capsule text field
-        let tv = messageInputBar.inputTextView
-        tv.backgroundColor = UIColor.secondarySystemBackground
-        tv.layer.cornerRadius = 20
-        tv.layer.masksToBounds = true
-        tv.font = UIFont.systemFont(ofSize: 16)
-        tv.textContainerInset = UIEdgeInsets(
-            top: 10,
-            left: 14,
-            bottom: 10,
-            right: 14
+
+        // TextView (message field)
+        let textView = messageInputBar.inputTextView
+        textView.placeholder = "Message"
+        textView.font = UIFont.systemFont(ofSize: 17)
+        textView.backgroundColor = UIColor.secondarySystemBackground
+        textView.layer.cornerRadius = 22
+        textView.layer.masksToBounds = true
+        textView.textContainerInset = UIEdgeInsets(
+            top: 12,
+            left: 16,
+            bottom: 12,
+            right: 16
         )
 
-        // Reduce overall bar height (THIS is the missing magic)
-        messageInputBar.padding.top = 6
-        messageInputBar.padding.bottom = 6
-        messageInputBar.padding.left = 8
-        messageInputBar.padding.right = 8
-        messageInputBar.middleContentViewPadding.right = 6
+        // Padding around input bar
+        messageInputBar.padding.top = 8
+        messageInputBar.padding.bottom = 8
+        messageInputBar.padding.left = 12
+        messageInputBar.padding.right = 12
+        messageInputBar.middleContentViewPadding.right = 8
+
+        //SEND BUTTON
+        let sendButton = messageInputBar.sendButton
+        sendButton.setTitle(nil, for: .normal)
+        sendButton.setImage(
+            UIImage(systemName: "arrow.up.circle.fill"),
+            for: .normal
+        )
+        sendButton.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
+        sendButton.setSize(CGSize(width: 44, height: 44), animated: false)
+
+        sendButton.imageView?.contentMode = .scaleAspectFit
+        sendButton.contentHorizontalAlignment = .center
+        sendButton.contentVerticalAlignment = .center
+        sendButton.tintColor = .systemBlue
+
         
+        // MIC BUTTON
+        micButton.setSize(CGSize(width: 44, height: 44), animated: false)
+        micButton.tintColor = .systemGray
+        // Default state → mic
+        messageInputBar.setStackViewItems([micButton], forStack: .right, animated: false)
+        messageInputBar.setRightStackViewWidthConstant(to: 52, animated: false)
+
+        // ATTACH BUTTON
+        let attachButton = InputBarButtonItem()
+        attachButton.image = UIImage(systemName: "plus")
+        attachButton.tintColor = .systemBlue
+        attachButton.setSize(CGSize(width: 36, height: 36), animated: false)
+
+        // UI only – no action
+        attachButton.onTouchUpInside { _ in }
+        messageInputBar.leftStackView.addArrangedSubview(attachButton)
+        messageInputBar.setLeftStackViewWidthConstant(to: 44, animated: false)
+        
+        //MARK: - Group settings from title
         // initial inset
         view.layoutIfNeeded()
         

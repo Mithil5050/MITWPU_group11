@@ -7,7 +7,7 @@
 
 import UIKit
 
-class GroupsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, JoinGroupDelegate, GroupUpdateDelegate {
+class GroupsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, JoinGroupDelegate, GroupUpdateDelegate, UISearchResultsUpdating {
     
     @IBOutlet weak var groupsTableView: UITableView!
     
@@ -47,6 +47,11 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         "IMA-123": "iMAAC"
     ]
     
+    //Search bar
+    private let searchController = UISearchController(searchResultsController: nil)
+    private var filteredGroups: [Group] = []
+    private var isSearching: Bool = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -57,6 +62,15 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         groupsTableView.delegate = self
         groupsTableView.tableFooterView = UIView()
         
+        //Search
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search Groups"
+
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+
+        definesPresentationContext = true
     }
     
     func didUpdateGroup(_ group: Group) {
@@ -71,7 +85,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
     
     // 1. Returns the total count of groups
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return myGroups.count
+        return isSearching ? filteredGroups.count : myGroups.count
     }
     
     // 2. Creates and configures each cell (row)
@@ -82,8 +96,9 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
             return UITableViewCell()
         }
         
-        let group = myGroups[indexPath.row]
-        // Group name
+        let group = isSearching
+            ? filteredGroups[indexPath.row]
+            : myGroups[indexPath.row]
         cell.groupNameLabel.text = group.name
         cell.groupNameLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
 
@@ -94,9 +109,8 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         cell.lastMessageLabel.font = UIFont.systemFont(ofSize: 14)
 
         //Avatars
-        let avatarName = groupAvatars[indexPath.row % groupAvatars.count]
-        cell.avatarImageView.image = UIImage(named: group.avatarName)
-
+        cell.configureAvatar(group.avatarName)
+        
         cell.avatarImageView.layer.cornerRadius = 22
         cell.avatarImageView.clipsToBounds = true
 
@@ -147,7 +161,11 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
             ) as? ChatViewController else {
                 return
             }
-            chatVC.group = myGroups[indexPath.row]
+        let selectedGroup = isSearching
+            ? filteredGroups[indexPath.row]
+            : myGroups[indexPath.row]
+
+        chatVC.group = selectedGroup
 
             navigationController?.pushViewController(chatVC, animated: true)
     }
@@ -233,6 +251,22 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         chatVC.group = group
         chatVC.updateDelegate = self
         navigationController?.pushViewController(chatVC, animated: true)
+    }
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        let searchText = searchController.searchBar.text?.lowercased() ?? ""
+
+        if searchText.isEmpty {
+            isSearching = false
+            filteredGroups.removeAll()
+        } else {
+            isSearching = true
+            filteredGroups = myGroups.filter {
+                $0.name.lowercased().contains(searchText)
+            }
+        }
+
+        groupsTableView.reloadData()
     }
 }
 
