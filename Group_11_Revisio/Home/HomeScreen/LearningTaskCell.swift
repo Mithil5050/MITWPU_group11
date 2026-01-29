@@ -49,20 +49,26 @@ class LearningTaskCell: UITableViewCell {
         let symbolname: String
         let iconColor: UIColor
         
-        switch task.type {
-        case .quiz:
-            symbolname = "timer" // 🆕 Changed icon
-            iconColor = UIColor(hex: "74DA9B") // 🆕 Changed color
-        case .notes:
-            symbolname = "book.pages"   // Notes Icon
-            iconColor = UIColor(hex: "FFC445", alpha: 0.75)
-        case .video:
-            symbolname = "play.tv.fill"      // Video Icon
-            iconColor = .systemIndigo
-        default:
-            symbolname = "graduationcap.fill"
-            iconColor = .systemGray
-        }
+        // In configure(with task:) function...
+    
+            
+            switch task.type {
+            case .quiz:
+                symbolname = "timer"
+                iconColor = UIColor(hex: "74DA9B")
+            case .notes:
+                symbolname = "book.pages"
+                iconColor = UIColor(hex: "FFC445", alpha: 0.75)
+            case .flashcard: // 🆕 Added Flashcard Styling
+                symbolname = "rectangle.on.rectangle.angled" // Looks like flashcards
+                iconColor = UIColor(hex: "5AC8FA")
+            case .video:
+                symbolname = "play.tv.fill"
+                iconColor = .systemIndigo
+            default:
+                symbolname = "graduationcap.fill"
+                iconColor = .systemGray
+            }
         
         // 4. Apply the Icon
         let config = UIImage.SymbolConfiguration(pointSize: 22, weight: .medium)

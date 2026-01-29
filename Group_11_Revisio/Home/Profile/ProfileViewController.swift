@@ -1,198 +1,206 @@
 import UIKit
 
-// Define sections for the grouped table view
-enum ProfileSection: Int, CaseIterable {
-    case userInfo = 0
-    case settings
-    case actions // For Logout
-}
-
 class ProfileViewController: UIViewController {
+
+    // MARK: - UI Components
+    var collectionView: UICollectionView!
     
-    // MARK: - Outlets
-    @IBOutlet weak var tableView: UITableView!
-    
-    // MARK: - Properties
-    // 1. Data for the User Info
-    var userName: String = "Mithil"
-    var userProfileImage: UIImage? = UIImage(named: "profile_placeholder") // Or your asset name
-    
-    // 2. "Old Data" - The Settings Options
-    let settingsOptions: [(title: String, icon: String?, color: UIColor?, type: String)] = [
-        ("Study Reminder", "book", .systemBlue, "Switch"),
-        ("Show Achievements", "trophy", .systemYellow, "Switch"),
-        ("Notifications", "bell.badge", .systemRed, "Switch"),
-        ("Privacy & Security", nil, nil, "Disclosure"),
-        ("Help & Support", nil, nil, "Disclosure")
+    // MARK: - User Data (State)
+    // We store these here so we can update them when you edit
+    var userName: String = "Alex Smith"
+    var userEmail: String = "alexsmith@gmail.com"
+    var userImage: UIImage? = UIImage(named: "profile_placeholder") // Or systemName "person.crop.circle.fill"
+
+    // MARK: - Settings Data
+    struct SettingItem { let title: String; let icon: String; let color: UIColor; let isSwitch: Bool }
+    let settingsData = [
+        SettingItem(title: "Study Reminder", icon: "book", color: .systemBlue, isSwitch: true),
+        SettingItem(title: "Notifications", icon: "bell", color: .systemRed, isSwitch: true),
+        SettingItem(title: "Privacy & Security", icon: "lock", color: .systemGray, isSwitch: false),
+        SettingItem(title: "Help & Support", icon: "questionmark.circle", color: .systemGray, isSwitch: false)
     ]
-    
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = ""
-        setupNavigationBar()
-        setupTableView()
+        view.backgroundColor = .black
+        setupCollectionView()
     }
     
     // MARK: - Setup
-    private func setupNavigationBar() {
-        let backButton = UIBarButtonItem(
-            image: UIImage(systemName: "xmark"),
-            style: .plain,
-            target: self,
-            action: #selector(closeTapped)
-        )
-        backButton.tintColor = .systemGray2
-        self.navigationItem.leftBarButtonItem = backButton
-    }
-    
-    private func setupTableView() {
-        tableView.dataSource = self
-        tableView.delegate = self
+    func setupCollectionView() {
+        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
+        collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        collectionView.backgroundColor = .black
         
-        // Register Custom XIB for Top Cell
-        // Ensure "UserInfoCell" matches your XIB filename exactly
-        let userInfoNib = UINib(nibName: "UserInfoCell", bundle: nil)
-        tableView.register(userInfoNib, forCellReuseIdentifier: "UserInfoCellID")
+        // Register XIBs
+        collectionView.register(UINib(nibName: "UserInfoCell", bundle: nil), forCellWithReuseIdentifier: "UserInfoCell")
+        collectionView.register(UINib(nibName: "LevelCell", bundle: nil), forCellWithReuseIdentifier: "LevelCell")
+        collectionView.register(UINib(nibName: "StatCardCell", bundle: nil), forCellWithReuseIdentifier: "StatCardCell")
+        collectionView.register(UINib(nibName: "SettingsCell", bundle: nil), forCellWithReuseIdentifier: "SettingsCell")
+        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "LogoutCell")
         
-        // Register Standard Cell for Settings
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SettingCell")
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        view.addSubview(collectionView)
     }
     
-    // MARK: - Actions
-    @objc func closeTapped() {
-        self.dismiss(animated: true, completion: nil)
-    }
-    
-    // Function to open the Edit Modal
-    func openEditProfileModal() {
-        let editVC = EditProfileViewController() // Ensure this class exists from previous steps
-        editVC.delegate = self // Set delegate to receive updates
+    // MARK: - Navigation Actions
+    func openEditProfile() {
+        let editVC = EditProfileViewController()
+        editVC.delegate = self // Connect the delegate!
         editVC.currentName = self.userName
-        editVC.currentImage = self.userProfileImage
+        editVC.currentImage = self.userImage
         
+        // Present nicely
         let nav = UINavigationController(rootViewController: editVC)
         if let sheet = nav.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-            sheet.prefersGrabberVisible = true
+            sheet.detents = [.medium(), .large()] // iOS 15+ sheet
         }
         present(nav, animated: true)
     }
+
+    // MARK: - Compositional Layout
+    func createLayout() -> UICollectionViewLayout {
+        return UICollectionViewCompositionalLayout { (sectionIndex, env) -> NSCollectionLayoutSection? in
+            
+            // 1. User Info Section (Full Width)
+            if sectionIndex == 0 {
+                let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(104)))
+                let group = NSCollectionLayoutGroup.horizontal(layoutSize: item.layoutSize, subitems: [item])
+                let section = NSCollectionLayoutSection(group: group)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 16, bottom: 16, trailing: 16)
+                return section
+            }
+            
+            // 2. Level Section (Full Width)
+            if sectionIndex == 1 {
+                let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(80)))
+                let group = NSCollectionLayoutGroup.horizontal(layoutSize: item.layoutSize, subitems: [item])
+                let section = NSCollectionLayoutSection(group: group)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 16, trailing: 16)
+                return section
+            }
+            
+            // 3. Stats Grid (2 Columns)
+            if sectionIndex == 2 {
+                let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5), heightDimension: .absolute(82)))
+                item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8)
+                let group = NSCollectionLayoutGroup.horizontal(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(82)), subitems: [item])
+                let section = NSCollectionLayoutSection(group: group)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 8, bottom: 16, trailing: 8)
+                return section
+            }
+            
+            // 4. Settings List
+            if sectionIndex == 3 {
+                var config = UICollectionLayoutListConfiguration(appearance: .insetGrouped)
+                config.backgroundColor = .black
+                config.showsSeparators = true
+                return NSCollectionLayoutSection.list(using: config, layoutEnvironment: env)
+            }
+            
+            // 5. Logout
+            let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(60)))
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: item.layoutSize, subitems: [item])
+            return NSCollectionLayoutSection(group: group)
+        }
+    }
 }
 
-// MARK: - UITableView DataSource & Delegate
-extension ProfileViewController: UITableViewDataSource, UITableViewDelegate {
+// MARK: - DataSource & Delegate
+extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return ProfileSection.allCases.count
+    func numberOfSections(in collectionView: UICollectionView) -> Int { return 5 }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if section == 2 { return 2 } // Streak & Badges
+        if section == 3 { return settingsData.count }
+        return 1
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch ProfileSection.allCases[section] {
-        case .userInfo: return 1
-        case .settings: return settingsOptions.count // ✅ Restores your settings rows
-        case .actions: return 1
-        }
-    }
-    
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        if section == ProfileSection.settings.rawValue {
-            return "Settings"
-        }
-        return nil
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let section = ProfileSection.allCases[indexPath.section]
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        switch section {
-        case .userInfo:
-            // Top Card with Edit Button
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: "UserInfoCellID", for: indexPath) as? UserInfoCellTableViewCell else {
-                return UITableViewCell()
+        // 0. User Info (CONNECTED!)
+        if indexPath.section == 0 {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "UserInfoCell", for: indexPath) as! UserInfoCell
+            
+            // 1. Configure Text
+            cell.configure(name: self.userName, email: self.userEmail)
+            
+            // 2. Configure Image (Manually since configure() didn't include it in your file)
+            if let img = self.userImage {
+                cell.pfp.image = img
             }
             
-            // 1. Configure with current data
-            cell.configure(name: userName, image: userProfileImage)
-            
-            // 2. Handle the "Edit" button tap from the cell
-            cell.didTapEditButton = { [weak self] in
-                self?.openEditProfileModal()
+            // 3. Connect the Closure Action
+            cell.didTapEdit = { [weak self] in
+                self?.openEditProfile()
             }
             
-            cell.selectionStyle = .none
-            return cell
-            
-        case .settings:
-            // Your Settings List
-            let cell = tableView.dequeueReusableCell(withIdentifier: "SettingCell", for: indexPath)
-            let setting = settingsOptions[indexPath.row]
-            
-            cell.textLabel?.text = setting.title
-            
-            if let iconName = setting.icon, let iconColor = setting.color {
-                cell.imageView?.image = UIImage(systemName: iconName)
-                cell.imageView?.tintColor = iconColor
-            } else {
-                cell.imageView?.image = nil
-            }
-            
-            // Accessories (Switch or Arrow)
-            if setting.type == "Switch" {
-                let settingSwitch = UISwitch()
-                settingSwitch.isOn = true
-                settingSwitch.onTintColor = .systemGreen
-                cell.accessoryView = settingSwitch
-                cell.selectionStyle = .none
-                cell.accessoryType = .none
-            } else {
-                cell.accessoryView = nil
-                cell.accessoryType = .disclosureIndicator
-            }
-            
-            cell.backgroundColor = UIColor.systemGroupedBackground
-            return cell
-            
-        case .actions:
-            // Logout Button
-            let cell = tableView.dequeueReusableCell(withIdentifier: "SettingCell", for: indexPath)
-            cell.textLabel?.text = "Log Out"
-            cell.textLabel?.textColor = .systemRed
-            cell.textLabel?.textAlignment = .center
-            cell.imageView?.image = nil
-            cell.accessoryView = nil
-            cell.backgroundColor = UIColor.systemGroupedBackground
             return cell
         }
+        
+        // 1. Level
+        if indexPath.section == 1 {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LevelCell", for: indexPath) as! LevelCell
+            cell.configure(level: 2, currentXP: 15, maxXP: 70)
+            return cell
+        }
+        
+        // 2. Stats Grid
+        if indexPath.section == 2 {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StatCardCell", for: indexPath) as! StatCardCell
+            if indexPath.item == 0 {
+                cell.configure(title: "Streak", value: "7 Days", icon: "flame", color: .systemOrange)
+            } else {
+                cell.configure(title: "Badges", value: "8 Unlocked", icon: "trophy", color: .systemYellow)
+            }
+            return cell
+        }
+        
+        // 3. Settings
+        if indexPath.section == 3 {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SettingsCell", for: indexPath) as! SettingsCell
+            let data = settingsData[indexPath.item]
+            cell.configure(title: data.title, icon: data.icon, color: data.color, isSwitch: data.isSwitch)
+            return cell
+        }
+        
+        // 4. Logout
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LogoutCell", for: indexPath)
+        for view in cell.contentView.subviews { view.removeFromSuperview() }
+        let lbl = UILabel(frame: cell.bounds)
+        lbl.text = "Log Out"
+        lbl.textColor = .systemRed
+        lbl.textAlignment = .center
+        lbl.font = .systemFont(ofSize: 16, weight: .medium)
+        cell.contentView.addSubview(lbl)
+        return cell
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        
-        // Handle Logout Tap
-        if indexPath.section == ProfileSection.actions.rawValue {
-            let alert = UIAlertController(title: "Log Out", message: "Are you sure?", preferredStyle: .actionSheet)
+    // Handle Logout Selection
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if indexPath.section == 4 {
+            let alert = UIAlertController(title: "Log Out", message: "Are you sure you want to log out?", preferredStyle: .actionSheet)
             alert.addAction(UIAlertAction(title: "Log Out", style: .destructive))
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
             present(alert, animated: true)
         }
     }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if indexPath.section == 0 { return 140 } // Height for Top Card
-        return 52 // Height for standard rows
-    }
 }
 
-// MARK: - EditProfileDelegate
-// Receives data back from the Edit Screen
+// MARK: - EditProfileDelegate Implementation
+// This updates the screen when you hit "Save" in the edit screen
 extension ProfileViewController: EditProfileDelegate {
     func didUpdateProfile(name: String, image: UIImage?) {
-        // 1. Update Data Source
+        // 1. Update State
         self.userName = name
-        self.userProfileImage = image
+        if let newImage = image {
+            self.userImage = newImage
+        }
         
-        // 2. Refresh the Top Section Only
-        tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
+        // 2. Reload ONLY the Profile Card section to reflect changes
+        collectionView.reloadSections(IndexSet(integer: 0))
     }
 }
