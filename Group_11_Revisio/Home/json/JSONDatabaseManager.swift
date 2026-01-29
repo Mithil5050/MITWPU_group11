@@ -2,17 +2,27 @@
 //  JSONDatabaseManager.swift
 //  Group_11_Revisio
 //
-//
 
 import Foundation
+
+// ✅ 1. Re-define the missing struct here
+struct StudyContent: Codable {
+    let filename: String
+    let dateAdded: Date
+    
+    init(filename: String, dateAdded: Date = Date()) {
+        self.filename = filename
+        self.dateAdded = dateAdded
+    }
+}
 
 class JSONDatabaseManager {
     static let shared = JSONDatabaseManager()
     
     // MARK: - File Names
     private let materialsFileName = "StudyMaterials.json"
-    private let planFileName = "StudyPlanData.json"
-    private let todaysTasksFileName = "TodaysTasks.json"
+    
+    // Removed: planFileName, todaysTasksFileName (Files deleted)
     
     private func getFileURL(forName name: String) -> URL {
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -49,50 +59,17 @@ class JSONDatabaseManager {
     func loadFiles() -> [StudyContent] {
         let url = getFileURL(forName: materialsFileName)
         
+        // 1. Try loading from Documents (User changes)
         if let data = try? Data(contentsOf: url),
            let files = try? JSONDecoder().decode([StudyContent].self, from: data) {
             return files
         }
         
+        // 2. Fallback to Bundle (Initial Data)
         if let bundleURL = Bundle.main.url(forResource: "StudyMaterials", withExtension: "json"),
            let data = try? Data(contentsOf: bundleURL),
            let files = try? JSONDecoder().decode([StudyContent].self, from: data) {
             return files
-        }
-        
-        return []
-    }
-    
-    // MARK: - Study Plan Logic
-    func loadStudyPlan() -> [PlanSubject] {
-        let url = getFileURL(forName: planFileName)
-        
-        if let data = try? Data(contentsOf: url),
-           let subjects = try? JSONDecoder().decode([PlanSubject].self, from: data) {
-            return subjects
-        }
-        
-        if let bundleURL = Bundle.main.url(forResource: "StudyPlanData", withExtension: "json"),
-           let data = try? Data(contentsOf: bundleURL),
-           let subjects = try? JSONDecoder().decode([PlanSubject].self, from: data) {
-            return subjects
-        }
-        return []
-    }
-    
-    // MARK: - Today's Tasks Logic
-    func loadTodaysTasks() -> [TodaySubject] {
-        let url = getFileURL(forName: todaysTasksFileName)
-        
-        if let data = try? Data(contentsOf: url),
-           let subjects = try? JSONDecoder().decode([TodaySubject].self, from: data) {
-            return subjects
-        }
-        
-        if let bundleURL = Bundle.main.url(forResource: "TodaysTasks", withExtension: "json"),
-           let data = try? Data(contentsOf: bundleURL),
-           let subjects = try? JSONDecoder().decode([TodaySubject].self, from: data) {
-            return subjects
         }
         
         return []

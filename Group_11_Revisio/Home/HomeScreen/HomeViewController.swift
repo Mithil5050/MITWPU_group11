@@ -3,7 +3,6 @@
 //  Group_11_Revisio
 //
 
-
 import UIKit
 import UniformTypeIdentifiers
 
@@ -13,11 +12,12 @@ struct GameItem: Hashable, Sendable {
     let imageAsset: String
 }
 
+// ✅ Updated Enum Order (Side Quests after Hero)
 enum HomeSection: Int, CaseIterable {
     case hero = 0
     case uploadContent
     case continueLearning
-    case studyPlan
+    case sideQuests
     case quickGames
 }
 
@@ -26,13 +26,10 @@ let hiAlexCellID = "HiAlexCellID"
 let uploadContentCellID = "UploadContentCellID"
 let continueLearningCellID = "ContinueLearningCellID"
 let quickGamesCellID = "QuickGamesCellID"
-let studyPlanCellID = "StudyPlanCellID"
+let sideQuestsCellID = "SideQuestsCollectionViewCell"
 let headerID = "HeaderID"
-let taskCellID = "TaskCell"
 
 // Segue Identifiers
-let showStudyPlanSegueID = "ShowStudyPlanSegue"
-let showTodayTaskSegueID = "showTodayTaskSegue"
 let showConnectionsSegueID = "ConnectionsSegue"
 let showWordFillSegueID = "ShowWordFillSegue"
 let showUploadConfirmationSegueID = "ShowUploadConfirmation"
@@ -40,6 +37,8 @@ let showChatSegueID = "ShowChatSegue"
 let showNotesDetailSegueID = "ShowNotesDetail"
 let showQuizStartSegueID = "ShowQuizStart"
 let showSubjectDetailSegueID = "ShowSubjectDetail"
+let showDailyChallengeSegueID = "ShowDailyChallenge"
+let showFlashcardsSegueID = "ShowFlashcardsSegue" // 🆕 Flashcards Segue
 
 protocol QuickGamesCellDelegate: AnyObject {
     func didSelectQuickGame(gameTitle: String)
@@ -49,36 +48,33 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     
     // MARK: - Properties
     var heroData: [ContentItem] = []
-    var studyPlanData: [ContentItem] = [ContentItem(title: "Study Plan", iconName: "calendar", itemType: "PlanOverview")]
     var uploadItems: [ContentItem] = []
     var learningItems: [ContentItem] = []
     var gameItems: [GameItem] = []
     
-    // Dropdown Logic Properties
-    var incompleteTasks: [PlanTask] = []
+    // 🆕 Side Quests Data
+    var sideQuests: [SideQuest] = []
+    
     var isLearningExpanded: Bool = false
-
+    
     @IBOutlet weak var collectionView: UICollectionView!
     
-    // ✅ Floating AI Button
+    // Floating AI Button
     private let aiFloatingButton: UIButton = {
         let btn = UIButton(type: .custom)
         btn.translatesAutoresizingMaskIntoConstraints = false
         
-        // 1. Load the original image
         guard let originalImage = UIImage(named: "exora_icon") else {
             btn.setImage(UIImage(systemName: "sparkles"), for: .normal)
             return btn
         }
-
-        // 2. Resize image
+        
         let targetSize = CGSize(width: 45, height: 45)
         let renderer = UIGraphicsImageRenderer(size: targetSize)
         let resizedImage = renderer.image { _ in
             originalImage.draw(in: CGRect(origin: .zero, size: targetSize))
         }
-
-        // 3. Configure the Button
+        
         var config = UIButton.Configuration.filled()
         config.baseBackgroundColor = .label
         config.cornerStyle = .capsule
@@ -87,7 +83,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         
         btn.configuration = config
         
-        // 5. Add Shadow
         btn.layer.shadowColor = UIColor.black.cgColor
         btn.layer.shadowOpacity = 0.3
         btn.layer.shadowOffset = CGSize(width: 0, height: 4)
@@ -97,27 +92,75 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     }()
     
     // MARK: - Lifecycle
-
     override func viewDidLoad() {
         super.viewDidLoad()
         setupData()
-        loadIncompleteTasks()
         setupCollectionView()
         setupProfileIcon()
         setupFloatingAIButton()
     }
     
-    // MARK: - NEW: Floating AI Button Setup
+    // MARK: - Setup
+    private func setupData() {
+        heroData = [ContentItem(title: "Hi Alex !", iconName: "", itemType: "Greeting")]
+        
+        uploadItems = [
+            ContentItem(title: "Big Data.pdf", iconName: "doc.fill", itemType: "PDF"),
+            ContentItem(title: "Data Structures- Trees.com", iconName: "link", itemType: "Link"),
+            ContentItem(title: "New File", iconName: "plus.circle.fill", itemType: "AddButton")
+        ]
+        
+        // ✅ Added Flashcard Item here
+        learningItems = [
+            ContentItem(title: "Bio Definitions", iconName: "rectangle.stack", itemType: "Flashcard"),
+            ContentItem(title: "Physics Ch 4 Quiz", iconName: "checkmark.circle.fill", itemType: "Quiz"),
+            ContentItem(title: "Area under functions", iconName: "book.fill", itemType: "Topic"),
+            ContentItem(title: "History Notes", iconName: "doc.text.fill", itemType: "Notes")
+        ]
+        
+        gameItems = [
+            GameItem(title: "", imageAsset: "Gemini_Generated_Image_p66f9tp66f9tp66f-removebg-preview"),
+            GameItem(title: "", imageAsset: "Gemini_Generated_Image_y6xx8iy6xx8iy6xx-removebg-preview")
+        ]
+        
+        // Initial Side Quests (No Difficulty)
+        sideQuests = [
+            SideQuest(title: "Read Chapter 1"),
+            SideQuest(title: "Complete Assignment")
+        ]
+    }
+    
+    private func setupCollectionView() {
+        registerCustomCells()
+        collectionView.collectionViewLayout = generateLayout()
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.contentInsetAdjustmentBehavior = .never
+    }
+    
+    func registerCustomCells() {
+        collectionView.register(UINib(nibName: "HiAlexCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: hiAlexCellID)
+        collectionView.register(UINib(nibName: "UploadContentCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: uploadContentCellID)
+        collectionView.register(UINib(nibName: "ContinueLearningCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: continueLearningCellID)
+        collectionView.register(UINib(nibName: "QuickGamesCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: quickGamesCellID)
+        
+        // 🆕 Register Side Quests Cell
+        collectionView.register(UINib(nibName: "SideQuestsCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: sideQuestsCellID)
+        
+        collectionView.register(UINib(nibName: "HeaderViewCollectionReusableView", bundle: nil),
+                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+                                withReuseIdentifier: headerID)
+    }
+    
+    // MARK: - Floating AI Button
     private func setupFloatingAIButton() {
         view.addSubview(aiFloatingButton)
-        
         NSLayoutConstraint.activate([
             aiFloatingButton.widthAnchor.constraint(equalToConstant: 60),
             aiFloatingButton.heightAnchor.constraint(equalToConstant: 60),
             aiFloatingButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
             aiFloatingButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
         ])
-        
         aiFloatingButton.addTarget(self, action: #selector(didTapAIButton), for: .touchUpInside)
     }
     
@@ -133,62 +176,24 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         }
     }
     
-    // MARK: - Profile Icon Setup
+    // MARK: - Profile Icon
     private func setupProfileIcon() {
         let button = UIButton(type: .custom)
-        
         if let image = UIImage(named: "profile_placeholder") {
             button.setImage(image, for: .normal)
         } else {
             button.setImage(UIImage(systemName: "person.circle.fill"), for: .normal)
         }
-        
         button.translatesAutoresizingMaskIntoConstraints = false
         button.widthAnchor.constraint(equalToConstant: 40).isActive = true
         button.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        
         button.imageView?.contentMode = .scaleAspectFill
         button.layer.cornerRadius = 20
         button.layer.masksToBounds = true
-        
         button.addTarget(self, action: #selector(profileButtonTapped(_:)), for: .touchUpInside)
         
         let barItem = UIBarButtonItem(customView: button)
         navigationItem.rightBarButtonItem = barItem
-    }
-    
-    private func loadIncompleteTasks() {
-        let allSubjects = JSONDatabaseManager.shared.loadStudyPlan()
-        incompleteTasks = allSubjects.flatMap { subject in
-            subject.days.flatMap { day in
-                day.tasks.filter { !$0.isComplete }
-            }
-        }
-    }
-    
-    private func setupData() {
-        heroData = [ContentItem(title: "Hi Alex !", iconName: "", itemType: "Greeting")]
-        
-        uploadItems = [
-            ContentItem(title: "Big Data.pdf", iconName: "doc.fill", itemType: "PDF"),
-            ContentItem(title: "Data Structures- Trees.com", iconName: "link", itemType: "Link"),
-            ContentItem(title: "New File", iconName: "plus.circle.fill", itemType: "AddButton")
-        ]
-        
-        learningItems = [ContentItem(title: "Area under functions", iconName: "", itemType: "Topic")]
-        
-        gameItems = [
-            GameItem(title: "", imageAsset: "Gemini_Generated_Image_p66f9tp66f9tp66f-removebg-preview"),
-            GameItem(title: "", imageAsset: "Gemini_Generated_Image_y6xx8iy6xx8iy6xx-removebg-preview")
-        ]
-    }
-
-    private func setupCollectionView() {
-        registerCustomCells()
-        collectionView.collectionViewLayout = generateLayout()
-        collectionView.dataSource = self
-        collectionView.delegate = self
-        collectionView.contentInsetAdjustmentBehavior = .never
     }
     
     @IBAction func profileButtonTapped(_ sender: Any) {
@@ -198,7 +203,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // MARK: - Navigation Preparation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        // 1. Upload Confirmation
         if segue.identifier == showUploadConfirmationSegueID {
             if let destinationVC = segue.destination as? UploadConfirmationViewController,
                let filename = sender as? String {
@@ -206,7 +210,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             }
         }
         
-        // 2. Navigation to Notes
         if segue.identifier == showNotesDetailSegueID {
             if let destVC = segue.destination as? NotesViewController,
                let topic = sender as? Topic {
@@ -215,7 +218,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             }
         }
         
-        // 3. Navigation to Quiz Start
         if segue.identifier == showQuizStartSegueID {
             if let destVC = segue.destination as? QuizStartViewController,
                let topic = sender as? Topic {
@@ -225,12 +227,22 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             }
         }
         
-        // 4. Open Subject Folder
         if segue.identifier == showSubjectDetailSegueID {
             if let destVC = segue.destination as? SubjectViewController,
                let subjectName = sender as? String {
                 destVC.selectedSubject = subjectName
             }
+        }
+        
+        // 🆕 Flashcards Segue
+        if segue.identifier == showFlashcardsSegueID {
+            // Uncomment when FlashcardsVC is created
+            /*
+            if let destVC = segue.destination as? FlashcardsViewController,
+               let topic = sender as? Topic {
+                destVC.topic = topic
+            }
+            */
         }
     }
     
@@ -238,7 +250,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     func generateLayout() -> UICollectionViewLayout {
         let horizontalPadding: CGFloat = 16
         let verticalSpacing: CGFloat = 16
-
+        
         return UICollectionViewCompositionalLayout { [self] sectionIndex, env in
             let sectionType = HomeSection.allCases[sectionIndex]
             
@@ -246,18 +258,28 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             let headerItem = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
             
             let itemWidth = NSCollectionLayoutDimension.fractionalWidth(1.0)
-
+            
             switch sectionType {
             case .hero:
-                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(124))
+                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(138))
                 let item = NSCollectionLayoutItem(layoutSize: size)
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: size, subitems: [item])
                 let section = NSCollectionLayoutSection(group: group)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 return section
                 
+            case .sideQuests:
+                // 🆕 Dynamic height for Side Quests
+                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(300))
+                let item = NSCollectionLayoutItem(layoutSize: size)
+                let group = NSCollectionLayoutGroup.horizontal(layoutSize: size, subitems: [item])
+                let section = NSCollectionLayoutSection(group: group)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
+                section.boundarySupplementaryItems = [headerItem]
+                return section
+                
             case .uploadContent:
-                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(142))
+                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(156))
                 let item = NSCollectionLayoutItem(layoutSize: size)
                 let group = NSCollectionLayoutGroup.vertical(layoutSize: size, subitems: [item])
                 let section = NSCollectionLayoutSection(group: group)
@@ -265,28 +287,16 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .continueLearning:
+                // Height based on items + spacing (removed static card header)
                 let rowHeight: CGFloat = 75
-                let visibleCount = min(incompleteTasks.count, 3)
-                let expandedHeight: CGFloat = isLearningExpanded
-                    ? CGFloat(visibleCount + 1) * rowHeight
-                    : 75
-
-                let size = NSCollectionLayoutSize(
-                    widthDimension: itemWidth,
-                    heightDimension: .absolute(expandedHeight)
-                )
+                let countToShow = isLearningExpanded ? learningItems.count : min(learningItems.count, 2)
+                let totalHeight = CGFloat(max(countToShow, 1)) * rowHeight
+                
+                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .absolute(totalHeight))
                 let item = NSCollectionLayoutItem(layoutSize: size)
                 let group = NSCollectionLayoutGroup.vertical(layoutSize: size, subitems: [item])
-
                 let section = NSCollectionLayoutSection(group: group)
-                
-                section.contentInsets = NSDirectionalEdgeInsets(
-                    top: 5,
-                    leading: horizontalPadding,
-                    bottom: 5,
-                    trailing: horizontalPadding
-                )
-                
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: 5, trailing: horizontalPadding)
                 section.boundarySupplementaryItems = [headerItem]
                 return section
                 
@@ -298,44 +308,22 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
                 section.boundarySupplementaryItems = [headerItem]
                 return section
-
-            case .studyPlan:
-                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(100))
-                let item = NSCollectionLayoutItem(layoutSize: size)
-                let group = NSCollectionLayoutGroup.horizontal(layoutSize: size, subitems: [item])
-                let section = NSCollectionLayoutSection(group: group)
-                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: verticalSpacing, trailing: horizontalPadding)
-                return section
             }
         }
     }
     
-    func registerCustomCells() {
-        collectionView.register(UINib(nibName: "HiAlexCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: hiAlexCellID)
-        collectionView.register(UINib(nibName: "UploadContentCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: uploadContentCellID)
-        collectionView.register(UINib(nibName: "ContinueLearningCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: continueLearningCellID)
-        collectionView.register(UINib(nibName: "QuickGamesCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: quickGamesCellID)
-        collectionView.register(UINib(nibName: "StudyPlanCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: studyPlanCellID)
-        collectionView.register(UINib(nibName: "TaskCell", bundle: nil), forCellWithReuseIdentifier: taskCellID)
-        
-        collectionView.register(UINib(nibName: "HeaderViewCollectionReusableView", bundle: nil),
-                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-                                withReuseIdentifier: headerID)
-    }
-    
     // MARK: - UICollectionViewDataSource
-
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return HomeSection.allCases.count
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         let sectionType = HomeSection.allCases[section]
         switch sectionType {
         case .hero: return heroData.count
-        case .studyPlan: return studyPlanData.count
+        case .sideQuests: return 1
         case .uploadContent: return 1
-        case .continueLearning:            return 1
+        case .continueLearning: return 1
         case .quickGames: return 1
         }
     }
@@ -345,81 +333,68 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         
         switch sectionType {
         case .hero:
-            return collectionView.dequeueReusableCell(withReuseIdentifier: hiAlexCellID, for: indexPath)
-        case .studyPlan:
-            return collectionView.dequeueReusableCell(withReuseIdentifier: studyPlanCellID, for: indexPath)
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: hiAlexCellID, for: indexPath) as! HiAlexCollectionViewCell
+            cell.delegate = self
+            return cell
+            
+        case .sideQuests:
+            // 🆕 Configure Side Quests
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: sideQuestsCellID, for: indexPath) as! SideQuestsCollectionViewCell
+            cell.configure(with: self.sideQuests)
+            cell.delegate = self
+            return cell
+            
         case .uploadContent:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: uploadContentCellID, for: indexPath) as! UploadContentCollectionViewCell
             cell.delegate = self
             cell.configure(with: uploadItems)
             return cell
+            
         case .continueLearning:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: continueLearningCellID, for: indexPath) as! ContinueLearningCollectionViewCell
-
-            // Pass the tasks and expansion state
-            cell.configure(with: self.incompleteTasks)
-            
-            // ✅ Connect the Delegate for Navigation
+            let itemsToShow = isLearningExpanded ? learningItems : Array(learningItems.prefix(2))
+            cell.configure(with: itemsToShow)
             cell.delegate = self
-
             return cell
+            
         case .quickGames:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: quickGamesCellID, for: indexPath) as! QuickGamesCollectionViewCell
             cell.delegate = self
-            cell.configure(with: gameItems[0], and: gameItems[1])
+            if gameItems.count >= 2 {
+                cell.configure(with: gameItems[0], and: gameItems[1])
+            }
             return cell
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerID, for: indexPath) as! HeaderViewCollectionReusableView
-        
         let sectionType = HomeSection.allCases[indexPath.section]
-        switch sectionType {
-        case .continueLearning:
+        
+        // 🆕 Header for Side Quests
+        if sectionType == .sideQuests {
+            headerView.isHidden = false
+            headerView.configureHeader(with: "Daily Side Quests", showViewAll: false, section: indexPath.section)
+            headerView.delegate = nil
+            return headerView
+        }
+        
+        if sectionType == .continueLearning {
             headerView.isHidden = false
             headerView.configureHeader(with: "Continue Learning", showViewAll: true, section: indexPath.section, isExpanded: isLearningExpanded)
             headerView.delegate = self
-        case .quickGames:
+            return headerView
+        }
+        
+        if sectionType == .quickGames {
             headerView.isHidden = false
             headerView.configureHeader(with: "Quick Games", showViewAll: false, section: indexPath.section)
             headerView.delegate = nil
-        default:
-            headerView.isHidden = true
+            return headerView
         }
-        return headerView
-    }
-
-    // MARK: - CollectionView Navigation
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let sectionType = HomeSection.allCases[indexPath.section]
         
-        switch sectionType {
-        case .hero:
-            performSegue(withIdentifier: showTodayTaskSegueID, sender: nil)
-            
-        case .studyPlan:
-            performSegue(withIdentifier: showStudyPlanSegueID, sender: nil)
-            
-        // ✅ NEW: Handle Big Data Card Click
-        // Instead of opening the Subject Folder, we now open a QUIZ directly.
-        case .continueLearning:
-            
-            // Create a Topic object representing the "Big Data Quiz"
-            let quizTopic = Topic(
-                name: "Big Data Quiz",
-                lastAccessed: "Just now",
-                materialType: "Quiz",
-                largeContentBody: "", // Content will be loaded in QuizVC via DataManager or defaults
-                parentSubjectName: "Big Data"
-            )
-            
-            // Trigger the segue to start the quiz
-            performSegue(withIdentifier: showQuizStartSegueID, sender: quizTopic)
-            
-        default:
-            break
-        }
+        headerView.isHidden = true
+        return headerView
     }
 }
 
@@ -427,57 +402,59 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
 extension HomeViewController: HeaderViewDelegate {
     func didTapViewAll(in section: Int) {
         isLearningExpanded.toggle()
-        collectionView.performBatchUpdates({
-            collectionView.reloadSections(IndexSet(integer: section))
-        }, completion: nil)
+        collectionView.reloadSections(IndexSet(integer: section))
     }
 }
 
-// MARK: - Continue Learning Delegate (Notes & Quiz)
-extension HomeViewController: ContinueLearningCellDelegate {
+// MARK: - Side Quests Delegate (XP Logic)
+extension HomeViewController: SideQuestDelegate {
+    func didUpdateQuests(_ quests: [SideQuest]) {
+        self.sideQuests = quests
+        // Animate resize
+        collectionView.collectionViewLayout.invalidateLayout()
+    }
     
-    func didSelectLearningTask(_ task: PlanTask) {
-        let subjectName = findSubjectName(for: task)
+    func didEarnXP(amount: Int, sourceView: UIView) {
+        // Floating XP Animation
+        let frame = sourceView.convert(sourceView.bounds, to: self.view)
+        let lbl = UILabel(frame: frame)
+        lbl.text = "+\(amount) XP"
+        lbl.font = .boldSystemFont(ofSize: 20)
+        lbl.textColor = .systemYellow
+        self.view.addSubview(lbl)
         
-        // 1. NOTES Logic
-        if task.type.contains("Notes") || task.type.contains("Revision") {
-            let topic = Topic(
-                name: task.title,
-                lastAccessed: "Just now",
-                materialType: "Notes",
-                largeContentBody: "",
-                parentSubjectName: subjectName
-            )
+        UIView.animate(withDuration: 1.0, delay: 0, options: .curveEaseOut, animations: {
+            lbl.transform = CGAffineTransform(translationX: 0, y: -60)
+            lbl.alpha = 0
+        }) { _ in
+            lbl.removeFromSuperview()
+        }
+    }
+}
+
+// MARK: - Continue Learning Delegate (Navigation)
+extension HomeViewController: ContinueLearningCellDelegate {
+    func didSelectLearningItem(_ item: ContentItem) {
+        let topic = Topic(
+            name: item.title,
+            lastAccessed: "Just now",
+            materialType: item.itemType, // Pass type dynamically
+            largeContentBody: "",
+            parentSubjectName: "General"
+        )
+        
+        if item.itemType == "Quiz" {
+            performSegue(withIdentifier: showQuizStartSegueID, sender: topic)
+        } else if item.itemType == "Flashcard" {
+            // 🆕 Flashcard Segue
+            performSegue(withIdentifier: showFlashcardsSegueID, sender: topic)
+        } else {
             performSegue(withIdentifier: showNotesDetailSegueID, sender: topic)
         }
-        // 2. QUIZ Logic
-        else if task.type.contains("Quiz") {
-            let topic = Topic(
-                name: task.title,
-                lastAccessed: "Just now",
-                materialType: "Quiz",
-                largeContentBody: "",
-                parentSubjectName: subjectName
-            )
-            performSegue(withIdentifier: showQuizStartSegueID, sender: topic)
-        }
-    }
-    
-    // Helper to find the subject name for a specific task
-    private func findSubjectName(for task: PlanTask) -> String {
-        let allSubjects = JSONDatabaseManager.shared.loadStudyPlan()
-        for subject in allSubjects {
-            for day in subject.days {
-                if day.tasks.contains(where: { $0.title == task.title }) {
-                    return subject.name
-                }
-            }
-        }
-        return "General" // Fallback if not found
     }
 }
 
-// MARK: - Existing Extensions
+// MARK: - Quick Games Delegate
 extension HomeViewController: QuickGamesCellDelegate {
     func didSelectQuickGame(gameTitle: String) {
         let segueID = (gameTitle == "Word Fill") ? showWordFillSegueID : showConnectionsSegueID
@@ -485,13 +462,14 @@ extension HomeViewController: QuickGamesCellDelegate {
     }
 }
 
+// MARK: - Upload Delegate
 extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     func navigateToConfirmation(with contentName: String) {
         JSONDatabaseManager.shared.addUploadedFile(name: contentName)
         performSegue(withIdentifier: showUploadConfirmationSegueID, sender: contentName)
     }
-
+    
     func uploadCellDidTapDocument(_ cell: UploadContentCollectionViewCell) {
         let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.pdf, .plainText], asCopy: true)
         picker.delegate = self
@@ -524,7 +502,7 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
-
+    
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
         navigateToConfirmation(with: url.lastPathComponent)
@@ -534,5 +512,12 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         picker.dismiss(animated: true) {
             self.navigateToConfirmation(with: "Media Asset")
         }
+    }
+}
+
+// MARK: - Hi Alex Cell Delegate (Daily Challenge)
+extension HomeViewController: HiAlexCellDelegate {
+    func didTapPlayNow() {
+        performSegue(withIdentifier: showDailyChallengeSegueID, sender: nil)
     }
 }
