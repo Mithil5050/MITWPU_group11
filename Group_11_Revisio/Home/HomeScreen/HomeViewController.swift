@@ -12,12 +12,12 @@ struct GameItem: Hashable, Sendable {
     let imageAsset: String
 }
 
-// ✅ Updated Enum Order (Side Quests after Hero)
+// ✅ Updated Enum Order
 enum HomeSection: Int, CaseIterable {
     case hero = 0
     case uploadContent
     case continueLearning
-    case sideQuests
+    case sideQuests // 🆕 Placed right after Hero
     case quickGames
 }
 
@@ -26,7 +26,7 @@ let hiAlexCellID = "HiAlexCellID"
 let uploadContentCellID = "UploadContentCellID"
 let continueLearningCellID = "ContinueLearningCellID"
 let quickGamesCellID = "QuickGamesCellID"
-let sideQuestsCellID = "SideQuestsCollectionViewCell"
+let sideQuestsCellID = "SideQuestsCollectionViewCell" // 🆕
 let headerID = "HeaderID"
 
 // Segue Identifiers
@@ -38,7 +38,7 @@ let showNotesDetailSegueID = "ShowNotesDetail"
 let showQuizStartSegueID = "ShowQuizStart"
 let showSubjectDetailSegueID = "ShowSubjectDetail"
 let showDailyChallengeSegueID = "ShowDailyChallenge"
-let showFlashcardsSegueID = "ShowFlashcardsSegue" // 🆕 Flashcards Segue
+let showFlashcardsSegueID = "ShowFlashcardsSegue" // 🆕
 
 protocol QuickGamesCellDelegate: AnyObject {
     func didSelectQuickGame(gameTitle: String)
@@ -54,6 +54,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     
     // 🆕 Side Quests Data
     var sideQuests: [SideQuest] = []
+    var completedQuests: [SideQuest] = [] // For History
     
     var isLearningExpanded: Bool = false
     
@@ -112,9 +113,9 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         
         // ✅ Added Flashcard Item here
         learningItems = [
-            ContentItem(title: "Bio Definitions", iconName: "rectangle.stack", itemType: "Flashcard"),
             ContentItem(title: "Physics Ch 4 Quiz", iconName: "checkmark.circle.fill", itemType: "Quiz"),
-            ContentItem(title: "Area under functions", iconName: "book.fill", itemType: "Topic"),
+            ContentItem(title: "Bio Definitions", iconName: "rectangle.stack", itemType: "Flashcard"),
+            ContentItem(title: "Area under functions", iconName: "book.fill", itemType: "Topic"), // 🆕
             ContentItem(title: "History Notes", iconName: "doc.text.fill", itemType: "Notes")
         ]
         
@@ -236,13 +237,12 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         
         // 🆕 Flashcards Segue
         if segue.identifier == showFlashcardsSegueID {
-            // Uncomment when FlashcardsVC is created
-            /*
-            if let destVC = segue.destination as? FlashcardsViewController,
-               let topic = sender as? Topic {
-                destVC.topic = topic
-            }
-            */
+            /* // Uncomment this once FlashcardsViewController is created
+             if let destVC = segue.destination as? FlashcardsViewController,
+                let topic = sender as? Topic {
+                 destVC.topic = topic
+             }
+             */
         }
     }
     
@@ -287,7 +287,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .continueLearning:
-                // Height based on items + spacing (removed static card header)
+                // Height based on items + spacing
                 let rowHeight: CGFloat = 75
                 let countToShow = isLearningExpanded ? learningItems.count : min(learningItems.count, 2)
                 let totalHeight = CGFloat(max(countToShow, 1)) * rowHeight
@@ -406,12 +406,28 @@ extension HomeViewController: HeaderViewDelegate {
     }
 }
 
-// MARK: - Side Quests Delegate (XP Logic)
+// MARK: - Side Quests Delegate (XP & History Logic)
 extension HomeViewController: SideQuestDelegate {
     func didUpdateQuests(_ quests: [SideQuest]) {
         self.sideQuests = quests
         // Animate resize
         collectionView.collectionViewLayout.invalidateLayout()
+    }
+    
+    func didCompleteQuest(_ quest: SideQuest) {
+        var completed = quest
+        completed.isCompleted = true
+        self.completedQuests.insert(completed, at: 0) // Add to top of history
+    }
+    
+    func didTapHistory() {
+        let vc = QuestHistoryViewController()
+        vc.history = self.completedQuests
+        if let nav = navigationController {
+            nav.pushViewController(vc, animated: true)
+        } else {
+            present(vc, animated: true)
+        }
     }
     
     func didEarnXP(amount: Int, sourceView: UIView) {

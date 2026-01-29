@@ -3,6 +3,10 @@ import UIKit
 protocol SideQuestDelegate: AnyObject {
     func didUpdateQuests(_ quests: [SideQuest])
     func didEarnXP(amount: Int, sourceView: UIView)
+    
+    // 🆕 New Methods
+    func didCompleteQuest(_ quest: SideQuest) // Save to history
+    func didTapHistory() // Open history screen
 }
 
 class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, QuestCellDelegate {
@@ -13,6 +17,9 @@ class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource,
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var tableHeightConstraint: NSLayoutConstraint!
     
+    // 🆕 History Button Outlet
+    @IBOutlet weak var historyButton: UIButton!
+    
     // MARK: - Properties
     weak var delegate: SideQuestDelegate?
     var quests: [SideQuest] = []
@@ -21,6 +28,9 @@ class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource,
         super.awakeFromNib()
         setupUI()
         setupTable()
+        
+        // 🆕 Setup History Button Action
+        historyButton.addTarget(self, action: #selector(historyTapped), for: .touchUpInside)
     }
     
     func setupUI() {
@@ -44,7 +54,12 @@ class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource,
         tableView.isScrollEnabled = false
     }
     
-    // MARK: - Dynamic Resizing Logic
+    // MARK: - Actions
+    @objc func historyTapped() {
+        delegate?.didTapHistory()
+    }
+    
+    // MARK: - Dynamic Resizing
     override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
         setNeedsLayout()
         layoutIfNeeded()
@@ -83,7 +98,7 @@ class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource,
         return true
     }
 
-    // MARK: - Table View
+    // MARK: - Table View Logic
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { return quests.count }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat { return 50 }
@@ -104,20 +119,21 @@ class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource,
         }
     }
     
-    // MARK: - Task Done (Vanish Logic)
+    // MARK: - Quest Completed
     func didToggleQuest(cell: QuestTableViewCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
+        
+        let completedQuest = quests[indexPath.row]
         
         // 1. Give XP
         delegate?.didEarnXP(amount: 10, sourceView: cell.checkButton)
         
-        // 2. Remove Task
+        // 2. Notify Delegate to archive
+        delegate?.didCompleteQuest(completedQuest)
+        
+        // 3. Remove from Active List
         quests.remove(at: indexPath.row)
-        
-        // 3. Vanish Animation
         tableView.deleteRows(at: [indexPath], with: .fade)
-        
-        // 4. Resize
         updateHeight()
         delegate?.didUpdateQuests(quests)
     }
