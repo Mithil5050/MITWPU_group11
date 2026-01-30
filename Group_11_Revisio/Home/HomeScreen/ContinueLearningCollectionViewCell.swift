@@ -1,21 +1,17 @@
 import UIKit
 
-// 1. Define the Protocol to talk to HomeViewController
+// Protocol for HomeViewController
 protocol ContinueLearningCellDelegate: AnyObject {
-    func didSelectLearningTask(_ task: PlanTask)
+    func didSelectLearningItem(_ item: ContentItem)
 }
 
 class ContinueLearningCollectionViewCell: UICollectionViewCell, UITableViewDataSource, UITableViewDelegate {
     
     @IBOutlet weak var tableView: UITableView!
     
-    @IBOutlet var quizlogo: UIImageView!
-    @IBOutlet var LogoView: UIView!
-    @IBOutlet var ViewShow: UIView!
+    // Deleted: quizlogo, LogoView, ViewShow (No longer needed)
     
-    var incompleteTasks: [PlanTask] = []
-    
-    // 2. Add the delegate property
+    var learningItems: [ContentItem] = []
     weak var delegate: ContinueLearningCellDelegate?
     
     override func awakeFromNib() {
@@ -24,40 +20,21 @@ class ContinueLearningCollectionViewCell: UICollectionViewCell, UITableViewDataS
         tableView.dataSource = self
         tableView.delegate = self
         tableView.separatorStyle = .none
-        tableView.isScrollEnabled = false
+        tableView.isScrollEnabled = false // Height is controlled by CollectionView
         
-        // 1. Dynamic Background for the Card Container (ViewShow)
-        // Light Mode: #F5F5F5, Dark Mode: System Dark Gray
-        ViewShow.backgroundColor = UIColor { traitCollection in
-            if traitCollection.userInterfaceStyle == .dark {
-                return .secondarySystemGroupedBackground
-            } else {
-                return UIColor(hex: "F5F5F5")
-            }
-        }
-        ViewShow.layer.cornerRadius = 12
-        
-        // 2. Setup Mint Color for Logo (Works in both modes)
-        let mintColor = UIColor(hex: "74DA9B")
-        
-        LogoView.backgroundColor = mintColor.withAlphaComponent(0.15)
-        LogoView.layer.cornerRadius = 8
-        
-        quizlogo.tintColor = mintColor
-        
-        // CRITICAL: Keep this registry line to prevent crashes
+        // Register Cell
         let nib = UINib(nibName: "LearningTaskCell", bundle: nil)
         tableView.register(nib, forCellReuseIdentifier: "LearningTaskCell")
     }
     
-    func configure(with tasks: [PlanTask]) {
-        self.incompleteTasks = tasks
+    func configure(with items: [ContentItem]) {
+        self.learningItems = items
         self.tableView.reloadData()
     }
     
     // MARK: - TableView DataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return incompleteTasks.count
+        return learningItems.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -65,41 +42,36 @@ class ContinueLearningCollectionViewCell: UICollectionViewCell, UITableViewDataS
             return UITableViewCell()
         }
         
-        let planItem = incompleteTasks[indexPath.row]
-        
-        // ✅ FIX: Map the actual String type from JSON to the Enum
-        var taskType: TaskType = .other
-        
-        // Check strings like "Notes", "Revision", "Quiz"
-        if planItem.type.contains("Notes") || planItem.type.contains("Revision") {
-            taskType = .notes
-        } else if planItem.type.contains("Quiz") {
-            taskType = .quiz
-        } else if planItem.type.contains("Video") {
-            taskType = .video
-        }
-        
-        let task = LearningTask(
-            title: planItem.title,
-            subtitle: nil, // We let the cell generate the "modules remaining" text
-            remainingModules: Int.random(in: 2...5), // Dummy count for UI demo
-            type: taskType
+        // In tableView(_ cellForRowAt:) ...
+            
+            let item = learningItems[indexPath.row]
+            
+            // Determine type
+            var taskType: TaskType = .other
+            if item.itemType == "Quiz" { taskType = .quiz }
+            else if item.itemType == "Topic" || item.itemType == "Notes" { taskType = .notes }
+            else if item.itemType == "Flashcard" { taskType = .flashcard } // 🆕 Map logic
+            
+            let taskViewModel = LearningTask(
+                title: item.title,
+                subtitle: nil,
+                remainingModules: 0,
+                type: taskType
+            
         )
         
-        cell.configure(with: task)
+        cell.configure(with: taskViewModel)
         return cell
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 80
+        return 75 // Matches the rowHeight in HomeViewController
     }
     
     // MARK: - TableView Delegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
-        // 3. Notify the HomeViewController that a row was clicked
-        let selectedTask = incompleteTasks[indexPath.row]
-        delegate?.didSelectLearningTask(selectedTask)
+        let selectedItem = learningItems[indexPath.row]
+        delegate?.didSelectLearningItem(selectedItem)
     }
 }

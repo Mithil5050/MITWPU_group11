@@ -28,5 +28,9 @@ class GroupCell: UITableViewCell {
 
         // Configure the view for the selected state
     }
+    
+    func configureAvatar(_ avatarName: String) {
+            avatarImageView.image = UIImage(named: avatarName)
+        }
 
 }

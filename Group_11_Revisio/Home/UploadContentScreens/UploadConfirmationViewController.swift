@@ -167,16 +167,16 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         switch detectedType {
         case "pdf document":
             symbolName = "doc.text"
-            tintColor = .systemRed
+            tintColor = .systemIndigo
         case "web link":
             symbolName = "link"
-            tintColor = .systemBlue
+            tintColor = .systemIndigo
         case "photo/video":
             symbolName = "photo"
-            tintColor = .systemPurple
+            tintColor = .systemIndigo
         default:
             symbolName = "textformat"
-            tintColor = .systemGray
+            tintColor = .systemIndigo
         }
         
         // --- 3. CARD STYLING ---

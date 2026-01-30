@@ -36,7 +36,7 @@ class CreateGroupViewController: UIViewController {
             codeVC.configure(withGroupName: groupName, code: code)
         
         // Create new group and send to delegate
-        let newGroup = Group(name: groupName, avatarName: "gpfp_default")
+        let newGroup = Group(name: groupName, avatarName: "gpfp10")
         delegate?.didCreateGroup(newGroup)
         
         // 5. PUSH inside navigation controller (this is the whole fix!)

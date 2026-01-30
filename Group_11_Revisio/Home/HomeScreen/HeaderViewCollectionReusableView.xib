@@ -4,6 +4,7 @@
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -14,16 +15,20 @@
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r2p-Ec-kBz">
-                    <rect key="frame" x="0.0" y="5" width="233" height="30"/>
+                    <rect key="frame" x="0.0" y="6" width="233" height="28"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="233" id="HfN-cr-Geh"/>
                     </constraints>
-                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="25"/>
+                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="24"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mtu-I0-0a7">
-                    <rect key="frame" x="205" y="5" width="110" height="35"/>
+                    <rect key="frame" x="205" y="8" width="110" height="24"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="24" id="VB2-UZ-Lxm"/>
+                    </constraints>
+                    <color key="tintColor" systemColor="systemIndigoColor"/>
                     <state key="normal" title="Button"/>
                     <buttonConfiguration key="configuration" style="plain" image="chevron.down" catalog="system" imagePlacement="trailing" title="View all "/>
                     <connections>
@@ -33,10 +38,11 @@
             </subviews>
             <viewLayoutGuide key="safeArea" id="VXr-Tz-HHm"/>
             <constraints>
-                <constraint firstItem="mtu-I0-0a7" firstAttribute="top" secondItem="U6b-Vx-4bR" secondAttribute="top" constant="5" id="FSo-6I-nPm"/>
-                <constraint firstItem="r2p-Ec-kBz" firstAttribute="top" secondItem="U6b-Vx-4bR" secondAttribute="top" constant="5" id="bvq-zI-Yjp"/>
+                <constraint firstItem="r2p-Ec-kBz" firstAttribute="leading" secondItem="VXr-Tz-HHm" secondAttribute="leading" id="F8z-ha-oJy"/>
+                <constraint firstItem="mtu-I0-0a7" firstAttribute="top" secondItem="U6b-Vx-4bR" secondAttribute="top" constant="8" id="FSo-6I-nPm"/>
+                <constraint firstItem="r2p-Ec-kBz" firstAttribute="top" secondItem="U6b-Vx-4bR" secondAttribute="top" constant="6" id="bvq-zI-Yjp"/>
+                <constraint firstItem="r2p-Ec-kBz" firstAttribute="centerY" secondItem="mtu-I0-0a7" secondAttribute="centerY" id="cou-Ir-uuZ"/>
                 <constraint firstItem="VXr-Tz-HHm" firstAttribute="trailing" secondItem="mtu-I0-0a7" secondAttribute="trailing" constant="5" id="gzi-AL-69Q"/>
-                <constraint firstItem="r2p-Ec-kBz" firstAttribute="leading" secondItem="VXr-Tz-HHm" secondAttribute="leading" id="yXF-iK-8ts"/>
             </constraints>
             <connections>
                 <outlet property="titleLabel" destination="r2p-Ec-kBz" id="JYI-of-ago"/>
@@ -47,5 +53,8 @@
     </objects>
     <resources>
         <image name="chevron.down" catalog="system" width="128" height="70"/>
+        <systemColor name="systemIndigoColor">
+            <color red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
     </resources>
 </document>
