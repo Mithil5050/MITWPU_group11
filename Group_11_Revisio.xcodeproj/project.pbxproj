@@ -19,10 +19,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		46E703772F2097E100B4107B /* probstatements.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = probstatements.docx; sourceTree = "<group>"; };
-		46E703782F2097E100B4107B /* writeup.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = writeup.docx; sourceTree = "<group>"; };
-		46E703792F2097E100B4107B /* flowchart.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = flowchart.pdf; sourceTree = "<group>"; };
-		46E7037A2F2097E100B4107B /* flowchart2.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = flowchart2.pdf; sourceTree = "<group>"; };
 		546963BE2ED6CB31001C03B8 /* Group_11_Revisio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Group_11_Revisio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		547BA0302F292A650025EB8A /* PDFKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PDFKit.framework; path = System/Library/Frameworks/PDFKit.framework; sourceTree = SDKROOT; };
 		547BA0322F292AA20025EB8A /* NaturalLanguage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NaturalLanguage.framework; path = System/Library/Frameworks/NaturalLanguage.framework; sourceTree = SDKROOT; };
@@ -66,22 +62,9 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		46E7037F2F2097EE00B4107B /* Dummy Docs */ = {
-			isa = PBXGroup;
-			children = (
-				46E703792F2097E100B4107B /* flowchart.pdf */,
-				46E7037A2F2097E100B4107B /* flowchart2.pdf */,
-				46E703772F2097E100B4107B /* probstatements.docx */,
-				46E703782F2097E100B4107B /* writeup.docx */,
-			);
-			path = "Dummy Docs";
-			sourceTree = "<group>";
-		};
 		546963B52ED6CB31001C03B8 = {
 			isa = PBXGroup;
 			children = (
-				46E7037F2F2097EE00B4107B /* Dummy Docs */,
-				546963BF2ED6CB31001C03B8 /* Products */,
 				546963C02ED6CB31001C03B8 /* Group_11_Revisio */,
 				547BA02F2F292A650025EB8A /* Frameworks */,
 			);
@@ -175,10 +158,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46E7037B2F2097E100B4107B /* probstatements.docx in Resources */,
-				46E7037C2F2097E100B4107B /* writeup.docx in Resources */,
-				46E7037D2F2097E100B4107B /* flowchart.pdf in Resources */,
-				46E7037E2F2097E100B4107B /* flowchart2.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -202,7 +181,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 32C5NG7QRW;
+				DEVELOPMENT_TEAM = M64BV29JX8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Group_11_Revisio/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -215,7 +194,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = Mithil;
+				PRODUCT_BUNDLE_IDENTIFIER = ashika111;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -234,7 +213,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 32C5NG7QRW;
+				DEVELOPMENT_TEAM = M64BV29JX8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Group_11_Revisio/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -247,7 +226,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = Mithil;
+				PRODUCT_BUNDLE_IDENTIFIER = ashika111;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;

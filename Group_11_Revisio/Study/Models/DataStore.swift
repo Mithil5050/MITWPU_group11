@@ -45,8 +45,8 @@ class DataManager {
             let data = try Data(contentsOf: fileURL)
             savedMaterials = try JSONDecoder().decode([String: [String: [StudyItem]]].self, from: data)
             
-            // --- ADD THIS LINE TO DEBUG ---
-            print("📂 LOADED FOLDERS FROM DISK: \(savedMaterials.keys)")
+           
+            print(" LOADED FOLDERS FROM DISK: \(savedMaterials.keys)")
         } catch {
             print("Error loading: \(error)")
         }

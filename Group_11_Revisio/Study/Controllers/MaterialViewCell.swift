@@ -6,6 +6,7 @@ class MaterialViewCell: UITableViewCell {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
     @IBOutlet weak var iconContainerView: UIView!
+    var onInfoButtonTapped: (() -> Void)?
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -20,6 +21,9 @@ class MaterialViewCell: UITableViewCell {
         self.backgroundColor = .clear
         self.contentView.backgroundColor = .secondarySystemGroupedBackground;         self.contentView.layer.cornerRadius = 12
     }
+    @IBAction func infoButtonAction(_ sender: UIButton) {
+            onInfoButtonTapped?()
+        }
     
     
     func configure(with item: StudyItem) {

@@ -25,11 +25,11 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     var cancelSelectionButton: UIBarButtonItem!
     var originalRightBarButtonItems: [UIBarButtonItem]?
     let searchController = UISearchController(searchResultsController: nil)
-
+    
     var activeSegmentTitle: String {
         return materialsSegmentedControl.titleForSegment(at: materialsSegmentedControl.selectedSegmentIndex) ?? "Materials"
     }
-
+    
     // MARK: - Lifecycle (App Start)
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -63,7 +63,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             optionsButton.menu = setupOptionsMenu()
             self.originalRightBarButtonItems = self.navigationItem.rightBarButtonItems
         }
-
+        
         topicsTableView.backgroundColor = .systemBackground
         view.backgroundColor = .systemBackground
     }
@@ -75,7 +75,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.tabBarController?.tabBar.isHidden = false
         self.navigationController?.setToolbarHidden(true, animated: animated)
         
-       
+        
         notificationToken = NotificationCenter.default.addObserver(forName: .didUpdateStudyMaterials, object: nil, queue: .main) { [weak self] _ in
             if let subject = self?.selectedSubject {
                 self?.loadContentForSubject(subject, segmentIndex: self?.materialsSegmentedControl.selectedSegmentIndex ?? 0)
@@ -93,7 +93,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             NotificationCenter.default.removeObserver(token)
         }
     }
-
+    
     // MARK: - Data Logic (Loading & Filtering)
     func loadContentForSubject(_ subject: String, segmentIndex: Int) {
         let key = segmentKey(forIndex: segmentIndex)
@@ -134,17 +134,17 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         topicsTableView.reloadData()
     }
-
+    
     func segmentKey(forIndex index: Int) -> String {
         return index == 0 ? DataManager.materialsKey : DataManager.sourcesKey
     }
-
-     func handleDataUpdate() {
+    
+    func handleDataUpdate() {
         if let subject = selectedSubject {
             loadContentForSubject(subject, segmentIndex: materialsSegmentedControl.selectedSegmentIndex)
         }
     }
-
+    
     // MARK: - UI Setup (Menus & Table Configuration)
     func setupTableView() {
         topicsTableView.delegate = self
@@ -157,13 +157,13 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         topicsTableView.rowHeight = 76
         topicsTableView.allowsMultipleSelectionDuringEditing = true
     }
-   
+    
     func setupSearchController() {
         searchController.searchBar.placeholder = "Search in \(selectedSubject ?? "this subject")"
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
     }
-
+    
     func setupFilterMenu() {
         let actions: [UIAction] = filterOptions.map { filterName in
             let action = UIAction(title: filterName, handler: { [weak self] action in
@@ -177,7 +177,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         filterButton.menu = UIMenu(title: "Filter by Type", children: actions)
     }
-
+    
     func setupOptionsMenu() -> UIMenu {
         let isSelectModeActive = topicsTableView.isEditing
         
@@ -222,7 +222,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         return menu
     }
-
+    
     // MARK: - TableView Methods (Data Display)
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredContent.count
@@ -235,14 +235,21 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         if let studyItem = filteredContent[indexPath.row] as? StudyItem {
             cell.configure(with: studyItem)
+            
+            
+            cell.onInfoButtonTapped = { [weak self] in
+                
+                self?.performSegue(withIdentifier: "ShowMaterialInfo", sender: studyItem)
+            }
         }
+        
         return cell
     }
-
+    
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         cell.backgroundColor = .clear
     }
-   
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if tableView.isEditing {
             updateToolbarForSelection()
@@ -264,23 +271,23 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
     }
-
+    
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         if tableView.isEditing { updateToolbarForSelection() }
     }
-
+    
     func tableView(_ tableView: UITableView, shouldIndentWhileEditingRowAt indexPath: IndexPath) -> Bool {
         return true
     }
-
+    
     func tableView(_ tableView: UITableView, indentationLevelForRowAt indexPath: IndexPath) -> Int {
         return 1
     }
-
+    
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
         return .none
     }
-
+    
     // MARK: - Selection & Toolbar Logic
     func updateToolbarForSelection() {
         let selectedCount = topicsTableView.indexPathsForSelectedRows?.count ?? 0
@@ -299,18 +306,18 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         } else {
             primaryAction = UIBarButtonItem(title: "Share", image: UIImage(systemName: "square.and.arrow.up"), target: self, action: #selector(shareAction))
         }
-
+        
         let deleteButton = UIBarButtonItem(title: "Delete", image: UIImage(systemName: "trash"), target: self, action: #selector(deleteSelectionAction))
         deleteButton.tintColor = .systemRed
-
+        
         let moveButton = UIBarButtonItem(title: "Move", image: UIImage(systemName: "arrowshape.turn.up.right"), target: self, action: #selector(moveSelectionAction))
-
+        
         [deleteButton, moveButton, primaryAction].forEach { $0.isEnabled = isSelectionActive }
         
         self.toolbarItems = [deleteButton, flexibleSpace, moveButton, flexibleSpace, primaryAction]
         self.navigationController?.setToolbarHidden(false, animated: true)
     }
-
+    
     func exitSelectionMode() {
         self.navigationItem.rightBarButtonItems = self.originalRightBarButtonItems
         self.navigationItem.leftBarButtonItem = nil
@@ -318,13 +325,13 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         self.tabBarController?.tabBar.isHidden = false
         self.optionsButton.menu = self.setupOptionsMenu()
     }
-
-     func selectionDoneTapped() {
+    
+    func selectionDoneTapped() {
         topicsTableView.isEditing = false
         exitSelectionMode()
     }
-
-     func selectionCancelTapped() {
+    
+    func selectionCancelTapped() {
         if let selected = topicsTableView.indexPathsForSelectedRows {
             for indexPath in selected {
                 topicsTableView.deselectRow(at: indexPath, animated: false)
@@ -334,38 +341,38 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         exitSelectionMode()
         topicsTableView.reloadData()
     }
-
+    
     // MARK: - Actions (Delete, Move, Rename)
     @objc func deleteSelectionAction() {
         guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else { return }
         let selectedRawItems = getRawItems(from: selectedPaths)
-     
+        
         let alert = UIAlertController(title: "Delete Selected Items?", message: "Permanently delete \(selectedRawItems.count) items?", preferredStyle: .alert)
         let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
             guard let self = self else { return }
             DataManager.shared.deleteItems(subjectName: self.selectedSubject ?? "", items: selectedRawItems)
             self.selectionCancelTapped()
             if let subject = self.selectedSubject {
-                 self.loadContentForSubject(subject, segmentIndex: self.materialsSegmentedControl.selectedSegmentIndex)
+                self.loadContentForSubject(subject, segmentIndex: self.materialsSegmentedControl.selectedSegmentIndex)
             }
         }
         alert.addAction(deleteAction)
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
-
+    
     @objc func moveSelectionAction() {
         guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else { return }
         let selectedRawItems = getRawItems(from: selectedPaths)
         let otherSubjects = DataManager.shared.savedMaterials.keys.filter { $0 != selectedSubject }.sorted()
-
+        
         if otherSubjects.isEmpty {
             let alert = UIAlertController(title: "No Destination", message: "Create another subject folder first.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default))
             present(alert, animated: true)
             return
         }
-
+        
         let moveAlert = UIAlertController(title: "Move \(selectedRawItems.count) Items", message: "Select destination folder", preferredStyle: .actionSheet)
         for subject in otherSubjects {
             moveAlert.addAction(UIAlertAction(title: subject, style: .default) { [weak self] _ in
@@ -378,12 +385,12 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         moveAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(moveAlert, animated: true)
     }
-
+    
     func renameMaterialAction(for item: Any) {
         let currentName = (item as? Topic)?.name ?? (item as? Source)?.name ?? ""
         let alert = UIAlertController(title: "Rename Material", message: "Enter a new name", preferredStyle: .alert)
         alert.addTextField { $0.text = currentName }
-
+        
         let rename = UIAlertAction(title: "Rename", style: .default) { [weak self] _ in
             guard let self = self, let newName = alert.textFields?.first?.text, !newName.isEmpty else { return }
             DataManager.shared.renameMaterial(subjectName: self.selectedSubject ?? "", item: item, newName: newName)
@@ -409,7 +416,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             return UIMenu(title: "", children: [rename, delete])
         }
     }
-
+    
     // MARK: - Global Folder Actions
     @objc func renameCurrentSubject() {
         guard let oldName = selectedSubject else { return }
@@ -422,17 +429,17 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
         }
     }
-
+    
     @objc func moveAllContent() { print("Moving all content...") }
     @objc func deleteAllContent() { print("Deleting all content...") }
-
+    
     // MARK: - Helpers & Segues
     @IBAction func segmentControlTapped(_ sender: Any) {
         if let subject = selectedSubject {
             loadContentForSubject(subject, segmentIndex: (sender as AnyObject).selectedSegmentIndex)
         }
     }
-
+    
     private func getRawItems(from indexPaths: [IndexPath]) -> [Any] {
         return indexPaths.compactMap { indexPath in
             if let studyItem = filteredContent[indexPath.row] as? StudyItem {
@@ -444,41 +451,78 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             return nil
         }
     }
-
+    
     @objc func generateAction() {
         guard let selectedPaths = topicsTableView.indexPathsForSelectedRows else { return }
         let selectedRawItems = getRawItems(from: selectedPaths)
         performSegue(withIdentifier: "ShowGenerationScreen", sender: selectedRawItems)
     }
-
+    
     @objc func shareAction() {
-            guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else { return }
-            
-            let selectedRawItems = getRawItems(from: selectedPaths)
-            var itemsToShare: [Any] = []
-            
-            for item in selectedRawItems {
-                if let topic = item as? Topic {
-                    let shareText = "Check out my \(topic.materialType) for \(selectedSubject ?? "Subject"): \(topic.name)"
-                    itemsToShare.append(shareText)
-                }
+        guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else { return }
+        
+        let selectedRawItems = getRawItems(from: selectedPaths)
+        var itemsToShare: [Any] = []
+        
+        for item in selectedRawItems {
+            if let topic = item as? Topic {
+                let shareText = "Check out my \(topic.materialType) for \(selectedSubject ?? "Subject"): \(topic.name)"
+                itemsToShare.append(shareText)
             }
-            
-            let activityViewController = UIActivityViewController(activityItems: itemsToShare, applicationActivities: nil)
-            
-            if let popover = activityViewController.popoverPresentationController {
-                popover.barButtonItem = self.toolbarItems?.last
-            }
-            
-            present(activityViewController, animated: true)
         }
-
+        
+        let activityViewController = UIActivityViewController(activityItems: itemsToShare, applicationActivities: nil)
+        
+        if let popover = activityViewController.popoverPresentationController {
+            popover.barButtonItem = self.toolbarItems?.last
+        }
+        
+        present(activityViewController, animated: true)
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         var finalTopic: Topic?
-        if let topic = sender as? Topic { finalTopic = topic }
-        else if let studyItem = sender as? StudyItem, case .topic(let topic) = studyItem { finalTopic = topic }
+        if let topic = sender as? Topic {
+            finalTopic = topic
+        } else if let studyItem = sender as? StudyItem, case .topic(let topic) = studyItem {
+            finalTopic = topic
+        }
 
-        if segue.identifier == "ShowMaterialDetail", let detailVC = segue.destination as? MaterialDetailViewController, let topic = finalTopic {
+        if segue.identifier == "ShowMaterialInfo",
+           let infoVC = segue.destination as? MaterialInfoViewController,
+           let studyItem = sender as? StudyItem {
+            
+            switch studyItem {
+            case .topic(let topic):
+                infoVC.materialName = topic.name
+                infoVC.materialType = topic.materialType
+                infoVC.dateCreated = topic.lastAccessed
+                infoVC.sourceName = "Attached Document"
+                
+                switch topic.materialType {
+                case "Quiz":
+                    infoVC.iconName = "timer"
+                    infoVC.iconColor = UIColor.systemGreen
+                case "Notes":
+                    infoVC.iconName = "book.pages"
+                    infoVC.iconColor = UIColor.systemOrange
+                case "Flashcards":
+                    infoVC.iconName = "rectangle.on.rectangle.angled"
+                    infoVC.iconColor = UIColor.systemBlue
+                default:
+                    infoVC.iconName = "doc.text.fill"
+                    infoVC.iconColor = .systemGray
+                }
+                
+            case .source(let source):
+                infoVC.materialName = source.name
+                infoVC.materialType = source.fileType
+                infoVC.dateCreated = "Added Recently"
+                infoVC.iconName = source.fileType == "Video" ? "play.tv.fill" : "link"
+                infoVC.iconColor = .systemIndigo
+            }
+        }
+        else if segue.identifier == "ShowMaterialDetail", let detailVC = segue.destination as? MaterialDetailViewController, let topic = finalTopic {
             detailVC.materialName = topic.name
             detailVC.contentData = topic
             detailVC.parentSubjectName = selectedSubject
