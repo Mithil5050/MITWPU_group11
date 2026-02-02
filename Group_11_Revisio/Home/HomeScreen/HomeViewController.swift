@@ -111,7 +111,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             ContentItem(title: "New File", iconName: "plus.circle.fill", itemType: "AddButton")
         ]
         
-        // ✅ Added Flashcard Item here
         learningItems = [
             ContentItem(title: "Physics Ch 4 Quiz", iconName: "checkmark.circle.fill", itemType: "Quiz"),
             ContentItem(title: "Bio Definitions", iconName: "rectangle.stack", itemType: "Flashcard"),
