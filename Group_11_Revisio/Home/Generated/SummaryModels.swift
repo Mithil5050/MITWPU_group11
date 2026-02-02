@@ -7,5 +7,5 @@ struct QuizSummaryItem {
     let correctAnswerIndex: Int
     let allOptions: [String]
     let explanation: String
-    let isCorrect: Bool
+    var isCorrect: Bool
 }
