@@ -194,7 +194,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         micButton.setSize(CGSize(width: 44, height: 44), animated: false)
         micButton.tintColor = .systemGray
         // Default state → mic
-        messageInputBar.setStackViewItems([micButton], forStack: .right, animated: false)
+        messageInputBar.setStackViewItems(      [micButton], forStack: .right, animated: false)
         messageInputBar.setRightStackViewWidthConstant(to: 52, animated: false)
 
         // ATTACH BUTTON

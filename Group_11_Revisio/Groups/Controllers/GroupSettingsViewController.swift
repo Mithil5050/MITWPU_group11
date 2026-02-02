@@ -142,7 +142,7 @@ class GroupSettingsViewController: UIViewController {
             // avatar later
         }
 
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
 
         let sheet = UIAlertController(
             title: nil,
@@ -169,7 +169,7 @@ class GroupSettingsViewController: UIViewController {
             $0.text = self.group.name
         }
 
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .destructive))
 
         alert.addAction(UIAlertAction(title: "Done", style: .default) { [weak self] _ in
             guard

@@ -39,16 +39,34 @@ class DocumentPreviewViewController: UIViewController {
         previewController.didMove(toParent: self)
 
         // Navigation bar
-        navigationItem.largeTitleDisplayMode = .never
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            barButtonSystemItem: .done,
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "xmark"),
+            style: .plain,
             target: self,
             action: #selector(closeTapped)
+        )
+        navigationItem.leftBarButtonItem?.tintColor = .label
+
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .action,
+            target: self,
+            action: #selector(shareDocument)
         )
     }
 
     @objc private func closeTapped() {
         dismiss(animated: true)
+    }
+    
+    @objc private func shareDocument() {
+        guard let documentURL = documentURL else { return }
+
+        let activityVC = UIActivityViewController(
+            activityItems: [documentURL],
+            applicationActivities: nil
+        )
+
+        present(activityVC, animated: true)
     }
 }
 
