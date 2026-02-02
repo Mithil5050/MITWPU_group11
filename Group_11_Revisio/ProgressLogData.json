@@ -1,18 +1,102 @@
 {
   "logs": [
     {
-      "id": "101",
-      "amount": "2h 0m",
-      "hours": 2.0,
-      "time": "10:30 AM",
-      "date": "2026-01-27T10:30:00Z"
+      "id": "feb2_1",
+      "amount": "2h 30m",
+      "hours": 2.5,
+      "date": "2026-02-02T08:30:00Z",
+      "category": "Study"
     },
     {
-      "id": "102",
-      "amount": "3h 45m",
-      "hours": 3.75,
-      "time": "02:15 PM",
-      "date": "2026-01-28T14:15:00Z"
+      "id": "feb2_2",
+      "amount": "1h 15m",
+      "hours": 1.25,
+      "date": "2026-02-02T10:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "feb2_3",
+      "amount": "1h 45m",
+      "hours": 1.75,
+      "date": "2026-02-02T14:30:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "feb2_4",
+      "amount": "0h 30m",
+      "hours": 0.5,
+      "date": "2026-02-02T20:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "feb1_1",
+      "amount": "3h 0m",
+      "hours": 3.0,
+      "date": "2026-02-01T09:00:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "feb1_2",
+      "amount": "2h 0m",
+      "hours": 2.0,
+      "date": "2026-02-01T14:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "jan31_1",
+      "amount": "1h 0m",
+      "hours": 1.0,
+      "date": "2026-01-31T11:00:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "jan31_2",
+      "amount": "4h 0m",
+      "hours": 4.0,
+      "date": "2026-01-31T19:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "jan30_1",
+      "amount": "2h 0m",
+      "hours": 2.0,
+      "date": "2026-01-30T10:00:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "jan30_2",
+      "amount": "0h 45m",
+      "hours": 0.75,
+      "date": "2026-01-30T13:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "jan29_1",
+      "amount": "3h 30m",
+      "hours": 3.5,
+      "date": "2026-01-29T09:00:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "jan28_1",
+      "amount": "1h 30m",
+      "hours": 1.5,
+      "date": "2026-01-28T12:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "jan28_2",
+      "amount": "2h 0m",
+      "hours": 2.0,
+      "date": "2026-01-28T15:00:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "jan27_1",
+      "amount": "4h 0m",
+      "hours": 4.0,
+      "date": "2026-01-27T10:30:00Z",
+      "category": "Study"
     }
   ]
 }

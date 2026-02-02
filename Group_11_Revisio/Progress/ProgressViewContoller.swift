@@ -33,7 +33,9 @@ class ProgressViewContoller: UIViewController {
     @IBOutlet weak var progressBarCard: UIView!
     @IBOutlet weak var mainMonthBagdeImageView: UIImageView!
     
-    // MARK: - Properties
+    // Legend Container
+        private let legendStackView = UIStackView()
+        
         var studyModel = StudyChartModel()
         private var hostingController: UIHostingController<BarChartView>?
                 
@@ -41,21 +43,15 @@ class ProgressViewContoller: UIViewController {
         override func viewDidLoad() {
             super.viewDidLoad()
             setupUI()
-            
-            // Initial data load for the chart
+//            setupLegend() // Initialize the color legend
             loadDataAndRefreshChart()
             
-            // Listen for XP updates while the app is running to refresh the UI instantly
             NotificationCenter.default.addObserver(self, selector: #selector(updateGamificationUI), name: .xpDidUpdate, object: nil)
         }
                 
         override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
-            
-            // We call this here to ensure labels are fresh every time the user switches tabs
             updateGamificationUI()
-            
-            // If data changes frequently, you can also trigger a chart refresh here
             studyModel.updateChart(with: ProgressDataManager.shared.history)
         }
                 
@@ -63,18 +59,13 @@ class ProgressViewContoller: UIViewController {
         @objc private func updateGamificationUI() {
             let manager = ProgressDataManager.shared
             
-            // 1. Update XP and Level Labels
             xpLevelLabel?.text = "Level \(manager.currentLevel)"
             xpValueLabel?.text = "\(manager.totalXP) XP"
             
-            // 2. Update Streak Label
             let streakValue = manager.currentStreak
             let suffix = (streakValue == 1) ? "Day" : "Days"
             streaksCountLabel?.text = "\(streakValue) \(suffix)"
-           
             
-            // 3. Update progress bar percentage (0.0 to 1.0)
-            // Formula calculates how far user is between current level floor and next level ceiling
             let levelFloor = pow(Double(manager.currentLevel) / 0.1, 2)
             let levelCeiling = pow(Double(manager.currentLevel + 1) / 0.1, 2)
             
@@ -84,19 +75,14 @@ class ProgressViewContoller: UIViewController {
                 xpProgressBar?.setProgress(progress, animated: true)
             }
             
-            // Visual indicator: Highlight streak card if active
             streaksCard.layer.borderWidth = manager.currentStreak > 0 ? 1.5 : 0
             streaksCard.layer.borderColor = UIColor.systemOrange.cgColor
         }
 
         private func loadDataAndRefreshChart() {
-            // Force the manager to load JSON history
             ProgressDataManager.shared.loadInitialData()
-            
-            // Pass current history to the SwiftUI Chart model
             let logs = ProgressDataManager.shared.history
             studyModel.updateChart(with: logs)
-            
             refreshChartView()
         }
 
@@ -125,11 +111,57 @@ class ProgressViewContoller: UIViewController {
             }
         }
 
+        // MARK: - Legend Setup
+        private func setupLegend() {
+            legendStackView.axis = .horizontal
+            legendStackView.distribution = .equalSpacing
+            legendStackView.alignment = .center
+            legendStackView.spacing = 8
+            legendStackView.translatesAutoresizingMaskIntoConstraints = false
+            
+            // Define Categories and custom colors
+            let categories = [
+                ("Flashcards", UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0)),
+                ("Quizzes", UIColor(red: 0.53, green: 0.84, blue: 0.41, alpha: 1.0)),
+                ("Cheatsheet", UIColor(red: 0.54, green: 0.22, blue: 0.96, alpha: 0.5)),
+                ("Notes", UIColor(red: 1.00, green: 0.77, blue: 0.27, alpha: 0.75))
+            ]
+            
+            for (name, color) in categories {
+                let itemStack = UIStackView()
+                itemStack.axis = .horizontal
+                itemStack.spacing = 4
+                
+                let indicator = UIView()
+                indicator.backgroundColor = color
+                indicator.layer.cornerRadius = 4
+                indicator.translatesAutoresizingMaskIntoConstraints = false
+                indicator.widthAnchor.constraint(equalToConstant: 8).isActive = true
+                indicator.heightAnchor.constraint(equalToConstant: 8).isActive = true
+                
+                let label = UILabel()
+                label.text = name
+                label.font = .systemFont(ofSize: 10, weight: .bold)
+                label.textColor = color // Word colored according to stack
+                
+                itemStack.addArrangedSubview(indicator)
+                itemStack.addArrangedSubview(label)
+                legendStackView.addArrangedSubview(itemStack)
+            }
+            
+            // Add to stackView below chartContainerView
+            if let chartIndex = stackView.arrangedSubviews.firstIndex(of: chartContainerView) {
+                stackView.insertArrangedSubview(legendStackView, at: chartIndex + 1)
+                
+                // Add padding to the legend
+                legendStackView.isLayoutMarginsRelativeArrangement = true
+                legendStackView.layoutMargins = UIEdgeInsets(top: 8, left: 16, bottom: 12, right: 16)
+            }
+        }
+
         private func setupUI() {
-            // Layout and Scrolling
             scrollView.contentInsetAdjustmentBehavior = .never
             
-            // Card Styling
             chartContainerView.backgroundColor = .systemGray6
             chartContainerView.layer.cornerRadius = 20
             chartContainerView.clipsToBounds = true
@@ -153,7 +185,6 @@ class ProgressViewContoller: UIViewController {
         
         override func viewDidLayoutSubviews() {
             super.viewDidLayoutSubviews()
-            // Ensure the scrollview content size matches the total height of the stack
             let contentHeight = stackView.frame.height
             scrollView.contentSize = CGSize(width: view.frame.width, height: contentHeight + 40)
         }
