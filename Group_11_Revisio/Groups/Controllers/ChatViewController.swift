@@ -43,10 +43,72 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
         messageInputBar.delegate = self
+        
+        //MARK: - Message Input Bar
+
+        messageInputBar.backgroundView.backgroundColor = .systemBackground
+        messageInputBar.backgroundView.layer.borderWidth = 0
+        messageInputBar.separatorLine.isHidden = true
+
+        // Text View
+        let textView = messageInputBar.inputTextView
+        textView.placeholder = "Message"
+        textView.font = UIFont.systemFont(ofSize: 17)
+        textView.backgroundColor = UIColor.secondarySystemBackground
+        textView.layer.cornerRadius = 20
+        textView.layer.masksToBounds = true
+        textView.textContainerInset = UIEdgeInsets(
+            top: 10,
+            left: 14,
+            bottom: 10,
+            right: 14
+        )
+
+        // Input bar padding (THIS fixes height)
+        messageInputBar.padding.top = 8
+        messageInputBar.padding.bottom = 8
+        messageInputBar.padding.left = 12
+        messageInputBar.padding.right = 12
+        messageInputBar.middleContentViewPadding.right = 8
+
+        // Send Button (large like iMessage)
+        let sendButton = messageInputBar.sendButton
+        sendButton.setTitle(nil, for: .normal)
+        sendButton.setImage(
+            UIImage(systemName: "arrow.up.circle.fill"),
+            for: .normal
+        )
+        sendButton.tintColor = .systemBlue
+
+        // Attach Button (left)
+        let attachButton = InputBarButtonItem()
+        attachButton.image = UIImage(systemName: "plus")
+        attachButton.tintColor = .systemBlue
+        attachButton.setSize(CGSize(width: 32, height: 32), animated: false)
+        attachButton.onTouchUpInside { _ in }
+
+        // Clear left stack first
+        messageInputBar.leftStackView.arrangedSubviews.forEach {
+            messageInputBar.leftStackView.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+
+        // Add attach button properly
+        messageInputBar.leftStackView.addArrangedSubview(attachButton)
+
+        // Width + alignment
+        messageInputBar.leftStackView.alignment = .center
+        messageInputBar.leftStackView.distribution = .equalCentering
+        messageInputBar.setLeftStackViewWidthConstant(to: 40, animated: false)
+        
+        // Default right = mic
+        messageInputBar.setStackViewItems([micButton], forStack: .right, animated: false)
+        messageInputBar.setRightStackViewWidthConstant(to: 40, animated: false)
         
         chatMessages = [
 
@@ -95,118 +157,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         
         messagesCollectionView.reloadData()
         messagesCollectionView.scrollToLastItem(animated: false)
-        
-        // Default: show mic button
-        messageInputBar.setStackViewItems([micButton], forStack: .right, animated: false)
-        messageInputBar.setRightStackViewWidthConstant(to: 42, animated: false)
-        
-        //MARK: - Message Input Bar
-//        messageInputBar.inputTextView.placeholder = "Message"
-//        messageInputBar.inputTextView.font = UIFont.systemFont(ofSize: 16)
-//        messageInputBar.sendButton.setTitle("", for: .normal)
-//        messageInputBar.sendButton.setImage(
-//            UIImage(systemName: "arrow.up.circle.fill"),
-//            for: .normal
-//        )
-//        messageInputBar.sendButton.tintColor = .systemBlue
-//        messageInputBar.sendButton.setSize(
-//            CGSize(width: 48, height: 48),
-//            animated: true
-//        )
-//
-//        messageInputBar.backgroundView.backgroundColor = .clear
-//        messageInputBar.backgroundView.layer.shadowColor = UIColor.clear.cgColor
-//        
-//        // Capsule text field
-//        let tv = messageInputBar.inputTextView
-//        tv.backgroundColor = UIColor.secondarySystemBackground
-//        tv.layer.cornerRadius = 20
-//        tv.layer.masksToBounds = true
-//        tv.font = UIFont.systemFont(ofSize: 16)
-//        tv.textContainerInset = UIEdgeInsets(
-//            top: 10,
-//            left: 14,
-//            bottom: 10,
-//            right: 14
-//        )
-//
-//        // Reduce overall bar height
-//        messageInputBar.padding.top = 6
-//        messageInputBar.padding.bottom = 6
-//        messageInputBar.padding.left = 8
-//        messageInputBar.padding.right = 8
-//        messageInputBar.middleContentViewPadding.right = 6
-//        
-//        //Attach Button
-//        let attachButton = InputBarButtonItem()
-//        attachButton.image = UIImage(systemName: "paperclip")
-//        attachButton.setSize(CGSize(width: 32, height: 32), animated: false)
-//        attachButton.tintColor = .systemBlue
-//
-//        // TEMP: Attach button does nothing (UI only)
-//        attachButton.onTouchUpInside { _ in
-//            // intentionally left empty
-//        }
-//        messageInputBar.setLeftStackViewWidthConstant(to: 36, animated: false)
-//        messageInputBar.leftStackView.addArrangedSubview(attachButton)
 
-        messageInputBar.backgroundView.backgroundColor = .clear
-        messageInputBar.backgroundView.layer.shadowColor = UIColor.clear.cgColor
-
-        // TextView (message field)
-        let textView = messageInputBar.inputTextView
-        textView.placeholder = "Message"
-        textView.font = UIFont.systemFont(ofSize: 17)
-        textView.backgroundColor = UIColor.secondarySystemBackground
-        textView.layer.cornerRadius = 22
-        textView.layer.masksToBounds = true
-        textView.textContainerInset = UIEdgeInsets(
-            top: 12,
-            left: 16,
-            bottom: 12,
-            right: 16
-        )
-
-        // Padding around input bar
-        messageInputBar.padding.top = 8
-        messageInputBar.padding.bottom = 8
-        messageInputBar.padding.left = 12
-        messageInputBar.padding.right = 12
-        messageInputBar.middleContentViewPadding.right = 8
-
-        //SEND BUTTON
-        let sendButton = messageInputBar.sendButton
-        sendButton.setTitle(nil, for: .normal)
-        sendButton.setImage(
-            UIImage(systemName: "arrow.up.circle.fill"),
-            for: .normal
-        )
-        sendButton.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
-        sendButton.setSize(CGSize(width: 44, height: 44), animated: false)
-
-        sendButton.imageView?.contentMode = .scaleAspectFit
-        sendButton.contentHorizontalAlignment = .center
-        sendButton.contentVerticalAlignment = .center
-        sendButton.tintColor = .systemBlue
-
-        
-        // MIC BUTTON
-        micButton.setSize(CGSize(width: 44, height: 44), animated: false)
-        micButton.tintColor = .systemGray
-        // Default state → mic
-        messageInputBar.setStackViewItems(      [micButton], forStack: .right, animated: false)
-        messageInputBar.setRightStackViewWidthConstant(to: 52, animated: false)
-
-        // ATTACH BUTTON
-        let attachButton = InputBarButtonItem()
-        attachButton.image = UIImage(systemName: "plus")
-        attachButton.tintColor = .systemBlue
-        attachButton.setSize(CGSize(width: 36, height: 36), animated: false)
-
-        // UI only – no action
-        attachButton.onTouchUpInside { _ in }
-        messageInputBar.leftStackView.addArrangedSubview(attachButton)
-        messageInputBar.setLeftStackViewWidthConstant(to: 44, animated: false)
         
         //MARK: - Group settings from title
         // initial inset
@@ -214,22 +165,20 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         
         navigationItem.title = groupName
         navigationItem.largeTitleDisplayMode = .never
-
+        
         let titleButton = UIButton(type: .system)
-
         let chevron = UIImage(systemName: "chevron.right")
-        let config = UIImage.SymbolConfiguration(pointSize: 13, weight: .medium)
+        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 13, weight: .medium)
+        
+        var buttonConfig = UIButton.Configuration.plain()
+        buttonConfig.title = group?.name ?? groupName
+        buttonConfig.image = chevron?.withConfiguration(symbolConfig)
+        buttonConfig.imagePlacement = .trailing
+        buttonConfig.imagePadding = 6
 
-        titleButton.setImage(chevron?.withConfiguration(config), for: .normal)
-        let groupTitle = group?.name ?? groupName
-        titleButton.setTitle("  \(groupTitle)", for: .normal)
+        titleButton.configuration = buttonConfig
         titleButton.tintColor = .systemBlue
-        titleButton.setTitleColor(.systemBlue, for: .normal)
         titleButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-
-        titleButton.semanticContentAttribute = .forceRightToLeft
-        titleButton.imageEdgeInsets = UIEdgeInsets(top: 1, left: 0, bottom: 0, right: -6)
-
         titleButton.addTarget(self, action: #selector(groupTitleTapped), for: .touchUpInside)
 
         navigationItem.titleView = titleButton
@@ -283,12 +232,6 @@ extension ChatViewController: MessagesDataSource {
     }
     
 extension ChatViewController {
-
-//    func isNextMessageSameSender(at indexPath: IndexPath) -> Bool {
-//        guard indexPath.section + 1 < chatMessages.count else { return false }
-//        return chatMessages[indexPath.section].sender.senderId ==
-//               chatMessages[indexPath.section + 1].sender.senderId
-//    }
     func isPreviousMessageSameSender(at indexPath: IndexPath) -> Bool {
         guard indexPath.section - 1 >= 0 else { return false }
         return chatMessages[indexPath.section].sender.senderId ==
@@ -297,11 +240,6 @@ extension ChatViewController {
 }
 
 extension ChatViewController: MessagesLayoutDelegate {
-    
-    func avatarSize(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CGSize {
-        
-        return CGSize(width: 28, height: 28)
-    }
         
     func messageTopLabelHeight(
         for message: MessageType,
@@ -322,21 +260,23 @@ extension ChatViewController: MessagesLayoutDelegate {
         return 0
     }
     
-    func messageTopLabelInset(
+    func messageTopLabelAlignment(
         for message: MessageType,
         at indexPath: IndexPath,
         in messagesCollectionView: MessagesCollectionView
-    ) -> UIEdgeInsets {
-        
+    ) -> LabelAlignment? {
+
         if message.sender.senderId != currentUser.senderId,
            (indexPath.section == 0 || !isPreviousMessageSameSender(at: indexPath)) {
-            
-            return UIEdgeInsets(top: 6, left: 12, bottom: 2, right: 12)
+
+            return LabelAlignment(
+                textAlignment: .left,
+                textInsets: UIEdgeInsets(top: 6, left: 12, bottom: 2, right: 12)
+            )
         }
-        
-        return .zero
+
+        return nil
     }
-    
 }
 
 extension ChatViewController: MessagesDisplayDelegate {

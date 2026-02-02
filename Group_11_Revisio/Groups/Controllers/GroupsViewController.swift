@@ -115,13 +115,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         cell.avatarImageView.clipsToBounds = true
 
         return cell
-        /*
-        // Get the correct Group object for the current row
-        let group = myGroups[indexPath.row]
-        // Set the text using the outlet you created in GroupCell
-        cell.groupNameLabel.text = group.name
-        return cell
-        */
+
     }
     
     // 3. Set the height for each row

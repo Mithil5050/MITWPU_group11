@@ -46,13 +46,7 @@ class JoinGroupViewController: UIViewController {
             dismiss(animated: true) {
                 self.delegate?.didJoinGroup(groupName: joinedGroupName)
             }
-//        let groupName = codeTextField.text?.isEmpty == false
-//                ? codeTextField.text!
-//                : "Joined Group"
-//
-//            dismiss(animated: true) {
-//                self.delegate?.didJoinGroup(groupName: groupName)
-//            }
+
         }
     @IBAction func closeButtonTapped(_ sender: UIBarButtonItem) {
         dismiss(animated: true)
