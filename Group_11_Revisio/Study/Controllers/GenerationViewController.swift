@@ -200,7 +200,12 @@ class GenerationViewController: UIViewController {
                 }
             }
             if topicToPass == nil {
-                topicToPass = Topic(name: source.name, lastAccessed: "Just now", materialType: currentGenerationType.description, largeContentBody: "", parentSubjectName: parentSubjectName)
+             
+                topicToPass = Topic(name: source.name,
+                                    lastAccessed: "Just now",
+                                    materialType: currentGenerationType.description,
+                                    largeContentBody: "",
+                                    parentSubjectName: parentSubjectName ?? "General")
             }
         }
         

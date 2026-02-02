@@ -18,13 +18,12 @@ class DataManager {
     }
     
     private init() {
-        if !FileManager.default.fileExists(atPath: fileURL.path) {
-            
+        loadFromDisk()
+        
+        // If we loaded nothing (either file didn't exist or was corrupt), setup defaults
+        if savedMaterials.isEmpty {
             setupDefaultData()
             saveToDisk()
-        } else {
-            
-            loadFromDisk()
         }
     }
     
@@ -372,6 +371,38 @@ class DataManager {
         
         saveToDisk()
         NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+    }
+    func getTopic(subjectName: String, topicName: String) -> Topic? {
+        guard let materials = savedMaterials[subjectName]?[DataManager.materialsKey] else { return nil }
+        for item in materials {
+            if case .topic(let topic) = item, topic.name == topicName {
+                return topic
+            }
+        }
+        return nil
+    }
+
+    func updateTopic(subjectName: String, topic: Topic) {
+        // 1. Get the subject's full data (Materials and Sources)
+        guard var subjectData = savedMaterials[subjectName] else { return }
+        
+        // 2. Get the materials array
+        var materials = subjectData[DataManager.materialsKey] ?? []
+        
+        // 3. Find and replace the topic
+        if let index = materials.firstIndex(where: { item in
+            if case .topic(let t) = item { return t.name == topic.name }
+            return false
+        }) {
+            materials[index] = .topic(topic)
+            
+            // 4. ESSENTIAL: Re-assign all the way back up the chain
+            subjectData[DataManager.materialsKey] = materials
+            savedMaterials[subjectName] = subjectData
+            
+            saveToDisk()
+            NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+        }
     }
 }
 

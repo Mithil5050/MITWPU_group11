@@ -9,20 +9,10 @@
 /* Begin PBXBuildFile section */
 		46DF93E12EF002B7007D562B /* MessageKit in Frameworks */ = {isa = PBXBuildFile; productRef = 46DF93E02EF002B7007D562B /* MessageKit */; };
 		46DF93E42EF002DE007D562B /* InputBarAccessoryView in Frameworks */ = {isa = PBXBuildFile; productRef = 46DF93E32EF002DE007D562B /* InputBarAccessoryView */; };
-		46E7037B2F2097E100B4107B /* probstatements.docx in Resources */ = {isa = PBXBuildFile; fileRef = 46E703772F2097E100B4107B /* probstatements.docx */; };
-		46E7037C2F2097E100B4107B /* writeup.docx in Resources */ = {isa = PBXBuildFile; fileRef = 46E703782F2097E100B4107B /* writeup.docx */; };
-		46E7037D2F2097E100B4107B /* flowchart.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 46E703792F2097E100B4107B /* flowchart.pdf */; };
-		46E7037E2F2097E100B4107B /* flowchart2.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 46E7037A2F2097E100B4107B /* flowchart2.pdf */; };
-		547BA0312F292A650025EB8A /* PDFKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 547BA0302F292A650025EB8A /* PDFKit.framework */; };
-		547BA0332F292AA20025EB8A /* NaturalLanguage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 547BA0322F292AA20025EB8A /* NaturalLanguage.framework */; };
-		547BA0352F292ABC0025EB8A /* Vision.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 547BA0342F292ABC0025EB8A /* Vision.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		546963BE2ED6CB31001C03B8 /* Group_11_Revisio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Group_11_Revisio.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		547BA0302F292A650025EB8A /* PDFKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PDFKit.framework; path = System/Library/Frameworks/PDFKit.framework; sourceTree = SDKROOT; };
-		547BA0322F292AA20025EB8A /* NaturalLanguage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NaturalLanguage.framework; path = System/Library/Frameworks/NaturalLanguage.framework; sourceTree = SDKROOT; };
-		547BA0342F292ABC0025EB8A /* Vision.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vision.framework; path = System/Library/Frameworks/Vision.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -51,10 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				547BA0332F292AA20025EB8A /* NaturalLanguage.framework in Frameworks */,
 				46DF93E12EF002B7007D562B /* MessageKit in Frameworks */,
-				547BA0312F292A650025EB8A /* PDFKit.framework in Frameworks */,
-				547BA0352F292ABC0025EB8A /* Vision.framework in Frameworks */,
 				46DF93E42EF002DE007D562B /* InputBarAccessoryView in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -66,7 +53,7 @@
 			isa = PBXGroup;
 			children = (
 				546963C02ED6CB31001C03B8 /* Group_11_Revisio */,
-				547BA02F2F292A650025EB8A /* Frameworks */,
+				546963BF2ED6CB31001C03B8 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -76,16 +63,6 @@
 				546963BE2ED6CB31001C03B8 /* Group_11_Revisio.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		547BA02F2F292A650025EB8A /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				547BA0342F292ABC0025EB8A /* Vision.framework */,
-				547BA0322F292AA20025EB8A /* NaturalLanguage.framework */,
-				547BA0302F292A650025EB8A /* PDFKit.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

@@ -251,23 +251,48 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // 1. SELECTION MODE CHECK: If the table is in 'Select' mode, update the toolbar and stop
         if tableView.isEditing {
             updateToolbarForSelection()
-        } else {
-            tableView.deselectRow(at: indexPath, animated: true)
-            guard let studyItem = filteredContent[indexPath.row] as? StudyItem else { return }
+            return
+        }
+        
+        // 2. DESELECT: Standard visual behavior for single-tap navigation
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        // 3. THE CRITICAL CAST: Convert the [Any] item to your [StudyItem] enum
+        // This fixes the "Expression pattern" build error
+        guard let studyItem = filteredContent[indexPath.row] as? StudyItem else {
+            print("DEBUG: Item at \(indexPath.row) is not a StudyItem")
+            return
+        }
+        
+        // 4. PATTERN MATCH: Extract the Topic data
+        if case .topic(let topic) = studyItem {
             
-            switch studyItem {
-            case .topic(let topic):
-                if ["Notes", "Cheatsheet"].contains(topic.materialType) {
-                    performSegue(withIdentifier: "ShowMaterialDetail", sender: topic)
-                } else if topic.materialType == "Quiz" {
-                    performSegue(withIdentifier: "ShowInstructionScreen", sender: topic)
-                } else if topic.materialType == "Flashcards" {
-                    performSegue(withIdentifier: "openFlashcards", sender: topic)
+            // 5. FRESH DATA FETCH: Get the absolute latest version from DataManager
+            // to ensure we see the new 'attempts' after a user saves a quiz.
+            let latestTopic = DataManager.shared.getTopic(subjectName: self.selectedSubject ?? "", topicName: topic.name) ?? topic
+            
+            // 6. ROUTING LOGIC
+            if latestTopic.materialType == "Quiz" {
+                
+                // THE GATEKEEPER:
+                // If no history exists -> Show Instructions
+                // If history exists -> Show History Screen
+                if latestTopic.safeAttempts.isEmpty {
+                    print("DEBUG: No history found. Showing Instructions for \(latestTopic.name)")
+                    performSegue(withIdentifier: "ShowInstructionScreen", sender: latestTopic)
+                } else {
+                    print("DEBUG: History found. Showing Quiz History for \(latestTopic.name)")
+                    performSegue(withIdentifier: "ShowQuizHistory", sender: latestTopic)
                 }
-            case .source(let source):
-                print("Opening source: \(source.name)")
+                
+            } else if latestTopic.materialType == "Flashcards" {
+                performSegue(withIdentifier: "openFlashcards", sender: latestTopic)
+            } else {
+                // Standard Notes or Cheatsheet
+                performSegue(withIdentifier: "ShowMaterialDetail", sender: latestTopic)
             }
         }
     }
@@ -482,15 +507,23 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         var finalTopic: Topic?
-        if let topic = sender as? Topic {
-            finalTopic = topic
-        } else if let studyItem = sender as? StudyItem, case .topic(let topic) = studyItem {
-            finalTopic = topic
+        
+        if let studyItem = sender as? StudyItem, case .topic(let topic) = studyItem {
+            finalTopic = DataManager.shared.getTopic(subjectName: self.selectedSubject ?? "", topicName: topic.name) ?? topic
+        } else if let topic = sender as? Topic {
+            finalTopic = DataManager.shared.getTopic(subjectName: self.selectedSubject ?? "", topicName: topic.name) ?? topic
         }
-
-        if segue.identifier == "ShowMaterialInfo",
-           let infoVC = segue.destination as? MaterialInfoViewController,
-           let studyItem = sender as? StudyItem {
+        
+        if segue.identifier == "ShowQuizHistory" {
+            if let historyVC = segue.destination as? QuizHistoryViewController,
+               let topic = finalTopic {
+                historyVC.quizTopic = topic
+                historyVC.parentSubject = self.selectedSubject
+            }
+        }
+        else if segue.identifier == "ShowMaterialInfo",
+                let infoVC = segue.destination as? MaterialInfoViewController,
+                let studyItem = sender as? StudyItem {
             
             switch studyItem {
             case .topic(let topic):
@@ -502,13 +535,13 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                 switch topic.materialType {
                 case "Quiz":
                     infoVC.iconName = "timer"
-                    infoVC.iconColor = UIColor.systemGreen
+                    infoVC.iconColor = .systemGreen
                 case "Notes":
                     infoVC.iconName = "book.pages"
-                    infoVC.iconColor = UIColor.systemOrange
+                    infoVC.iconColor = .systemOrange
                 case "Flashcards":
                     infoVC.iconName = "rectangle.on.rectangle.angled"
-                    infoVC.iconColor = UIColor.systemBlue
+                    infoVC.iconColor = .systemBlue
                 default:
                     infoVC.iconName = "doc.text.fill"
                     infoVC.iconColor = .systemGray
@@ -522,20 +555,32 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                 infoVC.iconColor = .systemIndigo
             }
         }
-        else if segue.identifier == "ShowMaterialDetail", let detailVC = segue.destination as? MaterialDetailViewController, let topic = finalTopic {
+        else if segue.identifier == "ShowMaterialDetail",
+                let detailVC = segue.destination as? MaterialDetailViewController,
+                let topic = finalTopic {
             detailVC.materialName = topic.name
             detailVC.contentData = topic
             detailVC.parentSubjectName = selectedSubject
-        } else if segue.identifier == "ShowInstructionScreen", let instructionVC = segue.destination as? InstructionViewController, let topic = finalTopic {
+        }
+        else if segue.identifier == "ShowInstructionScreen",
+                let instructionVC = segue.destination as? InstructionViewController,
+                let topic = finalTopic {
             instructionVC.quizTopic = topic
             instructionVC.parentSubjectName = selectedSubject
-        } else if segue.identifier == "openFlashcards", let flashVC = segue.destination as? FlashcardsViewController, let topic = finalTopic {
+        }
+        else if segue.identifier == "openFlashcards",
+                let flashVC = segue.destination as? FlashcardsViewController,
+                let topic = finalTopic {
             flashVC.currentTopic = topic
             flashVC.parentSubjectName = self.selectedSubject
-        } else if segue.identifier == "ShowGenerationScreen", let generationVC = segue.destination as? GenerationViewController, let items = sender as? [Any] {
+        }
+        else if segue.identifier == "ShowGenerationScreen",
+                let generationVC = segue.destination as? GenerationViewController,
+                let items = sender as? [Any] {
             generationVC.sourceItems = items
             generationVC.parentSubjectName = selectedSubject
             selectionCancelTapped()
         }
     }
 }
+

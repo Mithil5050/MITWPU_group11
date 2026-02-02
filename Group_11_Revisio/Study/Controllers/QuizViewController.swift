@@ -257,11 +257,13 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
         let lines = content.components(separatedBy: "\n")
         return lines.compactMap { line in
             let parts = line.components(separatedBy: "|")
-            guard parts.count >= 5 else { return nil }
+            // Check for at least 6 parts: Question (0), 4 Answers (1-4), CorrectIdx (5)
+            guard parts.count >= 6 else { return nil }
+            
             return QuizQuestion(
                 questionText: parts[0],
                 answers: [parts[1], parts[2], parts[3], parts[4]],
-                correctAnswerIndex: parts.count > 5 ? (Int(parts[5]) ?? 0) : 0,
+                correctAnswerIndex: Int(parts[5]) ?? 0,
                 userAnswerIndex: nil,
                 isFlagged: false,
                 hint: parts.count > 6 ? parts[6] : "Focus on core concepts."
@@ -281,7 +283,7 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
             resultsVC.summaryData = self.allQuestions.map { q in
                 QuizSummaryItem(
                     questionText: q.questionText,
-                    userAnswerIndex: q.userAnswerIndex,
+                    userAnswerIndex: q.userAnswerIndex, // <--- IMPORTANT: NOT NIL
                     correctAnswerIndex: q.correctAnswerIndex,
                     allOptions: q.answers,
                     explanation: q.hint,
