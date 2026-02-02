@@ -1,6 +1,5 @@
 import Foundation
 
-// ✅ NEW: Dedicated struct for the Summary Screen
 struct QuizSummaryItem {
     let questionText: String
     let userAnswerIndex: Int?
