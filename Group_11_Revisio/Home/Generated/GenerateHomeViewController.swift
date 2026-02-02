@@ -366,7 +366,7 @@ class GenerateHomeViewController: UIViewController {
             lastAccessed: "Just now",
             materialType: selectedMaterialType.description,
             largeContentBody: generatedContent,
-            parentSubjectName: self.contextSubjectTitle
+            parentSubjectName: self.contextSubjectTitle ?? "General Study"
         )
         
         DataManager.shared.addTopic(to: self.contextSubjectTitle ?? "General Study", topic: newTopic)

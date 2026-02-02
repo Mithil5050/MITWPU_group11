@@ -1,7 +1,7 @@
 import UIKit
 
 class ResultsViewController: UIViewController {
-
+    
     // MARK: - Properties
     var finalResult: FinalQuizResult?
     var topicToSave: Topic?
@@ -22,7 +22,7 @@ class ResultsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         navigationItem.backAction = UIAction { [weak self] _ in
             let alert = UIAlertController(
                 title: "Unsaved Progress",
@@ -48,12 +48,12 @@ class ResultsViewController: UIViewController {
         }
         setupUI()
     }
-
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         navigationController?.interactivePopGestureRecognizer?.isEnabled = false
     }
-
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         navigationController?.interactivePopGestureRecognizer?.isEnabled = true
@@ -83,7 +83,7 @@ class ResultsViewController: UIViewController {
         retakeButton.layer.cornerRadius = 14
         saveButton.layer.cornerRadius = 14
     }
-  
+    
     // MARK: - Actions
     @IBAction func retakeButtonTapped(_ sender: Any) {
         // Find your Study Tab's QuizViewController in the navigation stack
@@ -104,54 +104,70 @@ class ResultsViewController: UIViewController {
     }
     
     @IBAction func saveButtonTapped(_ sender: Any) {
-        guard let result = finalResult,
-                  var topic = topicToSave,
-                  let folderName = parentFolder else { return }
-            
-           
-            let packedData = summaryData.map { item in
-                let answers = item.allOptions.joined(separator: "|")
-                return "\(item.questionText)|\(answers)|\(item.correctAnswerIndex)|\(item.explanation)"
-            }.joined(separator: "\n")
-            
-           
-            topic.largeContentBody = packedData
-            topic.lastAccessed = "Just now"
-            
-            
-            DataManager.shared.addTopic(to: folderName, topic: topic)
-            
-            
-            let alert = UIAlertController(
-                title: "Saved!",
-                message: "Quiz saved to '\(folderName)'.",
-                preferredStyle: .alert
-            )
-            
+        // 1. Validate required data exists
+        guard let result = finalResult, var topic = topicToSave, let folder = parentFolder else {
+            print("DEBUG: Missing data in ResultsViewController. Result: \(finalResult != nil), Topic: \(topicToSave != nil), Folder: \(parentFolder != nil)")
+            return
+        }
+        
+        // 2. Pack the summary data into a 5-part string per line
+        // Format: Question | Options | CorrectIndex | Explanation | UserAnswerIndex
+        let packedData = summaryData.map { item in
+            let answers = item.allOptions.joined(separator: "|")
+            let userIdx = item.userAnswerIndex ?? -1 // Use -1 if user didn't answer
+            return "\(item.questionText)|\(answers)|\(item.correctAnswerIndex)|\(item.explanation)|\(userIdx)"
+        }.joined(separator: "\n")
+        
+        // 3. Create a new History Attempt object
+        let newAttempt = QuizAttempt(
+            id: UUID(),
+            date: Date(),
+            score: result.finalScore,
+            totalQuestions: result.totalQuestions,
+            summaryData: packedData
+        )
+        
+        // 4. Update the topic's attempts array
+        if topic.attempts == nil {
+            topic.attempts = []
+        }
+        topic.attempts?.append(newAttempt)
+        
+        // 5. Update metadata so the "History" list reflects the latest run
+        topic.lastAccessed = "Score: \(result.finalScore)/\(result.totalQuestions)"
+        topic.largeContentBody = packedData
+        
+        // 6. Save to Disk via DataManager
+        DataManager.shared.updateTopic(subjectName: folder, topic: topic)
+        
+        // 7. Show Success Alert and Navigate Back
+        let alert = UIAlertController(title: "Saved!", message: "Quiz result archived.", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-            if let navigationController = self.navigationController {
-                let viewControllers = navigationController.viewControllers
-                
-                for vc in viewControllers {
+            if let nav = self.navigationController {
+                // Find SubjectViewController in stack so "Gatekeeper" logic refreshes
+                for vc in nav.viewControllers {
                     if vc is SubjectViewController {
-                        navigationController.popToViewController(vc, animated: true)
+                        nav.popToViewController(vc, animated: true)
                         return
                     }
                 }
-                
-                navigationController.popViewController(animated: true)
+                nav.popToRootViewController(animated: true)
             }
         })
-            present(alert, animated: true)
+        present(alert, animated: true)
     }
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Match the identifier to your Storyboard Segue
-        if segue.identifier == "ShowReviewDetail" {
-            if let destVC = segue.destination as? ReviewDetailViewController {
-                destVC.summaryList = self.summaryData
+        if segue.identifier == "ShowReviewDetail",
+           let destVC = segue.destination as? ReviewDetailViewController {
+            
+            // Recalculate isCorrect here to be 100% sure the labels match
+            for i in 0..<summaryData.count {
+                summaryData[i].isCorrect = (summaryData[i].userAnswerIndex == summaryData[i].correctAnswerIndex)
             }
+            
+            destVC.summaryList = self.summaryData
         }
     }
 }
