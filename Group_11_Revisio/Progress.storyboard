@@ -17,11 +17,11 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cUM-KL-7fJ">
-                                <rect key="frame" x="0.0" y="224" width="393" height="700"/>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cUM-KL-7fJ">
+                                <rect key="frame" x="0.0" y="224" width="393" height="628"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="IeX-RP-QwX">
-                                        <rect key="frame" x="0.0" y="0.0" width="393" height="700"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="393" height="628"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="QJR-me-9MO">
                                                 <rect key="frame" x="8" y="8" width="377" height="308"/>
@@ -69,7 +69,7 @@
                                                 </constraints>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Aed-O3-tOe">
-                                                <rect key="frame" x="8" y="316" width="377" height="376"/>
+                                                <rect key="frame" x="8" y="316" width="377" height="304"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Kyw-Jp-cwq">
                                                         <rect key="frame" x="8" y="14" width="361" height="304.66666666666669"/>
@@ -273,16 +273,11 @@
                                                 </constraints>
                                             </view>
                                         </subviews>
-                                        <constraints>
-                                            <constraint firstAttribute="bottom" secondItem="Aed-O3-tOe" secondAttribute="bottom" constant="8" id="8mt-NS-J0a"/>
-                                            <constraint firstItem="Aed-O3-tOe" firstAttribute="bottom" secondItem="IeX-RP-QwX" secondAttribute="bottomMargin" id="IYq-Qd-BBS"/>
-                                            <constraint firstAttribute="height" constant="700" id="SaO-tG-hfy"/>
-                                            <constraint firstAttribute="bottom" secondItem="Aed-O3-tOe" secondAttribute="bottom" constant="8" id="lml-st-AFS"/>
-                                        </constraints>
                                         <edgeInsets key="layoutMargins" top="8" left="8" bottom="8" right="8"/>
                                     </stackView>
                                 </subviews>
                                 <constraints>
+                                    <constraint firstItem="O8W-X8-qcb" firstAttribute="bottom" secondItem="IeX-RP-QwX" secondAttribute="bottom" id="61Y-O9-Jqt"/>
                                     <constraint firstItem="IeX-RP-QwX" firstAttribute="leading" secondItem="cUM-KL-7fJ" secondAttribute="leading" id="AnN-lF-1sM"/>
                                     <constraint firstItem="IeX-RP-QwX" firstAttribute="top" secondItem="cUM-KL-7fJ" secondAttribute="top" id="Ct2-FQ-dY4"/>
                                     <constraint firstItem="IeX-RP-QwX" firstAttribute="width" secondItem="cUM-KL-7fJ" secondAttribute="width" id="Xy9-kg-D1v"/>
@@ -305,6 +300,7 @@
                             <constraint firstItem="cUM-KL-7fJ" firstAttribute="leading" secondItem="37l-OI-p6n" secondAttribute="leading" id="6G3-aq-lZI"/>
                             <constraint firstItem="cUM-KL-7fJ" firstAttribute="trailing" secondItem="37l-OI-p6n" secondAttribute="trailing" id="Viy-ug-CXH"/>
                             <constraint firstItem="cUM-KL-7fJ" firstAttribute="top" secondItem="37l-OI-p6n" secondAttribute="top" id="cxC-20-UA8"/>
+                            <constraint firstAttribute="bottom" secondItem="cUM-KL-7fJ" secondAttribute="bottom" id="jxf-1S-OlD"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Progress" leftItemsSupplementBackButton="YES" largeTitleDisplayMode="always" id="y1Y-XM-Z8h"/>
