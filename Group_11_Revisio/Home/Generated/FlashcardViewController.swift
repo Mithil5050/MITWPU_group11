@@ -253,12 +253,39 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     }
     
     private func handleSave() {
-        let folderName = parentSubjectName ?? "Study"
-        let alert = UIAlertController(title: "Saved!", message: "Flashcards saved to '\(folderName)'.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
-    }
-    
+            let folderName = parentSubjectName ?? "Study"
+            
+            // 1. Create the Alert
+            let alert = UIAlertController(
+                title: "Session Complete",
+                message: "These cards will be permanently added to your '\(folderName)' folder.",
+                preferredStyle: .alert
+            )
+            
+            // 2. "Save" Action (Blue/Default)
+            let saveAction = UIAlertAction(title: "Yes, Save", style: .default) { _ in
+                // Show a quick confirmation that it was saved
+                let confirmAlert = UIAlertController(title: "Saved!", message: "Your progress has been recorded.", preferredStyle: .alert)
+                confirmAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                    // Reset the stack so the user can go again if they want
+                    self.resetStackTransforms()
+                })
+                self.present(confirmAlert, animated: true)
+            }
+            
+            // 3. "Don't Save" Action (Red/Destructive)
+            let cancelAction = UIAlertAction(title: "Cancel", style: .destructive) { _ in
+                // Just reset the stack without saving
+                self.resetStackTransforms()
+            }
+            
+            // 4. Add buttons to the alert
+            alert.addAction(saveAction)
+            alert.addAction(cancelAction)
+            
+            // 5. Present it
+            present(alert, animated: true)
+        }
     // MARK: - Navigation / Delegate
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "AddCardSegue" {
