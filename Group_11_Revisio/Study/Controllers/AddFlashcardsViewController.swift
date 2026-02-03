@@ -16,18 +16,39 @@ class AddFlashcardsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let closeButton = UIBarButtonItem(
-            image: UIImage(systemName: "xmark"),
-            style: .plain,
-            target: self,
-            action: #selector(closeTapped)
-        )
+        
+        title = "Add Flashcard"
+        let closeButton = UIBarButtonItem(image: UIImage(systemName: "xmark"), style: .plain, target: self, action: #selector(closeTapped))
         self.navigationItem.leftBarButtonItem = closeButton
+        
         if #available(iOS 13.0, *) {
             isModalInPresentation = true
         }
+        
+        setupFieldStyling(termsTextField, placeholder: "Enter term...")
+        setupFieldStyling(definitionsTextField, placeholder: "Enter definition...")
+        
+        view.backgroundColor = .systemGroupedBackground
+    }
 
-            }
+    private func setupFieldStyling(_ textField: UITextField, placeholder: String) {
+        textField.backgroundColor = .secondarySystemGroupedBackground
+        textField.textColor = .label
+        textField.borderStyle = .none
+        textField.layer.cornerRadius = 10
+        textField.font = UIFont.preferredFont(forTextStyle: .body)
+        
+        textField.attributedPlaceholder = NSAttributedString(
+            string: placeholder,
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor.secondaryLabel]
+        )
+        
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
+        textField.leftView = paddingView
+        textField.leftViewMode = .always
+        
+        textField.heightAnchor.constraint(equalToConstant: 50).isActive = true
+    }
     @objc private func closeTapped() {
         
         dismiss(animated: true, completion: nil)
