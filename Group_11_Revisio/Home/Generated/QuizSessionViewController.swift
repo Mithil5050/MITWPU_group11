@@ -12,7 +12,9 @@ class QuizSessionViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet weak var quizQuestionLabel: UILabel!
     
-    // ✅ FIX: Removed 'weak' keyword here
+    // ✅ Added Progress Bar Outlet
+    @IBOutlet weak var progressBar: UIProgressView!
+    
     @IBOutlet var optionButtons: [UIButton]!
     
     @IBOutlet weak var backQButton: UIButton!
@@ -126,7 +128,14 @@ class QuizSessionViewController: UIViewController {
         guard questionIndex < sessionQuestions.count else { return }
         let question = sessionQuestions[questionIndex]
         
-        title = "Question \(questionIndex + 1)/\(sessionQuestions.count)"
+        // ✅ CHANGED: Title shows only "Question X"
+        title = "Question \(questionIndex + 1)"
+        
+        // ✅ ADDED: Progress Bar Logic
+        let totalQuestions = Float(sessionQuestions.count)
+        let currentProgress = Float(questionIndex + 1) / totalQuestions
+        progressBar.setProgress(currentProgress, animated: true)
+        
         quizQuestionLabel.text = question.questionText
         updateFlagIcon()
         resetOptionStyles()
@@ -155,20 +164,20 @@ class QuizSessionViewController: UIViewController {
             for button in optionButtons {
                 // 1. Reset configuration to ensure manual styling works (iOS 15+ fix)
                 button.configuration = nil
-                
+             
                 // 2. Border & Corner Styling
                 button.layer.cornerRadius = 12
                 button.layer.borderWidth = 1.0
                 button.layer.borderColor = UIColor.systemGray4.cgColor
                 button.backgroundColor = .clear
                 button.setTitleColor(.label, for: .normal)
-                
+             
                 // 3. ✅ LEFT ALIGNMENT FIX
                 button.contentHorizontalAlignment = .left
-                
+             
                 // 4. ✅ Add Padding (Top, Left, Bottom, Right)
                 button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 20, bottom: 10, right: 20)
-                
+             
                 // 5. Text Handling (Optional: Handles long answers better)
                 button.titleLabel?.numberOfLines = 2
                 button.titleLabel?.lineBreakMode = .byTruncatingTail
@@ -247,7 +256,7 @@ class QuizSessionViewController: UIViewController {
             let correct = (q.userAnswerIndex == q.correctAnswerIndex)
             if correct { score += 1 }
             // Stub for details (we use summaryList instead)
-             let detail = QuestionResultDetail(
+            let detail = QuestionResultDetail(
                 questionText: q.questionText, wasCorrect: correct,
                 selectedAnswer: nil, correctAnswerFullText: "", isFlagged: q.isFlagged
             )
