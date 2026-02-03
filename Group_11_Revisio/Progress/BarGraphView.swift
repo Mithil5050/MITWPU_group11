@@ -6,14 +6,20 @@ struct BarChartView: View {
     @State private var isShowingDaily: Bool = true
     @State private var scrolledID: Int?
 
-    // Color Configuration: Light Green and Blue
+    // Color Setup: Blue for Study, Cyan for Games (Entertainment)
     private let colors = (
         study: Color.blue,
-        games: Color(red: 0.56, green: 0.93, blue: 0.56).opacity(0.9) // Light Green
+        games: Color(red: 0.0, green: 0.9, blue: 1.0) // Vibrant Cyan
     )
 
     private var history: [[StudyData]] { isShowingDaily ? model.dailyHistory : model.weeklyHistory }
     private var currentIdx: Int { scrolledID ?? max(0, history.count - 1) }
+    
+    // Logic to detect if user has scrolled away from the most recent data
+    private var isNotAtEnd: Bool {
+        guard !history.isEmpty else { return false }
+        return currentIdx < history.count - 1
+    }
 
     private func getTotalHours(for index: Int) -> String {
         guard index >= 0 && index < history.count else { return "0h 0m" }
@@ -30,22 +36,46 @@ struct BarChartView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // 1. Segmented Picker
             Picker("Time Frame", selection: $isShowingDaily) {
-                Text("Day").tag(true)
                 Text("Week").tag(false)
+                Text("Day").tag(true)
             }
             .pickerStyle(.segmented)
             .padding(.horizontal)
             .padding(.top, 4)
             .padding(.bottom, 8)
 
-            VStack(alignment: .leading, spacing: 0) {
-                Text(getDateLabel(for: currentIdx)).font(.system(size: 13, weight: .medium)).foregroundColor(.secondary)
-                Text(getTotalHours(for: currentIdx)).font(.system(size: 22, weight: .bold, design: .rounded)).foregroundColor(.white)
+            // 2. Header with Dynamic "Show Today" / "Show This Week" Button
+            HStack(alignment: .lastTextBaseline) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(getDateLabel(for: currentIdx))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                    Text(getTotalHours(for: currentIdx))
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                
+                Spacer()
+                
+                if isNotAtEnd {
+                    Button(action: {
+                        withAnimation(.spring()) {
+                            scrolledID = history.count - 1
+                        }
+                    }) {
+                        // Dynamically changes text based on the isShowingDaily state
+                        Text(isShowingDaily ? "Show Today" : "Show This Week")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.blue)
+                    }
+                }
             }
             .padding(.horizontal)
             .padding(.bottom, 2)
 
+            // 3. Horizontal Scrollable Graph
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 0) {
                     ForEach(0..<history.count, id: \.self) { index in
@@ -58,11 +88,12 @@ struct BarChartView: View {
             .scrollTargetBehavior(.paging)
             .frame(height: 160)
 
+            // 4. Centered Legend
             HStack(spacing: 0) {
                 Spacer()
-                legendItem(label: "Study", color: .blue)
+                legendItem(label: "Study", color: colors.study)
                 Spacer()
-                legendItem(label: "Games", color: Color(red: 0.56, green: 0.93, blue: 0.56))
+                legendItem(label: "Games", color: colors.games)
                 Spacer()
             }
             .padding(.horizontal, 16)
@@ -70,6 +101,9 @@ struct BarChartView: View {
             .padding(.bottom, 8)
         }
         .onAppear { scrolledID = max(0, history.count - 1) }
+        .onChange(of: isShowingDaily) {
+            scrolledID = history.count - 1
+        }
     }
 
     @ViewBuilder
