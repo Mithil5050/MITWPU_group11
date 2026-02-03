@@ -5,13 +5,13 @@ struct BarChartView: View {
     @ObservedObject var model: StudyChartModel
     @State private var isShowingDaily: Bool = true
     @State private var scrolledID: Int?
-
+    
     // Color Setup: Blue for Study, Cyan for Games (Entertainment)
     private let colors = (
         study: Color.blue,
         games: Color(red: 0.0, green: 0.9, blue: 1.0) // Vibrant Cyan
     )
-
+    
     private var history: [[StudyData]] { isShowingDaily ? model.dailyHistory : model.weeklyHistory }
     private var currentIdx: Int { scrolledID ?? max(0, history.count - 1) }
     
@@ -20,20 +20,20 @@ struct BarChartView: View {
         guard !history.isEmpty else { return false }
         return currentIdx < history.count - 1
     }
-
+    
     private func getTotalHours(for index: Int) -> String {
         guard index >= 0 && index < history.count else { return "0h 0m" }
         let totalMinutes = history[index].reduce(0.0) { $0 + $1.totalMinutes }
         return "\(Int(totalMinutes) / 60)h \(Int(totalMinutes) % 60)m"
     }
-
+    
     private func getDateLabel(for index: Int) -> String {
         guard index >= 0 && index < history.count else { return "" }
         let distance = (history.count - 1) - index
         let date = Calendar.current.date(byAdding: isShowingDaily ? .day : .weekOfYear, value: -distance, to: Date()) ?? Date()
         return isShowingDaily ? (distance == 0 ? "Today, \(date.formatted(.dateTime.day().month(.wide)))" : date.formatted(.dateTime.day().month(.wide))) : (distance == 0 ? "This Week" : "\(distance) Weeks Ago")
     }
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // 1. Segmented Picker
@@ -45,7 +45,7 @@ struct BarChartView: View {
             .padding(.horizontal)
             .padding(.top, 4)
             .padding(.bottom, 8)
-
+            
             // 2. Header with Dynamic "Show Today" / "Show This Week" Button
             HStack(alignment: .lastTextBaseline) {
                 VStack(alignment: .leading, spacing: 0) {
@@ -74,7 +74,7 @@ struct BarChartView: View {
             }
             .padding(.horizontal)
             .padding(.bottom, 2)
-
+            
             // 3. Horizontal Scrollable Graph
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 0) {
@@ -87,7 +87,7 @@ struct BarChartView: View {
             .scrollPosition(id: $scrolledID)
             .scrollTargetBehavior(.paging)
             .frame(height: 160)
-
+            
             // 4. Centered Legend
             HStack(spacing: 0) {
                 Spacer()
@@ -105,7 +105,7 @@ struct BarChartView: View {
             scrolledID = history.count - 1
         }
     }
-
+    
     @ViewBuilder
     private func chartPage(for index: Int) -> some View {
         Chart(history[index]) { item in
@@ -131,7 +131,7 @@ struct BarChartView: View {
         .frame(height: 155)
         .padding(.horizontal)
     }
-
+    
     @ViewBuilder
     private func legendItem(label: String, color: Color) -> some View {
         HStack(spacing: 4) {
