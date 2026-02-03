@@ -17,9 +17,15 @@ class MaterialViewCell: UITableViewCell {
         clearView.backgroundColor = .clear
         self.selectedBackgroundView = clearView
         
-       
         self.backgroundColor = .clear
-        self.contentView.backgroundColor = .secondarySystemGroupedBackground;         self.contentView.layer.cornerRadius = 12
+        
+        self.contentView.backgroundColor = .systemGray6
+        self.contentView.layer.cornerRadius = 12
+        
+        self.contentView.layer.borderWidth = 0.5
+        self.contentView.layer.borderColor = UIColor.separator.cgColor
+        
+        self.contentView.clipsToBounds = true
     }
     @IBAction func infoButtonAction(_ sender: UIButton) {
             onInfoButtonTapped?()
