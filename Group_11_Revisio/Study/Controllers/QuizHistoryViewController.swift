@@ -17,6 +17,9 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        // Sets the title in the system Navigation Bar
+        self.title = quizTopic?.name ?? "Quiz History"
+        
         if let subject = parentSubject, let currentName = quizTopic?.name {
             if let updatedTopic = DataManager.shared.getTopic(subjectName: subject, topicName: currentName) {
                 self.quizTopic = updatedTopic
@@ -25,6 +28,8 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         unpackSummaryData()
         tableView.reloadData()
+        
+        // Pushes the score card to the top
         tableView.tableHeaderView = createModernHeroHeader()
     }
     
@@ -34,54 +39,16 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.dataSource = self
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
-    }
-    func unpackSummaryData() {
-        guard let topic = quizTopic else { return }
         
-        // 1. Refresh score text for the header
-        if topic.lastAccessed.contains("/") {
-            self.latestScore = topic.lastAccessed.replacingOccurrences(of: "Score: ", with: "")
+        // Removes top gap on iOS 15+
+        if #available(iOS 15.0, *) {
+            tableView.sectionHeaderTopPadding = 0
         }
+    }
 
-        // 2. Get the body text: Try latest attempt first, then fallback to original content
-        let body = topic.safeAttempts.last?.summaryData ?? topic.largeContentBody ?? ""
-        
-        guard !body.isEmpty else {
-            self.summaryData = []
-            return
-        }
-        
-        let rows = body.components(separatedBy: "\n")
-        self.summaryData = rows.compactMap { row -> QuizSummaryItem? in
-            let parts = row.components(separatedBy: "|")
-            
-            // Safety: We need at least Question|O1|O2|O3|O4|CorrectIdx
-            guard parts.count >= 6 else { return nil }
-            
-            let correctIdx = Int(parts[5]) ?? 0
-            
-            // NEW LOGIC: In a saved attempt, the UserAnswerIndex is the 8th part (index 7)
-            // Format: Q|O1|O2|O3|O4|Correct|Hint|UserIdx
-            let userIdx = parts.count >= 8 ? (Int(parts[7]) ?? -1) : -1
-            
-            return QuizSummaryItem(
-                questionText: parts[0],
-                userAnswerIndex: userIdx == -1 ? nil : userIdx,
-                correctAnswerIndex: correctIdx,
-                allOptions: [parts[1], parts[2], parts[3], parts[4]],
-                explanation: parts.count > 6 ? parts[6] : "No explanation available.",
-                isCorrect: (userIdx != -1 && userIdx == correctIdx)
-            )
-        }
-    }
     func createModernHeroHeader() -> UIView {
-        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 260))
-        
-        let titleLabel = UILabel()
-        titleLabel.text = quizTopic?.name ?? "Quiz"
-        titleLabel.font = .systemFont(ofSize: 28, weight: .bold)
-        titleLabel.frame = CGRect(x: 20, y: 10, width: view.frame.width - 40, height: 40)
-        headerView.addSubview(titleLabel)
+        // Minimal height to move content up
+        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 150))
 
         let card = UIView()
         card.backgroundColor = .secondarySystemGroupedBackground
@@ -91,7 +58,12 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         let scoreLabel = UILabel()
         scoreLabel.text = latestScore
-        scoreLabel.font = .systemFont(ofSize: 54, weight: .black)
+        
+        // Native Dynamic Type for large score
+        let scoreFont = UIFont.systemFont(ofSize: 54, weight: .black)
+        scoreLabel.font = UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: scoreFont)
+        scoreLabel.adjustsFontForContentSizeCategory = true
+        
         scoreLabel.textColor = summaryData.isEmpty ? .systemGray4 : .label
         scoreLabel.textAlignment = .center
         scoreLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -99,16 +71,22 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         let subtitleLabel = UILabel()
         subtitleLabel.text = summaryData.isEmpty ? "NO PREVIOUS ATTEMPT" : "LATEST SCORE"
-        subtitleLabel.font = .systemFont(ofSize: 12, weight: .heavy)
+        
+        // Native caption style
+        let subtitleFont = UIFont.systemFont(ofSize: 12, weight: .heavy)
+        subtitleLabel.font = UIFontMetrics(forTextStyle: .caption1).scaledFont(for: subtitleFont)
+        subtitleLabel.adjustsFontForContentSizeCategory = true
+        
         subtitleLabel.textColor = .secondaryLabel
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(subtitleLabel)
         
         NSLayoutConstraint.activate([
-            card.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
+            card.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 5),
             card.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 20),
             card.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -20),
             card.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -10),
+            
             scoreLabel.centerYAnchor.constraint(equalTo: card.centerYAnchor, constant: -10),
             scoreLabel.centerXAnchor.constraint(equalTo: card.centerXAnchor),
             subtitleLabel.topAnchor.constraint(equalTo: scoreLabel.bottomAnchor, constant: 2),
@@ -137,15 +115,28 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             
             cell.textLabel?.text = attempt.dateString
             cell.detailTextLabel?.text = "\(attempt.score)/\(attempt.totalQuestions)"
-            cell.textLabel?.font = .systemFont(ofSize: 15)
-            cell.detailTextLabel?.font = .systemFont(ofSize: 15, weight: .bold)
+            
+            // Native body scaling
+            cell.textLabel?.font = UIFont.preferredFont(forTextStyle: .body)
+            cell.textLabel?.adjustsFontForContentSizeCategory = true
+            
+            let detailFont = UIFont.systemFont(ofSize: 15, weight: .bold)
+            cell.detailTextLabel?.font = UIFontMetrics(forTextStyle: .body).scaledFont(for: detailFont)
+            cell.detailTextLabel?.adjustsFontForContentSizeCategory = true
+            cell.detailTextLabel?.textColor = .label
+            
             cell.backgroundColor = .secondarySystemGroupedBackground
             return cell
         }
 
         let cell = UITableViewCell(style: .default, reuseIdentifier: "ActionCell")
         cell.backgroundColor = .secondarySystemGroupedBackground
-        cell.textLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
+        
+        let actionFont = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        cell.textLabel?.font = UIFontMetrics(forTextStyle: .body).scaledFont(for: actionFont)
+        cell.textLabel?.adjustsFontForContentSizeCategory = true
+        
+        cell.accessoryType = .disclosureIndicator
         
         if indexPath.section == 0 {
             cell.textLabel?.text = "Review Latest Summary"
@@ -156,18 +147,64 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         } else {
             cell.textLabel?.text = "Retake Quiz"
             cell.textLabel?.textColor = .label
-            cell.accessoryType = .disclosureIndicator
         }
         return cell
     }
 
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if section == 2 && !(quizTopic?.safeAttempts.isEmpty ?? true) {
-            return "PAST ATTEMPTS"
+            let headerView = UIView()
+            let label = UILabel()
+            label.text = "PAST ATTEMPTS"
+            
+            let headerFont = UIFont.systemFont(ofSize: 13, weight: .heavy)
+            label.font = UIFontMetrics(forTextStyle: .footnote).scaledFont(for: headerFont)
+            label.adjustsFontForContentSizeCategory = true
+            
+            label.textColor = .secondaryLabel
+            label.translatesAutoresizingMaskIntoConstraints = false
+            headerView.addSubview(label)
+            
+            NSLayoutConstraint.activate([
+                label.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 24),
+                label.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
+            ])
+            return headerView
         }
         return nil
     }
 
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return section == 2 ? 40 : 0
+    }
+    
+    func unpackSummaryData() {
+        guard let topic = quizTopic else { return }
+        if topic.lastAccessed.contains("/") {
+            self.latestScore = topic.lastAccessed.replacingOccurrences(of: "Score: ", with: "")
+        }
+        let body = topic.safeAttempts.last?.summaryData ?? topic.largeContentBody ?? ""
+        guard !body.isEmpty else { return }
+        
+        let rows = body.components(separatedBy: "\n")
+        self.summaryData = rows.compactMap { row -> QuizSummaryItem? in
+            let parts = row.components(separatedBy: "|")
+            guard parts.count >= 6 else { return nil }
+            
+            let correctIdx = Int(parts[5]) ?? 0
+            let userIdx = parts.count >= 8 ? (Int(parts[7]) ?? -1) : -1
+            
+            return QuizSummaryItem(
+                questionText: parts[0],
+                userAnswerIndex: userIdx == -1 ? nil : userIdx,
+                correctAnswerIndex: correctIdx,
+                allOptions: [parts[1], parts[2], parts[3], parts[4]],
+                explanation: parts.count > 6 ? parts[6] : "No hint",
+                isCorrect: (userIdx != -1 && userIdx == correctIdx)
+            )
+        }
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         if indexPath.section == 0 {

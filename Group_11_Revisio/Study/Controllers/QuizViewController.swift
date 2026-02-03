@@ -16,6 +16,8 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
     @IBOutlet var nextButton: UIButton!
     @IBOutlet var timerLabel: UILabel!
     
+    @IBOutlet weak var progressBar: UIProgressView!
+    
     // MARK: - Properties
     var quizTopic: Topic?
     var parentSubjectName: String?
@@ -37,6 +39,7 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
         setupUI()
         displayQuestion()
         startTimer()
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = false
     }
 
     // MARK: - Setup Methods
@@ -56,25 +59,43 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
     private func setupUI() {
         setupAnswerButtons()
         setupNavigationBarButtons()
+        
+        
+        progressBar.progress = 0.0
+       
+        progressBar.progressTintColor = .systemBlue
+        progressBar.trackTintColor = .systemGray5
     }
 
     private func setupAnswerButtons() {
         for button in answerButtons {
-            button.configuration = nil
+            // Use Plain configuration to allow automatic resizing
+            var config = UIButton.Configuration.plain()
+            config.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
+            config.titleAlignment = .leading
+            button.configuration = config
+
+          
+            button.titleLabel?.numberOfLines = 0
+            button.titleLabel?.lineBreakMode = .byWordWrapping
+            
+           
             button.layer.cornerRadius = 12
-            button.clipsToBounds = true
             button.layer.borderWidth = 1.0
             button.layer.borderColor = UIColor.systemGray4.cgColor
             button.backgroundColor = .clear
             button.setTitleColor(.label, for: .normal)
-            button.contentHorizontalAlignment = .left
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .medium)
-            button.contentEdgeInsets = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
         }
     }
 
     private func setupNavigationBarButtons() {
-        // Refactored to use UIAction (Modern Swift Approach)
+        // NEW: Custom Back Button for Exit Warning
+        let backAction = UIAction { [weak self] _ in
+            self?.showExitWarning()
+        }
+        let backButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), primaryAction: backAction)
+        navigationItem.leftBarButtonItem = backButton
+
         let hintAction = UIAction(image: UIImage(systemName: "lightbulb")) { [weak self] _ in
             self?.showHint()
         }
@@ -88,6 +109,25 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
         
         navigationItem.rightBarButtonItems = [flagBarItem!, hintBarItem!]
     }
+    private func showExitWarning() {
+        let alert = UIAlertController(
+            title: "Quit Quiz?",
+            message: "Your progress for this attempt will be lost. Are you sure you want to Quit?",
+            preferredStyle: .alert
+        )
+        
+        let quitAction = UIAlertAction(title: "Quit", style: .destructive) { [weak self] _ in
+            self?.countdownTimer?.invalidate()
+            self?.navigationController?.popViewController(animated: true)
+        }
+        
+        let resumeAction = UIAlertAction(title: "Resume", style: .cancel, handler: nil)
+        
+        alert.addAction(quitAction)
+        alert.addAction(resumeAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
 
     // MARK: - Quiz Logic
     func displayQuestion() {
@@ -97,9 +137,13 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
         }
 
         let question = allQuestions[currentQuestionIndex]
-        title = "Question \(currentQuestionIndex + 1)/\(allQuestions.count)"
-        updateFlagButtonAppearance()
         
+        title = "Question \(currentQuestionIndex + 1)"
+        
+        let progress = Float(currentQuestionIndex + 1) / Float(allQuestions.count)
+        progressBar.setProgress(progress, animated: true)
+        
+        updateFlagButtonAppearance()
         questionLabel.text = question.questionText
         resetAnswerButtonAppearance()
         
@@ -124,10 +168,18 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
         
         let prefixes = ["A.", "B.", "C.", "D."]
         for (index, button) in answerButtons.enumerated() {
-            button.setTitle("\(prefixes[index]) \(question.answers[index])", for: .normal)
+            let fullText = "\(prefixes[index]) \(question.answers[index])"
+            button.setTitle(fullText, for: .normal)
+            
+            // --- Alignment & Wrapping Fixes ---
+            button.contentHorizontalAlignment = .leading // 👈 Forces Left Alignment
+            button.titleLabel?.numberOfLines = 0         // 👈 Enables multi-line support
+            button.titleLabel?.lineBreakMode = .byWordWrapping
+            
+            // Forces the button to re-calculate its height for the new text
+            button.invalidateIntrinsicContentSize()
         }
     }
-
     private func resetAnswerButtonAppearance() {
         for button in answerButtons {
             button.backgroundColor = .clear
@@ -169,8 +221,8 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
             timerLabel.textColor = .systemRed
             timerLabel.font = .systemFont(ofSize: 14, weight: .bold)
         } else {
-            timerLabel.textColor = .secondaryLabel
-            timerLabel.font = .systemFont(ofSize: 14, weight: .medium)
+            timerLabel.textColor = .label
+            timerLabel.font = UIFont.preferredFont(forTextStyle: .headline)
         }
     }
 
