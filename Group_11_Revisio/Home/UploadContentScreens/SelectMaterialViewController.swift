@@ -1,10 +1,3 @@
-//
-//  SelectMaterialViewController.swift
-//  MITWPU_group11
-//
-//  Created by Mithil on 08/01/26.
-//
-
 import UIKit
 
 class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
@@ -13,13 +6,17 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
     @IBOutlet weak var tableView: UITableView!
 
     // MARK: - Properties
+    // Accepts an Array of URLs to handle multiple files
+    var filesToSave: [URL] = []
+    
     var folders = [
         "Calculus",
         "Data Structures",
         "Big Data",
         "MMA",
         "Swift Fundamentals",
-        "Computer Network"
+        "Computer Network",
+        "General Study"
     ]
     
     var selectedFolder: String?
@@ -38,87 +35,72 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
     
     // MARK: - Actions
     @IBAction func doneTap(_ sender: UIButton) {
-        guard selectedFolder != nil else {
+        guard let folder = selectedFolder else {
             let alert = UIAlertController(title: "Selection Required", message: "Please select a folder to proceed.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default))
             present(alert, animated: true)
             return
         }
+        
+        // Loop through ALL files and save them
+        if !filesToSave.isEmpty {
+            print("💾 Saving \(filesToSave.count) items to \(folder)...")
+            for url in filesToSave {
+                DataManager.shared.importFile(url: url, subject: folder)
+            }
+        }
+        
         performSegue(withIdentifier: "showGeneration", sender: nil)
     }
     
     @IBAction func addFolderTapped(_ sender: UIBarButtonItem) {
         let alert = UIAlertController(title: "New Folder", message: "Enter a name for this folder", preferredStyle: .alert)
-        
-        alert.addTextField { textField in
-            textField.placeholder = "Folder Name"
-            textField.autocapitalizationType = .words
-        }
-        
-        let createAction = UIAlertAction(title: "Create", style: .default) { [weak self] _ in
-            guard let self = self,
-                  let text = alert.textFields?.first?.text,
-                  !text.isEmpty else { return }
-            self.createNewFolder(named: text)
-        }
+        alert.addTextField { tf in tf.placeholder = "Folder Name" }
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(createAction)
+        alert.addAction(UIAlertAction(title: "Create", style: .default) { _ in
+            if let name = alert.textFields?.first?.text, !name.isEmpty {
+                self.folders.append(name)
+                DataManager.shared.createNewSubjectFolder(name: name)
+                self.tableView.reloadData()
+            }
+        })
         present(alert, animated: true)
     }
     
-    func createNewFolder(named name: String) {
-        folders.append(name)
-        let newIndexPath = IndexPath(row: folders.count - 1, section: 0)
-        tableView.insertRows(at: [newIndexPath], with: .automatic)
-        tableView.scrollToRow(at: newIndexPath, at: .bottom, animated: true)
-    }
-
-    // MARK: - Table View Data Source
+    // MARK: - Table View Methods
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return folders.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "FolderCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "FolderCell") ?? UITableViewCell(style: .default, reuseIdentifier: "FolderCell")
         
-        // 1. Content Configuration
+        // 1. ✅ RESTORED: Configure Content with Folder Icon
         var content = cell.defaultContentConfiguration()
         content.text = folders[indexPath.row]
-        content.image = UIImage(systemName: "folder")
+        content.image = UIImage(systemName: "folder") // The Folder Icon
         content.imageProperties.tintColor = .systemBlue
         cell.contentConfiguration = content
         
-        // 2. Custom Selection Icon Logic [UPDATED]
-        let isSelected = (folders[indexPath.row] == selectedFolder)
+        // 2. Configure Selection (Checkmark vs Circle)
+        let folderName = folders[indexPath.row]
+        let isSelected = (folderName == selectedFolder)
         
-        // Choose the icon based on selection state
         let iconName = isSelected ? "checkmark.circle.fill" : "circle"
         let iconColor = isSelected ? UIColor.systemBlue : UIColor.systemGray3
         
-        // Create a custom Image View for the accessory
-        let iconImage = UIImage(systemName: iconName)
-        let iconImageView = UIImageView(image: iconImage)
+        let iconImageView = UIImageView(image: UIImage(systemName: iconName))
         iconImageView.tintColor = iconColor
-        
-        // Assign to accessoryView
         cell.accessoryView = iconImageView
-        cell.accessoryType = .none // Ensure standard type doesn't override it
         
         return cell
     }
     
-    // MARK: - Table View Delegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
-        // Update selection
         selectedFolder = folders[indexPath.row]
-        
-        // Reload to update the circles/ticks
         tableView.reloadData()
-        
-        print("Selected: \(selectedFolder ?? "None")")
     }
 
     // MARK: - Navigation
@@ -126,8 +108,9 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
         if segue.identifier == "showGeneration" {
             if let destVC = segue.destination as? GenerateHomeViewController {
                 if let folder = selectedFolder {
-                    destVC.inputSourceData = [folder]
                     destVC.contextSubjectTitle = folder
+                    // Pass the list of files to generation screen if needed
+                    destVC.inputSourceData = filesToSave
                 }
             }
         }

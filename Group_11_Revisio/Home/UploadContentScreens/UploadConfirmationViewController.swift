@@ -3,31 +3,23 @@ import UniformTypeIdentifiers
 
 class UploadConfirmationViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
-    // MARK: - Properties
-    var uploadedContentName: String?
-    var parentSubjectName: String?
-    
-    var fileURLs: [URL] = []
-    
-    // MARK: - IBOutlets
+    // MARK: - Outlets
     @IBOutlet weak var UploadedContent: UITableView!
     @IBOutlet weak var doneButton: UIButton!
+    @IBOutlet weak var addButton: UIButton!
     
-    @IBOutlet weak var addButton: AnyObject!
+    // MARK: - Properties
+    var incomingDataPath: String?
+    var filesToSave: [URL] = []
     
     private let confirmationCellID = "ConfirmationContentCell"
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        if let name = uploadedContentName {
-            let dummyURL = URL(fileURLWithPath: name)
-            fileURLs = [dummyURL]
-        }
-        
         setupUI()
         setupTable()
+        processIncomingData()
     }
     
     // MARK: - UI Setup
@@ -39,9 +31,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
             btn.clipsToBounds = true
         }
         
-        if let btn = addButton as? UIButton {
-            btn.layer.cornerRadius = 12
-        }
+        
     }
     
     private func setupTable() {
@@ -53,14 +43,47 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         table.backgroundColor = .clear
     }
     
-    // MARK: - Actions
-    
-    @IBAction func DoneTapped(_ sender: Any) {
-        let allFileNames = fileURLs.map { $0.lastPathComponent }
-        performSegue(withIdentifier: "showGenerationScreenHome", sender: allFileNames)
+    // MARK: - Data Processing
+    func processIncomingData() {
+        guard let dataString = incomingDataPath else { return }
+        
+        // 1. Check if it is a real file on disk
+        if FileManager.default.fileExists(atPath: dataString) {
+            let url = URL(fileURLWithPath: dataString)
+            filesToSave.append(url)
+        } else {
+            // 2. Otherwise, treat as Text or Link -> Create Temp File
+            processTextOrLinkInput(text: dataString)
+        }
+        UploadedContent.reloadData()
     }
     
-    // MARK: - Add Button Logic (Action Sheet)
+    private func processTextOrLinkInput(text: String) {
+        let tempDir = FileManager.default.temporaryDirectory
+        let isLink = text.lowercased().hasPrefix("http") || text.lowercased().hasPrefix("www")
+        
+        // Name it specifically so your detection logic works later
+        // e.g. "https_google_com.txt" or "My_Note.txt"
+        let safeName = text.prefix(20).replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: ":", with: "")
+        let fileName = isLink ? "Link_\(safeName).txt" : "Note_\(safeName).txt"
+        
+        let tempFileURL = tempDir.appendingPathComponent(fileName)
+        
+        do {
+            try text.write(to: tempFileURL, atomically: true, encoding: .utf8)
+            filesToSave.append(tempFileURL)
+            UploadedContent.reloadData()
+        } catch {
+            print("❌ Failed to create temp file: \(error)")
+        }
+    }
+    
+    // MARK: - Actions
+    @IBAction func DoneTapped(_ sender: Any) {
+        // Go to Select Material screen
+        performSegue(withIdentifier: "showSelectMaterial", sender: nil)
+    }
+    
     @IBAction func didTapAddButton(_ sender: Any) {
         let alert = UIAlertController(title: "Add Material", message: "Choose a source", preferredStyle: .actionSheet)
         
@@ -96,22 +119,9 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         present(alert, animated: true)
     }
     
-    // MARK: - Processing Logic
-    private func processNewUpload(name: String) {
-        let newURL = URL(fileURLWithPath: name)
-        fileURLs.append(newURL)
-        JSONDatabaseManager.shared.addUploadedFile(name: name)
-        UploadedContent.reloadData()
-        
-        if !fileURLs.isEmpty {
-            let indexPath = IndexPath(row: fileURLs.count - 1, section: 0)
-            UploadedContent.scrollToRow(at: indexPath, at: .bottom, animated: true)
-        }
-    }
-    
     // MARK: - Helper Methods
     private func openDocumentPicker() {
-        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.pdf, .plainText], asCopy: true)
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.pdf, .plainText, .image], asCopy: true)
         picker.delegate = self
         present(picker, animated: true)
     }
@@ -129,7 +139,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         
         alert.addAction(UIAlertAction(title: "Add", style: .default) { _ in
             if let text = alert.textFields?.first?.text, !text.isEmpty {
-                self.processNewUpload(name: text)
+                self.processTextOrLinkInput(text: text)
             }
         })
         
@@ -137,30 +147,33 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         present(alert, animated: true)
     }
     
-    // MARK: - UITableView Data Source (Card Style)
-    
+    // MARK: - UITableView Data Source (Your Custom Card Style)
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return fileURLs.count
+        return filesToSave.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: confirmationCellID, for: indexPath)
-        let url = fileURLs[indexPath.row]
+        let url = filesToSave[indexPath.row]
         let fileName = url.lastPathComponent
         
         // --- 1. DETERMINE FILE TYPE ---
         let lowerName = fileName.lowercased()
-        var detectedType = "text" // Default
+        var detectedType = "text"
         
         if lowerName.hasSuffix("pdf") {
             detectedType = "pdf document"
-        } else if lowerName.contains("http") || lowerName.contains("www.") {
+        }
+        // Logic modified slightly to catch the temp files we created (Link_...)
+        else if lowerName.contains("http") || lowerName.contains("www.") || lowerName.contains("link_") {
             detectedType = "web link"
-        } else if lowerName == "media asset" || lowerName.hasSuffix("jpg") || lowerName.hasSuffix("png") {
+        }
+        // Logic to catch Images
+        else if lowerName == "media asset" || lowerName.hasSuffix("jpg") || lowerName.hasSuffix("png") || lowerName.contains("image_") {
             detectedType = "photo/video"
         }
         
-        // --- 2. RESTORED SWITCH LOGIC ---
+        // --- 2. RESTORED SWITCH LOGIC (Your Colors/Icons) ---
         let symbolName: String
         let tintColor: UIColor
         
@@ -179,7 +192,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
             tintColor = .systemIndigo
         }
         
-        // --- 3. CARD STYLING ---
+        // --- 3. CARD STYLING (Your Exact Layout) ---
         cell.backgroundColor = .clear
         cell.contentView.backgroundColor = .clear
         cell.selectionStyle = .none
@@ -213,8 +226,8 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         
         // Icon View
         let icon = UIImageView()
-        icon.image = UIImage(systemName: symbolName) // Using the symbol from switch
-        icon.tintColor = tintColor // Using the color from switch
+        icon.image = UIImage(systemName: symbolName)
+        icon.tintColor = tintColor
         icon.contentMode = .scaleAspectFit
         
         NSLayoutConstraint.activate([
@@ -222,9 +235,14 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
             icon.heightAnchor.constraint(equalToConstant: 24)
         ])
         
-        // Label
+        // Label (Clean up display name if it's a temp file)
         let label = UILabel()
-        label.text = fileName
+        var displayName = fileName
+        if displayName.starts(with: "Link_") { displayName = "Web Link" }
+        if displayName.starts(with: "Note_") { displayName = "Text Note" }
+        if displayName.starts(with: "Image_") { displayName = "Media Asset" }
+        
+        label.text = displayName
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textColor = .label
         label.numberOfLines = 1
@@ -245,29 +263,42 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "showGenerationScreenHome" {
-            if let destinationVC = segue.destination as? GenerateHomeViewController {
-                if let nameArray = sender as? [String] {
-                    destinationVC.inputSourceData = nameArray
-                    destinationVC.contextSubjectTitle = self.parentSubjectName
-                }
+        if segue.identifier == "showSelectMaterial" {
+            if let destVC = segue.destination as? SelectMaterialViewController {
+                // Pass the files safely to the next screen
+                destVC.filesToSave = self.filesToSave
             }
         }
     }
 }
 
-// MARK: - Picker Delegates
+// MARK: - Delegates
 extension UploadConfirmationViewController: UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         if let url = urls.first {
-            processNewUpload(name: url.lastPathComponent)
+            // Copy to temp to ensure we have access rights later
+            let tempDir = FileManager.default.temporaryDirectory
+            let destURL = tempDir.appendingPathComponent(url.lastPathComponent)
+            try? FileManager.default.copyItem(at: url, to: destURL)
+            
+            filesToSave.append(destURL)
+            UploadedContent.reloadData()
         }
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true) {
-            self.processNewUpload(name: "Media Asset")
+            guard let image = info[.originalImage] as? UIImage,
+                  let data = image.jpegData(compressionQuality: 0.8) else { return }
+            
+            // Save to temp file so it flows through the same logic
+            let filename = "Image_\(Int(Date().timeIntervalSince1970)).jpg"
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+            
+            try? data.write(to: tempURL)
+            self.filesToSave.append(tempURL)
+            self.UploadedContent.reloadData()
         }
     }
 }

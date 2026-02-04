@@ -17,7 +17,7 @@ enum HomeSection: Int, CaseIterable {
     case hero = 0
     case uploadContent
     case continueLearning
-    case sideQuests // 🆕 Placed right after Hero
+    case sideQuests // Placed right after Hero
     case quickGames
 }
 
@@ -26,7 +26,7 @@ let hiAlexCellID = "HiAlexCellID"
 let uploadContentCellID = "UploadContentCellID"
 let continueLearningCellID = "ContinueLearningCellID"
 let quickGamesCellID = "QuickGamesCellID"
-let sideQuestsCellID = "SideQuestsCollectionViewCell" // 🆕
+let sideQuestsCellID = "SideQuestsCollectionViewCell"
 let headerID = "HeaderID"
 
 // Segue Identifiers
@@ -38,7 +38,7 @@ let showNotesDetailSegueID = "ShowNotesDetail"
 let showQuizStartSegueID = "ShowQuizStart"
 let showSubjectDetailSegueID = "ShowSubjectDetail"
 let showDailyChallengeSegueID = "ShowDailyChallenge"
-let showFlashcardsSegueID = "ShowFlashcardsSegue" // 🆕
+let showFlashcardsSegueID = "ShowFlashcardsSegue"
 
 protocol QuickGamesCellDelegate: AnyObject {
     func didSelectQuickGame(gameTitle: String)
@@ -52,7 +52,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     var learningItems: [ContentItem] = []
     var gameItems: [GameItem] = []
     
-    // 🆕 Side Quests Data
+    // Side Quests Data
     var sideQuests: [SideQuest] = []
     var completedQuests: [SideQuest] = [] // For History
     
@@ -114,7 +114,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         learningItems = [
             ContentItem(title: "Physics Ch 4 Quiz", iconName: "checkmark.circle.fill", itemType: "Quiz"),
             ContentItem(title: "Bio Definitions", iconName: "rectangle.stack", itemType: "Flashcard"),
-            ContentItem(title: "Area under functions", iconName: "book.fill", itemType: "Topic"), // 🆕
+            ContentItem(title: "Area under functions", iconName: "book.fill", itemType: "Topic"),
             ContentItem(title: "History Notes", iconName: "doc.text.fill", itemType: "Notes")
         ]
         
@@ -144,7 +144,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         collectionView.register(UINib(nibName: "ContinueLearningCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: continueLearningCellID)
         collectionView.register(UINib(nibName: "QuickGamesCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: quickGamesCellID)
         
-        // 🆕 Register Side Quests Cell
+        // Register Side Quests Cell
         collectionView.register(UINib(nibName: "SideQuestsCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: sideQuestsCellID)
         
         collectionView.register(UINib(nibName: "HeaderViewCollectionReusableView", bundle: nil),
@@ -203,10 +203,11 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // MARK: - Navigation Preparation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
+        // ✅ FIXED: Correctly passes File Path to UploadConfirmationViewController
         if segue.identifier == showUploadConfirmationSegueID {
             if let destinationVC = segue.destination as? UploadConfirmationViewController,
-               let filename = sender as? String {
-                destinationVC.uploadedContentName = filename
+               let filePath = sender as? String {
+                destinationVC.incomingDataPath = filePath
             }
         }
         
@@ -234,7 +235,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             }
         }
         
-        // 🆕 Flashcards Segue
+        // Flashcards Segue
         if segue.identifier == showFlashcardsSegueID {
             /* // Uncomment this once FlashcardsViewController is created
              if let destVC = segue.destination as? FlashcardsViewController,
@@ -268,7 +269,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .sideQuests:
-                // 🆕 Dynamic height for Side Quests
+                // Dynamic height for Side Quests
                 let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(300))
                 let item = NSCollectionLayoutItem(layoutSize: size)
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: size, subitems: [item])
@@ -337,7 +338,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             return cell
             
         case .sideQuests:
-            // 🆕 Configure Side Quests
+            // Configure Side Quests
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: sideQuestsCellID, for: indexPath) as! SideQuestsCollectionViewCell
             cell.configure(with: self.sideQuests)
             cell.delegate = self
@@ -370,7 +371,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerID, for: indexPath) as! HeaderViewCollectionReusableView
         let sectionType = HomeSection.allCases[indexPath.section]
         
-        // 🆕 Header for Side Quests
+        // Header for Side Quests
         if sectionType == .sideQuests {
             headerView.isHidden = false
             headerView.configureHeader(with: "Daily Side Quests", showViewAll: false, section: indexPath.section)
@@ -461,7 +462,7 @@ extension HomeViewController: ContinueLearningCellDelegate {
         if item.itemType == "Quiz" {
             performSegue(withIdentifier: showQuizStartSegueID, sender: topic)
         } else if item.itemType == "Flashcard" {
-            // 🆕 Flashcard Segue
+            // Flashcard Segue
             performSegue(withIdentifier: showFlashcardsSegueID, sender: topic)
         } else {
             performSegue(withIdentifier: showNotesDetailSegueID, sender: topic)
@@ -477,16 +478,18 @@ extension HomeViewController: QuickGamesCellDelegate {
     }
 }
 
-// MARK: - Upload Delegate
+// MARK: - Upload Delegate & Document Picker
 extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
-    func navigateToConfirmation(with contentName: String) {
-        JSONDatabaseManager.shared.addUploadedFile(name: contentName)
-        performSegue(withIdentifier: showUploadConfirmationSegueID, sender: contentName)
+    // ✅ FIXED: We only pass the path String, no DataManager call here.
+    func navigateToConfirmation(with contentPath: String) {
+        performSegue(withIdentifier: showUploadConfirmationSegueID, sender: contentPath)
     }
     
     func uploadCellDidTapDocument(_ cell: UploadContentCollectionViewCell) {
-        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.pdf, .plainText], asCopy: true)
+        // Define types broadly to allow standard documents
+        let types: [UTType] = [.pdf, .text, .image, .data, .content]
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: true)
         picker.delegate = self
         present(picker, animated: true)
     }
@@ -511,6 +514,7 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         alert.addTextField { $0.placeholder = placeholder }
         alert.addAction(UIAlertAction(title: "Confirm", style: .default) { _ in
             if let text = alert.textFields?.first?.text, !text.isEmpty {
+                // For text or links, we pass the text itself as the content path/data
                 self.navigateToConfirmation(with: text)
             }
         })
@@ -518,13 +522,16 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         present(alert, animated: true)
     }
     
+    // ✅ FIXED: Get the full path (url.path) instead of just the name
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
-        navigateToConfirmation(with: url.lastPathComponent)
+        navigateToConfirmation(with: url.path)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true) {
+            // For now, passing a placeholder.
+            // Ideally, save the image to a temp file and pass that path if you want to support images fully.
             self.navigateToConfirmation(with: "Media Asset")
         }
     }

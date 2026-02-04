@@ -1,5 +1,6 @@
 import Foundation
 
+// MARK: - Models (Ensure Source and Topic are defined in your project)
 enum StudyItem: Codable {
     case topic(Topic)
     case source(Source)
@@ -27,6 +28,51 @@ class DataManager {
         }
     }
     
+    // MARK: - ✅ NEW: File Import Logic
+    // Call this function from your UploadConfirmationViewController
+    func importFile(url: URL, subject: String) {
+        let fileManager = FileManager.default
+        // Get the app's Documents directory
+        let docDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        // Determine the final destination path
+        let destURL = docDir.appendingPathComponent(url.lastPathComponent)
+        
+        do {
+            // 1. Clean up if a file with the same name already exists
+            if fileManager.fileExists(atPath: destURL.path) {
+                try fileManager.removeItem(at: destURL)
+            }
+            
+            // 2. Securely copy the file (Critical for iOS Security Scopes)
+            let accessing = url.startAccessingSecurityScopedResource()
+            try fileManager.copyItem(at: url, to: destURL)
+            if accessing { url.stopAccessingSecurityScopedResource() }
+            
+            print("✅ File physically copied to: \(destURL.path)")
+            
+            // 3. Calculate file size for the Source model
+            let attr = try? fileManager.attributesOfItem(atPath: destURL.path)
+            let fileSize = attr?[.size] as? Int64 ?? 0
+            let sizeString = ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file)
+            
+            // 4. Create the Source object
+            // This matches the structure used in your setupDefaultData
+            let newSource = Source(
+                name: url.lastPathComponent,
+                fileType: url.pathExtension.uppercased(),
+                size: sizeString
+            )
+            
+            // 5. Save using your existing logic
+            saveContent(subject: subject, content: newSource)
+            
+        } catch {
+            print("❌ Error importing file: \(error)")
+        }
+    }
+    
+    // MARK: - Existing Logic (Untouched)
+    
     func saveToDisk() {
         do {
             let encoder = JSONEncoder()
@@ -44,7 +90,6 @@ class DataManager {
             let data = try Data(contentsOf: fileURL)
             savedMaterials = try JSONDecoder().decode([String: [String: [StudyItem]]].self, from: data)
             
-           
             print(" LOADED FOLDERS FROM DISK: \(savedMaterials.keys)")
         } catch {
             print("Error loading: \(error)")
@@ -240,6 +285,7 @@ class DataManager {
         
         migrateHardcodedQuizzes()
     }
+    
     func getDetailedContent(for subjectName: String, topicName: String) -> String {
         guard let subjectData = savedMaterials[subjectName],
               let materials = subjectData[DataManager.materialsKey] else {
@@ -277,6 +323,7 @@ class DataManager {
         savedMaterials[subject]?[DataManager.materialsKey] = materials
         saveToDisk()
     }
+    
     func migrateHardcodedQuizzes() {
         for (sourceName, questions) in QuizManager.quizDataBySource {
             let contentString = questions.map { q in
@@ -296,6 +343,7 @@ class DataManager {
             self.addTopic(to: "General Study", topic: newTopic)
         }
     }
+    
     func addTopic(to subjectName: String, topic: Topic) {
         if savedMaterials[subjectName] == nil {
             savedMaterials[subjectName] = [DataManager.materialsKey: [], DataManager.sourcesKey: []]
@@ -318,6 +366,7 @@ class DataManager {
             NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
         }
     }
+    
     func renameMaterial(subjectName: String, item: Any, newName: String) {
         guard var subjectDict = savedMaterials[subjectName] else { return }
         
@@ -351,6 +400,7 @@ class DataManager {
             }
         }
     }
+    
     func moveItems(items: [Any], from sourceSubject: String, to destinationSubject: String) {
         guard sourceSubject != destinationSubject else { return }
         
@@ -372,6 +422,7 @@ class DataManager {
         saveToDisk()
         NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
     }
+    
     func getTopic(subjectName: String, topicName: String) -> Topic? {
         guard let materials = savedMaterials[subjectName]?[DataManager.materialsKey] else { return nil }
         for item in materials {
