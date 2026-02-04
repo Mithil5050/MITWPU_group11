@@ -1,5 +1,31 @@
 import UIKit
 
+// MARK: - 1. Missing Definitions Fixed Here
+// This struct was missing, causing the "Cannot find type" error.
+struct StudyContent {
+    var filename: String
+}
+
+// This Enum was missing, causing errors with .quiz, .flashcards, etc.
+//enum GenerationType: String, CustomStringConvertible {
+//    case none
+//    case quiz
+//    case flashcards
+//    case notes
+//    case cheatsheet
+//    
+//    var description: String {
+//        switch self {
+//        case .none: return "Content"
+//        case .quiz: return "Quiz"
+//        case .flashcards: return "Flashcards"
+//        case .notes: return "Notes"
+//        case .cheatsheet: return "Cheatsheet"
+//        }
+//    }
+//}
+
+// MARK: - Custom Card View
 @IBDesignable
 class TappableCardView: UIControl {
     
@@ -83,6 +109,7 @@ class TappableCardView: UIControl {
     }
 }
 
+// MARK: - View Controller
 class GenerateHomeViewController: UIViewController {
 
     var selectedMaterialType: GenerationType = .none
@@ -369,9 +396,11 @@ class GenerateHomeViewController: UIViewController {
             parentSubjectName: self.contextSubjectTitle ?? "General Study"
         )
         
+        // Use DataManager to save the new topic
         DataManager.shared.addTopic(to: self.contextSubjectTitle ?? "General Study", topic: newTopic)
         
         if selectedMaterialType == .quiz {
+            // We pass a tuple to the next screen. Ensure next screen accepts this.
             let payload = (topic: newTopic, sourceName: topicName)
             performSegue(withIdentifier: "HomeToQuizInstruction", sender: payload)
             
@@ -392,9 +421,15 @@ class GenerateHomeViewController: UIViewController {
     }
 
     private func extractName(from item: Any) -> String {
+        // Handle StudyContent (Fixes error)
         if let content = item as? StudyContent { return content.filename }
+        // Handle standard Topic
         if let topic = item as? Topic { return topic.name }
+        // Handle Raw String
         if let str = item as? String { return str }
+        // Handle URLs (Fixes compatibility with UploadConfirmation)
+        if let url = item as? URL { return url.lastPathComponent }
+        
         return "General Knowledge"
     }
 
@@ -431,6 +466,7 @@ class GenerateHomeViewController: UIViewController {
     }
 }
 
+// Helper Extension
 extension UIColor {
     convenience init(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
