@@ -26,7 +26,8 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
     }
 
     func createHeaderView() -> UIView {
-        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 160))
+        // 1. Create container without a fixed height initially
+        let headerView = UIView()
         
         let container = UIView()
         container.backgroundColor = iconColor.withAlphaComponent(0.12)
@@ -44,23 +45,20 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
         
         let titleLabel = UILabel()
         titleLabel.text = materialName
-        titleLabel.font = .systemFont(ofSize: 24, weight: .bold)
+        titleLabel.font = .systemFont(ofSize: 22, weight: .bold) // Slightly smaller font for long names
         titleLabel.textColor = .label
         titleLabel.textAlignment = .center
-        titleLabel.numberOfLines = 2
+        
+        // ✅ KEY CHANGE: Set to 0 for unlimited lines (word wrap)
+        titleLabel.numberOfLines = 0
+        titleLabel.lineBreakMode = .byWordWrapping
+        
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(titleLabel)
         
-        let subtitleLabel = UILabel()
-        subtitleLabel.text = materialType
-        subtitleLabel.font = .preferredFont(forTextStyle: .caption1)
-        subtitleLabel.textColor = .secondaryLabel
-        subtitleLabel.textAlignment = .center
-        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        headerView.addSubview(subtitleLabel)
-        
+        // Constraints
         NSLayoutConstraint.activate([
-            container.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8),
+            container.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 20),
             container.centerXAnchor.constraint(equalTo: headerView.centerXAnchor),
             container.widthAnchor.constraint(equalToConstant: 72),
             container.heightAnchor.constraint(equalToConstant: 72),
@@ -68,13 +66,21 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
             imageView.centerXAnchor.constraint(equalTo: container.centerXAnchor),
             imageView.centerYAnchor.constraint(equalTo: container.centerYAnchor),
             
-            titleLabel.topAnchor.constraint(equalTo: container.bottomAnchor, constant: 12),
-            titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 30),
-            titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -30),
+            titleLabel.topAnchor.constraint(equalTo: container.bottomAnchor, constant: 16),
+            titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 20),
+            titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -20),
             
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 2),
-            subtitleLabel.centerXAnchor.constraint(equalTo: headerView.centerXAnchor)
+            // ✅ KEY CHANGE: Pin bottom of label to bottom of headerView
+            titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -20)
         ])
+        
+        // 2. Calculate the required height for the dynamic text
+        let targetSize = CGSize(width: view.frame.width, height: UIView.layoutFittingCompressedSize.height)
+        let estimatedSize = headerView.systemLayoutSizeFitting(targetSize,
+                                                              withHorizontalFittingPriority: .required,
+                                                              verticalFittingPriority: .fittingSizeLevel)
+        
+        headerView.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: estimatedSize.height)
         
         return headerView
     }
