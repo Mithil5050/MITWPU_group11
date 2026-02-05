@@ -105,35 +105,48 @@ class CheatsheetViewController: UIViewController {
         if isEditingMode {
             // User clicked the Checkmark (Done) on Nav Bar
             saveChanges()
-            // ❌ Alert REMOVED from here per your request
         }
         
         isEditingMode.toggle()
         updateUIForState()
     }
     
-    // MARK: - ✅ NEW: Bottom Save Button Action
-    // Connect this to the button on your View Controller in Storyboard!
+    // MARK: - Bottom Save Button Action
     @IBAction func saveButtonTapped(_ sender: Any) {
         // 1. Save the data
         saveChanges()
         
-        // 2. Show the confirmation alert
-        showSaveConfirmation()
-        
-        // 3. Optional: Exit editing mode and dismiss keyboard
+        // 2. Optional: Exit editing mode and dismiss keyboard
         if isEditingMode {
             isEditingMode = false
             updateUIForState()
         }
         view.endEditing(true)
+        
+        // 3. Show the confirmation alert (Navigate home on OK)
+        showSaveConfirmation()
     }
     
     // Alert Function
     func showSaveConfirmation() {
         let folderName = parentSubjectName ?? "Files"
         let alert = UIAlertController(title: "Saved!", message: "Material has been successfully saved to '\(folderName)' in Study tab.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        
+        // ✅ MODIFIED: Navigate to Home Screen upon tapping OK
+        let okAction = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            
+            // Check if we are in a navigation stack
+            if let nav = self.navigationController {
+                // Pop to the root view controller (Home Screen)
+                nav.popToRootViewController(animated: true)
+            } else {
+                // If presented modally, dismiss it
+                self.dismiss(animated: true, completion: nil)
+            }
+        }
+        
+        alert.addAction(okAction)
         present(alert, animated: true, completion: nil)
     }
 

@@ -114,11 +114,17 @@ class QuizStartViewController: UIViewController {
             preferredStyle: .alert
         )
         
-        let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+        // ✅ MODIFIED: Navigate to Home Screen upon tapping OK
+        let okAction = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            
+            // Check if we are in a navigation stack
             if let nav = self.navigationController {
-                nav.popViewController(animated: true)
+                // Pop to the root view controller (Home Screen)
+                nav.popToRootViewController(animated: true)
             } else {
-                self.dismiss(animated: true)
+                // If presented modally, dismiss it
+                self.dismiss(animated: true, completion: nil)
             }
         }
         alert.addAction(okAction)

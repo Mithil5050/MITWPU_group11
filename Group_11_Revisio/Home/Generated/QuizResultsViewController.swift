@@ -20,7 +20,7 @@ class QuizResultsViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet weak var scoreLabel: UILabel!
-    @IBOutlet weak var resultImageView: UIImageView! // ✅ NEW: Connect this to your Image View
+    @IBOutlet weak var resultImageView: UIImageView!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var retakeButton: UIButton!
     @IBOutlet weak var homeButton: UIButton!
@@ -37,17 +37,15 @@ class QuizResultsViewController: UIViewController {
         // 1. Set Score Text
         scoreLabel.text = "You Scored \(result.finalScore) out of \(result.totalQuestions)."
         
-        // 2. ✅ NEW: Handle Text & Image based on Score
+        // 2. Handle Text & Image based on Score
         let percentage = Double(result.finalScore) / Double(result.totalQuestions)
         
         if percentage < 0.5 {
-            // Low Score (< 50%)
             headerLabel.text = "Better luck next time!"
-            resultImageView.image = UIImage(named: "BadMarks") // Show "Bad" Image
+            resultImageView.image = UIImage(named: "BadMarks")
         } else {
-            // High Score (>= 50%)
             headerLabel.text = "Congratulations!"
-            resultImageView.image = UIImage(named: "GoodMarks") // Show "Good" Image
+            resultImageView.image = UIImage(named: "GoodMarks")
         }
         
         // 3. Configure TableView
@@ -88,18 +86,34 @@ class QuizResultsViewController: UIViewController {
     @IBAction func homeButtonTapped(_ sender: UIButton) {
         if let topic = topicToSave, let subject = parentFolder {
             // Save logic for normal quizzes
-             let updatedTopic = Topic(name: topic.name, lastAccessed: "Just now", materialType: "Quiz", largeContentBody: topic.largeContentBody, parentSubjectName: subject, notesContent: topic.notesContent, cheatsheetContent: topic.cheatsheetContent)
+            let updatedTopic = Topic(name: topic.name, lastAccessed: "Just now", materialType: "Quiz", largeContentBody: topic.largeContentBody, parentSubjectName: subject, notesContent: topic.notesContent, cheatsheetContent: topic.cheatsheetContent)
             DataManager.shared.addTopic(to: subject, topic: updatedTopic)
             
             let alert = UIAlertController(title: "Saved!", message: "Quiz saved to '\(parentFolder ?? "Study")'.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                self.navigationController?.popToRootViewController(animated: true)
-            })
+            
+            // ✅ MODIFIED: Navigate to Home Screen upon tapping OK
+            let okAction = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+                guard let self = self else { return }
+                
+                // Check if we are in a navigation stack
+                if let nav = self.navigationController {
+                    // Pop to the root view controller (Home Screen)
+                    nav.popToRootViewController(animated: true)
+                } else {
+                    // If presented modally, dismiss it
+                    self.dismiss(animated: true, completion: nil)
+                }
+            }
+            alert.addAction(okAction)
             present(alert, animated: true)
             
         } else {
-            // Direct exit for Games (Word Fill)
-            self.navigationController?.popToRootViewController(animated: true)
+            // Direct exit for Games (Word Fill) - already behaves correctly but ensuring consistency
+            if let nav = self.navigationController {
+                nav.popToRootViewController(animated: true)
+            } else {
+                self.dismiss(animated: true, completion: nil)
+            }
         }
     }
     
