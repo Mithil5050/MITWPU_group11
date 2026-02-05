@@ -117,10 +117,16 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     func applyFilterAndReload() {
         let contentToFilter = currentContent
         
-        if currentFilterType == "All" {
+        // If we are in the "Sources" segment, we don't apply filters (show all sources)
+        if materialsSegmentedControl.selectedSegmentIndex == 1 {
             filteredContent = contentToFilter
-        } else {
-            // Only show items that match the selected filter (Quiz, Notes, etc.)
+        }
+        // Otherwise, if "All" is selected in Materials
+        else if currentFilterType == "All" {
+            filteredContent = contentToFilter
+        }
+        // Otherwise, filter by the specific material type (Quiz, Flashcards, etc.)
+        else {
             filteredContent = contentToFilter.filter { item in
                 guard let studyItem = item as? StudyItem else { return false }
                 
@@ -128,7 +134,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                 case .topic(let topic):
                     return topic.materialType == currentFilterType
                 case .source:
-                    return false
+                    return false // Sources don't have a "MaterialType"
                 }
             }
         }
@@ -518,9 +524,20 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     @objc func deleteAllContent() { print("Deleting all content...") }
     
     // MARK: - Helpers & Segues
-    @IBAction func segmentControlTapped(_ sender: Any) {
+    @IBAction func segmentControlTapped(_ sender: UISegmentedControl) {
         if let subject = selectedSubject {
-            loadContentForSubject(subject, segmentIndex: (sender as AnyObject).selectedSegmentIndex)
+            // Load data based on the selected segment
+            loadContentForSubject(subject, segmentIndex: sender.selectedSegmentIndex)
+        }
+        
+        // HIG: Disable the filter button if we are in the "Sources" tab (index 1)
+        if sender.selectedSegmentIndex == 0 {
+            filterButton.isEnabled = true
+            filterButton.tintColor = .label // Normal color
+        } else {
+            filterButton.isEnabled = false
+            filterButton.tintColor = .systemGray // Visual cue that it's inactive
+            self.currentFilterType = "All" // Reset filter type for safety
         }
     }
     
