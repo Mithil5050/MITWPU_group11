@@ -44,7 +44,7 @@
                         </userDefinedRuntimeAttributes>
                     </view>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Material Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lbl-title">
-                        <rect key="frame" x="76" y="18" width="278" height="28"/>
+                        <rect key="frame" x="76" y="18" width="236" height="28"/>
                         <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
@@ -77,10 +77,10 @@
                 <constraints>
                     <constraint firstItem="lbl-sub" firstAttribute="top" secondItem="lbl-title" secondAttribute="bottom" constant="4" id="AVB-hO-zLs"/>
                     <constraint firstItem="abc-container" firstAttribute="bottom" secondItem="lbl-sub" secondAttribute="bottom" constant="-4" id="BDG-Kw-eU5"/>
+                    <constraint firstItem="Kyx-sc-VSL" firstAttribute="leading" secondItem="lbl-title" secondAttribute="trailing" constant="12" id="EQ7-B3-fYn"/>
                     <constraint firstItem="abc-container" firstAttribute="top" secondItem="lbl-title" secondAttribute="top" id="Nsh-Wb-Yjv"/>
                     <constraint firstItem="lbl-title" firstAttribute="leadingMargin" secondItem="abc-container" secondAttribute="trailing" constant="20" id="Sgj-fd-Y1r"/>
                     <constraint firstItem="abc-container" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="VEq-ct-ytw"/>
-                    <constraint firstAttribute="trailing" secondItem="lbl-title" secondAttribute="trailing" constant="16" id="Xb7-X0-pfa"/>
                     <constraint firstItem="Kyx-sc-VSL" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="exx-6b-kjL"/>
                     <constraint firstAttribute="trailing" secondItem="lbl-sub" secondAttribute="trailing" constant="16" id="eyD-0Z-A26"/>
                     <constraint firstAttribute="trailing" secondItem="Kyx-sc-VSL" secondAttribute="trailing" constant="16" id="no7-XW-x4z"/>

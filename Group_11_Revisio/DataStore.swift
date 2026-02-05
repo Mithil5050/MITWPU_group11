@@ -27,6 +27,26 @@ class DataManager {
             saveToDisk()
         }
     }
+    // MARK: - Fetch Helper
+        func getAllRecentTopics() -> [Topic] {
+            var allTopics: [Topic] = []
+            
+            // Loop through every subject folder
+            for subjectData in savedMaterials.values {
+                // Get the list of materials in that folder
+                if let materials = subjectData[DataManager.materialsKey] {
+                    for item in materials {
+                        // If the item is a Topic, add it to our list
+                        if case .topic(let topic) = item {
+                            allTopics.append(topic)
+                        }
+                    }
+                }
+            }
+            
+            // Return reversed so the newest (appended last) appear first
+            return allTopics.reversed()
+        }
     
     // MARK: - ✅ NEW: File Import Logic
     // Call this function from your UploadConfirmationViewController
