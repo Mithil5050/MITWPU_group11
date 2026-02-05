@@ -14,6 +14,7 @@ class AddFlashcardsViewController: UIViewController {
     
     @IBOutlet weak var definitionsTextField: UITextField!
     
+  //  @IBOutlet weak var termLabel: UILabel!
     override func viewDidLoad() {
         super.viewDidLoad()
         
