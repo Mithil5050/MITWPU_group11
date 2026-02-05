@@ -119,8 +119,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         ]
         
         gameItems = [
-            GameItem(title: "", imageAsset: "Gemini_Generated_Image_p66f9tp66f9tp66f-removebg-preview"),
-            GameItem(title: "", imageAsset: "Gemini_Generated_Image_y6xx8iy6xx8iy6xx-removebg-preview")
+            GameItem(title: "Connections", imageAsset: "puzzlepiece.fill"),
+            GameItem(title: "Word Fill", imageAsset: "character.cursor.ibeam")
         ]
         
         // Initial Side Quests (No Difficulty)
@@ -203,7 +203,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // MARK: - Navigation Preparation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        // ✅ FIXED: Correctly passes File Path to UploadConfirmationViewController
         if segue.identifier == showUploadConfirmationSegueID {
             if let destinationVC = segue.destination as? UploadConfirmationViewController,
                let filePath = sender as? String {
@@ -235,14 +234,11 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             }
         }
         
-        // Flashcards Segue
         if segue.identifier == showFlashcardsSegueID {
-            /* // Uncomment this once FlashcardsViewController is created
-             if let destVC = segue.destination as? FlashcardsViewController,
+             if let destVC = segue.destination as? FlashcardViewController,
                 let topic = sender as? Topic {
-                 destVC.topic = topic
+                  destVC.currentTopic = topic
              }
-             */
         }
     }
     
@@ -269,7 +265,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .sideQuests:
-                // Dynamic height for Side Quests
                 let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(300))
                 let item = NSCollectionLayoutItem(layoutSize: size)
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: size, subitems: [item])
@@ -287,7 +282,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .continueLearning:
-                // Height based on items + spacing
                 let rowHeight: CGFloat = 75
                 let countToShow = isLearningExpanded ? learningItems.count : min(learningItems.count, 2)
                 let totalHeight = CGFloat(max(countToShow, 1)) * rowHeight
@@ -323,7 +317,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         case .hero: return heroData.count
         case .sideQuests: return 1
         case .uploadContent: return 1
-        case .continueLearning: return 1
+        case .continueLearning: return isLearningExpanded ? learningItems.count : min(learningItems.count, 2)
         case .quickGames: return 1
         }
     }
@@ -334,11 +328,13 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         switch sectionType {
         case .hero:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: hiAlexCellID, for: indexPath) as! HiAlexCollectionViewCell
+//            if let item = heroData.first {
+//                cell.configure(title: item.title, subtitle: "Ready to study?", icon: item.iconName)
+//            }
             cell.delegate = self
             return cell
             
         case .sideQuests:
-            // Configure Side Quests
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: sideQuestsCellID, for: indexPath) as! SideQuestsCollectionViewCell
             cell.configure(with: self.sideQuests)
             cell.delegate = self
@@ -371,7 +367,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerID, for: indexPath) as! HeaderViewCollectionReusableView
         let sectionType = HomeSection.allCases[indexPath.section]
         
-        // Header for Side Quests
         if sectionType == .sideQuests {
             headerView.isHidden = false
             headerView.configureHeader(with: "Daily Side Quests", showViewAll: false, section: indexPath.section)
@@ -410,19 +405,19 @@ extension HomeViewController: HeaderViewDelegate {
 extension HomeViewController: SideQuestDelegate {
     func didUpdateQuests(_ quests: [SideQuest]) {
         self.sideQuests = quests
-        // Animate resize
         collectionView.collectionViewLayout.invalidateLayout()
     }
     
     func didCompleteQuest(_ quest: SideQuest) {
         var completed = quest
         completed.isCompleted = true
-        self.completedQuests.insert(completed, at: 0) // Add to top of history
+        self.completedQuests.insert(completed, at: 0)
     }
     
     func didTapHistory() {
-        let vc = QuestHistoryViewController()
-        vc.history = self.completedQuests
+        let vc = UIViewController() // Placeholder, replace with your History VC
+        vc.title = "Quest History"
+        vc.view.backgroundColor = .systemBackground
         if let nav = navigationController {
             nav.pushViewController(vc, animated: true)
         } else {
@@ -431,7 +426,6 @@ extension HomeViewController: SideQuestDelegate {
     }
     
     func didEarnXP(amount: Int, sourceView: UIView) {
-        // Floating XP Animation
         let frame = sourceView.convert(sourceView.bounds, to: self.view)
         let lbl = UILabel(frame: frame)
         lbl.text = "+\(amount) XP"
@@ -448,13 +442,13 @@ extension HomeViewController: SideQuestDelegate {
     }
 }
 
-// MARK: - Continue Learning Delegate (Navigation)
+// MARK: - Continue Learning Delegate
 extension HomeViewController: ContinueLearningCellDelegate {
     func didSelectLearningItem(_ item: ContentItem) {
         let topic = Topic(
             name: item.title,
             lastAccessed: "Just now",
-            materialType: item.itemType, // Pass type dynamically
+            materialType: item.itemType,
             largeContentBody: "",
             parentSubjectName: "General"
         )
@@ -462,7 +456,6 @@ extension HomeViewController: ContinueLearningCellDelegate {
         if item.itemType == "Quiz" {
             performSegue(withIdentifier: showQuizStartSegueID, sender: topic)
         } else if item.itemType == "Flashcard" {
-            // Flashcard Segue
             performSegue(withIdentifier: showFlashcardsSegueID, sender: topic)
         } else {
             performSegue(withIdentifier: showNotesDetailSegueID, sender: topic)
@@ -481,13 +474,11 @@ extension HomeViewController: QuickGamesCellDelegate {
 // MARK: - Upload Delegate & Document Picker
 extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
-    // ✅ FIXED: We only pass the path String, no DataManager call here.
     func navigateToConfirmation(with contentPath: String) {
         performSegue(withIdentifier: showUploadConfirmationSegueID, sender: contentPath)
     }
     
     func uploadCellDidTapDocument(_ cell: UploadContentCollectionViewCell) {
-        // Define types broadly to allow standard documents
         let types: [UTType] = [.pdf, .text, .image, .data, .content]
         let picker = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: true)
         picker.delegate = self
@@ -509,30 +500,67 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         showInputAlert(title: "Quick Note", placeholder: "Enter text content...")
     }
     
+    // ✅ FIXED: Link Validation
     private func showInputAlert(title: String, placeholder: String) {
         let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
         alert.addTextField { $0.placeholder = placeholder }
+        
         alert.addAction(UIAlertAction(title: "Confirm", style: .default) { _ in
-            if let text = alert.textFields?.first?.text, !text.isEmpty {
-                // For text or links, we pass the text itself as the content path/data
+            guard let text = alert.textFields?.first?.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+            
+            if title == "Add Resource Link" {
+                // Check prefix
+                let lower = text.lowercased()
+                if (lower.hasPrefix("http://") || lower.hasPrefix("https://")),
+                   let url = URL(string: text), UIApplication.shared.canOpenURL(url) {
+                    
+                    self.navigateToConfirmation(with: text)
+                } else {
+                    // Invalid link -> Show Error
+                    let errorAlert = UIAlertController(title: "Invalid Link", message: "Link must start with http:// or https://", preferredStyle: .alert)
+                    errorAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                        self.showInputAlert(title: title, placeholder: placeholder) // Re-show input
+                    })
+                    self.present(errorAlert, animated: true)
+                }
+            } else {
+                // Normal Text - just pass it
                 self.navigateToConfirmation(with: text)
             }
         })
+        
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
     
-    // ✅ FIXED: Get the full path (url.path) instead of just the name
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
         navigateToConfirmation(with: url.path)
     }
     
+    // ✅ FIXED: Media Upload Bug
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true) {
-            // For now, passing a placeholder.
-            // Ideally, save the image to a temp file and pass that path if you want to support images fully.
-            self.navigateToConfirmation(with: "Media Asset")
+            guard let image = info[.originalImage] as? UIImage,
+                  let data = image.jpegData(compressionQuality: 0.8) else { return }
+            
+            // 1. Create a temp file path (ending in .jpg so checking extension works)
+            let tempDir = FileManager.default.temporaryDirectory
+            let fileName = "Media_\(Int(Date().timeIntervalSince1970)).jpg"
+            let fileURL = tempDir.appendingPathComponent(fileName)
+            
+            do {
+                // 2. Write image data to that path
+                try data.write(to: fileURL)
+                
+                // 3. Pass the PATH (String) so UploadConfirmation sees fileExists=true
+                self.navigateToConfirmation(with: fileURL.path)
+            } catch {
+                print("Error saving image: \(error)")
+                let alert = UIAlertController(title: "Error", message: "Failed to process image.", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                self.present(alert, animated: true)
+            }
         }
     }
 }
