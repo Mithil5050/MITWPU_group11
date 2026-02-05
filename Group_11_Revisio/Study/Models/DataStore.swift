@@ -70,6 +70,30 @@ class DataManager {
             print("❌ Error importing file: \(error)")
         }
     }
+    // MARK: - Folder Management
+        func addFolder(name: String) {
+            // 1. Check if folder already exists to prevent overwriting
+            if savedMaterials.keys.contains(name) { return }
+            
+            // 2. Create the new folder structure
+            savedMaterials[name] = [
+                DataManager.materialsKey: [],
+                DataManager.sourcesKey: []
+            ]
+            
+            // 3. Save to disk immediately
+            saveToDisk()
+            
+            // 4. Notify all screens (Study Tab & Select Material) to update
+            NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
+        }
+        
+        // Helper to delete if you need it
+        func deleteFolder(name: String) {
+            savedMaterials.removeValue(forKey: name)
+            saveToDisk()
+            NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
+        }
     
     // MARK: - Existing Logic (Untouched)
     

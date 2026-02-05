@@ -57,8 +57,30 @@ class MaterialViewCell: UITableViewCell {
         case .source(let source):
             titleLabel.text = source.name
             subtitleLabel.text = "\(source.fileType) • \(source.size)"
-            symbolname = source.fileType == "Video" ? "play.tv.fill" : "link"
-            iconColor = .systemIndigo
+            
+            // Normalize type to uppercase for safe matching
+            let type = source.fileType.uppercased()
+            
+            // 1. Media (Images only)
+            if type == "IMAGE" || type == "JPG" || type == "PNG" || type == "JPEG" {
+                symbolname = "photo.fill"
+                iconColor = .systemIndigo
+            }
+            // 2. Doc (PDFs)
+            else if type == "DOC" || type == "PDF" {
+                symbolname = "text.document"
+                iconColor = .systemIndigo
+            }
+            // 3. Text
+            else if type == "TEXT" || type == "TXT" {
+                symbolname = "doc.text.fill"
+                iconColor = .systemIndigo
+            }
+            // 4. Link (Everything else, including VIDEO and MP4)
+            else {
+                symbolname = "link"
+                iconColor = .systemIndigo
+            }
         }
         
         iconImageView.image = UIImage(systemName: symbolname)
