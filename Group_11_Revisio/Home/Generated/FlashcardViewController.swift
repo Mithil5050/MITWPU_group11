@@ -227,6 +227,8 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
 
     // MARK: - UI Updates
     func updateUI(animated: Bool = false) {
+        guard !flashcards.isEmpty else { return }
+        
         let card = flashcards[currentCardIndex]
         let text = isTermDisplayed ? card.term : card.definition
         
@@ -237,7 +239,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
                 self.cardLabel.text = text
             }, completion: nil)
         } else {
-            cardLabel.text = text
+            self.cardLabel.text = text
         }
         
         previousButton.isEnabled = currentCardIndex > 0
@@ -262,14 +264,23 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
                 preferredStyle: .alert
             )
             
-            // 2. "Save" Action (Blue/Default)
-            let saveAction = UIAlertAction(title: "Yes, Save", style: .default) { _ in
+            // 2. "Save" Action (Navigate Home)
+            let saveAction = UIAlertAction(title: "Yes, Save", style: .default) { [weak self] _ in
+                guard let self = self else { return }
+                
                 // Show a quick confirmation that it was saved
                 let confirmAlert = UIAlertController(title: "Saved!", message: "Your progress has been recorded.", preferredStyle: .alert)
-                confirmAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                    // Reset the stack so the user can go again if they want
-                    self.resetStackTransforms()
-                })
+                
+                let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+                    // ✅ Navigate to Home Screen
+                    if let nav = self.navigationController {
+                        nav.popToRootViewController(animated: true)
+                    } else {
+                        self.dismiss(animated: true, completion: nil)
+                    }
+                }
+                
+                confirmAlert.addAction(okAction)
                 self.present(confirmAlert, animated: true)
             }
             
@@ -286,6 +297,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
             // 5. Present it
             present(alert, animated: true)
         }
+    
     // MARK: - Navigation / Delegate
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "AddCardSegue" {

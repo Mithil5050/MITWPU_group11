@@ -123,13 +123,15 @@ class NotesViewController: UIViewController {
     @IBAction func saveButtonTapped(_ sender: Any) {
         saveChanges()
         
-        showSaveConfirmation()
-        
+        // Disable editing state visually before showing alert
         if isEditingMode {
             isEditingMode = false
             updateUIForState()
         }
         view.endEditing(true)
+        
+        // Show confirmation and then navigate home
+        showSaveConfirmation()
     }
     
     // Alert Function
@@ -142,7 +144,19 @@ class NotesViewController: UIViewController {
             preferredStyle: .alert
         )
         
-        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        // ✅ MODIFIED: Navigate to Home Screen upon tapping OK
+        let okAction = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            
+            // Check if we are in a navigation stack
+            if let nav = self.navigationController {
+                // Pop to the root view controller (Home Screen)
+                nav.popToRootViewController(animated: true)
+            } else {
+                // If presented modally, dismiss it
+                self.dismiss(animated: true, completion: nil)
+            }
+        }
         alert.addAction(okAction)
         
         present(alert, animated: true, completion: nil)

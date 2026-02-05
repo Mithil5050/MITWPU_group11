@@ -501,41 +501,46 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         present(picker, animated: true)
     }
     
+    // ✅ 1. Paste Link: Still uses the small alert with strict validation
     func uploadCellDidTapLink(_ cell: UploadContentCollectionViewCell) {
-        showInputAlert(title: "Add Resource Link", placeholder: "https://...")
+        showLinkInputAlert()
     }
     
+    // ✅ 2. Type Note: Now opens a BIG sheet instead of a small alert
     func uploadCellDidTapText(_ cell: UploadContentCollectionViewCell) {
-        showInputAlert(title: "Quick Note", placeholder: "Enter text content...")
+        let noteVC = NoteInputViewController()
+        noteVC.onSave = { [weak self] text in
+            // Pass the text note to the confirmation screen
+            self?.navigateToConfirmation(with: text)
+        }
+        
+        let nav = UINavigationController(rootViewController: noteVC)
+        if let sheet = nav.sheetPresentationController {
+            sheet.detents = [.medium(), .large()] // Half or full screen
+            sheet.prefersGrabberVisible = true
+        }
+        present(nav, animated: true)
     }
     
-    // ✅ FIXED: Checks Link Format before navigating
-    private func showInputAlert(title: String, placeholder: String) {
-        let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
-        alert.addTextField { $0.placeholder = placeholder }
+    // Logic for Link Validation
+    private func showLinkInputAlert() {
+        let alert = UIAlertController(title: "Add Resource Link", message: nil, preferredStyle: .alert)
+        alert.addTextField { $0.placeholder = "https://..." }
         
         alert.addAction(UIAlertAction(title: "Confirm", style: .default) { _ in
             guard let text = alert.textFields?.first?.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
             
-            // Logic specific to "Add Resource Link"
-            if title == "Add Resource Link" {
-                let lower = text.lowercased()
-                if (lower.hasPrefix("http://") || lower.hasPrefix("https://")),
-                   let url = URL(string: text), UIApplication.shared.canOpenURL(url) {
-                    
-                    self.navigateToConfirmation(with: text)
-                } else {
-                    // Invalid Link -> Show Error
-                    let errorAlert = UIAlertController(title: "Invalid Link", message: "URL must start with http:// or https://", preferredStyle: .alert)
-                    errorAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                        // Re-open input alert so user can try again
-                        self.showInputAlert(title: title, placeholder: placeholder)
-                    })
-                    self.present(errorAlert, animated: true)
-                }
-            } else {
-                // "Quick Note" -> Just pass the text
+            let lower = text.lowercased()
+            if (lower.hasPrefix("http://") || lower.hasPrefix("https://")),
+               let url = URL(string: text), UIApplication.shared.canOpenURL(url) {
+                
                 self.navigateToConfirmation(with: text)
+            } else {
+                let errorAlert = UIAlertController(title: "Invalid Link", message: "URL must start with http:// or https://", preferredStyle: .alert)
+                errorAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                    self.showLinkInputAlert() // Try again
+                })
+                self.present(errorAlert, animated: true)
             }
         })
         
@@ -543,39 +548,69 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         present(alert, animated: true)
     }
     
-    // Document Picker
+    // Document Picker Logic
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
         navigateToConfirmation(with: url.path)
     }
     
-    // ✅ FIXED: Saves Image to File so it works with UploadConfirmation logic
+    // Image Picker Logic (Saves to file)
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true) {
             guard let image = info[.originalImage] as? UIImage,
                   let data = image.jpegData(compressionQuality: 0.8) else { return }
             
-            // Create a temp file path (ending in .jpg)
             let tempDir = FileManager.default.temporaryDirectory
             let fileName = "Media_\(Int(Date().timeIntervalSince1970)).jpg"
             let fileURL = tempDir.appendingPathComponent(fileName)
             
             do {
-                // Write image data to that path
                 try data.write(to: fileURL)
-                
-                // Pass the FILE PATH String. UploadConfirmation will see fileExists=true
                 self.navigateToConfirmation(with: fileURL.path)
             } catch {
                 print("Error saving image: \(error)")
-                let alert = UIAlertController(title: "Error", message: "Failed to process image.", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default))
-                self.present(alert, animated: true)
             }
         }
     }
 }
 
+// MARK: - New Large Note Input Controller
+// Paste this class at the very bottom of your file, outside the HomeViewController class
+class NoteInputViewController: UIViewController {
+    var onSave: ((String) -> Void)?
+    private let textView = UITextView()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+        title = "New Note"
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelTapped))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(saveTapped))
+        
+        textView.font = .systemFont(ofSize: 18)
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        textView.textContainerInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        view.addSubview(textView)
+        
+        NSLayoutConstraint.activate([
+            textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            textView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            textView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            textView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor)
+        ])
+        
+        textView.becomeFirstResponder()
+    }
+    
+    @objc private func cancelTapped() { dismiss(animated: true) }
+    
+    @objc private func saveTapped() {
+        guard let text = textView.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        onSave?(text)
+        dismiss(animated: true)
+    }
+}
 // MARK: - Hi Alex Cell Delegate (Daily Challenge)
 extension HomeViewController: HiAlexCellDelegate {
     func didTapPlayNow() {

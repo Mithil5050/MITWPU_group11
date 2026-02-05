@@ -14,6 +14,8 @@ class AddFlashcardViewController: UIViewController {
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .close, primaryAction: UIAction { [weak self] _ in
             self?.dismiss(animated: true)
         })
+        termTextField.layer.cornerRadius = 15
+        definitionTextField.layer.cornerRadius = 15
     }
     
     @IBAction func cancelButtonTapped(_ sender: UIButton) {
