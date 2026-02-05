@@ -325,21 +325,28 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         
+        // 1. Primary Action (Generate for Sources, Share for others)
         let primaryAction: UIBarButtonItem
         if activeSegmentTitle == "Sources" {
-            primaryAction = UIBarButtonItem(title: "Generate", image: UIImage(systemName: "wand.and.stars"), target: self, action: #selector(generateAction))
+            primaryAction = UIBarButtonItem(title: "Generate", style: .plain, target: self, action: #selector(generateAction))
+            
         } else {
-            primaryAction = UIBarButtonItem(title: "Share", image: UIImage(systemName: "square.and.arrow.up"), target: self, action: #selector(shareAction))
+            primaryAction = UIBarButtonItem(title: "Share", style: .plain, target: self, action: #selector(shareAction))
         }
         
-        let deleteButton = UIBarButtonItem(title: "Delete", image: UIImage(systemName: "trash"), target: self, action: #selector(deleteSelectionAction))
+        // 2. Delete Action
+        let deleteButton = UIBarButtonItem(title: "Delete", style: .plain, target: self, action: #selector(deleteSelectionAction))
         deleteButton.tintColor = .systemRed
         
-        let moveButton = UIBarButtonItem(title: "Move", image: UIImage(systemName: "arrowshape.turn.up.right"), target: self, action: #selector(moveSelectionAction))
+        // Styling the text
+        let textAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 17, weight: .semibold)]
+        [deleteButton, primaryAction].forEach {
+            $0.isEnabled = isSelectionActive
+            $0.setTitleTextAttributes(textAttributes, for: .normal)
+        }
         
-        [deleteButton, moveButton, primaryAction].forEach { $0.isEnabled = isSelectionActive }
-        
-        self.toolbarItems = [deleteButton, flexibleSpace, moveButton, flexibleSpace, primaryAction]
+        // Layout: [Delete] ------------------ [Generate/Share]
+        self.toolbarItems = [deleteButton, flexibleSpace, primaryAction]
         self.navigationController?.setToolbarHidden(false, animated: true)
     }
     
@@ -426,20 +433,72 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         present(alert, animated: true)
     }
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
+            guard let self = self else { return nil }
             
             let item = self.filteredContent[indexPath.row]
+            let rawItem = self.unwrapStudyItem(item) // Unwraps the StudyItem enum
             
             let rename = UIAction(title: "Rename", image: UIImage(systemName: "pencil")) { _ in
-                self.renameMaterialAction(for: item)
+                self.renameMaterialAction(for: rawItem)
+            }
+            
+            let move = UIAction(title: "Move to Folder", image: UIImage(systemName: "arrowshape.turn.up.right")) { _ in
+                self.moveSingleItem(rawItem)
             }
             
             let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                // Logic to delete a single item
+                self.deleteSingleItem(rawItem)
             }
             
-            return UIMenu(title: "", children: [rename, delete])
+            return UIMenu(title: "", children: [rename, move, delete])
         }
+    }
+
+    // MARK: - Logic Helpers for Context Menu
+
+    func moveSingleItem(_ item: Any) {
+        let otherSubjects = DataManager.shared.savedMaterials.keys.filter { $0 != selectedSubject }.sorted()
+        
+        if otherSubjects.isEmpty {
+            let alert = UIAlertController(title: "No Destination", message: "Create another subject folder first.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(alert, animated: true)
+            return
+        }
+        
+        let moveAlert = UIAlertController(title: "Move Item", message: "Select destination folder", preferredStyle: .actionSheet)
+        for subject in otherSubjects {
+            moveAlert.addAction(UIAlertAction(title: subject, style: .default) { [weak self] _ in
+                guard let self = self else { return }
+                // Moves the single item to the new folder
+                DataManager.shared.moveItems(items: [item], from: self.selectedSubject ?? "", to: subject)
+                self.handleDataUpdate()
+            })
+        }
+        moveAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        self.present(moveAlert, animated: true)
+    }
+
+    func deleteSingleItem(_ item: Any) {
+        let alert = UIAlertController(title: "Delete Item?", message: "This will permanently remove this item.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
+            guard let self = self else { return }
+            DataManager.shared.deleteItems(subjectName: self.selectedSubject ?? "", items: [item])
+            self.handleDataUpdate()
+        })
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func unwrapStudyItem(_ item: Any) -> Any {
+        if let studyItem = item as? StudyItem {
+            switch studyItem {
+            case .topic(let topic): return topic
+            case .source(let source): return source
+            }
+        }
+        return item
     }
     
     // MARK: - Global Folder Actions
