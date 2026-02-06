@@ -27,28 +27,39 @@ class DataManager {
             saveToDisk()
         }
     }
-    // MARK: - Fetch Helper
-        func getAllRecentTopics() -> [Topic] {
-            var allTopics: [Topic] = []
-            
-            // Loop through every subject folder
-            for subjectData in savedMaterials.values {
-                // Get the list of materials in that folder
-                if let materials = subjectData[DataManager.materialsKey] {
-                    for item in materials {
-                        // If the item is a Topic, add it to our list
-                        if case .topic(let topic) = item {
-                            allTopics.append(topic)
-                        }
+    
+    // MARK: - Fetch Helper (✅ FIXED ORDER)
+    func getAllRecentTopics() -> [Topic] {
+        var allTopics: [Topic] = []
+        
+        // 1. Collect all topics from all folders
+        for subjectData in savedMaterials.values {
+            if let materials = subjectData[DataManager.materialsKey] {
+                for item in materials {
+                    if case .topic(let topic) = item {
+                        allTopics.append(topic)
                     }
                 }
             }
-            
-            // Return reversed so the newest (appended last) appear first
-            return allTopics.reversed()
         }
+        
+        // 2. ✅ SORT: "Just now" -> Minutes -> Hours -> Days -> Older
+        return allTopics.sorted { t1, t2 in
+            func score(_ s: String) -> Int {
+                let lower = s.lowercased()
+                if lower.contains("just now") { return 0 }
+                if lower.contains("sec") { return 1 }
+                if lower.contains("min") { return 2 }
+                if lower.contains("hour") || lower.contains("h ago") { return 3 }
+                if lower.contains("day") || lower.contains("d ago") { return 4 }
+                if lower.contains("week") || lower.contains("w ago") { return 5 }
+                return 6 // "Never" or others
+            }
+            return score(t1.lastAccessed) < score(t2.lastAccessed)
+        }
+    }
     
-    // MARK: - ✅ NEW: File Import Logic
+    // MARK: - File Import Logic
     // Call this function from your UploadConfirmationViewController
     func importFile(url: URL, subject: String) {
         let fileManager = FileManager.default
@@ -90,41 +101,57 @@ class DataManager {
             print("❌ Error importing file: \(error)")
         }
     }
+    
     // MARK: - Folder Management
-        func addFolder(name: String) {
-            // 1. Check if folder already exists to prevent overwriting
-            if savedMaterials.keys.contains(name) { return }
-            
-            // 2. Create the new folder structure
-            savedMaterials[name] = [
-                DataManager.materialsKey: [],
-                DataManager.sourcesKey: []
-            ]
-            
-            // 3. Save to disk immediately
-            saveToDisk()
-            
-            // 4. Notify all screens (Study Tab & Select Material) to update
-            NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
-        }
+    func addFolder(name: String) {
+        // 1. Check if folder already exists to prevent overwriting
+        if savedMaterials.keys.contains(name) { return }
         
-        // Helper to delete if you need it
-        func deleteFolder(name: String) {
-            savedMaterials.removeValue(forKey: name)
-            saveToDisk()
-            NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
-        }
+        // 2. Create the new folder structure
+        savedMaterials[name] = [
+            DataManager.materialsKey: [],
+            DataManager.sourcesKey: []
+        ]
+        
+        // 3. Save to disk immediately
+        saveToDisk()
+        
+        // 4. Notify all screens (Study Tab & Select Material) to update
+        NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
+    }
     
-    // MARK: - Existing Logic (Untouched)
+    // Helper to delete if you need it
+    func deleteFolder(name: String) {
+        savedMaterials.removeValue(forKey: name)
+        saveToDisk()
+        NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
+    }
     
+    // Wrapper functions for compatibility
+    func createNewSubjectFolder(name: String) {
+        addFolder(name: name)
+    }
+    
+    func deleteSubjectFolder(name: String) {
+        deleteFolder(name: name)
+    }
+    
+    // MARK: - Persistence (Optimized)
     func saveToDisk() {
-        do {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = .prettyPrinted
-            let data = try encoder.encode(savedMaterials)
-            try data.write(to: fileURL, options: .atomic)
-        } catch {
-            print("Error saving: \(error)")
+        // 1. Capture snapshot of data (Value Type copy is thread-safe)
+        let dataToSave = savedMaterials
+        
+        // 2. Perform heavy work on Background Thread
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let self = self else { return }
+            do {
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = .prettyPrinted
+                let data = try encoder.encode(dataToSave)
+                try data.write(to: self.fileURL, options: .atomic)
+            } catch {
+                print("Error saving: \(error)")
+            }
         }
     }
     
@@ -140,6 +167,41 @@ class DataManager {
         }
     }
     
+    // MARK: - Topic Management (Optimized for Updates & Speed)
+    func addTopic(to subjectName: String, topic: Topic) {
+        let folder = subjectName.isEmpty ? "General Study" : subjectName
+        
+        // 1. Create folder if missing
+        if savedMaterials[folder] == nil {
+            addFolder(name: folder)
+        }
+        
+        var subjectData = savedMaterials[folder]!
+        var materials = subjectData[DataManager.materialsKey] ?? []
+        
+        // 2. Remove existing (Move to Top Logic)
+        // If a topic with this name already exists, remove it so we can re-add it at the end
+        materials.removeAll { item in
+            if case .topic(let t) = item {
+                return t.name == topic.name && t.materialType == topic.materialType
+            }
+            return false
+        }
+        
+        // 3. Append new topic (Newest goes to end of array)
+        materials.append(.topic(topic))
+        
+        // 4. Update Memory
+        subjectData[DataManager.materialsKey] = materials
+        savedMaterials[folder] = subjectData
+        
+        // 5. NOTIFY UI IMMEDIATELY (Before Disk Save)
+        NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+        
+        // 6. Save to Disk in Background
+        saveToDisk()
+    }
+    
     func saveContent(subject: String, content: Any) {
         let segmentKey: String
         let wrappedItem: StudyItem
@@ -153,32 +215,31 @@ class DataManager {
         } else { return }
         
         if savedMaterials[subject] == nil {
-            savedMaterials[subject] = [DataManager.materialsKey: [], DataManager.sourcesKey: []]
+            addFolder(name: subject)
+        }
+        
+        // Remove duplicates if source
+        if segmentKey == DataManager.sourcesKey, let source = content as? Source {
+             savedMaterials[subject]?[segmentKey]?.removeAll(where: { item in
+                 if case .source(let s) = item { return s.name == source.name }
+                 return false
+             })
         }
         
         savedMaterials[subject]?[segmentKey]?.append(wrappedItem)
-        saveToDisk()
+        
+        // Notify then Save
         NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
-    }
-    
-    func createNewSubjectFolder(name: String) {
-        savedMaterials[name] = [DataManager.materialsKey: [], DataManager.sourcesKey: []]
         saveToDisk()
-        NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
-    }
-    
-    func deleteSubjectFolder(name: String) {
-        savedMaterials.removeValue(forKey: name)
-        saveToDisk()
-        NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
     }
     
     func renameSubject(oldName: String, newName: String) {
         guard oldName != newName, let data = savedMaterials[oldName] else { return }
         savedMaterials[newName] = data
         savedMaterials.removeValue(forKey: oldName)
-        saveToDisk()
+        
         NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
+        saveToDisk()
     }
     
     func deleteItems(subjectName: String, items: [Any]) {
@@ -201,10 +262,140 @@ class DataManager {
         subjectData[DataManager.materialsKey] = materials
         subjectData[DataManager.sourcesKey] = sources
         savedMaterials[subjectName] = subjectData
-        saveToDisk()
+        
         NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+        saveToDisk()
     }
     
+    func moveItems(items: [Any], from sourceSubject: String, to destinationSubject: String) {
+        guard sourceSubject != destinationSubject else { return }
+        
+        deleteItems(subjectName: sourceSubject, items: items)
+        
+        for item in items {
+            if var topic = item as? Topic {
+                topic.parentSubjectName = destinationSubject
+                addTopic(to: destinationSubject, topic: topic)
+                
+            } else if let source = item as? Source {
+                saveContent(subject: destinationSubject, content: source)
+            }
+        }
+    }
+    
+    // MARK: - Content Getters & Updaters
+    func getTopic(subjectName: String, topicName: String) -> Topic? {
+        guard let materials = savedMaterials[subjectName]?[DataManager.materialsKey] else { return nil }
+        for item in materials {
+            if case .topic(let topic) = item, topic.name == topicName {
+                return topic
+            }
+        }
+        return nil
+    }
+    
+    func getDetailedContent(for subjectName: String, topicName: String) -> String {
+        guard let subjectData = savedMaterials[subjectName],
+              let materials = subjectData[DataManager.materialsKey] else {
+            return "Content not found."
+        }
+        
+        for item in materials {
+            if case .topic(let topic) = item, topic.name == topicName {
+                // Safely unwrap optionals and return based on priority
+                let body = topic.largeContentBody ?? ""
+                if !body.isEmpty { return body }
+                
+                let notes = topic.notesContent ?? ""
+                if !notes.isEmpty { return notes }
+                
+                let cheat = topic.cheatsheetContent ?? ""
+                if !cheat.isEmpty { return cheat }
+                
+                return ""
+            }
+        }
+        return "Topic not found."
+    }
+
+    func updateTopic(subjectName: String, topic: Topic) {
+        guard var subjectData = savedMaterials[subjectName] else { return }
+        var materials = subjectData[DataManager.materialsKey] ?? []
+        
+        if let index = materials.firstIndex(where: { item in
+            if case .topic(let t) = item { return t.name == topic.name }
+            return false
+        }) {
+            materials[index] = .topic(topic)
+            subjectData[DataManager.materialsKey] = materials
+            savedMaterials[subjectName] = subjectData
+            
+            NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+            saveToDisk()
+        }
+    }
+    
+    func updateTopicContent(subject: String, topicName: String, newText: String, type: String = "Notes") {
+        guard var materials = savedMaterials[subject]?[DataManager.materialsKey] else { return }
+        
+        for (index, item) in materials.enumerated() {
+            if case .topic(var topic) = item, topic.name == topicName {
+                if type == "Notes" {
+                    topic.notesContent = newText
+                } else if type == "Cheatsheet" {
+                    topic.cheatsheetContent = newText
+                } else if type == "Flashcards" {
+                    topic.largeContentBody = newText
+                } else {
+                    topic.largeContentBody = newText
+                }
+                
+                materials[index] = .topic(topic)
+                break
+            }
+        }
+        
+        savedMaterials[subject]?[DataManager.materialsKey] = materials
+        saveToDisk()
+    }
+    
+    func renameMaterial(subjectName: String, item: Any, newName: String) {
+        guard var subjectDict = savedMaterials[subjectName] else { return }
+        
+        let keys = [DataManager.materialsKey, DataManager.sourcesKey]
+        
+        for key in keys {
+            if var items = subjectDict[key] as? [StudyItem] {
+                if let index = items.firstIndex(where: { existingItem in
+                    switch (existingItem, item) {
+                    case (.topic(let t1), let t2 as Topic): return t1.name == t2.name
+                    case (.source(let s1), let s2 as Source): return s1.name == s2.name
+                    default: return false
+                    }
+                }) {
+                    let updatedItem: StudyItem
+                    switch items[index] {
+                    case .topic(var topic):
+                        topic.name = newName
+                        updatedItem = .topic(topic)
+                    case .source(var source):
+                        source.name = newName
+                        updatedItem = .source(source)
+                    }
+                    
+                    items[index] = updatedItem
+                    subjectDict[key] = items
+                    savedMaterials[subjectName] = subjectDict
+                    
+                    NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+                    saveToDisk()
+                    return
+                }
+            }
+        }
+    }
+    
+    // MARK: - Defaults
     private func setupDefaultData() {
         
         let calculusMaterials: [StudyItem] = [
@@ -330,44 +521,6 @@ class DataManager {
         migrateHardcodedQuizzes()
     }
     
-    func getDetailedContent(for subjectName: String, topicName: String) -> String {
-        guard let subjectData = savedMaterials[subjectName],
-              let materials = subjectData[DataManager.materialsKey] else {
-            return "Content not found."
-        }
-        
-        for item in materials {
-            if case .topic(let topic) = item, topic.name == topicName {
-                return topic.largeContentBody ?? "No content available yet."
-            }
-        }
-        return "Topic not found."
-    }
-    
-    func updateTopicContent(subject: String, topicName: String, newText: String, type: String = "Notes") {
-        guard var materials = savedMaterials[subject]?[DataManager.materialsKey] else { return }
-        
-        for (index, item) in materials.enumerated() {
-            if case .topic(var topic) = item, topic.name == topicName {
-                if type == "Notes" {
-                    topic.notesContent = newText
-                } else if type == "Cheatsheet" {
-                    topic.cheatsheetContent = newText
-                } else if type == "Flashcards" {
-                    topic.largeContentBody = newText
-                } else {
-                    topic.largeContentBody = newText
-                }
-                
-                materials[index] = .topic(topic)
-                break
-            }
-        }
-        
-        savedMaterials[subject]?[DataManager.materialsKey] = materials
-        saveToDisk()
-    }
-    
     func migrateHardcodedQuizzes() {
         for (sourceName, questions) in QuizManager.quizDataBySource {
             let contentString = questions.map { q in
@@ -387,121 +540,11 @@ class DataManager {
             self.addTopic(to: "General Study", topic: newTopic)
         }
     }
-    
-    func addTopic(to subjectName: String, topic: Topic) {
-        if savedMaterials[subjectName] == nil {
-            savedMaterials[subjectName] = [DataManager.materialsKey: [], DataManager.sourcesKey: []]
-        }
-        
-       
-        let alreadyExists = savedMaterials[subjectName]?[DataManager.materialsKey]?.contains(where: { item in
-            if case .topic(let existingTopic) = item {
-                return existingTopic.name == topic.name && existingTopic.materialType == topic.materialType
-            }
-            return false
-        }) ?? false
-        
-        
-        if !alreadyExists {
-            savedMaterials[subjectName]?[DataManager.materialsKey]?.append(.topic(topic))
-            saveToDisk()
-            
-            
-            NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
-        }
-    }
-    
-    func renameMaterial(subjectName: String, item: Any, newName: String) {
-        guard var subjectDict = savedMaterials[subjectName] else { return }
-        
-        let keys = [DataManager.materialsKey, DataManager.sourcesKey]
-        
-        for key in keys {
-            if var items = subjectDict[key] as? [StudyItem] {
-                if let index = items.firstIndex(where: { existingItem in
-                    switch (existingItem, item) {
-                    case (.topic(let t1), let t2 as Topic): return t1.name == t2.name
-                    case (.source(let s1), let s2 as Source): return s1.name == s2.name
-                    default: return false
-                    }
-                }) {
-                    let updatedItem: StudyItem
-                    switch items[index] {
-                    case .topic(var topic):
-                        topic.name = newName
-                        updatedItem = .topic(topic)
-                    case .source(var source):
-                        source.name = newName
-                        updatedItem = .source(source)
-                    }
-                    
-                    items[index] = updatedItem
-                    subjectDict[key] = items
-                    savedMaterials[subjectName] = subjectDict
-                    saveToDisk()
-                    return
-                }
-            }
-        }
-    }
-    
-    func moveItems(items: [Any], from sourceSubject: String, to destinationSubject: String) {
-        guard sourceSubject != destinationSubject else { return }
-        
-        deleteItems(subjectName: sourceSubject, items: items)
-        
-        for item in items {
-            if var topic = item as? Topic {
-                topic.parentSubjectName = destinationSubject
-                addTopic(to: destinationSubject, topic: topic)
-                
-            } else if let source = item as? Source {
-                if savedMaterials[destinationSubject] == nil {
-                    savedMaterials[destinationSubject] = [DataManager.materialsKey: [], DataManager.sourcesKey: []]
-                }
-                savedMaterials[destinationSubject]?[DataManager.sourcesKey]?.append(.source(source))
-            }
-        }
-        
-        saveToDisk()
-        NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
-    }
-    
-    func getTopic(subjectName: String, topicName: String) -> Topic? {
-        guard let materials = savedMaterials[subjectName]?[DataManager.materialsKey] else { return nil }
-        for item in materials {
-            if case .topic(let topic) = item, topic.name == topicName {
-                return topic
-            }
-        }
-        return nil
-    }
-
-    func updateTopic(subjectName: String, topic: Topic) {
-        // 1. Get the subject's full data (Materials and Sources)
-        guard var subjectData = savedMaterials[subjectName] else { return }
-        
-        // 2. Get the materials array
-        var materials = subjectData[DataManager.materialsKey] ?? []
-        
-        // 3. Find and replace the topic
-        if let index = materials.firstIndex(where: { item in
-            if case .topic(let t) = item { return t.name == topic.name }
-            return false
-        }) {
-            materials[index] = .topic(topic)
-            
-            // 4. ESSENTIAL: Re-assign all the way back up the chain
-            subjectData[DataManager.materialsKey] = materials
-            savedMaterials[subjectName] = subjectData
-            
-            saveToDisk()
-            NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
-        }
-    }
 }
 
+// MARK: - Notifications
 extension Notification.Name {
     static let didUpdateStudyMaterials = Notification.Name("didUpdateStudyMaterials")
     static let didUpdateStudyFolders = Notification.Name("didUpdateStudyFolders")
 }
+
