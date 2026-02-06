@@ -25,6 +25,8 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     var cancelSelectionButton: UIBarButtonItem!
     var originalRightBarButtonItems: [UIBarButtonItem]?
     let searchController = UISearchController(searchResultsController: nil)
+    var currentSortType: String = "Name"
+    var isGridView: Bool = false
     
     var activeSegmentTitle: String {
         return materialsSegmentedControl.titleForSegment(at: materialsSegmentedControl.selectedSegmentIndex) ?? "Materials"
@@ -35,9 +37,19 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         super.viewDidLoad()
         
         self.toolbarItems = []
-        
         let buttonColor: UIColor = .label
         
+        // 1. Configure Large Titles
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.largeTitleDisplayMode = .automatic
+        
+        // 2. Configure Navigation Bar Appearance (Prevents transparency glitches on scroll)
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithDefaultBackground()
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        
+        // 3. Initialize Selection Mode Buttons
         doneSelectionButton = UIBarButtonItem(
             image: UIImage(systemName: "checkmark"),
             primaryAction: UIAction { [weak self] _ in
@@ -54,6 +66,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         )
         cancelSelectionButton.tintColor = buttonColor
         
+        // 4. Subject-Specific Setup
         if let selectedSubject {
             title = selectedSubject
             setupTableView()
@@ -64,6 +77,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             self.originalRightBarButtonItems = self.navigationItem.rightBarButtonItems
         }
         
+        // 5. Background Styling
         topicsTableView.backgroundColor = .systemBackground
         view.backgroundColor = .systemBackground
     }
@@ -117,28 +131,39 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     func applyFilterAndReload() {
         let contentToFilter = currentContent
         
-        // If we are in the "Sources" segment, we don't apply filters (show all sources)
         if materialsSegmentedControl.selectedSegmentIndex == 1 {
             filteredContent = contentToFilter
-        }
-        // Otherwise, if "All" is selected in Materials
-        else if currentFilterType == "All" {
+        } else if currentFilterType == "All" {
             filteredContent = contentToFilter
-        }
-        // Otherwise, filter by the specific material type (Quiz, Flashcards, etc.)
-        else {
+        } else {
             filteredContent = contentToFilter.filter { item in
                 guard let studyItem = item as? StudyItem else { return false }
-                
                 switch studyItem {
                 case .topic(let topic):
                     return topic.materialType == currentFilterType
                 case .source:
-                    return false // Sources don't have a "MaterialType"
+                    return false
                 }
             }
         }
-        topicsTableView.reloadData()
+
+       
+        if filteredContent.isEmpty {
+            let emptyLabel = UILabel()
+            emptyLabel.text = "No \(currentFilterType) items yet"
+            emptyLabel.textAlignment = .center
+            emptyLabel.textColor = .secondaryLabel
+            emptyLabel.font = .preferredFont(forTextStyle: .headline)
+            topicsTableView.backgroundView = emptyLabel
+        } else {
+            topicsTableView.backgroundView = nil
+        }
+
+        applySortAndReload()
+    }
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+       
+        return isGridView ? 140 : 76
     }
     
     func segmentKey(forIndex index: Int) -> String {
@@ -166,8 +191,14 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func setupSearchController() {
         searchController.searchBar.placeholder = "Search in \(selectedSubject ?? "this subject")"
+        
+       
+        searchController.searchResultsUpdater = self
+        
+        searchController.obscuresBackgroundDuringPresentation = false
         navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false
+        navigationItem.hidesSearchBarWhenScrolling = true
+        definesPresentationContext = true
     }
     
     func setupFilterMenu() {
@@ -190,7 +221,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         let selectAction = UIAction(title: isSelectModeActive ? "Done" : "Select",
                                     image: UIImage(systemName: "checkmark.circle")) { [weak self] _ in
             guard let self = self else { return }
-            
             if self.topicsTableView.isEditing {
                 self.selectionDoneTapped()
             } else {
@@ -200,7 +230,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                 self.updateToolbarForSelection()
                 self.tabBarController?.tabBar.isHidden = true
             }
-            
             self.optionsButton.menu = self.setupOptionsMenu()
         }
         
@@ -215,18 +244,92 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         let deleteAllAction = UIAction(title: "Delete All Content", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
             self?.deleteAllContent()
         }
-        
-        let menu = UIMenu(title: "Option", children: [
-            selectAction,
-            renameAction,
-            UIMenu(title: "Management", children: [moveAllAction, deleteAllAction]),
-            UIMenu(title: "Display Options", options: .displayInline, children: [
-                UIAction(title: "View as", image: UIImage(systemName: "list.bullet.indent")) { _ in },
-                UIAction(title: "Sort By", image: UIImage(systemName: "arrow.up.arrow.down")) { _ in }
+
+        let displayMenu = UIMenu(title: "Display Options", options: .displayInline, children: [
+            // --- View as (No Icons) ---
+            UIMenu(title: "View as", children: [
+                UIAction(title: "List", state: isGridView ? .off : .on) { [weak self] _ in
+                    self?.isGridView = false
+                    self?.topicsTableView.reloadData()
+                    self?.optionsButton.menu = self?.setupOptionsMenu()
+                },
+                UIAction(title: "Grid", state: isGridView ? .on : .off) { [weak self] _ in
+                    self?.isGridView = true
+                    self?.topicsTableView.reloadData()
+                    self?.optionsButton.menu = self?.setupOptionsMenu()
+                }
+            ]),
+            // --- Sort By (No Icons) ---
+            UIMenu(title: "Sort By", children: [
+                UIAction(title: "Name", state: currentSortType == "Name" ? .on : .off) { [weak self] _ in
+                    self?.currentSortType = "Name"
+                    self?.applySortAndReload()
+                    self?.optionsButton.menu = self?.setupOptionsMenu()
+                },
+                UIAction(title: "Date Created", state: currentSortType == "Date" ? .on : .off) { [weak self] _ in
+                    self?.currentSortType = "Date"
+                    self?.applySortAndReload()
+                    self?.optionsButton.menu = self?.setupOptionsMenu()
+                },
+                UIAction(title: "Date Modified", state: currentSortType == "Modified" ? .on : .off) { [weak self] _ in
+                    self?.currentSortType = "Modified"
+                    self?.applySortAndReload()
+                    self?.optionsButton.menu = self?.setupOptionsMenu()
+                }
             ])
         ])
         
-        return menu
+        return UIMenu(title: "Option", children: [
+            selectAction,
+            renameAction,
+            UIMenu(title: "Management", children: [moveAllAction, deleteAllAction]),
+            displayMenu
+        ])
+    }
+    private func getTitle(for item: Any) -> String {
+        if let studyItem = item as? StudyItem {
+            switch studyItem {
+            case .topic(let t): return t.name
+            case .source(let s): return s.name
+            }
+        }
+        return ""
+    }
+    func applySortAndReload() {
+        filteredContent.sort { (item1, item2) -> Bool in
+            if currentSortType == "Name" {
+                return getTitle(for: item1).lowercased() < getTitle(for: item2).lowercased()
+            } else if currentSortType == "Modified" {
+                // Sort by most recent interaction
+                return getDate(for: item1) > getDate(for: item2)
+            } else {
+                // Default Date Created sort
+                return getDate(for: item1) < getDate(for: item2)
+            }
+        }
+        topicsTableView.reloadData()
+    }
+    private func getDate(for item: Any) -> Date {
+        guard let studyItem = item as? StudyItem else { return Date.distantPast }
+        
+        let dateString: String
+        switch studyItem {
+        case .topic(let t): dateString = t.lastAccessed
+        case .source: return Date.distantPast
+        }
+        
+        let formatter = DateFormatter()
+        // List all possible formats your app might have saved
+        let formats = ["MMM d, yyyy", "MMMM d, yyyy", "dd/MM/yyyy", "yyyy-MM-dd"]
+        
+        for format in formats {
+            formatter.dateFormat = format
+            if let date = formatter.date(from: dateString) {
+                return date
+            }
+        }
+        
+        return Date.distantPast
     }
     
     // MARK: - TableView Methods (Data Display)
@@ -520,8 +623,69 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    @objc func moveAllContent() { print("Moving all content...") }
-    @objc func deleteAllContent() { print("Deleting all content...") }
+    @objc func deleteAllContent() {
+        let alert = UIAlertController(
+            title: "Delete All Content?",
+            message: "This will permanently remove all materials and sources from \(selectedSubject ?? "this subject"). This action cannot be undone.",
+            preferredStyle: .alert
+        )
+        
+        let deleteAction = UIAlertAction(title: "Delete Everything", style: .destructive) { [weak self] _ in
+            guard let self = self, let subject = self.selectedSubject else { return }
+            
+            // Use the DataManager to clear the subject
+            DataManager.shared.deleteItems(subjectName: subject, items: self.currentContent)
+            
+            // Reload data (will show the empty state label)
+            self.loadContentForSubject(subject, segmentIndex: self.materialsSegmentedControl.selectedSegmentIndex)
+            
+            // Haptic feedback
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        }
+        
+        alert.addAction(deleteAction)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        
+        present(alert, animated: true)
+    }
+    @objc func moveAllContent() {
+        // 1. Get all subject names except the current one
+        let otherSubjects = DataManager.shared.savedMaterials.keys.filter { $0 != selectedSubject }.sorted()
+        
+        if otherSubjects.isEmpty {
+            let alert = UIAlertController(title: "No Destination", message: "Create another subject folder first to move content.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            return
+        }
+        
+        // 2. Present the choices
+        let moveAlert = UIAlertController(title: "Move All Content", message: "Select a destination folder for all items in \(selectedSubject ?? "this subject")", preferredStyle: .actionSheet)
+        
+        for destination in otherSubjects {
+            moveAlert.addAction(UIAlertAction(title: destination, style: .default) { [weak self] _ in
+                guard let self = self, let current = self.selectedSubject else { return }
+                
+                // Move items in DataManager
+                DataManager.shared.moveItems(items: self.currentContent, from: current, to: destination)
+                
+                // Refresh UI
+                self.loadContentForSubject(current, segmentIndex: self.materialsSegmentedControl.selectedSegmentIndex)
+                
+                // Haptic success feedback
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            })
+        }
+        
+        moveAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        
+        // Support for iPad popovers
+        if let popover = moveAlert.popoverPresentationController {
+            popover.barButtonItem = optionsButton
+        }
+        
+        present(moveAlert, animated: true)
+    }
     
     // MARK: - Helpers & Segues
     @IBAction func segmentControlTapped(_ sender: UISegmentedControl) {
@@ -601,6 +765,9 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                 let infoVC = segue.destination as? MaterialInfoViewController,
                 let studyItem = sender as? StudyItem {
             
+            infoVC.originalItem = studyItem
+            infoVC.parentSubject = self.selectedSubject
+            
             switch studyItem {
             case .topic(let topic):
                 infoVC.materialName = topic.name
@@ -608,16 +775,20 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                 infoVC.dateCreated = topic.lastAccessed
                 infoVC.sourceName = "Attached Document"
                 
+                // ✅ FIX: Added Cheatsheet and updated colors to match your constants
                 switch topic.materialType {
                 case "Quiz":
                     infoVC.iconName = "timer"
-                    infoVC.iconColor = .systemGreen
+                    infoVC.iconColor = UIColor(hex: "88D769") // quizColor
                 case "Notes":
                     infoVC.iconName = "book.pages"
-                    infoVC.iconColor = .systemOrange
+                    infoVC.iconColor = UIColor(hex: "FFC445", alpha: 0.75) // noteColor
                 case "Flashcards":
                     infoVC.iconName = "rectangle.on.rectangle.angled"
-                    infoVC.iconColor = .systemBlue
+                    infoVC.iconColor = UIColor(hex: "91C1EF") // flashcardColor
+                case "Cheatsheet":
+                    infoVC.iconName = "list.clipboard"
+                    infoVC.iconColor = UIColor(hex: "8A38F5", alpha: 0.50) // cheatsheetColor
                 default:
                     infoVC.iconName = "doc.text.fill"
                     infoVC.iconColor = .systemGray
@@ -627,7 +798,19 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                 infoVC.materialName = source.name
                 infoVC.materialType = source.fileType
                 infoVC.dateCreated = "Added Recently"
-                infoVC.iconName = source.fileType == "Video" ? "play.tv.fill" : "link"
+                
+                // ✅ FIX: Updated Source Icons to match your 4-type requirement
+                let type = source.fileType.uppercased()
+                if type == "IMAGE" || type == "JPG" || type == "PNG" || type == "JPEG" {
+                    infoVC.iconName = "photo.fill"
+                } else if type == "DOC" || type == "PDF" {
+                    infoVC.iconName = "text.document"
+                } else if type == "TEXT" || type == "TXT" {
+                    infoVC.iconName = "doc.text.fill"
+                } else {
+                    // Videos and Links now both use the link icon
+                    infoVC.iconName = "link"
+                }
                 infoVC.iconColor = .systemIndigo
             }
         }
@@ -659,4 +842,37 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
 }
-
+extension SubjectViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let searchText = searchController.searchBar.text?.lowercased() else { return }
+        
+        if searchText.isEmpty {
+            // Restore the list based on current tab and filter
+            applyFilterAndReload()
+        } else {
+            // Filter the current content based on the name
+            filteredContent = currentContent.compactMap { item -> StudyItem? in
+                guard let studyItem = item as? StudyItem else { return nil }
+                let title = getTitle(for: studyItem).lowercased()
+                
+                if title.contains(searchText) {
+                    return studyItem
+                }
+                return nil
+            }
+            
+            // Handle Empty Search State
+            if filteredContent.isEmpty {
+                let emptyLabel = UILabel()
+                emptyLabel.text = "No results for '\(searchText)'"
+                emptyLabel.textAlignment = .center
+                emptyLabel.textColor = .secondaryLabel
+                topicsTableView.backgroundView = emptyLabel
+            } else {
+                topicsTableView.backgroundView = nil
+            }
+            
+            topicsTableView.reloadData()
+        }
+    }
+}
