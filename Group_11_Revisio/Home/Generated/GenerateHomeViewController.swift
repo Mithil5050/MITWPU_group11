@@ -1,12 +1,14 @@
 import UIKit
 
-// MARK: - 1. Missing Definitions Fixed Here
-// This struct was missing, causing the "Cannot find type" error.
+// MARK: - 1. Definitions
+// Ensure these are defined either here or in another file in your project.
 struct StudyContent {
     var filename: String
 }
 
-// This Enum was missing, causing errors with .quiz, .flashcards, etc.
+// If GenerationType is already defined in another file, keep this commented out.
+// If you get "Cannot find type 'GenerationType'" errors, uncomment this enum.
+
 //enum GenerationType: String, CustomStringConvertible {
 //    case none
 //    case quiz
@@ -24,6 +26,7 @@ struct StudyContent {
 //        }
 //    }
 //}
+
 
 // MARK: - Custom Card View
 @IBDesignable
@@ -388,8 +391,9 @@ class GenerateHomeViewController: UIViewController {
 
         let generatedContent = generateDummyContent(topic: topicName, type: selectedMaterialType)
 
+        // ✅ MODIFIED: Use topicName directly without appending the material type suffix
         let newTopic = Topic(
-            name: "\(topicName) \(selectedMaterialType.description)",
+            name: topicName, // Previously: "\(topicName) \(selectedMaterialType.description)"
             lastAccessed: "Just now",
             materialType: selectedMaterialType.description,
             largeContentBody: generatedContent,
@@ -443,7 +447,7 @@ class GenerateHomeViewController: UIViewController {
             }
         }
         else if segue.identifier == "HomeToFlashcardView" {
-            if let dest = segue.destination as? FlashcardsViewController,
+            if let dest = segue.destination as? FlashcardsViewController, // Make sure this matches your actual class name
                let topic = sender as? Topic {
                 dest.currentTopic = topic
                 dest.parentSubjectName = self.contextSubjectTitle

@@ -99,6 +99,45 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         setupCollectionView()
         setupProfileIcon()
         setupFloatingAIButton()
+        
+        // Listen for updates immediately
+        NotificationCenter.default.addObserver(self, selector: #selector(handleDataUpdate), name: .didUpdateStudyMaterials, object: nil)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        loadRecentLearningData()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    // Handler for Notification
+    @objc func handleDataUpdate() {
+        loadRecentLearningData()
+    }
+    
+    // MARK: - Data Fetching
+    func loadRecentLearningData() {
+        // 1. Get all topics (Now already sorted by DataStore)
+        let allTopics = DataManager.shared.getAllRecentTopics()
+        
+        // 2. ✅ FIXED: No reverse needed here. DataStore handles sorting.
+        let recentTopics = Array(allTopics.prefix(5))
+        
+        // 3. Map to ContentItems for UI
+        self.learningItems = recentTopics.map { topic in
+            var type = topic.materialType
+            if type == "Flashcards" { type = "Flashcard" } // Map Plural to Singular
+            if type == "Cheatsheet" { type = "Notes" }     // Map Cheatsheet to Notes icon
+            
+            return ContentItem(title: topic.name, iconName: "doc.text", itemType: type)
+        }
+        
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
     }
     
     // MARK: - Setup
@@ -111,19 +150,14 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             ContentItem(title: "New File", iconName: "plus.circle.fill", itemType: "AddButton")
         ]
         
-        learningItems = [
-            ContentItem(title: "Physics Ch 4 Quiz", iconName: "checkmark.circle.fill", itemType: "Quiz"),
-            ContentItem(title: "Bio Definitions", iconName: "rectangle.stack", itemType: "Flashcard"),
-            ContentItem(title: "Area under functions", iconName: "book.fill", itemType: "Topic"),
-            ContentItem(title: "History Notes", iconName: "doc.text.fill", itemType: "Notes")
-        ]
+        // Start empty, will be filled by loadRecentLearningData
+        learningItems = []
         
         gameItems = [
             GameItem(title: "", imageAsset: "Gemini_Generated_Image_p66f9tp66f9tp66f-removebg-preview"),
             GameItem(title: "", imageAsset: "Gemini_Generated_Image_y6xx8iy6xx8iy6xx-removebg-preview")
         ]
         
-        // Initial Side Quests (No Difficulty)
         sideQuests = [
             SideQuest(title: "Read Chapter 1"),
             SideQuest(title: "Complete Assignment")
@@ -203,7 +237,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // MARK: - Navigation Preparation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        // ✅ FIXED: Correctly passes File Path to UploadConfirmationViewController
+        // Correctly passes File Path to UploadConfirmationViewController
         if segue.identifier == showUploadConfirmationSegueID {
             if let destinationVC = segue.destination as? UploadConfirmationViewController,
                let filePath = sender as? String {
@@ -237,12 +271,11 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         
         // Flashcards Segue
         if segue.identifier == showFlashcardsSegueID {
-            /* // Uncomment this once FlashcardsViewController is created
-             if let destVC = segue.destination as? FlashcardsViewController,
+             // Uncomment this once FlashcardsViewController is created
+             if let destVC = segue.destination as? FlashcardViewController,
                 let topic = sender as? Topic {
-                 destVC.topic = topic
+                  destVC.currentTopic = topic
              }
-             */
         }
     }
     
@@ -269,7 +302,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .sideQuests:
-                // Dynamic height for Side Quests
                 let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(300))
                 let item = NSCollectionLayoutItem(layoutSize: size)
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: size, subitems: [item])
@@ -287,8 +319,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .continueLearning:
-                // Height based on items + spacing
                 let rowHeight: CGFloat = 75
+                // Show max 2 items unless expanded
                 let countToShow = isLearningExpanded ? learningItems.count : min(learningItems.count, 2)
                 let totalHeight = CGFloat(max(countToShow, 1)) * rowHeight
                 
@@ -338,7 +370,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             return cell
             
         case .sideQuests:
-            // Configure Side Quests
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: sideQuestsCellID, for: indexPath) as! SideQuestsCollectionViewCell
             cell.configure(with: self.sideQuests)
             cell.delegate = self
@@ -352,6 +383,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             
         case .continueLearning:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: continueLearningCellID, for: indexPath) as! ContinueLearningCollectionViewCell
+            // Show all (expanded) or top 2 (collapsed)
             let itemsToShow = isLearningExpanded ? learningItems : Array(learningItems.prefix(2))
             cell.configure(with: itemsToShow)
             cell.delegate = self
@@ -371,7 +403,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerID, for: indexPath) as! HeaderViewCollectionReusableView
         let sectionType = HomeSection.allCases[indexPath.section]
         
-        // Header for Side Quests
         if sectionType == .sideQuests {
             headerView.isHidden = false
             headerView.configureHeader(with: "Daily Side Quests", showViewAll: false, section: indexPath.section)
@@ -410,19 +441,19 @@ extension HomeViewController: HeaderViewDelegate {
 extension HomeViewController: SideQuestDelegate {
     func didUpdateQuests(_ quests: [SideQuest]) {
         self.sideQuests = quests
-        // Animate resize
         collectionView.collectionViewLayout.invalidateLayout()
     }
     
     func didCompleteQuest(_ quest: SideQuest) {
         var completed = quest
         completed.isCompleted = true
-        self.completedQuests.insert(completed, at: 0) // Add to top of history
+        self.completedQuests.insert(completed, at: 0)
     }
     
     func didTapHistory() {
-        let vc = QuestHistoryViewController()
-        vc.history = self.completedQuests
+        let vc = UIViewController()
+        vc.title = "Quest History"
+        vc.view.backgroundColor = .systemBackground
         if let nav = navigationController {
             nav.pushViewController(vc, animated: true)
         } else {
@@ -431,7 +462,6 @@ extension HomeViewController: SideQuestDelegate {
     }
     
     func didEarnXP(amount: Int, sourceView: UIView) {
-        // Floating XP Animation
         let frame = sourceView.convert(sourceView.bounds, to: self.view)
         let lbl = UILabel(frame: frame)
         lbl.text = "+\(amount) XP"
@@ -448,13 +478,13 @@ extension HomeViewController: SideQuestDelegate {
     }
 }
 
-// MARK: - Continue Learning Delegate (Navigation)
+// MARK: - Continue Learning Delegate
 extension HomeViewController: ContinueLearningCellDelegate {
     func didSelectLearningItem(_ item: ContentItem) {
         let topic = Topic(
             name: item.title,
             lastAccessed: "Just now",
-            materialType: item.itemType, // Pass type dynamically
+            materialType: item.itemType,
             largeContentBody: "",
             parentSubjectName: "General"
         )
@@ -462,7 +492,6 @@ extension HomeViewController: ContinueLearningCellDelegate {
         if item.itemType == "Quiz" {
             performSegue(withIdentifier: showQuizStartSegueID, sender: topic)
         } else if item.itemType == "Flashcard" {
-            // Flashcard Segue
             performSegue(withIdentifier: showFlashcardsSegueID, sender: topic)
         } else {
             performSegue(withIdentifier: showNotesDetailSegueID, sender: topic)
@@ -479,10 +508,8 @@ extension HomeViewController: QuickGamesCellDelegate {
 }
 
 // MARK: - Upload Delegate & Document Picker
-// MARK: - Upload Delegate & Document Picker
 extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
-    // Helper to perform segue
     func navigateToConfirmation(with contentPath: String) {
         performSegue(withIdentifier: showUploadConfirmationSegueID, sender: contentPath)
     }
@@ -501,28 +528,26 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         present(picker, animated: true)
     }
     
-    // ✅ 1. Paste Link: Still uses the small alert with strict validation
+    // 1. Paste Link: Small Alert
     func uploadCellDidTapLink(_ cell: UploadContentCollectionViewCell) {
         showLinkInputAlert()
     }
     
-    // ✅ 2. Type Note: Now opens a BIG sheet instead of a small alert
+    // 2. Type Note: Full Screen Sheet
     func uploadCellDidTapText(_ cell: UploadContentCollectionViewCell) {
         let noteVC = NoteInputViewController()
         noteVC.onSave = { [weak self] text in
-            // Pass the text note to the confirmation screen
             self?.navigateToConfirmation(with: text)
         }
         
         let nav = UINavigationController(rootViewController: noteVC)
         if let sheet = nav.sheetPresentationController {
-            sheet.detents = [.medium(), .large()] // Half or full screen
+            sheet.detents = [.medium(), .large()]
             sheet.prefersGrabberVisible = true
         }
         present(nav, animated: true)
     }
     
-    // Logic for Link Validation
     private func showLinkInputAlert() {
         let alert = UIAlertController(title: "Add Resource Link", message: nil, preferredStyle: .alert)
         alert.addTextField { $0.placeholder = "https://..." }
@@ -538,7 +563,7 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
             } else {
                 let errorAlert = UIAlertController(title: "Invalid Link", message: "URL must start with http:// or https://", preferredStyle: .alert)
                 errorAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                    self.showLinkInputAlert() // Try again
+                    self.showLinkInputAlert()
                 })
                 self.present(errorAlert, animated: true)
             }
@@ -548,13 +573,11 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         present(alert, animated: true)
     }
     
-    // Document Picker Logic
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
         navigateToConfirmation(with: url.path)
     }
     
-    // Image Picker Logic (Saves to file)
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true) {
             guard let image = info[.originalImage] as? UIImage,
@@ -574,8 +597,7 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
     }
 }
 
-// MARK: - New Large Note Input Controller
-// Paste this class at the very bottom of your file, outside the HomeViewController class
+// MARK: - Note Input Controller
 class NoteInputViewController: UIViewController {
     var onSave: ((String) -> Void)?
     private let textView = UITextView()
@@ -611,10 +633,10 @@ class NoteInputViewController: UIViewController {
         dismiss(animated: true)
     }
 }
-// MARK: - Hi Alex Cell Delegate (Daily Challenge)
+
+// MARK: - Daily Challenge Delegate
 extension HomeViewController: HiAlexCellDelegate {
     func didTapPlayNow() {
         performSegue(withIdentifier: showDailyChallengeSegueID, sender: nil)
     }
 }
-
