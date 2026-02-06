@@ -735,7 +735,6 @@
                     <navigationItem key="navigationItem" title="Add Flashcard" id="TiB-JD-QpO"/>
                     <connections>
                         <outlet property="definitionsTextField" destination="hxl-Z6-dqb" id="M7S-m4-Qk7"/>
-                        <outlet property="termLabel" destination="DxQ-wE-oLw" id="XLv-95-grY"/>
                         <outlet property="termsTextField" destination="yOY-pp-8qv" id="PIH-2D-MHI"/>
                     </connections>
                 </viewController>
