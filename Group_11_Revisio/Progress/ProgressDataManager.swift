@@ -41,7 +41,12 @@ class ProgressDataManager {
         return max(0, requiredXP - totalXP)
     }
 
+    // Change this in ProgressDataManager.swift
     private init() {
+        // Keep it empty to prevent recursion during app launch
+    }
+
+    func start() {
         loadInitialData()
         refreshStreakStatus()
     }
