@@ -30,7 +30,6 @@ class ProgressViewContoller: UIViewController {
     @IBOutlet weak var awardsCard: UIView!
     @IBOutlet weak var awardsLabel: UILabel!
     @IBOutlet weak var monthNameLabel: UILabel!
-    @IBOutlet weak var progressBarCard: UIView!
     @IBOutlet weak var mainMonthBagdeImageView: UIImageView!
     
     // Legend Container
@@ -40,14 +39,16 @@ class ProgressViewContoller: UIViewController {
         private var hostingController: UIHostingController<BarChartView>?
                 
         // MARK: - Lifecycle
-        override func viewDidLoad() {
-            super.viewDidLoad()
-            setupUI()
-//            setupLegend() // Initialize the color legend
-            loadDataAndRefreshChart()
-            
-            NotificationCenter.default.addObserver(self, selector: #selector(updateGamificationUI), name: .xpDidUpdate, object: nil)
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+        
+        // Move heavy data loading to a slight delay or a safer lifecycle hook
+        DispatchQueue.main.async {
+            ProgressDataManager.shared.loadInitialData()
+            self.loadDataAndRefreshChart()
         }
+    }
                 
         override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
@@ -179,8 +180,6 @@ class ProgressViewContoller: UIViewController {
             
             monthNameLabel.text = "January Challenge"
             mainMonthBagdeImageView.image = UIImage(named: "awards_monthly_main")
-            
-            progressBarCard.layer.cornerRadius = 16
         }
         
         override func viewDidLayoutSubviews() {

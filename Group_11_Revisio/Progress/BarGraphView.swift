@@ -6,16 +6,14 @@ struct BarChartView: View {
     @State private var isShowingDaily: Bool = true
     @State private var scrolledID: Int?
     
-    // Color Setup: Blue for Study, Cyan for Games (Entertainment)
     private let colors = (
         study: Color.blue,
-        games: Color(red: 0.0, green: 0.9, blue: 1.0) // Vibrant Cyan
+        games: Color(red: 0.0, green: 0.9, blue: 1.0)
     )
     
     private var history: [[StudyData]] { isShowingDaily ? model.dailyHistory : model.weeklyHistory }
     private var currentIdx: Int { scrolledID ?? max(0, history.count - 1) }
     
-    // Logic to detect if user has scrolled away from the most recent data
     private var isNotAtEnd: Bool {
         guard !history.isEmpty else { return false }
         return currentIdx < history.count - 1
@@ -36,6 +34,7 @@ struct BarChartView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            
             // 1. Segmented Picker
             Picker("Time Frame", selection: $isShowingDaily) {
                 Text("Week").tag(false)
@@ -46,7 +45,7 @@ struct BarChartView: View {
             .padding(.top, 4)
             .padding(.bottom, 8)
             
-            // 2. Header with Dynamic "Show Today" / "Show This Week" Button
+            // 2. Header
             HStack(alignment: .lastTextBaseline) {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(getDateLabel(for: currentIdx))
@@ -65,7 +64,6 @@ struct BarChartView: View {
                             scrolledID = history.count - 1
                         }
                     }) {
-                        // Dynamically changes text based on the isShowingDaily state
                         Text(isShowingDaily ? "Show Today" : "Show This Week")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.blue)
@@ -73,7 +71,7 @@ struct BarChartView: View {
                 }
             }
             .padding(.horizontal)
-            .padding(.bottom, 2)
+            .padding(.bottom, 6)
             
             // 3. Horizontal Scrollable Graph
             ScrollView(.horizontal, showsIndicators: false) {
@@ -97,9 +95,12 @@ struct BarChartView: View {
                 Spacer()
             }
             .padding(.horizontal, 16)
-            .padding(.top, 0)
-            .padding(.bottom, 8)
+            .padding(.top, 8)
+            .padding(.bottom, 12)
         }
+        
+        // This ensures the view has a solid minimum height
+        .frame(minHeight: 330)
         .onAppear { scrolledID = max(0, history.count - 1) }
         .onChange(of: isShowingDaily) {
             scrolledID = history.count - 1

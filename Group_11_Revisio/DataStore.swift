@@ -21,10 +21,12 @@ class DataManager {
     private init() {
         loadFromDisk()
         
-        // If we loaded nothing (either file didn't exist or was corrupt), setup defaults
         if savedMaterials.isEmpty {
-            setupDefaultData()
-            saveToDisk()
+            // Wrap this to allow 'shared' to finish initializing first
+            DispatchQueue.main.async {
+                self.setupDefaultData()
+                self.saveToDisk()
+            }
         }
     }
     
