@@ -285,7 +285,7 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
     private func persistGeneratedCards() {
         guard let subject = parentSubjectName, let topic = currentTopic else { return }
         let finalContent = flashcards.map { "\($0.term)|\($0.definition)" }.joined(separator: "\n")
-        let topicToSave = Topic(name: topic.name, lastAccessed: "Just now", materialType: "Flashcards", largeContentBody: finalContent, parentSubjectName: subject)
+        let topicToSave = Topic(name: topic.name, lastAccessed: "Just now", materialType: "Flashcards", parentSubjectName: subject, largeContentBody: finalContent)
         DataManager.shared.addTopic(to: subject, topic: topicToSave)
     }
 

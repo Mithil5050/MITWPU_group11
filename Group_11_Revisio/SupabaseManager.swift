@@ -1,3 +1,11 @@
+//
+//  SupabaseManager.swift
+//  Group_11_Revisio
+//
+//  Created by Mithil on 09/02/26.
+//
+
+
 import Foundation
 import Supabase
 
@@ -5,8 +13,8 @@ class SupabaseManager {
     static let shared = SupabaseManager()
     
     // ⚠️ PASTE YOUR KEYS HERE
-    private let projectURL = URL(string: "PASTE_YOUR_PROJECT_URL_HERE")!
-    private let apiKey = "PASTE_YOUR_ANON_KEY_HERE"
+    private let projectURL = URL(string: "https://mdtphliezfsqiqbgceen.supabase.co")!
+    private let apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kdHBobGllemZzcWlxYmdjZWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MTgzMDUsImV4cCI6MjA4NjE5NDMwNX0.6BubgKX_aewynDg2IC1aNMYq_tYm9_Mhz8vNzY__ANc"
     
     let client: SupabaseClient
     

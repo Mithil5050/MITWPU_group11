@@ -1,10 +1,9 @@
 //
-//  ExpandableFileCellDelegate.swift
+//  ExpandableFileCell.swift
 //  Group_11_Revisio
 //
 //  Created by Mithil on 11/02/26.
 //
-
 
 import UIKit
 
@@ -23,7 +22,7 @@ class ExpandableFileCell: UITableViewCell {
     private let headerStack = UIStackView()
     private let iconImageView = UIImageView()
     private let titleLabel = UILabel()
-    private let statusLabel = UILabel() // "Analyzing..." or "5 Topics"
+    private let statusLabel = UILabel() // "Waiting...", "Analyzing...", or "5 Selected"
     private let chevronImageView = UIImageView()
     
     // The container for the list of topics (Hidden when collapsed)
@@ -42,16 +41,19 @@ class ExpandableFileCell: UITableViewCell {
         backgroundColor = .clear
         selectionStyle = .none
         
-        // 1. Main Card Style
+        // 1. Main Container (Background)
         mainContainer.backgroundColor = UIColor { trait in
             return trait.userInterfaceStyle == .dark ? .secondarySystemGroupedBackground : .systemGray6
         }
+        
+        // ✅ ADDED: Corner Radius
         mainContainer.layer.cornerRadius = 12
         mainContainer.clipsToBounds = true
+        
         mainContainer.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(mainContainer)
         
-        // 2. Header Stack (Icon + Title + Chevron)
+        // 2. Header Stack
         headerStack.axis = .horizontal
         headerStack.spacing = 12
         headerStack.alignment = .center
@@ -64,8 +66,7 @@ class ExpandableFileCell: UITableViewCell {
         titleLabel.font = .systemFont(ofSize: 16, weight: .medium)
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
-        statusLabel.font = .systemFont(ofSize: 12, weight: .regular)
-        statusLabel.textColor = .secondaryLabel
+        statusLabel.font = .systemFont(ofSize: 13, weight: .regular)
         
         chevronImageView.image = UIImage(systemName: "chevron.down")
         chevronImageView.tintColor = .secondaryLabel
@@ -79,28 +80,31 @@ class ExpandableFileCell: UITableViewCell {
         
         mainContainer.addSubview(headerStack)
         
-        // 3. Topics Container (Vertical Stack of Checkboxes)
+        // 3. Topics Container
         topicsContainer.axis = .vertical
-        topicsContainer.spacing = 8
+        topicsContainer.spacing = 0 // Clean list look
         topicsContainer.translatesAutoresizingMaskIntoConstraints = false
         mainContainer.addSubview(topicsContainer)
         
-        // 4. Layout Constraints
+        // 4. Constraints (Edge-to-Edge, No External Padding)
         NSLayoutConstraint.activate([
-            mainContainer.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 6),
-            mainContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            mainContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            mainContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -6),
+            // Main container spans full width of the cell
+            mainContainer.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 1), // Tiny gap for separator effect
+            mainContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 0),
+            mainContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 0),
+            mainContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -1),
             
-            headerStack.topAnchor.constraint(equalTo: mainContainer.topAnchor, constant: 12),
-            headerStack.leadingAnchor.constraint(equalTo: mainContainer.leadingAnchor, constant: 12),
-            headerStack.trailingAnchor.constraint(equalTo: mainContainer.trailingAnchor, constant: -12),
-            headerStack.heightAnchor.constraint(equalToConstant: 30),
+            // Header Internal Padding (So text isn't on the edge of the screen)
+            headerStack.topAnchor.constraint(equalTo: mainContainer.topAnchor, constant: 16),
+            headerStack.leadingAnchor.constraint(equalTo: mainContainer.leadingAnchor, constant: 20),
+            headerStack.trailingAnchor.constraint(equalTo: mainContainer.trailingAnchor, constant: -20),
+            headerStack.heightAnchor.constraint(equalToConstant: 24),
             
-            topicsContainer.topAnchor.constraint(equalTo: headerStack.bottomAnchor, constant: 12),
-            topicsContainer.leadingAnchor.constraint(equalTo: mainContainer.leadingAnchor, constant: 12),
-            topicsContainer.trailingAnchor.constraint(equalTo: mainContainer.trailingAnchor, constant: -12),
-            topicsContainer.bottomAnchor.constraint(equalTo: mainContainer.bottomAnchor, constant: -12)
+            // Topics Container Layout
+            topicsContainer.topAnchor.constraint(equalTo: headerStack.bottomAnchor, constant: 16),
+            topicsContainer.leadingAnchor.constraint(equalTo: mainContainer.leadingAnchor, constant: 0),
+            topicsContainer.trailingAnchor.constraint(equalTo: mainContainer.trailingAnchor, constant: 0),
+            topicsContainer.bottomAnchor.constraint(equalTo: mainContainer.bottomAnchor, constant: -8)
         ])
     }
     
@@ -109,18 +113,23 @@ class ExpandableFileCell: UITableViewCell {
         self.fileIndex = index
         titleLabel.text = file.url.lastPathComponent
         
-        // Icon
+        // Icon logic
         let isPDF = file.url.pathExtension.lowercased() == "pdf"
         iconImageView.image = UIImage(systemName: isPDF ? "doc.text.fill" : "doc.fill")
         iconImageView.tintColor = .systemIndigo
         
-        // Status & Chevron Logic
-        if file.isAnalyzing {
+        // ✅ Status Logic
+        if file.isWaiting {
+            statusLabel.text = "Waiting..."
+            statusLabel.textColor = .systemOrange
+            chevronImageView.isHidden = true
+        } else if file.isAnalyzing {
             statusLabel.text = "Analyzing..."
             statusLabel.textColor = .systemBlue
             chevronImageView.isHidden = true
         } else if file.topics.isEmpty {
             statusLabel.text = "No topics found"
+            statusLabel.textColor = .secondaryLabel
             chevronImageView.isHidden = true
         } else {
             let selectedCount = file.selectedTopicIndices.count
@@ -128,23 +137,24 @@ class ExpandableFileCell: UITableViewCell {
             statusLabel.textColor = .secondaryLabel
             chevronImageView.isHidden = false
             
-            // Rotate chevron if expanded
+            // Rotate chevron
             let rotationAngle: CGFloat = file.isExpanded ? .pi : 0
             chevronImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
         }
         
         // Topics List Logic
-        topicsContainer.arrangedSubviews.forEach { $0.removeFromSuperview() } // Clear old views
+        topicsContainer.arrangedSubviews.forEach { $0.removeFromSuperview() }
         topicsContainer.isHidden = !file.isExpanded
         
         if file.isExpanded {
-            // Divider Line
+            // Add Divider
             let divider = UIView()
             divider.backgroundColor = .systemGray5
+            divider.translatesAutoresizingMaskIntoConstraints = false
             divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
             topicsContainer.addArrangedSubview(divider)
             
-            // Generate rows for topics
+            // Add Rows
             for (i, topic) in file.topics.enumerated() {
                 let row = createTopicRow(title: topic, isSelected: file.selectedTopicIndices.contains(i), topicIndex: i)
                 topicsContainer.addArrangedSubview(row)
@@ -153,22 +163,39 @@ class ExpandableFileCell: UITableViewCell {
     }
     
     private func createTopicRow(title: String, isSelected: Bool, topicIndex: Int) -> UIView {
+        let container = UIView()
+        
         let button = UIButton(type: .custom)
         button.contentHorizontalAlignment = .leading
         
-        let iconName = isSelected ? "checkmark.square.fill" : "square"
+        // Icon selection
+        let iconName = isSelected ? "checkmark.circle.fill" : "circle"
         button.setImage(UIImage(systemName: iconName), for: .normal)
+        
+        // Text styling
         button.setTitle("  " + title, for: .normal)
         button.setTitleColor(.label, for: .normal)
         button.tintColor = isSelected ? .systemBlue : .systemGray3
-        button.titleLabel?.font = .systemFont(ofSize: 14)
+        button.titleLabel?.font = .systemFont(ofSize: 15)
         button.titleLabel?.numberOfLines = 2
         
-        // Tag allows us to identify which topic was tapped
+        // Internal Padding
+        button.contentEdgeInsets = UIEdgeInsets(top: 12, left: 20, bottom: 12, right: 20)
+        
         button.tag = topicIndex
         button.addTarget(self, action: #selector(topicTapped(_:)), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
         
-        return button
+        container.addSubview(button)
+        
+        NSLayoutConstraint.activate([
+            button.topAnchor.constraint(equalTo: container.topAnchor),
+            button.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            button.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            button.trailingAnchor.constraint(equalTo: container.trailingAnchor)
+        ])
+        
+        return container
     }
     
     @objc private func topicTapped(_ sender: UIButton) {

@@ -1,22 +1,11 @@
-//
-//  QuizSessionViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Mithil on 18/01/26.
-//
-
 import UIKit
 
 class QuizSessionViewController: UIViewController {
     
     // MARK: - Outlets
     @IBOutlet weak var quizQuestionLabel: UILabel!
-    
-    // ✅ Added Progress Bar Outlet
     @IBOutlet weak var progressBar: UIProgressView!
-    
     @IBOutlet var optionButtons: [UIButton]!
-    
     @IBOutlet weak var backQButton: UIButton!
     @IBOutlet weak var forwardQButton: UIButton!
     @IBOutlet weak var countdownLabel: UILabel!
@@ -26,12 +15,14 @@ class QuizSessionViewController: UIViewController {
     var parentSubject: String?
     
     var sessionQuestions: [QuizQuestion] = []
-    // Separate array for explanations
+    
+    // PRESERVED: Explanations array
     var explanations: [String] = []
     
     var questionIndex = 0
-    var sourceName: String? = "CS Quiz"
+    var sourceName: String? = "Quiz"
     
+    // PRESERVED: UI bar items
     var hintItem: UIBarButtonItem?
     var flagItem: UIBarButtonItem?
     
@@ -43,8 +34,12 @@ class QuizSessionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = sourceName
-        loadDummyData()
-        styleOptionButtons()
+        
+        // Set background to black to match the "Image 2" dark mode look
+        self.view.backgroundColor = .black
+        
+        loadData()
+        styleOptionButtons() // ✅ Applies the new "Image 2" styling
         configureNavBarItems()
         renderQuestion()
         initiateTimer()
@@ -55,241 +50,263 @@ class QuizSessionViewController: UIViewController {
         sessionTimer?.invalidate()
     }
     
-    // MARK: - Dummy Data with Explanations
-    func loadDummyData() {
-        // 1. Questions
-        sessionQuestions = [
-            QuizQuestion(
-                questionText: "Which data structure follows the LIFO principle?",
-                answers: ["Queue", "Stack", "Linked List", "Tree"],
-                correctAnswerIndex: 1, userAnswerIndex: nil, isFlagged: false,
-                hint: "Think about a stack of plates."
-            ),
-            QuizQuestion(
-                questionText: "What does 'HTTP' stand for?",
-                answers: ["HyperText Transfer Protocol", "HighText Transfer Protocol", "HyperText Transmission Process", "HyperTech Transfer Protocol"],
-                correctAnswerIndex: 0, userAnswerIndex: nil, isFlagged: false,
-                hint: "Standard protocol for documents."
-            ),
-            QuizQuestion(
-                questionText: "What is the time complexity of a binary search?",
-                answers: ["O(n)", "O(n^2)", "O(log n)", "O(1)"],
-                correctAnswerIndex: 2, userAnswerIndex: nil, isFlagged: false,
-                hint: "Halves space at each step."
-            ),
-            QuizQuestion(
-                questionText: "Which is NOT a core concept of OOP?",
-                answers: ["Encapsulation", "Polymorphism", "Compilation", "Inheritance"],
-                correctAnswerIndex: 2, userAnswerIndex: nil, isFlagged: false,
-                hint: "One is a build process."
-            )
-        ]
+    // MARK: - Data Loading
+    func loadData() {
+        if let aiQuestions = currentTopic?.quizQuestions, !aiQuestions.isEmpty {
+            self.sessionQuestions = aiQuestions
+            print("🧠 Loaded \(aiQuestions.count) AI Questions.")
+            self.explanations = aiQuestions.map { $0.hint ?? "No explanation available." }
+        }
+        else {
+            print("⚠️ No AI questions found, loading hardcoded data...")
+            loadDummyData()
+        }
         
-        // 2. Explanations (Must match order of questions above)
-        explanations = [
-            "A Stack adds and removes items from the same end (the top), following Last In, First Out (LIFO). Queues follow FIFO.",
-            "HTTP stands for HyperText Transfer Protocol, which is the foundation of data communication for the World Wide Web.",
-            "Binary search repeatedly divides the search interval in half. This process has a logarithmic time complexity O(log n).",
-            "Compilation is the process of translating source code into object code. The 4 pillars of OOP are Encapsulation, Abstraction, Inheritance, and Polymorphism."
-        ]
-    }
-
-    // MARK: - Timer & Logic (Standard)
-    func initiateTimer() {
-        sessionTimer?.invalidate()
-        if totalSessionTime > 0 {
+        if !sessionQuestions.isEmpty {
+            totalSessionTime = sessionQuestions.count * 30
             secondsRemaining = totalSessionTime
-            countdownLabel.isHidden = false
-            refreshTimeLabel()
-            sessionTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerTick), userInfo: nil, repeats: true)
-        } else {
-            countdownLabel.isHidden = true
         }
     }
     
-    @objc func timerTick() {
-        if secondsRemaining > 0 {
-            secondsRemaining -= 1
-            refreshTimeLabel()
-        } else {
-            sessionTimer?.invalidate()
-            finishSession()
-        }
+    func loadDummyData() {
+        let legacyName = sourceName?.replacingOccurrences(of: " Quiz", with: "") ?? ""
+        self.sessionQuestions = QuizManager.getQuestions(for: legacyName)
+        self.explanations = self.sessionQuestions.map { $0.hint ?? "" }
     }
     
-    func refreshTimeLabel() {
-        let minutes = Int(secondsRemaining) / 60
-        let seconds = Int(secondsRemaining) % 60
-        countdownLabel.text = String(format: "%02i:%02i", minutes, seconds)
-    }
-
-    // MARK: - UI Rendering
-    func renderQuestion() {
-        guard questionIndex < sessionQuestions.count else { return }
-        let question = sessionQuestions[questionIndex]
+    // MARK: - Timer Logic
+    func initiateTimer() {
+        secondsRemaining = totalSessionTime
+        updateTimerLabel()
         
-        // ✅ CHANGED: Title shows only "Question X"
-        title = "Question \(questionIndex + 1)"
-        
-        // ✅ ADDED: Progress Bar Logic
-        let totalQuestions = Float(sessionQuestions.count)
-        let currentProgress = Float(questionIndex + 1) / totalQuestions
-        progressBar.setProgress(currentProgress, animated: true)
-        
-        quizQuestionLabel.text = question.questionText
-        updateFlagIcon()
-        resetOptionStyles()
-        
-        if let savedIndex = question.userAnswerIndex {
-            let selectedButton = optionButtons[savedIndex]
-            selectedButton.backgroundColor = UIColor.systemGray4
-            selectedButton.layer.borderColor = UIColor.systemBlue.cgColor
-            selectedButton.layer.borderWidth = 2.0
-        }
-        
-        backQButton.isHidden = (questionIndex == 0)
-        forwardQButton.setTitle(questionIndex == sessionQuestions.count - 1 ? "Finish" : "Next", for: .normal)
-        
-        let prefixes = ["A.", "B.", "C.", "D."]
-        for (index, button) in optionButtons.enumerated() {
-            if index < question.answers.count {
-                button.setTitle("\(prefixes[index]) \(question.answers[index])", for: .normal)
-                button.isHidden = false
-            } else { button.isHidden = true }
-        }
-    }
-    
-    // MARK: - Styling
-        func styleOptionButtons() {
-            for button in optionButtons {
-                // 1. Reset configuration to ensure manual styling works (iOS 15+ fix)
-                button.configuration = nil
-             
-                // 2. Border & Corner Styling
-                button.layer.cornerRadius = 12
-                button.layer.borderWidth = 1.0
-                button.layer.borderColor = UIColor.systemGray4.cgColor
-                button.backgroundColor = .clear
-                button.setTitleColor(.label, for: .normal)
-             
-                // 3. ✅ LEFT ALIGNMENT FIX
-                button.contentHorizontalAlignment = .left
-             
-                // 4. ✅ Add Padding (Top, Left, Bottom, Right)
-                button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 20, bottom: 10, right: 20)
-             
-                // 5. Text Handling (Optional: Handles long answers better)
-                button.titleLabel?.numberOfLines = 2
-                button.titleLabel?.lineBreakMode = .byTruncatingTail
+        sessionTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            if self.secondsRemaining > 0 {
+                self.secondsRemaining -= 1
+                self.updateTimerLabel()
+            } else {
+                self.sessionTimer?.invalidate()
+                self.finishQuiz()
             }
         }
+    }
     
-    func resetOptionStyles() {
-        for button in optionButtons {
-            button.backgroundColor = .clear
-            button.layer.borderColor = UIColor.systemGray4.cgColor
-            button.layer.borderWidth = 1.0
+    func updateTimerLabel() {
+        let min = secondsRemaining / 60
+        let sec = secondsRemaining % 60
+        countdownLabel.text = String(format: "%02d:%02d", min, sec)
+        countdownLabel.textColor = (secondsRemaining < 30) ? .systemRed : .white
+    }
+    
+    // MARK: - UI Rendering (✅ MATCHING IMAGE 2)
+    func renderQuestion() {
+        guard !sessionQuestions.isEmpty, questionIndex < sessionQuestions.count else { return }
+        
+        let q = sessionQuestions[questionIndex]
+        let prefixes = ["A.", "B.", "C.", "D."] // Prefixes like Image 2
+        
+        // Question Text Styling
+        quizQuestionLabel.textColor = .white
+        quizQuestionLabel.font = UIFont.systemFont(ofSize: 20, weight: .medium) // iOS System Font
+        
+        UIView.transition(with: quizQuestionLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
+            self.quizQuestionLabel.text = q.questionText
+        }, completion: nil)
+        
+        let progress = Float(questionIndex + 1) / Float(sessionQuestions.count)
+        progressBar.setProgress(progress, animated: true)
+        progressBar.trackTintColor = .darkGray
+        progressBar.progressTintColor = .systemBlue
+        
+        for (i, btn) in optionButtons.enumerated() {
+            if i < q.answers.count {
+                btn.isHidden = false
+                
+                // Add Prefix "A. Option Text"
+                let prefix = (i < prefixes.count) ? prefixes[i] : ""
+                let fullText = "\(prefix)   \(q.answers[i])"
+                
+                btn.setTitle(fullText, for: .normal)
+                
+                // ✅ DEFAULT STATE (Unselected) - Matches Image 2
+                // Clear background, Grey Border, White Text
+                btn.backgroundColor = .clear
+                btn.layer.borderColor = UIColor.systemGray.cgColor
+                btn.layer.borderWidth = 1
+                btn.setTitleColor(.white, for: .normal)
+                
+                // ✅ SELECTED STATE
+                // Highlight border blue, slight fill
+                if let userIdx = q.userAnswerIndex, userIdx == i {
+                    btn.layer.borderColor = UIColor.systemBlue.cgColor
+                    btn.layer.borderWidth = 2
+                    btn.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.15)
+                }
+            } else {
+                btn.isHidden = true
+            }
+        }
+        
+        backQButton.isEnabled = (questionIndex > 0)
+        forwardQButton.setTitle(questionIndex == sessionQuestions.count - 1 ? "Finish" : "Next", for: .normal)
+    }
+    
+    // MARK: - Button Styling (✅ UPDATED FOR iOS LOOK)
+    func styleOptionButtons() {
+        for btn in optionButtons {
+            // Shape
+            btn.layer.cornerRadius = 16 // More rounded like Image 2
+            
+            // Alignment
+            btn.contentHorizontalAlignment = .leading // Left Align
+            
+            // Padding (Critical for looking good)
+            // Top/Bottom 16, Left/Right 20
+            btn.contentEdgeInsets = UIEdgeInsets(top: 16, left: 20, bottom: 16, right: 20)
+            
+            // Font
+            btn.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .regular) // iOS Standard Body
+            
+            // Multi-line support
+            btn.titleLabel?.numberOfLines = 0
+            btn.titleLabel?.lineBreakMode = .byWordWrapping
+        }
+        
+        // Style Navigation Buttons (Pill shape, Dark Grey fill)
+        let navButtons = [backQButton, forwardQButton]
+        for btn in navButtons {
+            btn?.layer.cornerRadius = 24 // Pill shape
+            btn?.backgroundColor = UIColor(white: 0.15, alpha: 1.0) // Dark Grey Background
+            btn?.setTitleColor(.white, for: .normal)
+            btn?.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         }
     }
     
     func configureNavBarItems() {
-        if hintItem == nil {
-            let hint = UIBarButtonItem(image: UIImage(systemName: "lightbulb"), style: .plain, target: self, action: #selector(showHintPressed))
-            let flag = UIBarButtonItem(image: UIImage(systemName: "flag"), style: .plain, target: self, action: #selector(toggleFlagPressed))
-            hintItem = hint; flagItem = flag
-            navigationItem.rightBarButtonItems = [flag, hint]
-        }
+        let flagImg = UIImage(systemName: "flag")
+        flagItem = UIBarButtonItem(image: flagImg, style: .plain, target: self, action: #selector(toggleFlag))
+        
+        let hintImg = UIImage(systemName: "lightbulb")
+        hintItem = UIBarButtonItem(image: hintImg, style: .plain, target: self, action: #selector(showHint))
+        
+        navigationItem.rightBarButtonItems = [flagItem!, hintItem!]
+        navigationController?.navigationBar.tintColor = .white
     }
     
-    @objc func showHintPressed() {
-        let q = sessionQuestions[questionIndex]
-        let alert = UIAlertController(title: "Hint", message: q.hint, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
-    }
-    
-    @objc func toggleFlagPressed() {
-        sessionQuestions[questionIndex].isFlagged.toggle()
-        updateFlagIcon()
-    }
-    
-    func updateFlagIcon() {
-        guard let btn = flagItem else { return }
-        let isFlagged = sessionQuestions[questionIndex].isFlagged
-        btn.image = UIImage(systemName: isFlagged ? "flag.fill" : "flag")
-        btn.tintColor = isFlagged ? .systemRed : .white
-    }
+    // MARK: - Actions
     
     @IBAction func optionSelected(_ sender: UIButton) {
-        resetOptionStyles()
-        guard let idx = optionButtons.firstIndex(of: sender) else { return }
-        sessionQuestions[questionIndex].userAnswerIndex = idx
-        sender.backgroundColor = UIColor.systemGray4
-        sender.layer.borderColor = UIColor.systemBlue.cgColor
-        sender.layer.borderWidth = 2.0
-    }
-    
-    @IBAction func prevQuestionPressed(_ sender: Any) {
-        if questionIndex > 0 {
-            questionIndex -= 1; renderQuestion()
-        }
+        guard let index = optionButtons.firstIndex(of: sender) else { return }
+        sessionQuestions[questionIndex].userAnswerIndex = index
+        let generator = UISelectionFeedbackGenerator()
+        generator.selectionChanged()
+        renderQuestion()
     }
     
     @IBAction func forwardButtonTapped(_ sender: UIButton) {
         if questionIndex < sessionQuestions.count - 1 {
-            questionIndex += 1; renderQuestion()
+            questionIndex += 1
         } else {
-            finishSession()
+            finishQuiz()
+            return
         }
+        renderQuestion()
+    }
+
+    @IBAction func backButtonTapped(_ sender: UIButton) {
+        if questionIndex > 0 {
+            questionIndex -= 1
+        }
+        renderQuestion()
     }
     
-    func finishSession() {
+    @objc func toggleFlag() {
+        sessionQuestions[questionIndex].isFlagged.toggle()
+    }
+    
+    @objc func showHint() {
+        let hintText = sessionQuestions[questionIndex].hint ?? "No hint available."
+        let alert = UIAlertController(title: "Hint", message: hintText, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
+    // MARK: - Finish & Save
+    func finishQuiz() {
         sessionTimer?.invalidate()
-        let results = calculateResults()
-        performSegue(withIdentifier: "NavigateToResults", sender: results)
-    }
-    
-    func calculateResults() -> FinalQuizResult {
+        
         var score = 0
         var details: [QuestionResultDetail] = []
-        for q in sessionQuestions {
-            let correct = (q.userAnswerIndex == q.correctAnswerIndex)
-            if correct { score += 1 }
-            // Stub for details (we use summaryList instead)
+        var summaryItems: [QuizSummaryItem] = []
+        
+        for (i, question) in sessionQuestions.enumerated() {
+            let isCorrect = (question.userAnswerIndex == question.correctAnswerIndex)
+            if isCorrect { score += 1 }
+            
             let detail = QuestionResultDetail(
-                questionText: q.questionText, wasCorrect: correct,
-                selectedAnswer: nil, correctAnswerFullText: "", isFlagged: q.isFlagged
+                questionText: question.questionText,
+                wasCorrect: isCorrect,
+                selectedAnswer: (question.userAnswerIndex != nil) ? question.answers[question.userAnswerIndex!] : "No Answer",
+                correctAnswerFullText: question.answers[question.correctAnswerIndex],
+                isFlagged: question.isFlagged
             )
             details.append(detail)
+            
+            let expl = (i < explanations.count) ? explanations[i] : (question.hint ?? "")
+            
+            let summary = QuizSummaryItem(
+                questionText: question.questionText,
+                userAnswerIndex: question.userAnswerIndex,
+                correctAnswerIndex: question.correctAnswerIndex,
+                allOptions: question.answers,
+                explanation: expl,
+                isCorrect: isCorrect
+            )
+            summaryItems.append(summary)
         }
-        return FinalQuizResult(finalScore: score, totalQuestions: sessionQuestions.count, timeElapsed: TimeInterval(totalSessionTime - secondsRemaining), sourceName: sourceName ?? "Quiz", details: details)
+        
+        let newAttempt = QuizAttempt(
+            id: UUID(),
+            date: Date(),
+            score: score,
+            totalQuestions: sessionQuestions.count,
+            summaryData: "Score: \(score)/\(sessionQuestions.count)"
+        )
+        
+        saveAttemptToTopic(attempt: newAttempt)
+        
+        let timeSpent = totalSessionTime - secondsRemaining
+        let finalResult = FinalQuizResult(
+            finalScore: score,
+            totalQuestions: sessionQuestions.count,
+            timeElapsed: TimeInterval(timeSpent),
+            sourceName: sourceName ?? "Quiz",
+            details: details
+        )
+        
+        performSegue(withIdentifier: "MapsToResults", sender: (finalResult, summaryItems))
+    }
+    
+    func saveAttemptToTopic(attempt: QuizAttempt) {
+        guard var topic = currentTopic else { return }
+        
+        if topic.attempts == nil { topic.attempts = [] }
+        topic.attempts?.append(attempt)
+        
+        DataManager.shared.updateTopic(subjectName: parentSubject ?? "General Study", topic: topic)
+        print("✅ Saved Quiz Attempt: \(attempt.score)")
     }
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "NavigateToResults" {
+        if segue.identifier == "MapsToResults" {
             if let dest = segue.destination as? QuizResultsViewController,
-               let res = sender as? FinalQuizResult {
+               let data = sender as? (FinalQuizResult, [QuizSummaryItem]) {
                 
-                dest.finalResult = res
+                dest.finalResult = data.0
+                dest.summaryData = data.1
                 dest.topicToSave = self.currentTopic
                 dest.parentFolder = self.parentSubject
-                
-                // ✅ CREATE SUMMARY LIST WITH EXPLANATIONS
-                var list: [QuizSummaryItem] = []
-                for (i, q) in sessionQuestions.enumerated() {
-                    let expl = (i < explanations.count) ? explanations[i] : ""
-                    let item = QuizSummaryItem(
-                        questionText: q.questionText,
-                        userAnswerIndex: q.userAnswerIndex,
-                        correctAnswerIndex: q.correctAnswerIndex,
-                        allOptions: q.answers,
-                        explanation: expl,
-                        isCorrect: (q.userAnswerIndex == q.correctAnswerIndex)
-                    )
-                    list.append(item)
-                }
-                dest.summaryData = list
             }
         }
     }

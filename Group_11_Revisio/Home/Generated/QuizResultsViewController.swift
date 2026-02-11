@@ -86,7 +86,7 @@ class QuizResultsViewController: UIViewController {
     @IBAction func homeButtonTapped(_ sender: UIButton) {
         if let topic = topicToSave, let subject = parentFolder {
             // Save logic for normal quizzes
-            let updatedTopic = Topic(name: topic.name, lastAccessed: "Just now", materialType: "Quiz", largeContentBody: topic.largeContentBody, parentSubjectName: subject, notesContent: topic.notesContent, cheatsheetContent: topic.cheatsheetContent)
+            let updatedTopic = Topic(name: topic.name, lastAccessed: "Just now", materialType: "Quiz", parentSubjectName: subject, largeContentBody: topic.largeContentBody, notesContent: topic.notesContent, cheatsheetContent: topic.cheatsheetContent)
             DataManager.shared.addTopic(to: subject, topic: updatedTopic)
             
             let alert = UIAlertController(title: "Saved!", message: "Quiz saved to '\(parentFolder ?? "Study")'.", preferredStyle: .alert)

@@ -91,8 +91,7 @@ class QuizStartViewController: UIViewController {
             name: topic.name,
             lastAccessed: "Just now",
             materialType: "Quiz",
-            largeContentBody: topic.largeContentBody,
-            parentSubjectName: subject,
+            parentSubjectName: subject, largeContentBody: topic.largeContentBody,
             notesContent: topic.notesContent,
             cheatsheetContent: topic.cheatsheetContent
         )

@@ -1,32 +1,9 @@
 import UIKit
 
 // MARK: - 1. Definitions
-// Ensure these are defined either here or in another file in your project.
 struct StudyContent {
     var filename: String
 }
-
-// If GenerationType is already defined in another file, keep this commented out.
-// If you get "Cannot find type 'GenerationType'" errors, uncomment this enum.
-
-//enum GenerationType: String, CustomStringConvertible {
-//    case none
-//    case quiz
-//    case flashcards
-//    case notes
-//    case cheatsheet
-//    
-//    var description: String {
-//        switch self {
-//        case .none: return "Content"
-//        case .quiz: return "Quiz"
-//        case .flashcards: return "Flashcards"
-//        case .notes: return "Notes"
-//        case .cheatsheet: return "Cheatsheet"
-//        }
-//    }
-//}
-
 
 // MARK: - Custom Card View
 @IBDesignable
@@ -150,6 +127,9 @@ class GenerateHomeViewController: UIViewController {
     @IBOutlet weak var easyButton: UIButton!
     @IBOutlet weak var mediumButton: UIButton!
     @IBOutlet weak var hardButton: UIButton!
+    
+    // Loading Indicator
+    private let loadingIndicator = UIActivityIndicatorView(style: .large)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -160,6 +140,7 @@ class GenerateHomeViewController: UIViewController {
         
         handleCardSelection(selectedCard: quizCardView, type: .quiz)
         updateDifficultyUI()
+        setupLoadingIndicator()
     }
     
     override func viewDidLayoutSubviews() {
@@ -173,6 +154,18 @@ class GenerateHomeViewController: UIViewController {
             label?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         }
         startCreationButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+    }
+    
+    private func setupLoadingIndicator() {
+        loadingIndicator.hidesWhenStopped = true
+        loadingIndicator.color = .systemBlue
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(loadingIndicator)
+        
+        NSLayoutConstraint.activate([
+            loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
     }
 
     private func setupCards() {
@@ -337,104 +330,173 @@ class GenerateHomeViewController: UIViewController {
             self.updateDifficultyUI()
         }
     }
+    
+    // MARK: - AI Creation Action (✅ Updated with Retry Logic)
+    @IBAction func startCreationButtonTapped(_ sender: UIButton) {
+        // 1. Get Topic Name & Source
+        guard let sourceItem = inputSourceData?.first else {
+            showError("No source material found.")
+            return
+        }
+        
+        let topicName = extractName(from: sourceItem)
 
-    private func generateDummyContent(topic: String, type: GenerationType) -> String {
-        switch type {
-        case .notes:
-            return """
-            # Notes: \(topic)
+        // 2. Get Difficulty
+        let difficultyString: String
+        switch currentDifficulty {
+        case .easy: difficultyString = "Easy"
+        case .medium: difficultyString = "Medium"
+        case .hard: difficultyString = "Hard"
+        }
+        
+        // 3. UI: Start Loading
+        sender.isEnabled = false
+        sender.setTitle("Reading File...", for: .normal)
+        loadingIndicator.startAnimating()
+        view.isUserInteractionEnabled = false
+
+        // 4. Call AI Asynchronously
+        Task {
+            // A. Extract Content (Text from PDF/Image/String)
+            let extractedText = await ContentExtractor.shared.extractContent(from: sourceItem)
             
-            1. Introduction
-            \(topic) is a fundamental concept in this field. It encompasses various methodologies and practices designed to optimize performance and scalability.
-            
-            2. Key Concepts
-            - Scalability: The ability to handle growing amounts of work.
-            - Efficiency: Performing in the best possible manner with the least waste of time and effort.
-            - Integration: The process of bringing together the component sub-systems into one system.
-            
-            3. Summary
-            Remember that mastering \(topic) requires consistent practice and understanding of the underlying principles.
-            """
-            
-        case .cheatsheet:
-            return """
-            # \(topic) Cheatsheet 🚀
-            
-            | Command | Description |
-            |---------|-------------|
-            | `init()` | Initializes the object |
-            | `start()` | Begins the primary process |
-            | `stop()`  | Halts execution immediately |
-            
-            Quick Formulas
-            - Speed = Distance / Time
-            - Efficiency = (Output / Input) * 100%
-            
-            Golden Rules
-            1. Always validate inputs.
-            2. DRY (Don't Repeat Yourself).
-            3. KISS (Keep It Simple, Stupid).
-            """
-            
-        default:
-            return ""
+            // Prepare Prompt
+            let finalPrompt: String
+            if !extractedText.isEmpty && extractedText.count > 20 {
+                let safeText = String(extractedText.prefix(15000))
+                finalPrompt = "CONTEXT:\n\(safeText)\n\nTOPIC REQUEST: \(topicName)"
+            } else {
+                finalPrompt = topicName
+            }
+
+            DispatchQueue.main.async {
+                sender.setTitle("Generating AI Content...", for: .normal)
+            }
+
+            do {
+                // B. Call AI with RETRY Logic
+                let generatedContent = try await generateContentWithRetry(
+                    topic: finalPrompt,
+                    type: selectedMaterialType.description,
+                    count: selectedCount,
+                    difficulty: difficultyString
+                )
+                
+                // C. Success
+                DispatchQueue.main.async {
+                    self.handleSuccess(
+                        generatedContent: generatedContent,
+                        topicName: topicName,
+                        sender: sender
+                    )
+                }
+                
+            } catch {
+                // D. Error
+                DispatchQueue.main.async {
+                    self.resetUI(sender)
+                    self.showError("AI Error: \(error.localizedDescription)")
+                }
+            }
         }
     }
-
-    @IBAction func startCreationButtonTapped(_ sender: UIButton) {
-        let topicName: String
-        if let sourceItem = inputSourceData?.first {
-            topicName = extractName(from: sourceItem)
-        } else {
-            topicName = "New Material"
+    
+    // ✅ RETRY HELPER (The Fix for Code 500)
+    private func generateContentWithRetry(topic: String, type: String, count: Int, difficulty: String, attempt: Int = 1) async throws -> String {
+        do {
+            return try await AIContentManager.shared.generateContent(
+                topic: topic,
+                type: type,
+                count: count,
+                difficulty: difficulty
+            )
+        } catch {
+            print("⚠️ AI Attempt \(attempt) Failed: \(error.localizedDescription)")
+            
+            if attempt < 3 {
+                print("⏳ Waiting 5 seconds before retrying...")
+                try? await Task.sleep(nanoseconds: 5 * 1_000_000_000)
+                return try await generateContentWithRetry(topic: topic, type: type, count: count, difficulty: difficulty, attempt: attempt + 1)
+            } else {
+                throw error
+            }
         }
-
-        let generatedContent = generateDummyContent(topic: topicName, type: selectedMaterialType)
-
-        // ✅ MODIFIED: Use topicName directly without appending the material type suffix
-        let newTopic = Topic(
-            name: topicName, // Previously: "\(topicName) \(selectedMaterialType.description)"
-            lastAccessed: "Just now",
-            materialType: selectedMaterialType.description,
-            largeContentBody: generatedContent,
-            parentSubjectName: self.contextSubjectTitle ?? "General Study"
-        )
+    }
+    
+    // ✅ Success Handler
+    private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
+        self.resetUI(sender)
         
-        // Use DataManager to save the new topic
-        DataManager.shared.addTopic(to: self.contextSubjectTitle ?? "General Study", topic: newTopic)
+        var newTopic: Topic?
+        let subjectName = self.contextSubjectTitle ?? "General Study"
         
-        if selectedMaterialType == .quiz {
-            // We pass a tuple to the next screen. Ensure next screen accepts this.
-            let payload = (topic: newTopic, sourceName: topicName)
-            performSegue(withIdentifier: "HomeToQuizInstruction", sender: payload)
+        if self.selectedMaterialType == .quiz {
+            let parsedQuestions = self.parseQuizJSON(generatedContent)
             
-        } else if selectedMaterialType == .flashcards {
-            performSegue(withIdentifier: "HomeToFlashcardView", sender: newTopic)
+            if parsedQuestions.isEmpty {
+                self.showError("AI generated an empty or invalid quiz. Please try again.")
+                return
+            }
             
-        } else if selectedMaterialType == .notes {
-            performSegue(withIdentifier: "HomeToNotesView", sender: newTopic)
-            
-        } else if selectedMaterialType == .cheatsheet {
-            performSegue(withIdentifier: "HomeToCheatsheetView", sender: newTopic)
+            newTopic = DataManager.shared.saveGeneratedTopic(
+                name: topicName,
+                subject: subjectName,
+                type: "Quiz",
+                questions: parsedQuestions
+            )
             
         } else {
-            let alert = UIAlertController(title: "Coming Soon", message: "\(selectedMaterialType.description) creation is under construction.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
+            newTopic = DataManager.shared.saveGeneratedTopic(
+                name: topicName,
+                subject: subjectName,
+                type: self.selectedMaterialType.description,
+                notes: generatedContent
+            )
         }
+        
+        if let savedTopic = newTopic {
+            self.navigateToResult(type: self.selectedMaterialType, topic: savedTopic, sourceName: topicName)
+        } else {
+            self.showError("Failed to save content.")
+        }
+    }
+    
+    // MARK: - UI Helpers (✅ ADDED MISSING FUNCTION)
+    private func resetUI(_ sender: UIButton) {
+        self.loadingIndicator.stopAnimating()
+        self.view.isUserInteractionEnabled = true
+        sender.isEnabled = true
+        
+        // Reset the button title based on selected type
+        let title = (selectedMaterialType == .none) ? "Start Creation" : "Generate \(selectedMaterialType.description)"
+        sender.setTitle(title, for: .normal)
+    }
+    
+    private func showError(_ message: String) {
+        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        self.present(alert, animated: true)
     }
 
     private func extractName(from item: Any) -> String {
-        // Handle StudyContent (Fixes error)
         if let content = item as? StudyContent { return content.filename }
-        // Handle standard Topic
         if let topic = item as? Topic { return topic.name }
-        // Handle Raw String
         if let str = item as? String { return str }
-        // Handle URLs (Fixes compatibility with UploadConfirmation)
         if let url = item as? URL { return url.lastPathComponent }
-        
         return "General Knowledge"
+    }
+    
+    private func navigateToResult(type: GenerationType, topic: Topic, sourceName: String) {
+        if type == .quiz {
+            let payload = (topic: topic, sourceName: sourceName)
+            performSegue(withIdentifier: "HomeToQuizInstruction", sender: payload)
+        } else if type == .flashcards {
+            performSegue(withIdentifier: "HomeToFlashcardView", sender: topic)
+        } else if type == .notes {
+            performSegue(withIdentifier: "HomeToNotesView", sender: topic)
+        } else if type == .cheatsheet {
+            performSegue(withIdentifier: "HomeToCheatsheetView", sender: topic)
+        }
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -443,30 +505,85 @@ class GenerateHomeViewController: UIViewController {
                let data = sender as? (topic: Topic, sourceName: String) {
                 dest.currentTopic = data.topic
                 dest.quizSourceName = data.sourceName
-                dest.parentSubject = self.contextSubjectTitle
+                dest.parentSubject = self.parentSubjectName()
             }
         }
         else if segue.identifier == "HomeToFlashcardView" {
-            if let dest = segue.destination as? FlashcardsViewController, // Make sure this matches your actual class name
+            if let dest = segue.destination as? FlashcardsViewController,
                let topic = sender as? Topic {
                 dest.currentTopic = topic
-                dest.parentSubjectName = self.contextSubjectTitle
+                dest.parentSubjectName = self.parentSubjectName()
             }
         }
         else if segue.identifier == "HomeToNotesView" {
             if let dest = segue.destination as? NotesViewController,
                let topic = sender as? Topic {
                 dest.currentTopic = topic
-                dest.parentSubjectName = self.contextSubjectTitle
+                dest.parentSubjectName = self.parentSubjectName()
             }
         }
         else if segue.identifier == "HomeToCheatsheetView" {
             if let dest = segue.destination as? CheatsheetViewController,
                let topic = sender as? Topic {
                 dest.currentTopic = topic
-                dest.parentSubjectName = self.contextSubjectTitle
+                dest.parentSubjectName = self.parentSubjectName()
             }
         }
+    }
+    
+    private func parentSubjectName() -> String {
+        return self.contextSubjectTitle ?? "General Study"
+    }
+}
+
+// MARK: - JSON Parsing Helper
+extension GenerateHomeViewController {
+    
+    func parseQuizJSON(_ jsonString: String) -> [QuizQuestion] {
+        var cleanString = jsonString
+        if cleanString.contains("```json") {
+            cleanString = cleanString.replacingOccurrences(of: "```json", with: "")
+            cleanString = cleanString.replacingOccurrences(of: "```", with: "")
+        }
+        cleanString = cleanString.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard let data = cleanString.data(using: .utf8) else { return [] }
+        
+        struct AIResponse: Codable {
+            struct AIQuestion: Codable {
+                let question: String
+                let options: [String]
+                let answer: String
+                let hint: String?
+            }
+            let questions: [AIQuestion]
+        }
+        
+        let decoder = JSONDecoder()
+        
+        do {
+            let wrapper = try decoder.decode(AIResponse.self, from: data)
+            
+            return wrapper.questions.map { aiQ in
+                let correctIndex = aiQ.options.firstIndex(of: aiQ.answer) ?? 0
+                
+                return QuizQuestion(
+                    questionText: aiQ.question,
+                    answers: aiQ.options,
+                    correctAnswerIndex: correctIndex,
+                    userAnswerIndex: nil,
+                    isFlagged: false,
+                    hint: aiQ.hint ?? "No hint available."
+                )
+            }
+        } catch {
+            print("⚠️ Failed to parse AI JSON: \(error)")
+            if let directList = try? decoder.decode([QuizQuestion].self, from: data) {
+                return directList
+            }
+        }
+        
+        return []
     }
 }
 

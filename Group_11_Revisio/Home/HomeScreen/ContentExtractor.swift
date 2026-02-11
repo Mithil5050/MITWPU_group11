@@ -1,3 +1,11 @@
+//
+//  ContentExtractor.swift
+//  Group_11_Revisio
+//
+//  Created by Mithil on 11/02/26.
+//
+
+
 import UIKit
 import PDFKit
 import Vision

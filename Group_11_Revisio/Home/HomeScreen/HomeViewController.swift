@@ -439,28 +439,54 @@ extension HomeViewController: HeaderViewDelegate {
 
 // MARK: - Side Quests Delegate (XP & History Logic)
 extension HomeViewController: SideQuestDelegate {
+    
+    // Updates the list when quests are added/removed
     func didUpdateQuests(_ quests: [SideQuest]) {
         self.sideQuests = quests
-        collectionView.collectionViewLayout.invalidateLayout()
-    }
-    
-    func didCompleteQuest(_ quest: SideQuest) {
-        var completed = quest
-        completed.isCompleted = true
-        self.completedQuests.insert(completed, at: 0)
-    }
-    
-    func didTapHistory() {
-        let vc = UIViewController()
-        vc.title = "Quest History"
-        vc.view.backgroundColor = .systemBackground
-        if let nav = navigationController {
-            nav.pushViewController(vc, animated: true)
-        } else {
-            present(vc, animated: true)
+        if let sectionIndex = HomeSection.allCases.firstIndex(of: .sideQuests) {
+            collectionView.reloadSections(IndexSet(integer: sectionIndex))
         }
     }
     
+    // ✅ Logic for checking off a box
+    func didCompleteQuest(_ quest: SideQuest) {
+        // 1. Create a completed copy and add to History
+        var completedTask = quest
+        completedTask.isCompleted = true
+        self.completedQuests.insert(completedTask, at: 0) // Add to top of history
+        
+        // 2. Remove from the "To Do" list on Home Screen
+        if let index = self.sideQuests.firstIndex(where: { $0.id == quest.id }) {
+            self.sideQuests.remove(at: index)
+            
+            // 3. Update the UI immediately
+            if let sectionIndex = HomeSection.allCases.firstIndex(of: .sideQuests) {
+                collectionView.reloadSections(IndexSet(integer: sectionIndex))
+            }
+        }
+        
+        // Debug print to confirm it's working
+        print("✅ Quest Completed! History count: \(self.completedQuests.count)")
+    }
+    
+    // ✅ Logic for opening the History Screen
+    func didTapHistory() {
+        // 1. Instantiate the Controller from your other file
+        let historyVC = QuestHistoryViewController()
+        
+        // 2. PASS THE DATA
+        // We assign your local 'completedQuests' to the 'history' variable in the new screen
+        historyVC.history = self.completedQuests
+        
+        // 3. Navigate
+        if let nav = navigationController {
+            nav.pushViewController(historyVC, animated: true)
+        } else {
+            present(historyVC, animated: true)
+        }
+    }
+    
+    // Animation for earning XP
     func didEarnXP(amount: Int, sourceView: UIView) {
         let frame = sourceView.convert(sourceView.bounds, to: self.view)
         let lbl = UILabel(frame: frame)
@@ -485,8 +511,7 @@ extension HomeViewController: ContinueLearningCellDelegate {
             name: item.title,
             lastAccessed: "Just now",
             materialType: item.itemType,
-            largeContentBody: "",
-            parentSubjectName: "General"
+            parentSubjectName: "General", largeContentBody: ""
         )
         
         if item.itemType == "Quiz" {

@@ -4,8 +4,6 @@
 //
 //  Created by Ashika Yadav on 14/01/26.
 
-
-
 import Foundation
 import UIKit
 
@@ -17,7 +15,14 @@ class ProgressDataManager {
     // MARK: - Persistent Properties
     var totalXP: Int {
         get { UserDefaults.standard.integer(forKey: "user_total_xp") }
-        set { UserDefaults.standard.set(newValue, forKey: "user_total_xp") }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "user_total_xp")
+            
+            // ✅ ADDED: Sync with Supabase Cloud automatically
+            Task {
+                await SupabaseManager.shared.syncXP(totalXP: newValue)
+            }
+        }
     }
     
     var currentStreak: Int {
@@ -41,7 +46,6 @@ class ProgressDataManager {
         return max(0, requiredXP - totalXP)
     }
 
-    // Change this in ProgressDataManager.swift
     private init() {
         // Keep it empty to prevent recursion during app launch
     }
@@ -53,6 +57,8 @@ class ProgressDataManager {
     
     // MARK: - Data Loading
     func loadInitialData() {
+        // This loads dummy history for the graph.
+        // In the future, you might want to fetch this from Supabase too.
         guard let url = Bundle.main.url(forResource: "ProgressLogData", withExtension: "json"),
               let data = try? Data(contentsOf: url) else { return }
 
@@ -66,9 +72,11 @@ class ProgressDataManager {
     
     // MARK: - Actions
     func addXP(amount: Int, source: String) {
-        totalXP += amount
+        totalXP += amount // This triggers the 'set' block above, which syncs to Supabase
+        
         // When user earns XP, we ensure their streak is updated for today
         updateStreak()
+        
         NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
         print("🌟 Earned \(amount) XP from \(source). Total: \(totalXP)")
     }
