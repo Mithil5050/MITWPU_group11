@@ -5,6 +5,12 @@ struct StudyContent {
     var filename: String
 }
 
+// ✅ FLASHCARD STRUCT
+struct GeneratedFlashcard: Codable {
+    let front: String
+    let back: String
+}
+
 // MARK: - Custom Card View
 @IBDesignable
 class TappableCardView: UIControl {
@@ -87,6 +93,23 @@ class TappableCardView: UIControl {
             }
         }
     }
+    
+    // ✅ TOUCH TRACKING
+    override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
+        isHighlighted = true
+        return true
+    }
+    
+    override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
+        isHighlighted = false
+        if let touch = touch, bounds.contains(touch.location(in: self)) {
+            sendActions(for: .touchUpInside)
+        }
+    }
+    
+    override func cancelTracking(with event: UIEvent?) {
+        isHighlighted = false
+    }
 }
 
 // MARK: - View Controller
@@ -128,7 +151,6 @@ class GenerateHomeViewController: UIViewController {
     @IBOutlet weak var mediumButton: UIButton!
     @IBOutlet weak var hardButton: UIButton!
     
-    // Loading Indicator
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
 
     override func viewDidLoad() {
@@ -138,6 +160,7 @@ class GenerateHomeViewController: UIViewController {
         setupDifficultyButtons()
         setupFonts()
         
+        // Default to Quiz
         handleCardSelection(selectedCard: quizCardView, type: .quiz)
         updateDifficultyUI()
         setupLoadingIndicator()
@@ -179,6 +202,7 @@ class GenerateHomeViewController: UIViewController {
         notesCardView.configure(iconName: "book.pages", title: "Notes", iconColor: notesColor)
         cheatsheetCardView.configure(iconName: "list.clipboard", title: "Cheatsheet", iconColor: cheatsheetColor)
         
+        // Button Actions
         quizCardView.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             self.handleCardSelection(selectedCard: self.quizCardView, type: .quiz)
@@ -331,17 +355,17 @@ class GenerateHomeViewController: UIViewController {
         }
     }
     
-    // MARK: - AI Creation Action (✅ Updated with Retry Logic)
+    // MARK: - AI Creation Action
     @IBAction func startCreationButtonTapped(_ sender: UIButton) {
-        // 1. Get Topic Name & Source
-        guard let sourceItem = inputSourceData?.first else {
-            showError("No source material found.")
-            return
+        // 1. Get Topic Name
+        let topicName: String
+        if let sourceItem = inputSourceData?.first {
+            topicName = extractName(from: sourceItem)
+        } else {
+            topicName = "New Material"
         }
-        
-        let topicName = extractName(from: sourceItem)
 
-        // 2. Get Difficulty
+        // 2. Get Difficulty String
         let difficultyString: String
         switch currentDifficulty {
         case .easy: difficultyString = "Easy"
@@ -351,38 +375,82 @@ class GenerateHomeViewController: UIViewController {
         
         // 3. UI: Start Loading
         sender.isEnabled = false
-        sender.setTitle("Reading File...", for: .normal)
+        sender.setTitle("Processing...", for: .normal)
         loadingIndicator.startAnimating()
         view.isUserInteractionEnabled = false
+        
+        print("🟢 STARTING GENERATION: Type = \(selectedMaterialType.description)")
 
         // 4. Call AI Asynchronously
         Task {
-            // A. Extract Content (Text from PDF/Image/String)
+            // A. Extract Content
+            guard let sourceItem = inputSourceData?.first else {
+                DispatchQueue.main.async {
+                    self.showError("No source material found.")
+                    self.resetUI(sender)
+                }
+                return
+            }
+            
             let extractedText = await ContentExtractor.shared.extractContent(from: sourceItem)
             
-            // Prepare Prompt
-            let finalPrompt: String
-            if !extractedText.isEmpty && extractedText.count > 20 {
-                let safeText = String(extractedText.prefix(15000))
-                finalPrompt = "CONTEXT:\n\(safeText)\n\nTOPIC REQUEST: \(topicName)"
-            } else {
-                finalPrompt = topicName
+            // ✅ B. STRICT PROMPTS (FORCE MARKDOWN FOR NOTES)
+            var instruction = ""
+            switch selectedMaterialType {
+            case .flashcards:
+                instruction = "Create \(selectedCount) flashcards. Return ONLY a JSON array of objects with 'front' and 'back' keys. No Markdown. No extra text."
+                
+            case .cheatsheet:
+                instruction = """
+                STRICTLY GENERATE A CHEATSHEET.
+                DO NOT generate a quiz. DO NOT output JSON.
+                Format as clean MARKDOWN text.
+                Include:
+                - # Title
+                - ## Key Formulas
+                - ## Important Dates
+                - ## Bulleted Definitions
+                
+                Topic: \(topicName)
+                """
+                
+            case .notes:
+                instruction = """
+                STRICTLY GENERATE STUDY NOTES.
+                DO NOT generate a quiz. DO NOT output JSON.
+                Format as clean MARKDOWN text.
+                Include:
+                - # Main Heading
+                - ## Subheadings
+                - Bullet points for key concepts.
+                - Examples where applicable.
+                
+                Topic: \(topicName)
+                """
+                
+            case .quiz:
+                instruction = "Generate \(selectedCount) quiz questions in JSON format."
+                
+            default: break
             }
-
-            DispatchQueue.main.async {
+            
+            let safeText = String(extractedText.prefix(15000))
+            let finalPrompt = "\(instruction)\n\nCONTEXT:\n\(safeText)\n\nTOPIC REQUEST: \(topicName)"
+            
+            await MainActor.run {
                 sender.setTitle("Generating AI Content...", for: .normal)
             }
 
             do {
-                // B. Call AI with RETRY Logic
-                let generatedContent = try await generateContentWithRetry(
+                // C. Call AI (With 70s Safe Retry)
+                let generatedContent = try await generateContentWithSmartWait(
                     topic: finalPrompt,
                     type: selectedMaterialType.description,
                     count: selectedCount,
                     difficulty: difficultyString
                 )
                 
-                // C. Success
+                // D. Success Handler
                 DispatchQueue.main.async {
                     self.handleSuccess(
                         generatedContent: generatedContent,
@@ -392,7 +460,6 @@ class GenerateHomeViewController: UIViewController {
                 }
                 
             } catch {
-                // D. Error
                 DispatchQueue.main.async {
                     self.resetUI(sender)
                     self.showError("AI Error: \(error.localizedDescription)")
@@ -401,8 +468,8 @@ class GenerateHomeViewController: UIViewController {
         }
     }
     
-    // ✅ RETRY HELPER (The Fix for Code 500)
-    private func generateContentWithRetry(topic: String, type: String, count: Int, difficulty: String, attempt: Int = 1) async throws -> String {
+    // ✅ SMART RETRY (70s Buffer for Free Tier)
+    private func generateContentWithSmartWait(topic: String, type: String, count: Int, difficulty: String, attempt: Int = 1) async throws -> String {
         do {
             return try await AIContentManager.shared.generateContent(
                 topic: topic,
@@ -411,46 +478,91 @@ class GenerateHomeViewController: UIViewController {
                 difficulty: difficulty
             )
         } catch {
+            let errorString = error.localizedDescription.lowercased()
             print("⚠️ AI Attempt \(attempt) Failed: \(error.localizedDescription)")
             
+            let isQuotaError = errorString.contains("quota") ||
+                               errorString.contains("limit") ||
+                               errorString.contains("429") ||
+                               errorString.contains("500") ||
+                               errorString.contains("exceeded")
+            
             if attempt < 3 {
-                print("⏳ Waiting 5 seconds before retrying...")
-                try? await Task.sleep(nanoseconds: 5 * 1_000_000_000)
-                return try await generateContentWithRetry(topic: topic, type: type, count: count, difficulty: difficulty, attempt: attempt + 1)
+                if isQuotaError {
+                    print("🚨 QUOTA HIT. Waiting 70s...")
+                    for i in (1...70).reversed() {
+                        await MainActor.run {
+                            self.startCreationButton.setTitle("Limit Hit. Retrying in \(i)s...", for: .normal)
+                        }
+                        try? await Task.sleep(nanoseconds: 1_000_000_000)
+                    }
+                } else {
+                    print("🔄 Normal Retry (3s)...")
+                    try? await Task.sleep(nanoseconds: 3 * 1_000_000_000)
+                }
+                
+                return try await generateContentWithSmartWait(topic: topic, type: type, count: count, difficulty: difficulty, attempt: attempt + 1)
             } else {
                 throw error
             }
         }
     }
     
-    // ✅ Success Handler
+    // ✅ Handle Success (Now Saves BOTH Source and Result)
     private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
         self.resetUI(sender)
         
-        var newTopic: Topic?
         let subjectName = self.contextSubjectTitle ?? "General Study"
+        
+        // 1. ✅ NEW: Save the Original Source Files to the Folder
+        if let sourceURLs = self.inputSourceData as? [URL] {
+            for url in sourceURLs {
+                print("💾 Saving Source: \(url.lastPathComponent) to \(subjectName)")
+                DataManager.shared.importFile(url: url, subject: subjectName)
+            }
+        }
+        
+        // 2. Save the Generated Topic (Quiz/Notes/Flashcards)
+        var newTopic: Topic?
         
         if self.selectedMaterialType == .quiz {
             let parsedQuestions = self.parseQuizJSON(generatedContent)
-            
             if parsedQuestions.isEmpty {
-                self.showError("AI generated an empty or invalid quiz. Please try again.")
+                self.showError("AI generated an empty quiz. Please try again.")
                 return
             }
-            
             newTopic = DataManager.shared.saveGeneratedTopic(
                 name: topicName,
                 subject: subjectName,
                 type: "Quiz",
                 questions: parsedQuestions
             )
-            
+        } else if self.selectedMaterialType == .flashcards {
+            let parsedFlashcards = self.parseFlashcardsJSON(generatedContent)
+            if parsedFlashcards.isEmpty {
+                self.showError("AI generated empty flashcards. Please try again.")
+                return
+            }
+            newTopic = DataManager.shared.saveGeneratedTopic(
+                name: topicName,
+                subject: subjectName,
+                type: "Flashcards",
+                notes: generatedContent
+            )
         } else {
+            // Notes & Cheatsheets (Clean JSON if needed)
+            let finalText: String
+            if generatedContent.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("{") {
+                finalText = convertJsonToMarkdown(json: generatedContent, type: self.selectedMaterialType.description)
+            } else {
+                finalText = generatedContent
+            }
+            
             newTopic = DataManager.shared.saveGeneratedTopic(
                 name: topicName,
                 subject: subjectName,
                 type: self.selectedMaterialType.description,
-                notes: generatedContent
+                notes: finalText
             )
         }
         
@@ -461,13 +573,11 @@ class GenerateHomeViewController: UIViewController {
         }
     }
     
-    // MARK: - UI Helpers (✅ ADDED MISSING FUNCTION)
+    // MARK: - UI Helpers
     private func resetUI(_ sender: UIButton) {
         self.loadingIndicator.stopAnimating()
         self.view.isUserInteractionEnabled = true
         sender.isEnabled = true
-        
-        // Reset the button title based on selected type
         let title = (selectedMaterialType == .none) ? "Start Creation" : "Generate \(selectedMaterialType.description)"
         sender.setTitle(title, for: .normal)
     }
@@ -536,17 +646,24 @@ class GenerateHomeViewController: UIViewController {
     }
 }
 
-// MARK: - JSON Parsing Helper
+// MARK: - JSON Parsing Extensions
 extension GenerateHomeViewController {
     
-    func parseQuizJSON(_ jsonString: String) -> [QuizQuestion] {
-        var cleanString = jsonString
-        if cleanString.contains("```json") {
-            cleanString = cleanString.replacingOccurrences(of: "```json", with: "")
-            cleanString = cleanString.replacingOccurrences(of: "```", with: "")
-        }
-        cleanString = cleanString.trimmingCharacters(in: .whitespacesAndNewlines)
+    func convertJsonToMarkdown(json: String, type: String) -> String {
+        print("⚠️ Warning: AI returned JSON for \(type). Converting to text.")
+        let stripped = json
+            .replacingOccurrences(of: "{", with: "")
+            .replacingOccurrences(of: "}", with: "")
+            .replacingOccurrences(of: "[", with: "")
+            .replacingOccurrences(of: "]", with: "")
+            .replacingOccurrences(of: "\"", with: "")
+            .replacingOccurrences(of: ",", with: "\n")
         
+        return "# Generated \(type) (Fallback)\n\n" + stripped
+    }
+    
+    func parseQuizJSON(_ jsonString: String) -> [QuizQuestion] {
+        let cleanString = cleanJSONString(jsonString)
         guard let data = cleanString.data(using: .utf8) else { return [] }
         
         struct AIResponse: Codable {
@@ -560,46 +677,47 @@ extension GenerateHomeViewController {
         }
         
         let decoder = JSONDecoder()
-        
-        do {
-            let wrapper = try decoder.decode(AIResponse.self, from: data)
-            
+        if let wrapper = try? decoder.decode(AIResponse.self, from: data) {
             return wrapper.questions.map { aiQ in
                 let correctIndex = aiQ.options.firstIndex(of: aiQ.answer) ?? 0
-                
-                return QuizQuestion(
-                    questionText: aiQ.question,
-                    answers: aiQ.options,
-                    correctAnswerIndex: correctIndex,
-                    userAnswerIndex: nil,
-                    isFlagged: false,
-                    hint: aiQ.hint ?? "No hint available."
-                )
+                return QuizQuestion(questionText: aiQ.question, answers: aiQ.options, correctAnswerIndex: correctIndex, userAnswerIndex: nil, isFlagged: false, hint: aiQ.hint ?? "No hint")
             }
-        } catch {
-            print("⚠️ Failed to parse AI JSON: \(error)")
-            if let directList = try? decoder.decode([QuizQuestion].self, from: data) {
-                return directList
-            }
+        } else if let directList = try? decoder.decode([QuizQuestion].self, from: data) {
+            return directList
         }
-        
         return []
+    }
+    
+    func parseFlashcardsJSON(_ jsonString: String) -> [GeneratedFlashcard] {
+        let cleanString = cleanJSONString(jsonString)
+        guard let data = cleanString.data(using: .utf8) else { return [] }
+        
+        let decoder = JSONDecoder()
+        if let cards = try? decoder.decode([GeneratedFlashcard].self, from: data) {
+            return cards
+        }
+        return []
+    }
+    
+    private func cleanJSONString(_ json: String) -> String {
+        var clean = json
+        if clean.contains("```json") {
+            clean = clean.replacingOccurrences(of: "```json", with: "")
+            clean = clean.replacingOccurrences(of: "```", with: "")
+        }
+        return clean.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 
-// Helper Extension
 extension UIColor {
     convenience init(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
-
         var rgb: UInt64 = 0
         Scanner(string: hexSanitized).scanHexInt64(&rgb)
-
         let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
         let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
         let blue = CGFloat(rgb & 0x0000FF) / 255.0
-
         self.init(red: red, green: green, blue: blue, alpha: 1.0)
     }
 }

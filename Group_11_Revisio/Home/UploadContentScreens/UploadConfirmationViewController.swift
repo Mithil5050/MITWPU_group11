@@ -2,13 +2,34 @@ import UIKit
 import UniformTypeIdentifiers
 
 // MARK: - Data Model
+
+// ✅ 1. New Enum to track file source
+enum FileSourceType {
+    case document
+    case link
+    case note
+    case image
+}
+
 struct UploadedFileModel {
     let url: URL
+    let type: FileSourceType // ✅ Track the type explicitly
+    
     var isAnalyzing: Bool = false
-    var isWaiting: Bool = true // New status for queue
+    var isWaiting: Bool = true
     var isExpanded: Bool = false
     var topics: [String] = []
     var selectedTopicIndices: Set<Int> = []
+    
+    // ✅ Helper to get the correct SF Symbol
+    var iconName: String {
+        switch type {
+        case .link: return "link"
+        case .note: return "textformat"
+        case .image: return "photo"
+        case .document: return "doc.text"
+        }
+    }
 }
 
 class UploadConfirmationViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, ExpandableFileCellDelegate {
@@ -58,7 +79,9 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         
         if FileManager.default.fileExists(atPath: dataString) {
             let url = URL(fileURLWithPath: dataString)
-            addFile(url: url)
+            // Guess type for incoming shared files
+            let type: FileSourceType = ["jpg","png","jpeg"].contains(url.pathExtension.lowercased()) ? .image : .document
+            addFile(url: url, type: type)
         } else {
             processTextOrLinkInput(text: dataString)
         }
@@ -75,16 +98,17 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         
         do {
             try text.write(to: tempFileURL, atomically: true, encoding: .utf8)
-            addFile(url: tempFileURL)
+            // ✅ Pass correct type
+            addFile(url: tempFileURL, type: isLink ? .link : .note)
         } catch {
             print("❌ Failed to create temp file: \(error)")
         }
     }
     
-    // ✅ Add File & Add to Queue
-    private func addFile(url: URL) {
-        var newFile = UploadedFileModel(url: url)
-        newFile.isWaiting = true // Start as waiting
+    // ✅ Add File with Explicit Type
+    private func addFile(url: URL, type: FileSourceType) {
+        var newFile = UploadedFileModel(url: url, type: type)
+        newFile.isWaiting = true
         newFile.isAnalyzing = false
         
         let newIndex = filesData.count
@@ -100,7 +124,6 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
     
     // 🚦 QUEUE PROCESSOR (The "Traffic Cop")
     private func processNextInQueue() {
-        // If already working, or queue empty, stop.
         guard !isProcessingQueue, !analysisQueue.isEmpty else { return }
         
         isProcessingQueue = true
@@ -117,10 +140,12 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         
         // Start Analysis
         Task {
-            let fileURL = self.filesData[fileIndex].url
-            await analyzeTopics(for: fileURL, index: fileIndex)
+            if fileIndex < self.filesData.count {
+                let fileURL = self.filesData[fileIndex].url
+                await analyzeTopics(for: fileURL, index: fileIndex)
+            }
             
-            // 🛑 RATE LIMIT PAUSE (Wait 4 seconds before next file)
+            // 🛑 RATE LIMIT PAUSE
             try? await Task.sleep(nanoseconds: 4 * 1_000_000_000)
             
             self.isProcessingQueue = false
@@ -310,7 +335,8 @@ extension UploadConfirmationViewController: UIDocumentPickerDelegate, UIImagePic
             let tempDir = FileManager.default.temporaryDirectory
             let destURL = tempDir.appendingPathComponent(url.lastPathComponent)
             try? FileManager.default.copyItem(at: url, to: destURL)
-            addFile(url: destURL)
+            // ✅ Pass .document type
+            addFile(url: destURL, type: .document)
         }
     }
     
@@ -323,7 +349,8 @@ extension UploadConfirmationViewController: UIDocumentPickerDelegate, UIImagePic
             let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
             
             try? data.write(to: tempURL)
-            self.addFile(url: tempURL)
+            // ✅ Pass .image type
+            self.addFile(url: tempURL, type: .image)
         }
     }
 }

@@ -46,7 +46,7 @@ class ExpandableFileCell: UITableViewCell {
             return trait.userInterfaceStyle == .dark ? .secondarySystemGroupedBackground : .systemGray6
         }
         
-        // ✅ ADDED: Corner Radius
+        // ✅ Corner Radius
         mainContainer.layer.cornerRadius = 12
         mainContainer.clipsToBounds = true
         
@@ -113,10 +113,20 @@ class ExpandableFileCell: UITableViewCell {
         self.fileIndex = index
         titleLabel.text = file.url.lastPathComponent
         
-        // Icon logic
-        let isPDF = file.url.pathExtension.lowercased() == "pdf"
-        iconImageView.image = UIImage(systemName: isPDF ? "doc.text.fill" : "doc.fill")
-        iconImageView.tintColor = .systemIndigo
+        // ✅ NEW ICON LOGIC (Uses the type passed from the View Controller)
+        iconImageView.image = UIImage(systemName: file.iconName)
+        
+        // Set specific colors for different types if desired
+        switch file.type {
+        case .link:
+            iconImageView.tintColor = .systemIndigo
+        case .image:
+            iconImageView.tintColor = .systemIndigo
+        case .note:
+            iconImageView.tintColor = .systemIndigo
+        default:
+            iconImageView.tintColor = .systemIndigo
+        }
         
         // ✅ Status Logic
         if file.isWaiting {
