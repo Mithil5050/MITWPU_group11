@@ -17,78 +17,88 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet weak var monthlyBadgeImageView: UIImageView!
     @IBOutlet weak var mainTitleLabel: UILabel!
-    @IBOutlet weak var challengeNameLabel: UILabel!
-    @IBOutlet weak var upcomingBadgeLabel: UILabel!
-    @IBOutlet weak var allBadgesImageView: UIImageView!
-    @IBOutlet weak var showAllButton: UIButton!
 
+    @IBOutlet weak var xpProgressBar: UIProgressView!
+    
+    @IBOutlet weak var xpValueLabel: UILabel!
+    
     @IBOutlet weak var showAllContainerView: UIView!
-    
-    
+
+        // MARK: - Properties
         weak var delegate: MonthlyBadgeCellDelegate?
         
         override func awakeFromNib() {
             super.awakeFromNib()
             setupUI()
             setupCardStyle()
-            setupShowAllStyle()
             setupTapGesture()
         }
-    private func setupUI() {
-        mainTitleLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
-        challengeNameLabel.font = UIFont.systemFont(ofSize: 16, weight: .regular)
-        upcomingBadgeLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-        showAllButton.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .medium)
         
-        upcomingBadgeLabel.textColor = .secondaryLabel
-        showAllButton.setTitleColor(.systemYellow, for: .normal)
+        private func setupUI() {
+            // Aesthetic Configuration
+            mainTitleLabel.font = UIFont.systemFont(ofSize: 24, weight: .bold)
+            mainTitleLabel.textColor = .white
             
-            // 3. Keep your existing card styling
-            setupCardStyle()
-            setupShowAllStyle()
-    }
+            // Style the XP Bar to look like a "Conqueror" level bar
+            xpProgressBar.progressTintColor = .systemBlue
+            xpProgressBar.trackTintColor = .systemGray5
+            xpProgressBar.layer.cornerRadius = 4
+            xpProgressBar.clipsToBounds = true
+            
+            // This label now handles both the Challenge Name and the Points
+            xpValueLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+            xpValueLabel.textColor = .systemBlue
+        }
+
+        /// Updated configure method using only the Title, Progress Bar, and Value Label
         func configure(with badge: Badge) {
-            mainTitleLabel.text = "Go For It"
-            challengeNameLabel.text = badge.title
-            upcomingBadgeLabel.text = badge.detail
+            let dataStore = ProgressDataManager.shared
+            let currentXP = dataStore.totalXP
+            let nextLevelXP = currentXP + dataStore.xpToNextLevel
+            
+            // 1. Set the Call to Action
+            mainTitleLabel.text = "Go For It!"
+            
+            // 2. Combine Badge Title and XP Fraction into the bottom label
+            // Example: "January Challenge • 150 / 500 XP"
+            xpValueLabel.text = "\(badge.title) • \(currentXP)/\(nextLevelXP) XP"
+            
+            // 3. Update the Badge Image
             monthlyBadgeImageView.image = UIImage(named: badge.imageAssetName)
+            
+            // 4. Update the visual Progress Bar
+            let progress = Float(currentXP) / Float(nextLevelXP)
+            xpProgressBar.setProgress(progress, animated: true)
         }
         
+        // MARK: - Interactions
         private func setupTapGesture() {
-            monthlyBadgeImageView.isUserInteractionEnabled = true
-            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(badgeImageTapped))
-            monthlyBadgeImageView.addGestureRecognizer(tapGesture)
+            self.contentView.isUserInteractionEnabled = true
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(cardTapped))
+            self.contentView.addGestureRecognizer(tapGesture)
         }
         
-        @objc private func badgeImageTapped() {
-            // Notifies the ViewController
+        @objc private func cardTapped() {
             delegate?.didTapMonthlyBadgeCard()
         }
 
-        @IBAction func showAllTapped(_ sender: UIButton) {
-            delegate?.didTapShowAllButton()
-        }
-        
+        // MARK: - Styling
         private func setupCardStyle() {
-            self.contentView.backgroundColor = .systemBackground
-            self.contentView.layer.cornerRadius = 12
+            // Using a dark, modern aesthetic
+            self.contentView.backgroundColor = UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0)
+            self.contentView.layer.cornerRadius = 16
             self.contentView.layer.masksToBounds = true
             
+            // Elevation shadow
             self.layer.shadowColor = UIColor.black.cgColor
-            self.layer.shadowOpacity = 0.1
-            self.layer.shadowOffset = CGSize(width: 0, height: 1)
-            self.layer.shadowRadius = 3
+            self.layer.shadowOpacity = 0.3
+            self.layer.shadowOffset = CGSize(width: 0, height: 4)
+            self.layer.shadowRadius = 6
             self.layer.masksToBounds = false
-        }
-        
-        private func setupShowAllStyle() {
-            showAllContainerView.backgroundColor = .systemGray6
-            showAllContainerView.layer.cornerRadius = 8
-            showAllContainerView.layer.masksToBounds = true
         }
         
         override func layoutSubviews() {
             super.layoutSubviews()
-            self.layer.shadowPath = UIBezierPath(roundedRect: self.bounds, cornerRadius: 12).cgPath
+            self.layer.shadowPath = UIBezierPath(roundedRect: self.bounds, cornerRadius: 16).cgPath
         }
     }
