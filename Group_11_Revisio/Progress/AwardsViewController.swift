@@ -12,13 +12,12 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
     @IBOutlet weak var featuredCollectionView: UICollectionView!
     @IBOutlet weak var gridCollectionView: UICollectionView!
     
-    var badges: [Badge] = BadgeData.allBadges
     
-    // sidePadding is now only used for the bottom grid calculation
+        var badges: [Badge] = BadgeData.allBadges
+        
         private let sidePadding: CGFloat = 20.0
         private let horizontalSpacing: CGFloat = 16.0
         private let verticalSpacing: CGFloat = 20.0
-        private let numberOfColumns: CGFloat = 2.0
         private let cardHeightToWidthRatio: CGFloat = 1.1
         private let featuredCardHeight: CGFloat = 125.0
         
@@ -28,6 +27,15 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
             registerCells()
             setupLayouts()
             navigationItem.title = "Awards"
+            
+            // Listen for XP updates to refresh the "Go For It" card
+            NotificationCenter.default.addObserver(self, selector: #selector(refreshAwardsData), name: .xpDidUpdate, object: nil)
+        }
+        
+        @objc func refreshAwardsData() {
+            DispatchQueue.main.async {
+                self.featuredCollectionView.reloadData()
+            }
         }
         
         private func setupCollectionViews() {
@@ -35,48 +43,45 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
             featuredCollectionView.delegate = self
             gridCollectionView.dataSource = self
             gridCollectionView.delegate = self
-            
-            // Allows shadows to show outside the cell bounds
             featuredCollectionView.clipsToBounds = false
         }
         
         func registerCells() {
+            // ✅ REGISTER TOP CELL
             featuredCollectionView.register(UINib(nibName: "MonthlyBadgeCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "MonthlyFeatureCell")
-            gridCollectionView.register(UINib(nibName: "BadgeCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "BadgeGridCell")
             
+            // ✅ REGISTER BOTTOM CELL
+            gridCollectionView.register(UINib(nibName: "BadgeCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "BadgeCell")
+            
+            // ✅ REGISTER HEADER
             gridCollectionView.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
         }
         
         func setupLayouts() {
-            // Grid Layout (Bottom)
             if let gridLayout = gridCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
                 gridLayout.minimumInteritemSpacing = horizontalSpacing
                 gridLayout.minimumLineSpacing = verticalSpacing
-                gridLayout.sectionInset = UIEdgeInsets(top: 0, left: sidePadding, bottom: verticalSpacing, right: sidePadding)
-            }
-            
-            // Featured Layout (Top) - Removed all programmatic insets
-            if let featuredLayout = featuredCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
-                featuredLayout.sectionInset = .zero
-                featuredLayout.minimumLineSpacing = 0
-                featuredLayout.minimumInteritemSpacing = 0
+                gridLayout.sectionInset = UIEdgeInsets(top: 10, left: sidePadding, bottom: 20, right: sidePadding)
+                gridLayout.headerReferenceSize = CGSize(width: view.frame.width, height: 50)
             }
         }
-        
+
+        // MARK: - CollectionView DataSource
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            return collectionView == featuredCollectionView ? 1 : badges.count - 1
+            return collectionView == featuredCollectionView ? 1 : badges.count
         }
         
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             if collectionView == featuredCollectionView {
-                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MonthlyFeatureCell", for: indexPath) as? MonthlyBadgeCollectionViewCell else { fatalError() }
+                // ✅ Matches the identifier registered in registerCells()
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MonthlyFeatureCell", for: indexPath) as! MonthlyBadgeCollectionViewCell
                 cell.delegate = self
                 cell.configure(with: badges[0])
                 return cell
             } else {
-                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BadgeGridCell", for: indexPath) as? BadgeCollectionViewCell else { fatalError() }
-                let badge = badges[indexPath.item + 1]
-                cell.configure(with: badge)
+                // ✅ Matches the identifier registered in registerCells()
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BadgeCell", for: indexPath) as! BadgeCollectionViewCell
+                cell.configure(with: badges[indexPath.row])
                 return cell
             }
         }
@@ -84,47 +89,44 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
         func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
             if kind == UICollectionView.elementKindSectionHeader && collectionView == gridCollectionView {
                 let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as! SectionHeaderView
+                header.onShowAllTapped = { [weak self] in
+                    self?.didTapShowAllButton()
+                }
                 return header
             }
             return UICollectionReusableView()
+        }
+        
+        func didTapShowAllButton() {
+            // Ensure this identifier matches your Storyboard segue identifier
+            self.performSegue(withIdentifier: "ShowAllBadges", sender: self)
         }
         
         func didTapMonthlyBadgeCard() {
             let detailVC = MonthlyChallengeDetailViewController(nibName: "MonthlyChallengeDetailViewController", bundle: nil)
             self.navigationController?.pushViewController(detailVC, animated: true)
         }
-        
-        func didTapShowAllButton() {
-            self.performSegue(withIdentifier: "ShowAllBadges", sender: self)
-        }
     }
 
+    // MARK: - Delegate Flow Layout
     extension AwardsViewController: UICollectionViewDelegateFlowLayout {
         func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-            
             if collectionView == featuredCollectionView {
-                // REMOVED CALCULATIONS: Cell now simply takes the width of the CollectionView.
-                // Your Storyboard trailing/leading constraints on the FeaturedCollectionView now control the width.
                 return CGSize(width: collectionView.frame.width, height: featuredCardHeight)
             } else {
-                // Grid width remains programmatic to handle 2-column spacing
                 let totalSpacing = (sidePadding * 2) + horizontalSpacing
                 let width = floor((collectionView.bounds.width - totalSpacing) / 2)
                 return CGSize(width: width, height: width * cardHeightToWidthRatio)
             }
         }
-
-        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-            if collectionView == gridCollectionView {
-                return CGSize(width: collectionView.frame.width, height: 70)
-            }
-            return .zero
-        }
     }
 
+    // MARK: - Section Header Class
+    // Ensure this is OUTSIDE the AwardsViewController class braces
     class SectionHeaderView: UICollectionReusableView {
         let titleLabel = UILabel()
-        let subtitleLabel = UILabel()
+        let showAllButton = UIButton(type: .system)
+        var onShowAllTapped: (() -> Void)?
 
         override init(frame: CGRect) {
             super.init(frame: frame)
@@ -141,19 +143,26 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
             titleLabel.textColor = .white
             titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
             
-            subtitleLabel.text = "Awards you're close to earning"
-            subtitleLabel.textColor = .secondaryLabel
-            subtitleLabel.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+            showAllButton.setTitle("Show All", for: .normal)
+            showAllButton.setTitleColor(.systemBlue, for: .normal)
+            showAllButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
+            showAllButton.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
             
-            let stackView = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
-            stackView.axis = .vertical
-            stackView.spacing = 2
-            addSubview(stackView)
+            addSubview(titleLabel)
+            addSubview(showAllButton)
             
-            stackView.translatesAutoresizingMaskIntoConstraints = false
+            titleLabel.translatesAutoresizingMaskIntoConstraints = false
+            showAllButton.translatesAutoresizingMaskIntoConstraints = false
+            
             NSLayoutConstraint.activate([
-                stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
-                stackView.centerYAnchor.constraint(equalTo: centerYAnchor)
+                titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+                titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+                showAllButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+                showAllButton.centerYAnchor.constraint(equalTo: centerYAnchor)
             ])
+        }
+        
+        @objc private func buttonTapped() {
+            onShowAllTapped?()
         }
     }
