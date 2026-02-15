@@ -31,7 +31,7 @@ class DataManager {
         }
     }
     
-    // MARK: - ✅ NEW: Save AI Content Function
+    // MARK: - ✅ FIXED: Save AI Content Function
     func saveGeneratedTopic(name: String,
                             subject: String,
                             type: String,
@@ -40,14 +40,30 @@ class DataManager {
         
         let folder = subject.isEmpty ? "General Study" : subject
         
-        // ✅ FIXED: Using 'notesContent' to match your Topic.swift
+        // 1. Convert Quiz Questions to "Legacy String Format"
+        var serializedQuizBody: String = ""
+        if let quizData = questions, !quizData.isEmpty {
+            serializedQuizBody = quizData.map { q in
+                var options = q.answers
+                while options.count < 4 { options.append("-") }
+                let safeOptions = options.prefix(4).joined(separator: "|")
+                return "\(q.questionText)|\(safeOptions)|\(q.correctAnswerIndex)|\(q.hint ?? "No Hint")"
+            }.joined(separator: "\n")
+        }
+        
+        // 2. ✅ CHECK TYPE: Determine where to save the text
+        let isCheatsheet = (type == "Cheatsheet")
+        
+        // 3. Create Topic with correct field population
         let newTopic = Topic(
             name: name,
             lastAccessed: "Just now",
             materialType: type,
             parentSubjectName: folder,
             quizQuestions: questions,
-            notesContent: notes  // <--- Fixed variable name here
+            largeContentBody: serializedQuizBody,
+            notesContent: isCheatsheet ? nil : notes,      // Save to notesContent if Note
+            cheatsheetContent: isCheatsheet ? notes : nil  // Save to cheatsheetContent if Cheatsheet
         )
         
         addTopic(to: folder, topic: newTopic)
@@ -274,11 +290,17 @@ class DataManager {
     }
     
     // MARK: - Content Getters & Updaters
-    func getTopic(subjectName: String, topicName: String) -> Topic? {
+    func getTopic(subjectName: String, topicName: String, type: String? = nil) -> Topic? {
         guard let materials = savedMaterials[subjectName]?[DataManager.materialsKey] else { return nil }
         for item in materials {
-            if case .topic(let topic) = item, topic.name == topicName {
-                return topic
+            if case .topic(let topic) = item {
+                if topic.name == topicName {
+                    if let targetType = type {
+                        if topic.materialType == targetType { return topic }
+                    } else {
+                        return topic
+                    }
+                }
             }
         }
         return nil
@@ -292,7 +314,10 @@ class DataManager {
         
         for item in materials {
             if case .topic(let topic) = item, topic.name == topicName {
-                // ✅ FIXED: Using 'notesContent' instead of 'studyNotes'
+                // ✅ Check Cheatsheet first if that's what is being requested implicitly
+                if let cheatsheet = topic.cheatsheetContent, !cheatsheet.isEmpty {
+                    return cheatsheet
+                }
                 if let notes = topic.notesContent, !notes.isEmpty {
                     return notes
                 }
@@ -310,7 +335,7 @@ class DataManager {
         var materials = subjectData[DataManager.materialsKey] ?? []
         
         if let index = materials.firstIndex(where: { item in
-            if case .topic(let t) = item { return t.name == topic.name }
+            if case .topic(let t) = item { return t.name == topic.name && t.materialType == topic.materialType }
             return false
         }) {
             materials[index] = .topic(topic)
@@ -332,15 +357,16 @@ class DataManager {
         for (index, item) in materials.enumerated() {
             if case .topic(var topic) = item, topic.name == topicName {
                 
-                // ✅ FIXED: Using 'notesContent'
+                // ✅ Update correct field based on Type
                 if type == "Notes" {
                     topic.notesContent = newText
+                } else if type == "Cheatsheet" {
+                    topic.cheatsheetContent = newText
                 } else {
                     topic.largeContentBody = newText
                 }
                 
                 materials[index] = .topic(topic)
-                
                 savedMaterials[subject]?[DataManager.materialsKey] = materials
                 saveToDisk()
                 
@@ -360,7 +386,7 @@ class DataManager {
             if var items = subjectDict[key] as? [StudyItem] {
                 if let index = items.firstIndex(where: { existingItem in
                     switch (existingItem, item) {
-                    case (.topic(let t1), let t2 as Topic): return t1.name == t2.name
+                    case (.topic(let t1), let t2 as Topic): return t1.name == t2.name && t1.materialType == t2.materialType
                     case (.source(let s1), let s2 as Source): return s1.name == s2.name
                     default: return false
                     }
@@ -388,77 +414,12 @@ class DataManager {
         }
     }
     
-    // MARK: - Defaults (✅ RESTORED LOGIC)
+    // MARK: - Defaults
     private func setupDefaultData() {
-        
-        // 1. Calculus Data
-        let calculusMaterials: [StudyItem] = [
-            .topic(Topic(
-                name: "Partial Derivatives",
-                lastAccessed: "Just now",
-                materialType: "Flashcards",
-                parentSubjectName: "Calculus",
-                largeContentBody: "What is a Partial Derivative?|A derivative of a function of several variables"
-            )),
-            .topic(Topic(
-                name: "Taylor Series PDF",
-                lastAccessed: "2 days ago",
-                materialType: "Notes",
-                parentSubjectName: "Calculus",
-                notesContent: "Taylor Series represent functions as infinite sums of terms calculated from derivatives."
-            ))
-        ]
-        
-        let calculusSources: [StudyItem] = [
-            .source(Source(name: "Taylor Series PDF", fileType: "PDF", size: "1.2 mb"))
-        ]
-        
-        savedMaterials["Calculus"] = [DataManager.materialsKey: calculusMaterials, DataManager.sourcesKey: calculusSources]
-        
-        // 2. Big Data
-        let bigDataMaterials: [StudyItem] = [
-            .topic(Topic(
-                name: "Hadoop Fundamentals",
-                lastAccessed: "1h ago",
-                materialType: "Notes",
-                parentSubjectName: "Big Data",
-                notesContent: "--- NOTES ---\nHadoop allows for the distributed processing of large data sets across clusters of computers."
-            )),
-            .topic(Topic(
-                name: "NoSQL Databases",
-                lastAccessed: "3d ago",
-                materialType: "Quiz",
-                parentSubjectName: "Big Data",
-                largeContentBody: "Which NoSQL type is best for storing social media relationships?|Document|Key-Value|Graph|Column-family|2|Graph databases like Neo4j are designed specifically for relationship-heavy data."
-            ))
-        ]
-        savedMaterials["Big Data"] = [DataManager.materialsKey: bigDataMaterials, DataManager.sourcesKey: []]
-        
-        // 3. Computer Networks
-        let netMaterials: [StudyItem] = [
-            .topic(Topic(
-                name: "OSI Model",
-                lastAccessed: "1 day ago",
-                materialType: "Quiz",
-                parentSubjectName: "Computer Networks",
-                largeContentBody: "Which layer is responsible for routing packets?|Data Link|Transport|Network|Session|2|The Network layer (Layer 3) handles IP addressing."
-            ))
-        ]
-        savedMaterials["Computer Networks"] = [DataManager.materialsKey: netMaterials, DataManager.sourcesKey: []]
-        
-        // 4. MMA
-        let mmaMaterials: [StudyItem] = [
-            .topic(Topic(
-                name: "8051 Architecture",
-                lastAccessed: "2 days ago",
-                materialType: "Flashcards",
-                parentSubjectName: "MMA",
-                largeContentBody: "8051 Data Bus size?|8-bit.\nAddress Bus size?|16-bit."
-            ))
-        ]
-        savedMaterials["MMA"] = [DataManager.materialsKey: mmaMaterials, DataManager.sourcesKey: []]
+        // Empty by design
     }
 }
+
 // MARK: - Notification Definitions
 extension Notification.Name {
     static let didUpdateStudyMaterials = Notification.Name("didUpdateStudyMaterials")

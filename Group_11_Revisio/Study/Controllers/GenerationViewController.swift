@@ -77,7 +77,7 @@ class GenerationViewController: UIViewController {
     
     // PROPERTIES
     var currentGenerationType: GenerationType = .quiz
-    var sourceItems: [Any]?
+    var sourceItems: [Any]? // Contains URLs passed from SelectMaterialVC
     var parentSubjectName: String?
     
     // SETTINGS
@@ -122,7 +122,6 @@ class GenerationViewController: UIViewController {
         setupLoadingIndicator()
         updateUISelection(selected: quizCard, type: .quiz)
         
-        // Initial button styles
         let buttons = [easyButton, mediumButton, hardButton]
         for btn in buttons {
             btn?.layer.cornerRadius = 12
@@ -188,69 +187,85 @@ class GenerationViewController: UIViewController {
 
     // MARK: - CORE AI LOGIC
     @IBAction func generateButtonTapped(_ sender: UIButton) {
-        // 1. Get the Topic Name
-        guard let sourceItem = sourceItems?.first else { return }
-        var topicName = "General"
-        
-        if let topic = sourceItem as? Topic {
-            topicName = topic.name
-        } else if let source = sourceItem as? Source {
-            topicName = source.name
-        } else if let str = sourceItem as? String {
-            topicName = str
+        guard let sourceItem = sourceItems?.first else {
+            showError("No source material found.")
+            return
         }
+        
+        var topicName = "General"
+        if let topic = sourceItem as? Topic { topicName = topic.name }
+        else if let source = sourceItem as? Source { topicName = source.name }
+        else if let str = sourceItem as? String { topicName = str }
+        else if let url = sourceItem as? URL { topicName = url.lastPathComponent }
 
-        // 2. Start Loading UI
+        // Start Loading UI
         sender.isEnabled = false
-        sender.setTitle("Generating...", for: .normal)
+        sender.setTitle("Processing...", for: .normal)
         loadingIndicator.startAnimating()
         view.isUserInteractionEnabled = false
         
-        // 3. Trigger AI
+        print("🟢 STARTING GENERATION: Type = \(currentGenerationType.description)")
+        
         Task {
+            let extractedText = await ContentExtractor.shared.extractContent(from: sourceItem)
+            
+            // STRICT PROMPTS
+            var instruction = ""
+            switch currentGenerationType {
+            case .flashcards:
+                instruction = "Create \(selectedCount) flashcards. Return ONLY a JSON array of objects with 'front' and 'back' keys. No Markdown. No extra text."
+            case .cheatsheet:
+                instruction = """
+                STRICTLY GENERATE A CHEATSHEET.
+                DO NOT generate a quiz. DO NOT output JSON.
+                Format as clean MARKDOWN text.
+                Include:
+                - # Title
+                - ## Key Formulas
+                - ## Important Dates
+                - ## Bulleted Definitions
+                
+                Topic: \(topicName)
+                """
+            case .notes:
+                instruction = """
+                STRICTLY GENERATE STUDY NOTES.
+                DO NOT generate a quiz. DO NOT output JSON.
+                Format as clean MARKDOWN text.
+                Include:
+                - # Main Heading
+                - ## Subheadings
+                - Bullet points for key concepts.
+                - Examples where applicable.
+                
+                Topic: \(topicName)
+                """
+            case .quiz:
+                instruction = "Generate \(selectedCount) quiz questions in JSON format."
+            default: break
+            }
+            
+            let safeText = String(extractedText.prefix(15000))
+            let finalPrompt = "\(instruction)\n\nCONTEXT:\n\(safeText)\n\nTOPIC REQUEST: \(topicName)"
+            
+            await MainActor.run {
+                sender.setTitle("Generating AI Content...", for: .normal)
+            }
+
             do {
-                let generatedText = try await AIContentManager.shared.generateContent(
-                    topic: topicName,
+                let generatedText = try await generateContentWithSmartWait(
+                    topic: finalPrompt,
                     type: currentGenerationType.description,
                     count: selectedCount,
                     difficulty: currentDifficulty
                 )
                 
-                // 4. Save Data & Navigate
                 DispatchQueue.main.async {
-                    self.stopLoading(sender)
-                    
-                    var savedTopic: Topic?
-                    
-                    if self.currentGenerationType == .quiz {
-                        // Parse JSON
-                        let questions = self.parseQuizJSON(generatedText)
-                        if questions.isEmpty {
-                            self.showError("AI generated invalid quiz data.")
-                            return
-                        }
-                        // Save Quiz
-                        savedTopic = DataManager.shared.saveGeneratedTopic(
-                            name: topicName,
-                            subject: self.parentSubjectName ?? "General Study",
-                            type: "Quiz",
-                            questions: questions
-                        )
-                    } else {
-                        // Save Notes/Flashcards/Cheatsheet
-                        savedTopic = DataManager.shared.saveGeneratedTopic(
-                            name: topicName,
-                            subject: self.parentSubjectName ?? "General Study",
-                            type: self.currentGenerationType.description,
-                            notes: generatedText
-                        )
-                    }
-                    
-                    // Navigate
-                    if let finalTopic = savedTopic {
-                        let payload = (topic: finalTopic, sourceName: topicName)
-                        self.performNavigation(type: self.currentGenerationType, payload: payload)
-                    }
+                    self.handleSuccess(
+                        generatedContent: generatedText,
+                        topicName: topicName,
+                        sender: sender
+                    )
                 }
                 
             } catch {
@@ -259,6 +274,105 @@ class GenerationViewController: UIViewController {
                     self.showError("AI Error: \(error.localizedDescription)")
                 }
             }
+        }
+    }
+    
+    // ✅ SMART RETRY LOGIC (Prevents Code 500 / Death Spiral)
+    private func generateContentWithSmartWait(topic: String, type: String, count: Int, difficulty: String, attempt: Int = 1) async throws -> String {
+        do {
+            return try await AIContentManager.shared.generateContent(
+                topic: topic,
+                type: type,
+                count: count,
+                difficulty: difficulty
+            )
+        } catch {
+            let errorString = error.localizedDescription.lowercased()
+            print("⚠️ AI Attempt \(attempt) Failed: \(error.localizedDescription)")
+            
+            let isQuotaError = errorString.contains("quota") ||
+                               errorString.contains("limit") ||
+                               errorString.contains("429") ||
+                               errorString.contains("500") ||
+                               errorString.contains("exceeded")
+            
+            if attempt < 3 {
+                if isQuotaError {
+                    print("🚨 QUOTA HIT. Waiting 70s...")
+                    for i in (1...70).reversed() {
+                        await MainActor.run {
+                            self.generateButton.setTitle("Limit Hit. Retrying in \(i)s...", for: .normal)
+                        }
+                        try? await Task.sleep(nanoseconds: 1_000_000_000)
+                    }
+                } else {
+                    print("🔄 Normal Retry (3s)...")
+                    try? await Task.sleep(nanoseconds: 3 * 1_000_000_000)
+                }
+                
+                return try await generateContentWithSmartWait(topic: topic, type: type, count: count, difficulty: difficulty, attempt: attempt + 1)
+            } else {
+                throw error
+            }
+        }
+    }
+    
+    // ✅ Success Handler
+    private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
+        self.stopLoading(sender)
+        
+        let folder = self.parentSubjectName ?? "General Study"
+        var savedTopic: Topic?
+        
+        // 1. Save Original Source File
+        if let sourceURLs = self.sourceItems as? [URL] {
+            for url in sourceURLs {
+                print("💾 Saving Source: \(url.lastPathComponent) to \(folder)")
+                DataManager.shared.importFile(url: url, subject: folder)
+            }
+        }
+        
+        // 2. Save Generated Content
+        if self.currentGenerationType == .quiz {
+            let questions = self.parseQuizJSON(generatedContent)
+            if questions.isEmpty {
+                self.showError("AI generated invalid quiz data.")
+                return
+            }
+            savedTopic = DataManager.shared.saveGeneratedTopic(
+                name: topicName,
+                subject: folder,
+                type: "Quiz",
+                questions: questions
+            )
+        } else if self.currentGenerationType == .flashcards {
+            savedTopic = DataManager.shared.saveGeneratedTopic(
+                name: topicName,
+                subject: folder,
+                type: "Flashcards",
+                notes: generatedContent
+            )
+        } else {
+            // Notes & Cheatsheets (Clean JSON if needed)
+            let finalText: String
+            if generatedContent.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("{") {
+                finalText = convertJsonToMarkdown(json: generatedContent, type: self.currentGenerationType.description)
+            } else {
+                finalText = generatedContent
+            }
+            
+            savedTopic = DataManager.shared.saveGeneratedTopic(
+                name: topicName,
+                subject: folder,
+                type: self.currentGenerationType.description,
+                notes: finalText
+            )
+        }
+        
+        // 3. Navigate
+        if let finalTopic = savedTopic {
+            let payload = (topic: finalTopic, sourceName: topicName)
+            self.performNavigation(type: self.currentGenerationType, payload: payload)
         }
     }
     
@@ -290,7 +404,6 @@ class GenerationViewController: UIViewController {
         present(alert, animated: true)
     }
 
-    // MARK: - Stepper Actions
     @IBAction func stepperValueChanged(_ sender: UIStepper) {
         let val = Int(sender.value)
         if sender == flashcardCountStepper {
@@ -305,9 +418,7 @@ class GenerationViewController: UIViewController {
         }
     }
     
-    // MARK: - Difficulty Actions
     @IBAction func difficultyTapped(_ sender: UIButton) {
-        // ✅ FIXED: Replaced forEach with standard for loop to avoid "$0 is immutable" error
         let buttons = [easyButton, mediumButton, hardButton]
         for btn in buttons {
             btn?.backgroundColor = .systemGray6
@@ -329,7 +440,6 @@ class GenerationViewController: UIViewController {
         }
     }
     
-    // MARK: - Navigation Preparation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard let data = sender as? (topic: Topic, sourceName: String) else { return }
         
@@ -355,8 +465,23 @@ class GenerationViewController: UIViewController {
     }
 }
 
-// MARK: - JSON Parsing Helper
+// MARK: - JSON & Markdown Helpers
 extension GenerationViewController {
+    
+    func convertJsonToMarkdown(json: String, type: String) -> String {
+        print("⚠️ Warning: AI returned JSON for \(type). Converting to text.")
+        let stripped = json
+            .replacingOccurrences(of: "{", with: "")
+            .replacingOccurrences(of: "}", with: "")
+            .replacingOccurrences(of: "[", with: "")
+            .replacingOccurrences(of: "]", with: "")
+            .replacingOccurrences(of: "\"", with: "")
+            .replacingOccurrences(of: ",", with: "\n")
+        
+        return "# Generated \(type) (Fallback)\n\n" + stripped
+    }
+    
+    // ✅ FIXED PARSER: Uses Intermediate Struct to match AI Output
     func parseQuizJSON(_ jsonString: String) -> [QuizQuestion] {
         var cleanString = jsonString
         if cleanString.contains("```json") {
@@ -366,11 +491,44 @@ extension GenerationViewController {
         cleanString = cleanString.trimmingCharacters(in: .whitespacesAndNewlines)
         
         guard let data = cleanString.data(using: .utf8) else { return [] }
-        struct QuizWrapper: Codable { let questions: [QuizQuestion] }
+        
+        // 1. Define structure matching AI output exactly
+        struct AIResponse: Codable {
+            struct AIQuestion: Codable {
+                let question: String
+                let options: [String]
+                let answer: String // AI sends a String
+                let hint: String?
+            }
+            let questions: [AIQuestion]
+        }
         
         let decoder = JSONDecoder()
-        if let wrapper = try? decoder.decode(QuizWrapper.self, from: data) { return wrapper.questions }
-        if let array = try? decoder.decode([QuizQuestion].self, from: data) { return array }
+        
+        do {
+            let wrapper = try decoder.decode(AIResponse.self, from: data)
+            
+            // 2. Map to App's QuizQuestion (String -> Int Index)
+            return wrapper.questions.map { aiQ in
+                let correctIndex = aiQ.options.firstIndex(of: aiQ.answer) ?? 0
+                
+                return QuizQuestion(
+                    questionText: aiQ.question,
+                    answers: aiQ.options,
+                    correctAnswerIndex: correctIndex,
+                    userAnswerIndex: nil,
+                    isFlagged: false,
+                    hint: aiQ.hint ?? "No hint available."
+                )
+            }
+        } catch {
+            print("⚠️ Failed to parse AI JSON: \(error)")
+            // Fallback for direct array if AI forgets wrapper
+            if let directList = try? decoder.decode([QuizQuestion].self, from: data) {
+                return directList
+            }
+        }
+        
         return []
     }
 }

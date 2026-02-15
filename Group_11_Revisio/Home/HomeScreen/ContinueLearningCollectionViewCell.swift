@@ -1,6 +1,5 @@
 import UIKit
 
-// Protocol for HomeViewController
 protocol ContinueLearningCellDelegate: AnyObject {
     func didSelectLearningItem(_ item: ContentItem)
 }
@@ -9,27 +8,55 @@ class ContinueLearningCollectionViewCell: UICollectionViewCell, UITableViewDataS
     
     @IBOutlet weak var tableView: UITableView!
     
-    // Deleted: quizlogo, LogoView, ViewShow (No longer needed)
+    // Empty State Label
+    private let emptyLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Add Material to continue learning"
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 15, weight: .medium)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        return label
+    }()
     
     var learningItems: [ContentItem] = []
     weak var delegate: ContinueLearningCellDelegate?
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        setupEmptyLabel()
         
         tableView.dataSource = self
         tableView.delegate = self
         tableView.separatorStyle = .none
-        tableView.isScrollEnabled = false // Height is controlled by CollectionView
+        tableView.isScrollEnabled = false
         
-        // Register Cell
         let nib = UINib(nibName: "LearningTaskCell", bundle: nil)
         tableView.register(nib, forCellReuseIdentifier: "LearningTaskCell")
     }
     
+    private func setupEmptyLabel() {
+        contentView.addSubview(emptyLabel)
+        NSLayoutConstraint.activate([
+            emptyLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            emptyLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            emptyLabel.leadingAnchor.constraint(greaterThanOrEqualTo: contentView.leadingAnchor, constant: 16),
+            emptyLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -16)
+        ])
+    }
+    
     func configure(with items: [ContentItem]) {
         self.learningItems = items
-        self.tableView.reloadData()
+        
+        if items.isEmpty {
+            tableView.isHidden = true
+            emptyLabel.isHidden = false
+        } else {
+            tableView.isHidden = false
+            emptyLabel.isHidden = true
+            self.tableView.reloadData()
+        }
     }
     
     // MARK: - TableView DataSource
@@ -42,22 +69,27 @@ class ContinueLearningCollectionViewCell: UICollectionViewCell, UITableViewDataS
             return UITableViewCell()
         }
         
-        // In tableView(_ cellForRowAt:) ...
-            
-            let item = learningItems[indexPath.row]
-            
-            // Determine type
-            var taskType: TaskType = .other
-            if item.itemType == "Quiz" { taskType = .quiz }
-            else if item.itemType == "Topic" || item.itemType == "Notes" { taskType = .notes }
-            else if item.itemType == "Flashcard" { taskType = .flashcard } // 🆕 Map logic
-            
-            let taskViewModel = LearningTask(
-                title: item.title,
-                subtitle: nil,
-                remainingModules: 0,
-                type: taskType
-            
+        let item = learningItems[indexPath.row]
+        let typeLower = item.itemType.lowercased()
+        
+        // ✅ STRICT & ROBUST MAPPING
+        var taskType: TaskType = .other
+        
+        if typeLower.contains("quiz") {
+            taskType = .quiz
+        } else if typeLower.contains("flashcard") {
+            taskType = .flashcard
+        } else if typeLower.contains("cheatsheet") {
+            taskType = .cheatsheet
+        } else if typeLower.contains("note") || typeLower.contains("topic") {
+            taskType = .notes
+        }
+        
+        let taskViewModel = LearningTask(
+            title: item.title,
+            subtitle: nil,
+            remainingModules: (taskType == .quiz) ? 10 : 0,
+            type: taskType
         )
         
         cell.configure(with: taskViewModel)
@@ -65,10 +97,9 @@ class ContinueLearningCollectionViewCell: UICollectionViewCell, UITableViewDataS
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 75 // Matches the rowHeight in HomeViewController
+        return 75
     }
     
-    // MARK: - TableView Delegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let selectedItem = learningItems[indexPath.row]

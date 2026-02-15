@@ -11,17 +11,13 @@ class LearningTaskCell: UITableViewCell {
     override func awakeFromNib() {
             super.awakeFromNib()
             self.selectionStyle = .none
-            
-            // 1. Transparent Cell Background (Container)
             self.backgroundColor = .clear
             
-            // 2. Dynamic Card Styling on ContentView
-            // Uses #F5F5F5 in Light Mode, and System Dark Gray in Dark Mode
             self.contentView.backgroundColor = UIColor { traitCollection in
                 if traitCollection.userInterfaceStyle == .dark {
-                    return .secondarySystemGroupedBackground // Dark card look
+                    return .secondarySystemGroupedBackground
                 } else {
-                    return UIColor(hex: "F5F5F5") // Your custom light gray
+                    return UIColor(hex: "F5F5F5")
                 }
             }
             
@@ -29,10 +25,8 @@ class LearningTaskCell: UITableViewCell {
             self.contentView.layer.masksToBounds = true
         }
     
-    // 3. Add Spacing Between Cells (Card Effect)
     override func layoutSubviews() {
         super.layoutSubviews()
-        // Adds 8pts of vertical spacing between cells so they look like separate cards
         contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: 16, right: 0))
     }
     
@@ -41,34 +35,38 @@ class LearningTaskCell: UITableViewCell {
         // 1. Set Title
         titleLabel.text = task.title
         
-        // 2. Dynamic Subtitle: "X modules remaining"
-        subtitleLabel.text = "\(task.remainingModules) questions remaining"
+        // 2. Dynamic Subtitle
+        if task.type == .quiz {
+            subtitleLabel.text = "\(task.remainingModules) questions"
+        } else {
+            subtitleLabel.text = "Tap to review"
+        }
         subtitleLabel.textColor = .secondaryLabel
         
-        // 3. Icon Logic (Updated for Quiz Timer)
+        // 3. Icon Logic
         let symbolname: String
         let iconColor: UIColor
         
-        // In configure(with task:) function...
-    
-            
-            switch task.type {
-            case .quiz:
-                symbolname = "timer"
-                iconColor = UIColor(hex: "74DA9B")
-            case .notes:
-                symbolname = "book.pages"
-                iconColor = UIColor(hex: "FFC445", alpha: 0.75)
-            case .flashcard: // 🆕 Added Flashcard Styling
-                symbolname = "rectangle.on.rectangle.angled" // Looks like flashcards
-                iconColor = UIColor(hex: "5AC8FA")
-            case .video:
-                symbolname = "play.tv.fill"
-                iconColor = .systemIndigo
-            default:
-                symbolname = "graduationcap.fill"
-                iconColor = .systemGray
-            }
+        switch task.type {
+        case .quiz:
+            symbolname = "timer"
+            iconColor = UIColor(hex: "88D769") // Green
+        case .notes:
+            symbolname = "book.pages"
+            iconColor = UIColor(hex: "FFC445", alpha: 0.75) // Orange
+        case .flashcard:
+            symbolname = "rectangle.on.rectangle.angled"
+            iconColor = UIColor(hex: "91C1EF") // Blue
+        case .cheatsheet: // ✅ Purple Clipboard
+            symbolname = "list.clipboard"
+            iconColor = UIColor(hex: "8A38F5", alpha: 0.50)
+        case .video:
+            symbolname = "play.tv.fill"
+            iconColor = .systemIndigo
+        default:
+            symbolname = "graduationcap.fill"
+            iconColor = .systemGray
+        }
         
         // 4. Apply the Icon
         let config = UIImage.SymbolConfiguration(pointSize: 22, weight: .medium)
