@@ -31,7 +31,7 @@ class QuizStartViewController: UIViewController {
     
     // MARK: - UI Setup
         func configureUI() {
-            // ✅ UPDATED: Prioritize parentSubject (The Folder Name)
+            // Prioritize parentSubject (The Folder Name)
             var displayName = "Quiz"
             
             if let subject = parentSubject, !subject.isEmpty {
@@ -42,7 +42,7 @@ class QuizStartViewController: UIViewController {
                 displayName = topicName
             }
             
-            // Remove existing "Quiz" text if present to avoid "Calculus Quiz Quiz"
+            // Clean up name
             let cleanName = displayName.replacingOccurrences(of: " Quiz", with: "")
             
             quizTitleLabel.text = "\(cleanName) Quiz"
@@ -67,14 +67,13 @@ class QuizStartViewController: UIViewController {
         
         3. Tap the single correct option to select your answer.
         
-        4. Use the Next button at the bottom of the screen to move forward. You can use the Back button (if available) to review previous answers.
+        4. Use the Next button at the bottom of the screen to move forward.
         
-        5. Tap the Submit button on the final question to end the quiz and view your score.
+        5. Tap the Submit button on the final question to end the quiz.
         """
     }
     
     // MARK: - Actions
-    
     @IBAction func beginQuizPressed(_ sender: Any) {
         performSegue(withIdentifier: "BeginQuizAction", sender: currentTopic)
     }
@@ -91,7 +90,8 @@ class QuizStartViewController: UIViewController {
             name: topic.name,
             lastAccessed: "Just now",
             materialType: "Quiz",
-            parentSubjectName: subject, largeContentBody: topic.largeContentBody,
+            parentSubjectName: subject,
+            largeContentBody: topic.largeContentBody,
             notesContent: topic.notesContent,
             cheatsheetContent: topic.cheatsheetContent
         )
@@ -100,12 +100,9 @@ class QuizStartViewController: UIViewController {
         DataManager.shared.addTopic(to: subject, topic: quizToSave)
         
         print("✅ Saved \(topic.name) to \(subject)")
-        
-        // Alert Logic
         showSaveAlert(folderName: subject)
     }
     
-    // MARK: - Helper Alert
     func showSaveAlert(folderName: String) {
         let alert = UIAlertController(
             title: "Saved!",
@@ -113,16 +110,11 @@ class QuizStartViewController: UIViewController {
             preferredStyle: .alert
         )
         
-        // ✅ MODIFIED: Navigate to Home Screen upon tapping OK
         let okAction = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
             guard let self = self else { return }
-            
-            // Check if we are in a navigation stack
             if let nav = self.navigationController {
-                // Pop to the root view controller (Home Screen)
                 nav.popToRootViewController(animated: true)
             } else {
-                // If presented modally, dismiss it
                 self.dismiss(animated: true, completion: nil)
             }
         }
@@ -130,21 +122,31 @@ class QuizStartViewController: UIViewController {
         present(alert, animated: true)
     }
 
-    // MARK: - Navigation
+    // MARK: - Navigation (✅ FIXED: Handles BOTH View Controllers)
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "BeginQuizAction" {
-            if let destinationVC = segue.destination as? QuizSessionViewController { // ✅ Ensure this matches your destination class
-                
-                // Pass data to the Quiz VC
-                destinationVC.currentTopic = self.currentTopic
-                destinationVC.parentSubject = self.parentSubject
-                
-                // Pass the same clean name to the next screen
-                let nameToPass = self.parentSubject ?? self.quizSourceName ?? "Quiz"
-                destinationVC.sourceName = nameToPass
-                
-                print("QuizStartVC: Forwarding \(currentTopic?.name ?? "nil")")
+            
+            let nameToPass = self.parentSubject ?? self.quizSourceName ?? "Quiz"
+            
+            // 1. Try casting to the NEW QuizViewController
+            if let newQuizVC = segue.destination as? QuizViewController {
+                print("🚀 Launching QuizViewController")
+                newQuizVC.quizTopic = self.currentTopic
+                newQuizVC.parentSubjectName = self.parentSubject
+                newQuizVC.selectedSourceName = nameToPass
+                return
             }
+            
+            // 2. Try casting to the OLD QuizSessionViewController (Fallback)
+            if let oldQuizVC = segue.destination as? QuizSessionViewController {
+                print("🚀 Launching QuizSessionViewController")
+                oldQuizVC.currentTopic = self.currentTopic
+                oldQuizVC.parentSubject = self.parentSubject
+                oldQuizVC.sourceName = nameToPass
+                return
+            }
+            
+            print("⚠️ CRITICAL ERROR: Segue destination matches neither QuizViewController nor QuizSessionViewController.")
         }
     }
 }

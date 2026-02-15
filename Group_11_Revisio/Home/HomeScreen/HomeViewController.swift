@@ -39,6 +39,7 @@ let showQuizStartSegueID = "ShowQuizStart"
 let showSubjectDetailSegueID = "ShowSubjectDetail"
 let showDailyChallengeSegueID = "ShowDailyChallenge"
 let showFlashcardsSegueID = "ShowFlashcardsSegue"
+let showCheatsheetSegueID = "ShowCheatsheet" // Make sure this exists in Storyboard
 
 protocol QuickGamesCellDelegate: AnyObject {
     func didSelectQuickGame(gameTitle: String)
@@ -120,17 +121,14 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     
     // MARK: - Data Fetching
     func loadRecentLearningData() {
-        // 1. Get all topics (Now already sorted by DataStore)
+        // 1. Get all topics (Already sorted by DataStore)
         let allTopics = DataManager.shared.getAllRecentTopics()
-        
-        // 2. ✅ FIXED: No reverse needed here. DataStore handles sorting.
         let recentTopics = Array(allTopics.prefix(5))
         
-        // 3. Map to ContentItems for UI
+        // 2. Map to ContentItems for UI
         self.learningItems = recentTopics.map { topic in
             var type = topic.materialType
             if type == "Flashcards" { type = "Flashcard" } // Map Plural to Singular
-            if type == "Cheatsheet" { type = "Notes" }     // Map Cheatsheet to Notes icon
             
             return ContentItem(title: topic.name, iconName: "doc.text", itemType: type)
         }
@@ -150,7 +148,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             ContentItem(title: "New File", iconName: "plus.circle.fill", itemType: "AddButton")
         ]
         
-        // Start empty, will be filled by loadRecentLearningData
         learningItems = []
         
         gameItems = [
@@ -177,10 +174,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         collectionView.register(UINib(nibName: "UploadContentCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: uploadContentCellID)
         collectionView.register(UINib(nibName: "ContinueLearningCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: continueLearningCellID)
         collectionView.register(UINib(nibName: "QuickGamesCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: quickGamesCellID)
-        
-        // Register Side Quests Cell
         collectionView.register(UINib(nibName: "SideQuestsCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: sideQuestsCellID)
-        
         collectionView.register(UINib(nibName: "HeaderViewCollectionReusableView", bundle: nil),
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
                                 withReuseIdentifier: headerID)
@@ -237,7 +231,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // MARK: - Navigation Preparation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        // Correctly passes File Path to UploadConfirmationViewController
         if segue.identifier == showUploadConfirmationSegueID {
             if let destinationVC = segue.destination as? UploadConfirmationViewController,
                let filePath = sender as? String {
@@ -269,13 +262,20 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             }
         }
         
-        // Flashcards Segue
         if segue.identifier == showFlashcardsSegueID {
-             // Uncomment this once FlashcardsViewController is created
-             if let destVC = segue.destination as? FlashcardViewController,
+             if let destVC = segue.destination as? FlashcardsViewController,
                 let topic = sender as? Topic {
                   destVC.currentTopic = topic
              }
+        }
+        
+        // Cheatsheet Navigation
+        if segue.identifier == "ShowCheatsheet" {
+            if let destVC = segue.destination as? CheatsheetViewController,
+               let topic = sender as? Topic {
+                destVC.currentTopic = topic
+                destVC.parentSubjectName = topic.parentSubjectName
+            }
         }
     }
     
@@ -320,7 +320,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 
             case .continueLearning:
                 let rowHeight: CGFloat = 75
-                // Show max 2 items unless expanded
                 let countToShow = isLearningExpanded ? learningItems.count : min(learningItems.count, 2)
                 let totalHeight = CGFloat(max(countToShow, 1)) * rowHeight
                 
@@ -383,7 +382,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             
         case .continueLearning:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: continueLearningCellID, for: indexPath) as! ContinueLearningCollectionViewCell
-            // Show all (expanded) or top 2 (collapsed)
             let itemsToShow = isLearningExpanded ? learningItems : Array(learningItems.prefix(2))
             cell.configure(with: itemsToShow)
             cell.delegate = self
@@ -437,10 +435,8 @@ extension HomeViewController: HeaderViewDelegate {
     }
 }
 
-// MARK: - Side Quests Delegate (XP & History Logic)
+// MARK: - Side Quests Delegate
 extension HomeViewController: SideQuestDelegate {
-    
-    // Updates the list when quests are added/removed
     func didUpdateQuests(_ quests: [SideQuest]) {
         self.sideQuests = quests
         if let sectionIndex = HomeSection.allCases.firstIndex(of: .sideQuests) {
@@ -448,37 +444,22 @@ extension HomeViewController: SideQuestDelegate {
         }
     }
     
-    // ✅ Logic for checking off a box
     func didCompleteQuest(_ quest: SideQuest) {
-        // 1. Create a completed copy and add to History
         var completedTask = quest
         completedTask.isCompleted = true
-        self.completedQuests.insert(completedTask, at: 0) // Add to top of history
+        self.completedQuests.insert(completedTask, at: 0)
         
-        // 2. Remove from the "To Do" list on Home Screen
         if let index = self.sideQuests.firstIndex(where: { $0.id == quest.id }) {
             self.sideQuests.remove(at: index)
-            
-            // 3. Update the UI immediately
             if let sectionIndex = HomeSection.allCases.firstIndex(of: .sideQuests) {
                 collectionView.reloadSections(IndexSet(integer: sectionIndex))
             }
         }
-        
-        // Debug print to confirm it's working
-        print("✅ Quest Completed! History count: \(self.completedQuests.count)")
     }
     
-    // ✅ Logic for opening the History Screen
     func didTapHistory() {
-        // 1. Instantiate the Controller from your other file
         let historyVC = QuestHistoryViewController()
-        
-        // 2. PASS THE DATA
-        // We assign your local 'completedQuests' to the 'history' variable in the new screen
         historyVC.history = self.completedQuests
-        
-        // 3. Navigate
         if let nav = navigationController {
             nav.pushViewController(historyVC, animated: true)
         } else {
@@ -486,7 +467,6 @@ extension HomeViewController: SideQuestDelegate {
         }
     }
     
-    // Animation for earning XP
     func didEarnXP(amount: Int, sourceView: UIView) {
         let frame = sourceView.convert(sourceView.bounds, to: self.view)
         let lbl = UILabel(frame: frame)
@@ -504,22 +484,39 @@ extension HomeViewController: SideQuestDelegate {
     }
 }
 
-// MARK: - Continue Learning Delegate
+// MARK: - Continue Learning Delegate (✅ FIXED HERE)
 extension HomeViewController: ContinueLearningCellDelegate {
     func didSelectLearningItem(_ item: ContentItem) {
-        let topic = Topic(
-            name: item.title,
-            lastAccessed: "Just now",
-            materialType: item.itemType,
-            parentSubjectName: "General", largeContentBody: ""
-        )
         
-        if item.itemType == "Quiz" {
-            performSegue(withIdentifier: showQuizStartSegueID, sender: topic)
-        } else if item.itemType == "Flashcard" {
-            performSegue(withIdentifier: showFlashcardsSegueID, sender: topic)
+        // 1. ✅ FETCH THE REAL TOPIC from DataManager
+        // This ensures we get the version with Questions, History, etc.
+        let allTopics = DataManager.shared.getAllRecentTopics()
+        
+        // 2. Find the Topic matching Name AND Type (Case Insensitive)
+        guard let realTopic = allTopics.first(where: { topic in
+            let nameMatches = (topic.name == item.title)
+            
+            let topicType = topic.materialType.lowercased()
+            let itemType = item.itemType.lowercased()
+            let typeMatches = topicType.contains(itemType) || itemType.contains(topicType)
+            
+            return nameMatches && typeMatches
+        }) else {
+            print("Error: Could not find topic matching \(item.title) in Database.")
+            return
+        }
+        
+        // 3. ✅ NAVIGATE Correctly based on Type
+        let typeLower = realTopic.materialType.lowercased()
+        
+        if typeLower.contains("quiz") {
+            performSegue(withIdentifier: showQuizStartSegueID, sender: realTopic)
+        } else if typeLower.contains("flashcard") {
+            performSegue(withIdentifier: showFlashcardsSegueID, sender: realTopic)
+        } else if typeLower.contains("cheatsheet") {
+            performSegue(withIdentifier: "ShowCheatsheet", sender: realTopic)
         } else {
-            performSegue(withIdentifier: showNotesDetailSegueID, sender: topic)
+            performSegue(withIdentifier: showNotesDetailSegueID, sender: realTopic)
         }
     }
 }
@@ -553,18 +550,15 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         present(picker, animated: true)
     }
     
-    // 1. Paste Link: Small Alert
     func uploadCellDidTapLink(_ cell: UploadContentCollectionViewCell) {
         showLinkInputAlert()
     }
     
-    // 2. Type Note: Full Screen Sheet
     func uploadCellDidTapText(_ cell: UploadContentCollectionViewCell) {
         let noteVC = NoteInputViewController()
         noteVC.onSave = { [weak self] text in
             self?.navigateToConfirmation(with: text)
         }
-        
         let nav = UINavigationController(rootViewController: noteVC)
         if let sheet = nav.sheetPresentationController {
             sheet.detents = [.medium(), .large()]
@@ -583,7 +577,6 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
             let lower = text.lowercased()
             if (lower.hasPrefix("http://") || lower.hasPrefix("https://")),
                let url = URL(string: text), UIApplication.shared.canOpenURL(url) {
-                
                 self.navigateToConfirmation(with: text)
             } else {
                 let errorAlert = UIAlertController(title: "Invalid Link", message: "URL must start with http:// or https://", preferredStyle: .alert)

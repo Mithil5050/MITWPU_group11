@@ -11,6 +11,18 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
     private let studyTableView = UITableView(frame: .zero, style: .plain)
     private var subjectNames: [String] = []
     
+    // ✅ NEW: Empty State Label
+    private let emptyLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Add folder"
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 18, weight: .medium)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        return label
+    }()
+    
     // Tokens for modern closure-based notification observers
     private var materialUpdateToken: NSObjectProtocol?
     private var folderUpdateToken: NSObjectProtocol?
@@ -40,6 +52,7 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
     private func setupUI() {
         view.backgroundColor = .systemBackground
         view.addSubview(studyTableView)
+        view.addSubview(emptyLabel) // ✅ Add label to view
         
         studyTableView.translatesAutoresizingMaskIntoConstraints = false
         studyTableView.layer.cornerRadius = 12.0
@@ -61,7 +74,11 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
             studyTableView.topAnchor.constraint(equalTo: safeArea.topAnchor),
             studyTableView.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor),
             studyTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            studyTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            studyTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
+            // ✅ Label Constraints (Centered)
+            emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
 
@@ -80,6 +97,16 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
     private func fetchFolderNames() {
         // Fetching sorted keys from the DataManager to populate the folder list
         self.subjectNames = Array(DataManager.shared.savedMaterials.keys).sorted()
+        
+        // ✅ Toggle Visibility based on data
+        if subjectNames.isEmpty {
+            studyTableView.isHidden = true
+            emptyLabel.isHidden = false
+        } else {
+            studyTableView.isHidden = false
+            emptyLabel.isHidden = true
+        }
+        
         studyTableView.reloadData()
     }
 
@@ -92,6 +119,11 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
         // 2. Synchronize UI: Update local array and animate the row removal
         self.subjectNames.remove(at: indexPath.row)
         self.studyTableView.deleteRows(at: [indexPath], with: .fade)
+        
+        // Check if now empty to show label
+        if subjectNames.isEmpty {
+            fetchFolderNames()
+        }
     }
 
     // MARK: - Navigation

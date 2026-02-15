@@ -15,14 +15,11 @@ class QuizSessionViewController: UIViewController {
     var parentSubject: String?
     
     var sessionQuestions: [QuizQuestion] = []
-    
-    // PRESERVED: Explanations array
     var explanations: [String] = []
     
     var questionIndex = 0
     var sourceName: String? = "Quiz"
     
-    // PRESERVED: UI bar items
     var hintItem: UIBarButtonItem?
     var flagItem: UIBarButtonItem?
     
@@ -34,12 +31,10 @@ class QuizSessionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = sourceName
-        
-        // Set background to black to match the "Image 2" dark mode look
         self.view.backgroundColor = .black
         
         loadData()
-        styleOptionButtons() // ✅ Applies the new "Image 2" styling
+        styleOptionButtons()
         configureNavBarItems()
         renderQuestion()
         initiateTimer()
@@ -54,27 +49,22 @@ class QuizSessionViewController: UIViewController {
     func loadData() {
         if let aiQuestions = currentTopic?.quizQuestions, !aiQuestions.isEmpty {
             self.sessionQuestions = aiQuestions
-            print("🧠 Loaded \(aiQuestions.count) AI Questions.")
             self.explanations = aiQuestions.map { $0.hint ?? "No explanation available." }
-        }
-        else {
-            print("⚠️ No AI questions found, loading hardcoded data...")
-            loadDummyData()
+        } else {
+            self.sessionQuestions = []
         }
         
         if !sessionQuestions.isEmpty {
             totalSessionTime = sessionQuestions.count * 30
             secondsRemaining = totalSessionTime
+        } else {
+            backQButton.isEnabled = false
+            forwardQButton.isEnabled = false
+            quizQuestionLabel.text = "No questions loaded."
         }
     }
     
-    func loadDummyData() {
-        let legacyName = sourceName?.replacingOccurrences(of: " Quiz", with: "") ?? ""
-        self.sessionQuestions = QuizManager.getQuestions(for: legacyName)
-        self.explanations = self.sessionQuestions.map { $0.hint ?? "" }
-    }
-    
-    // MARK: - Timer Logic
+    // MARK: - Timer
     func initiateTimer() {
         secondsRemaining = totalSessionTime
         updateTimerLabel()
@@ -98,49 +88,32 @@ class QuizSessionViewController: UIViewController {
         countdownLabel.textColor = (secondsRemaining < 30) ? .systemRed : .white
     }
     
-    // MARK: - UI Rendering (✅ MATCHING IMAGE 2)
+    // MARK: - Rendering
     func renderQuestion() {
         guard !sessionQuestions.isEmpty, questionIndex < sessionQuestions.count else { return }
         
         let q = sessionQuestions[questionIndex]
-        let prefixes = ["A.", "B.", "C.", "D."] // Prefixes like Image 2
+        let prefixes = ["A.", "B.", "C.", "D."]
         
-        // Question Text Styling
-        quizQuestionLabel.textColor = .white
-        quizQuestionLabel.font = UIFont.systemFont(ofSize: 20, weight: .medium) // iOS System Font
-        
-        UIView.transition(with: quizQuestionLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
-            self.quizQuestionLabel.text = q.questionText
-        }, completion: nil)
+        quizQuestionLabel.text = q.questionText
         
         let progress = Float(questionIndex + 1) / Float(sessionQuestions.count)
         progressBar.setProgress(progress, animated: true)
-        progressBar.trackTintColor = .darkGray
-        progressBar.progressTintColor = .systemBlue
         
         for (i, btn) in optionButtons.enumerated() {
             if i < q.answers.count {
                 btn.isHidden = false
-                
-                // Add Prefix "A. Option Text"
                 let prefix = (i < prefixes.count) ? prefixes[i] : ""
-                let fullText = "\(prefix)   \(q.answers[i])"
+                btn.setTitle("\(prefix)   \(q.answers[i])", for: .normal)
                 
-                btn.setTitle(fullText, for: .normal)
-                
-                // ✅ DEFAULT STATE (Unselected) - Matches Image 2
-                // Clear background, Grey Border, White Text
-                btn.backgroundColor = .clear
-                btn.layer.borderColor = UIColor.systemGray.cgColor
-                btn.layer.borderWidth = 1
-                btn.setTitleColor(.white, for: .normal)
-                
-                // ✅ SELECTED STATE
-                // Highlight border blue, slight fill
                 if let userIdx = q.userAnswerIndex, userIdx == i {
                     btn.layer.borderColor = UIColor.systemBlue.cgColor
                     btn.layer.borderWidth = 2
                     btn.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.15)
+                } else {
+                    btn.layer.borderColor = UIColor.systemGray.cgColor
+                    btn.layer.borderWidth = 1
+                    btn.backgroundColor = .clear
                 }
             } else {
                 btn.isHidden = true
@@ -151,73 +124,47 @@ class QuizSessionViewController: UIViewController {
         forwardQButton.setTitle(questionIndex == sessionQuestions.count - 1 ? "Finish" : "Next", for: .normal)
     }
     
-    // MARK: - Button Styling (✅ UPDATED FOR iOS LOOK)
+    // MARK: - Styling
     func styleOptionButtons() {
         for btn in optionButtons {
-            // Shape
-            btn.layer.cornerRadius = 16 // More rounded like Image 2
-            
-            // Alignment
-            btn.contentHorizontalAlignment = .leading // Left Align
-            
-            // Padding (Critical for looking good)
-            // Top/Bottom 16, Left/Right 20
+            btn.layer.cornerRadius = 16
+            btn.contentHorizontalAlignment = .leading
             btn.contentEdgeInsets = UIEdgeInsets(top: 16, left: 20, bottom: 16, right: 20)
-            
-            // Font
-            btn.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .regular) // iOS Standard Body
-            
-            // Multi-line support
             btn.titleLabel?.numberOfLines = 0
-            btn.titleLabel?.lineBreakMode = .byWordWrapping
         }
-        
-        // Style Navigation Buttons (Pill shape, Dark Grey fill)
-        let navButtons = [backQButton, forwardQButton]
-        for btn in navButtons {
-            btn?.layer.cornerRadius = 24 // Pill shape
-            btn?.backgroundColor = UIColor(white: 0.15, alpha: 1.0) // Dark Grey Background
-            btn?.setTitleColor(.white, for: .normal)
-            btn?.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        }
+        backQButton.layer.cornerRadius = 24
+        forwardQButton.layer.cornerRadius = 24
     }
     
     func configureNavBarItems() {
         let flagImg = UIImage(systemName: "flag")
         flagItem = UIBarButtonItem(image: flagImg, style: .plain, target: self, action: #selector(toggleFlag))
-        
         let hintImg = UIImage(systemName: "lightbulb")
         hintItem = UIBarButtonItem(image: hintImg, style: .plain, target: self, action: #selector(showHint))
-        
         navigationItem.rightBarButtonItems = [flagItem!, hintItem!]
-        navigationController?.navigationBar.tintColor = .white
     }
     
     // MARK: - Actions
-    
     @IBAction func optionSelected(_ sender: UIButton) {
         guard let index = optionButtons.firstIndex(of: sender) else { return }
         sessionQuestions[questionIndex].userAnswerIndex = index
-        let generator = UISelectionFeedbackGenerator()
-        generator.selectionChanged()
         renderQuestion()
     }
     
     @IBAction func forwardButtonTapped(_ sender: UIButton) {
         if questionIndex < sessionQuestions.count - 1 {
             questionIndex += 1
+            renderQuestion()
         } else {
             finishQuiz()
-            return
         }
-        renderQuestion()
     }
 
     @IBAction func backButtonTapped(_ sender: UIButton) {
         if questionIndex > 0 {
             questionIndex -= 1
+            renderQuestion()
         }
-        renderQuestion()
     }
     
     @objc func toggleFlag() {
@@ -243,15 +190,6 @@ class QuizSessionViewController: UIViewController {
             let isCorrect = (question.userAnswerIndex == question.correctAnswerIndex)
             if isCorrect { score += 1 }
             
-            let detail = QuestionResultDetail(
-                questionText: question.questionText,
-                wasCorrect: isCorrect,
-                selectedAnswer: (question.userAnswerIndex != nil) ? question.answers[question.userAnswerIndex!] : "No Answer",
-                correctAnswerFullText: question.answers[question.correctAnswerIndex],
-                isFlagged: question.isFlagged
-            )
-            details.append(detail)
-            
             let expl = (i < explanations.count) ? explanations[i] : (question.hint ?? "")
             
             let summary = QuizSummaryItem(
@@ -263,14 +201,34 @@ class QuizSessionViewController: UIViewController {
                 isCorrect: isCorrect
             )
             summaryItems.append(summary)
+            
+            let detail = QuestionResultDetail(
+                questionText: question.questionText,
+                wasCorrect: isCorrect,
+                selectedAnswer: (question.userAnswerIndex != nil) ? question.answers[question.userAnswerIndex!] : "No Answer",
+                correctAnswerFullText: question.answers[question.correctAnswerIndex],
+                isFlagged: question.isFlagged
+            )
+            details.append(detail)
         }
+        
+        // ✅ CRITICAL FIX: Serialize the detailed data properly
+        // This format matches what QuizHistoryViewController expects:
+        // Question|Opt1|Opt2|Opt3|Opt4|CorrectIdx|Hint|UserIdx
+        let serializedData = summaryItems.map { item in
+            var opts = item.allOptions
+            while opts.count < 4 { opts.append("-") } // Pad to 4
+            let optsString = opts.prefix(4).joined(separator: "|")
+            let uIdx = item.userAnswerIndex ?? -1
+            return "\(item.questionText)|\(optsString)|\(item.correctAnswerIndex)|\(item.explanation)|\(uIdx)"
+        }.joined(separator: "\n")
         
         let newAttempt = QuizAttempt(
             id: UUID(),
             date: Date(),
             score: score,
             totalQuestions: sessionQuestions.count,
-            summaryData: "Score: \(score)/\(sessionQuestions.count)"
+            summaryData: serializedData // ✅ Saved correctly now
         )
         
         saveAttemptToTopic(attempt: newAttempt)
@@ -293,6 +251,13 @@ class QuizSessionViewController: UIViewController {
         if topic.attempts == nil { topic.attempts = [] }
         topic.attempts?.append(attempt)
         
+        // Update Metadata for quick display
+        topic.lastAccessed = "Score: \(attempt.score)/\(attempt.totalQuestions)"
+        
+        // ✅ Local Update
+        self.currentTopic = topic
+        
+        // ✅ Disk Update
         DataManager.shared.updateTopic(subjectName: parentSubject ?? "General Study", topic: topic)
         print("✅ Saved Quiz Attempt: \(attempt.score)")
     }

@@ -6,12 +6,8 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
     @IBOutlet weak var tableView: UITableView!
 
     // MARK: - Properties
-    // Accepts an Array of URLs to handle multiple files
-    var filesToSave: [URL] = []
-    
-    // Will be populated dynamically from DataManager
+    var filesToSave: [URL] = [] // The files passed from Upload screen
     var folders: [String] = []
-    
     var selectedFolder: String?
 
     // MARK: - Lifecycle
@@ -20,13 +16,12 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
         setupTableView()
         setupNavBar()
         
-        // Listen for folder changes (Syncs with Study Tab logic)
+        // Listen for folder changes
         NotificationCenter.default.addObserver(self, selector: #selector(loadFoldersFromDataStore), name: .didUpdateStudyFolders, object: nil)
         
         loadFoldersFromDataStore()
     }
     
-    // Reload data every time view appears to ensure sync with Study Tab
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadFoldersFromDataStore()
@@ -43,17 +38,14 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     func setupNavBar() {
-        // Add a "+" button so user can create a folder right here
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(didTapAddFolder))
     }
     
     // MARK: - Fetch Logic
     @objc func loadFoldersFromDataStore() {
-        // Get keys (folder names) directly from the shared DataManager
         let currentFolders = DataManager.shared.savedMaterials.keys.sorted()
         
         if currentFolders.isEmpty {
-            // Fallback if app is brand new and empty
             self.folders = ["General Study"]
         } else {
             self.folders = currentFolders
@@ -65,8 +57,6 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     // MARK: - Actions
-    
-    // ✅ NEW: Add Folder Logic (Same as Study Tab)
     @objc private func didTapAddFolder() {
         let alert = UIAlertController(title: "New Folder", message: "Enter a name for this subject.", preferredStyle: .alert)
         alert.addTextField { tf in
@@ -78,8 +68,6 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
             guard let name = alert.textFields?.first?.text,
                   !name.trimmingCharacters(in: .whitespaces).isEmpty else { return }
             
-            // This calls DataManager, which saves to disk AND posts the notification
-            // The notification triggers 'loadFoldersFromDataStore', updating the table automatically.
             DataManager.shared.addFolder(name: name)
         }
         
@@ -98,7 +86,6 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
             return
         }
         
-        // ✅ OLD FLOW RESTORED: Navigate to Generation Screen
         performSegue(withIdentifier: "showGeneration", sender: self)
     }
 
@@ -110,14 +97,12 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .default, reuseIdentifier: "FolderCell")
         
-        // 1. Configure Content
         var content = cell.defaultContentConfiguration()
         content.text = folders[indexPath.row]
         content.image = UIImage(systemName: "folder")
         content.imageProperties.tintColor = .systemBlue
         cell.contentConfiguration = content
         
-        // 2. Configure Selection
         let folderName = folders[indexPath.row]
         let isSelected = (folderName == selectedFolder)
         
@@ -137,15 +122,21 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
         tableView.reloadData()
     }
 
-    // MARK: - Navigation
+    // MARK: - Navigation (✅ FIXED SEGUE LOGIC)
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showGeneration" {
-            if let destVC = segue.destination as? GenerateHomeViewController {
-                if let folder = selectedFolder {
-                    destVC.contextSubjectTitle = folder
-                    // Pass the files to the generation screen
-                    destVC.inputSourceData = filesToSave
-                }
+            
+            let folder = selectedFolder ?? "General Study"
+            
+            // 1. Check for Home Tab Generator
+            if let homeDest = segue.destination as? GenerateHomeViewController {
+                homeDest.contextSubjectTitle = folder
+                homeDest.inputSourceData = filesToSave
+            }
+            // 2. ✅ Check for Study Tab Generator (This was missing!)
+            else if let studyDest = segue.destination as? GenerationViewController {
+                studyDest.parentSubjectName = folder
+                studyDest.sourceItems = filesToSave // Pass the URLs here
             }
         }
     }

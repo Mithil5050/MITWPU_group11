@@ -5,7 +5,8 @@ enum TaskType {
     case quiz
     case notes
     case video
-    case flashcard // 🆕 Added Flashcard Type
+    case flashcard
+    case cheatsheet // ✅ ADDED
     case other
 }
 
