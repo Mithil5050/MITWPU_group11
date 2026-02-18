@@ -82,6 +82,19 @@ class ResultsViewController: UIViewController {
         
         retakeButton.layer.cornerRadius = 14
         saveButton.layer.cornerRadius = 14
+
+        // ✅ ADD THIS: Trigger the XP system
+        Task {
+            // Formula: 20 Base XP + 5 XP per correct answer
+            let totalEarned = 20 + (result.finalScore * 5)
+            
+            // This will automatically:
+            // 1. Update local storage
+            // 2. Sync to Supabase
+            // 3. Show the sliding Banner
+            // 4. Trigger Haptics
+            await RevisioManager.shared.earnXP(amount: totalEarned, reason: "Study Quiz")
+        }
     }
     
     // MARK: - Actions

@@ -1,7 +1,7 @@
 import Foundation
 import Supabase
 import Combine
-
+import UIKit
 class RevisioManager: ObservableObject {
     static let shared = RevisioManager()
     
@@ -22,20 +22,21 @@ class RevisioManager: ObservableObject {
 
     // MARK: - THE CONQUEROR FUNCTION: XP & STREAK
     func earnXP(amount: Int, reason: String) async {
-        // 1. Update Local XP Logic
-        progressStore.addXP(amount: amount, source: reason)
-        self.todayXP += amount
+        // 1. Update the Local Manager (Triggers persistence and Level-Up check)
+        ProgressDataManager.shared.addXP(amount: amount, source: reason)
         
-        // 2. Evaluate Streak: If daily threshold (20 XP) is met, update streak
-        if self.todayXP >= GameConfig.dailyXPThreshold {
-            updateStreakStatus()
+        // 2. Refresh the UI (Profile and Awards screens)
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
+            
+            // 3. Show the programmatic Banner (Storyboard compatible)
+            XPNotificationBanner.show(amount: amount, reason: reason)
+            
+            // 4. Haptic Feedback
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         }
         
-        // 3. Post notification for Storyboard ViewControllers to refresh UI
-        // ✅ This uses the extension we define below
-        NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
-        
-        // 4. Cloud Sync: Push updates to Supabase
+        // 5. Cloud Sync to Supabase
         await syncProgressToCloud(amount: amount, reason: reason)
     }
 

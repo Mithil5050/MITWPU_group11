@@ -571,6 +571,10 @@ class GenerateHomeViewController: UIViewController {
         } else {
             self.showError("Failed to save content.")
         }
+        Task {
+                
+                await RevisioManager.shared.earnXP(amount: 5, reason: "Material Generated")
+            }
     }
     
     // MARK: - UI Helpers

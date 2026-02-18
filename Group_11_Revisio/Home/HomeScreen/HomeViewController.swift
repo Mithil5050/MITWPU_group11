@@ -103,6 +103,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         
         // Listen for updates immediately
         NotificationCenter.default.addObserver(self, selector: #selector(handleDataUpdate), name: .didUpdateStudyMaterials, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshXPUI), name: .xpDidUpdate, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(showLevelUpCelebration), name: NSNotification.Name("UserLeveledUp"), object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -117,6 +119,29 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // Handler for Notification
     @objc func handleDataUpdate() {
         loadRecentLearningData()
+    }
+    @objc func refreshXPUI() {
+        DispatchQueue.main.async {
+            // Reload sections that might show XP or progress info
+            self.collectionView.reloadData()
+        }
+    }
+
+    @objc func showLevelUpCelebration() {
+        let newLevel = ProgressDataManager.shared.currentLevel
+        
+        let alert = UIAlertController(
+            title: "🎉 LEVEL UP!",
+            message: "Congratulations! You've reached Level \(newLevel). Keep conquering your studies!",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Awesome!", style: .default))
+        
+        // Trigger haptic feedback for success
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
+        
+        self.present(alert, animated: true)
     }
     
     // MARK: - Data Fetching
@@ -481,6 +506,9 @@ extension HomeViewController: SideQuestDelegate {
         }) { _ in
             lbl.removeFromSuperview()
         }
+        Task {
+                    await RevisioManager.shared.earnXP(amount: amount, reason: "Side Quest Done")
+                }
     }
 }
 
