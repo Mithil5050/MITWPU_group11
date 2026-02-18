@@ -18,24 +18,19 @@ class ProgressDataManager {
     var totalXP: Int {
         get { UserDefaults.standard.integer(forKey: "user_total_xp") }
         set {
-            // 1. Capture the level BEFORE we save the new XP to check for a level-up later
-            let oldLevel = currentLevel
-            
-            // 2. Save the new value to the phone's local storage (UserDefaults)
+            let oldLevel = currentLevel // Snapshot before change
             UserDefaults.standard.set(newValue, forKey: "user_total_xp")
             
-            // 3. Sync with Supabase Cloud automatically
-            Task {
-                // This assumes your SupabaseManager has a syncXP function
-                await SupabaseManager.shared.syncXP(totalXP: newValue)
+            // Check if level changed
+            if currentLevel > oldLevel {
+                print("🎉 Level Up detected: \(currentLevel)")
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: NSNotification.Name("UserLeveledUp"), object: nil)
+                }
             }
             
-            // 4. Check for a Level Up!
-            // If the formula results in a higher number than before, tell the UI to celebrate.
-            if currentLevel > oldLevel {
-                print("🎉 LEVEL UP! User reached level \(currentLevel)")
-                NotificationCenter.default.post(name: NSNotification.Name("UserLeveledUp"), object: nil)
-            }
+            // Background Cloud Sync
+            Task { await SupabaseManager.shared.syncXP(totalXP: newValue) }
         }
     }
     

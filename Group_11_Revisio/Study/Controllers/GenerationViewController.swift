@@ -374,6 +374,10 @@ class GenerationViewController: UIViewController {
             let payload = (topic: finalTopic, sourceName: topicName)
             self.performNavigation(type: self.currentGenerationType, payload: payload)
         }
+        Task {
+                // Award 5 XP for successful AI generation
+                await RevisioManager.shared.earnXP(amount: 5, reason: "Material Generated")
+            }
     }
     
     // Navigation Helper

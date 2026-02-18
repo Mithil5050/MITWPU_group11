@@ -24,10 +24,13 @@ class QuizResultsViewController: UIViewController {
     }
     
     func setupUI() {
+        // 1. Safety check for the result data
         guard let result = finalResult else { return }
         
+        // 2. Update Score Text
         scoreLabel.text = "You Scored \(result.finalScore) out of \(result.totalQuestions)."
         
+        // 3. Determine performance (Percentage) and update Header/Image
         let percentage = Double(result.finalScore) / Double(result.totalQuestions)
         if percentage < 0.5 {
             headerLabel.text = "Better luck next time!"
@@ -37,19 +40,33 @@ class QuizResultsViewController: UIViewController {
             resultImageView.image = UIImage(named: "GoodMarks")
         }
         
+        // 4. Configure TableView for Time Taken and Summary
         tableView.delegate = self
         tableView.dataSource = self
         tableView.tableFooterView = UIView()
         tableView.backgroundColor = .clear
         
+        // 5. Style the Action Buttons
         retakeButton.layer.cornerRadius = 14
         homeButton.layer.cornerRadius = 14
         
+        // 6. Handle Navigation Logic (Hide Retake if it's a quick quiz without a saved topic)
         if topicToSave == nil {
-            retakeButton.isHidden = true
+            retakeButton.isHidden = true // Typo 'truea' fixed here
             homeButton.setTitle("Back to Home", for: .normal)
         } else {
             retakeButton.isHidden = false
+        }
+
+        // 7. ✅ INTEGRATE XP SYSTEM
+        // Using the 20 Base + 5 per correct answer formula
+        Task {
+            let baseXP = 20
+            let performanceXP = result.finalScore * 5
+            let totalEarned = baseXP + performanceXP
+            
+            // This triggers the sliding banner, haptic feedback, and cloud sync automatically
+            await RevisioManager.shared.earnXP(amount: totalEarned, reason: "Quiz Mastery")
         }
     }
 
