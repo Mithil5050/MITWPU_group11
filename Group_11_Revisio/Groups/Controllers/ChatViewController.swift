@@ -266,17 +266,25 @@ extension ChatViewController: MessagesLayoutDelegate {
         in messagesCollectionView: MessagesCollectionView
     ) -> LabelAlignment? {
 
-        if message.sender.senderId != currentUser.senderId,
-           (indexPath.section == 0 || !isPreviousMessageSameSender(at: indexPath)) {
+        guard message.sender.senderId != currentUser.senderId else {
+            return nil
+        }
 
+        if indexPath.section == 0 || !isPreviousMessageSameSender(at: indexPath) {
             return LabelAlignment(
                 textAlignment: .left,
-                textInsets: UIEdgeInsets(top: 6, left: 12, bottom: 2, right: 12)
+                textInsets: UIEdgeInsets(
+                    top: 0,
+                    left: 48,
+                    bottom: 4,
+                    right: 0
+                )
             )
         }
 
         return nil
     }
+    
 }
 
 extension ChatViewController: MessagesDisplayDelegate {
