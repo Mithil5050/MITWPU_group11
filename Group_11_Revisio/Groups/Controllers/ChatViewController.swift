@@ -11,6 +11,7 @@ import InputBarAccessoryView
 
 class ChatViewController: MessagesViewController, GroupUpdateDelegate {
     
+    
     weak var updateDelegate: GroupUpdateDelegate?
     var group: Group?
     var groupName: String = ""
@@ -90,8 +91,10 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         attachButton.image = UIImage(systemName: "plus")
         attachButton.tintColor = .systemBlue
         attachButton.setSize(CGSize(width: 32, height: 32), animated: false)
-        attachButton.onTouchUpInside { _ in }
-
+        attachButton.onTouchUpInside { [weak self] _ in
+            self?.openAttachmentPicker()
+        }
+        
         // Clear left stack first
         messageInputBar.leftStackView.arrangedSubviews.forEach {
             messageInputBar.leftStackView.removeArrangedSubview($0)
@@ -186,6 +189,16 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         messagesCollectionView.scrollsToTop = false
         messagesCollectionView.contentInsetAdjustmentBehavior = .always
         
+    }
+    
+    private func openAttachmentPicker() {
+        
+        let folderVC = AttachmentFolderViewController()
+        
+        let nav = UINavigationController(rootViewController: folderVC)
+        nav.modalPresentationStyle = .fullScreen
+        
+        present(nav, animated: true)
     }
     
     @objc private func groupTitleTapped() {
