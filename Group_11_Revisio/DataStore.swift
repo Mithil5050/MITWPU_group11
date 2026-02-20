@@ -137,6 +137,39 @@ class DataManager {
             print("❌ Error importing file: \(error)")
         }
     }
+    // MARK: - Manual Source Addition
+    func addSource(to subjectName: String, source: Source) {
+        let folder = subjectName.isEmpty ? "General Study" : subjectName
+        
+        // 1. Ensure the folder exists
+        if savedMaterials[folder] == nil {
+            addFolder(name: folder)
+        }
+        
+        // 2. Wrap the source into the StudyItem enum
+        let newItem = StudyItem.source(source)
+        
+        // 3. Update the specific "Sources" list for this subject
+        var subjectData = savedMaterials[folder]!
+        var sources = subjectData[DataManager.sourcesKey] ?? []
+        
+        // 4. (Optional) Prevent duplicates by name
+        sources.removeAll { item in
+            if case .source(let s) = item { return s.name == source.name }
+            return false
+        }
+        
+        sources.append(newItem)
+        
+        // 5. Save back to memory and disk
+        subjectData[DataManager.sourcesKey] = sources
+        savedMaterials[folder] = subjectData
+        
+        saveToDisk()
+        
+        // 6. Refresh the UI instantly
+        postUpdateNotification()
+    }
     
     // MARK: - Folder Management
     func addFolder(name: String) {
