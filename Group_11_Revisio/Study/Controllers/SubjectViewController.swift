@@ -4,6 +4,9 @@
 //
 //  Created by SDC-USER on 26/11/25.
 import UIKit
+import UniformTypeIdentifiers
+import SafariServices
+import QuickLook
 
 class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
@@ -212,34 +215,32 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func setupOptionsMenu() -> UIMenu {
         let isSelectModeActive = topicsTableView.isEditing
+        // 0 = Materials, 1 = Sources
+        let currentSegment = materialsSegmentedControl.selectedSegmentIndex
         
-        let selectAction = UIAction(title: isSelectModeActive ? "Done" : "Select",
-                                    image: UIImage(systemName: "checkmark.circle")) { [weak self] _ in
-            guard let self = self else { return }
-            if self.topicsTableView.isEditing {
-                self.selectionDoneTapped()
-            } else {
-                self.topicsTableView.setEditing(true, animated: true)
-                self.navigationItem.rightBarButtonItems = [self.doneSelectionButton]
-                self.navigationItem.leftBarButtonItem = self.cancelSelectionButton
-                self.updateToolbarForSelection()
-                self.tabBarController?.tabBar.isHidden = true
-            }
-            self.optionsButton.menu = self.setupOptionsMenu()
-        }
+        // --- 1. THE SUBMENU (Restored & Corrected) ---
+        var addSubmenu: UIMenu?
         
-        let renameAction = UIAction(title: "Rename Subject", image: UIImage(systemName: "pencil")) { [weak self] _ in
-            self?.renameCurrentSubject()
-        }
-        
-        let moveAllAction = UIAction(title: "Move All Content", image: UIImage(systemName: "arrow.turn.forward")) { [weak self] _ in
-            self?.moveAllContent()
-        }
-        
-        let deleteAllAction = UIAction(title: "Delete All Content", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
-            self?.deleteAllContent()
+        // ✅ This ensures the menu ONLY appears when on the Sources tab
+        if currentSegment == 1 && !isSelectModeActive {
+            addSubmenu = UIMenu(title: "Add Source", image: UIImage(systemName: "plus.circle"), children: [
+                UIAction(title: "Document", image: UIImage(systemName: "text.document")) { [weak self] _ in
+                    self?.presentDocumentPicker()
+                },
+                UIAction(title: "Photo / Media", image: UIImage(systemName: "photo.on.rectangle")) { [weak self] _ in
+                    self?.presentImagePicker()
+                },
+                UIAction(title: "Link", image: UIImage(systemName: "link")) { [weak self] _ in
+                    self?.showLinkInputAlert()
+                },
+                UIAction(title: "Text", image: UIImage(systemName: "textformat")) { [weak self] _ in
+                            self?.showTextInputAlert()
+                        }
+                    
+            ])
         }
 
+        // --- 2. RESTORED DISPLAY & SORT OPTIONS ---
         let displayMenu = UIMenu(title: "Display Options", options: .displayInline, children: [
             UIMenu(title: "View as", children: [
                 UIAction(title: "List", state: isGridView ? .off : .on) { [weak self] _ in
@@ -271,22 +272,128 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
             ])
         ])
+
+        // --- 3. ASSEMBLE ALL ELEMENTS ---
+        var menuElements: [UIMenuElement] = []
         
-        return UIMenu(title: "Option", children: [
-            selectAction,
-            renameAction,
-            UIMenu(title: "Management", children: [moveAllAction, deleteAllAction]),
-            displayMenu
-        ])
+        // Select Action
+        menuElements.append(UIAction(title: isSelectModeActive ? "Done" : "Select",
+                                    image: UIImage(systemName: "checkmark.circle")) { [weak self] _ in
+            guard let self = self else { return }
+            if self.topicsTableView.isEditing {
+                self.selectionDoneTapped()
+            } else {
+                self.topicsTableView.setEditing(true, animated: true)
+                self.navigationItem.rightBarButtonItems = [self.doneSelectionButton]
+                self.navigationItem.leftBarButtonItem = self.cancelSelectionButton
+                self.updateToolbarForSelection()
+                self.tabBarController?.tabBar.isHidden = true
+            }
+            self.optionsButton.menu = self.setupOptionsMenu()
+        })
+
+        // ✅ Re-insert the "Add Source" submenu here
+        if let addSubmenu = addSubmenu {
+            menuElements.append(addSubmenu)
+        }
+        
+        // Rename Subject
+        menuElements.append(UIAction(title: "Rename Subject", image: UIImage(systemName: "pencil")) { [weak self] _ in
+            self?.renameCurrentSubject()
+        })
+        
+        // Management Section
+        menuElements.append(UIMenu(title: "Management", children: [
+            UIAction(title: "Move All Content", image: UIImage(systemName: "arrow.turn.forward")) { [weak self] _ in self?.moveAllContent() },
+            UIAction(title: "Delete All Content", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in self?.deleteAllContent() }
+        ]))
+        
+        // Display Section
+        menuElements.append(displayMenu)
+        
+        return UIMenu(title: "", children: menuElements)
+    }
+    // MARK: - File & Media Handling
+    func presentDocumentPicker() {
+        // ✅ Use .init(forImportingContentTypes:) for better stability in demos
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.pdf, .plainText, .text])
+        picker.delegate = self
+        picker.allowsMultipleSelection = false
+        present(picker, animated: true)
+    }
+    func presentImagePicker() {
+        // Standard Image Picker for Photos/Media
+        let picker = UIImagePickerController()
+        picker.delegate = self
+        picker.sourceType = .photoLibrary
+        present(picker, animated: true)
+    }
+
+    func showLinkInputAlert() {
+        let alert = UIAlertController(title: "Add Web Link", message: "Enter a title and the URL", preferredStyle: .alert)
+        
+        alert.addTextField { $0.placeholder = "Title (e.g., Wikipedia)" }
+        alert.addTextField { $0.placeholder = "https://..." }
+        
+        let addAction = UIAlertAction(title: "Add", style: .default) { [weak self] _ in
+            guard let name = alert.textFields?[0].text, !name.isEmpty,
+                  let urlString = alert.textFields?[1].text, !urlString.isEmpty,
+                  let subject = self?.selectedSubject else { return }
+            
+            // Create the Source object
+            let linkSource = Source(
+                name: name,         // The title to show in the list
+                fileType: "LINK",   // For the Indigo link icon
+                size: urlString     // Store the actual URL here
+            )
+            
+            // Save and Refresh
+            DataManager.shared.addSource(to: subject, source: linkSource)
+            self?.handleDataUpdate()
+        }
+        
+        alert.addAction(addAction)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+    func showTextInputAlert() {
+        let alert = UIAlertController(title: "Add Text Source", message: "Enter a name for this note", preferredStyle: .alert)
+        
+        alert.addTextField { $0.placeholder = "Source Name (e.g., Lecture Summary)" }
+        
+        let addAction = UIAlertAction(title: "Add", style: .default) { [weak self] _ in
+            guard let name = alert.textFields?[0].text, !name.isEmpty,
+                  let subject = self?.selectedSubject else { return }
+            
+            // Create the Source object
+            let textSource = Source(
+                name: name,
+                fileType: "TXT",   // For the Indigo text icon
+                size: "Manual Note"
+            )
+            
+            // Save and Refresh
+            DataManager.shared.addSource(to: subject, source: textSource)
+            self?.handleDataUpdate()
+        }
+        
+        alert.addAction(addAction)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
     }
     
     private func getTitle(for item: Any) -> String {
+        // Check if it's wrapped in the enum
         if let studyItem = item as? StudyItem {
             switch studyItem {
             case .topic(let t): return t.name
             case .source(let s): return s.name
             }
         }
+        // Check if it's the raw object directly
+        else if let topic = item as? Topic { return topic.name }
+        else if let source = item as? Source { return source.name }
+        
         return ""
     }
     
@@ -304,24 +411,22 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     private func getDate(for item: Any) -> Date {
-        guard let studyItem = item as? StudyItem else { return Date.distantPast }
-        
         let dateString: String
-        switch studyItem {
-        case .topic(let t): dateString = t.lastAccessed
-        case .source: return Date.distantPast
+        if let studyItem = item as? StudyItem {
+            switch studyItem {
+            case .topic(let t): dateString = t.lastAccessed
+            case .source: return Date.distantPast
+            }
+        } else if let topic = item as? Topic {
+            dateString = topic.lastAccessed
+        } else {
+            return Date.distantPast
         }
         
         let formatter = DateFormatter()
-        let formats = ["MMM d, yyyy", "MMMM d, yyyy", "dd/MM/yyyy", "yyyy-MM-dd"]
-        
-        for format in formats {
-            formatter.dateFormat = format
-            if let date = formatter.date(from: dateString) {
-                return date
-            }
-        }
-        return Date.distantPast
+        // Standardize the format to match your data
+        formatter.dateFormat = "MMM d, yyyy"
+        return formatter.date(from: dateString) ?? Date.distantPast
     }
     
     // MARK: - TableView Methods (Data Display)
@@ -348,58 +453,90 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // 1. SELECTION MODE CHECK
+        // 1. Selection Mode Check
         if tableView.isEditing {
             updateToolbarForSelection()
             return
         }
         
-        // 2. DESELECT
+        // 2. Deselect row
         tableView.deselectRow(at: indexPath, animated: true)
         
-        // 3. CHECK ITEM
+        // 3. Extract Item
         guard let studyItem = filteredContent[indexPath.row] as? StudyItem else { return }
         
-        // 4. ROUTING LOGIC
-        if case .topic(let topic) = studyItem {
+        // 4. Routing Logic
+        switch studyItem {
+        case .topic(let topic):
+            // Calls the helper for AI Generated content
+            handleTopicSelection(topic)
             
-            // ✅ FETCH LATEST VERSION MANUALLY
-            let latestTopic = DataManager.shared.getTopic(
-                subjectName: self.selectedSubject ?? "",
-                topicName: topic.name,
-                type: topic.materialType
-            ) ?? topic
+        case .source(let source):
+            let type = source.fileType.uppercased()
             
-            // ✅ SWITCH BASED ON TYPE
-            switch latestTopic.materialType {
-            case "Quiz":
-                if latestTopic.safeAttempts.isEmpty {
-                    performSegue(withIdentifier: "ShowInstructionScreen", sender: latestTopic)
-                } else {
-                    performSegue(withIdentifier: "ShowQuizHistory", sender: latestTopic)
+            if type == "LINK" || type == "URL" {
+                // Opens the link in the built-in Safari browser
+                if let url = URL(string: source.size) {
+                    let safariVC = SFSafariViewController(url: url)
+                    present(safariVC, animated: true)
                 }
-                
-            case "Flashcards":
-                performSegue(withIdentifier: "openFlashcards", sender: latestTopic)
-                
-            case "Notes":
-                performSegue(withIdentifier: "ShowMaterialDetail", sender: latestTopic)
-                
-            case "Cheatsheet":
-                performSegue(withIdentifier: "ShowMaterialDetail", sender: latestTopic)
-                
-            default:
-                performSegue(withIdentifier: "ShowMaterialDetail", sender: latestTopic)
+            } else if type == "PDF" || type == "PNG" || type == "JPG" || type == "JPEG" {
+                // ✅ Opens the full document viewer
+                openFileWithQuickLook(fileName: source.name)
+            } else {
+                // For manual "TEXT" notes (TXT/TEXT)
+                showSourcePreview(title: source.name, message: source.size)
             }
         }
-        else if case .source(let source) = studyItem {
-            print("Opening source: \(source.name)")
+    }
+    private func handleTopicSelection(_ topic: Topic) {
+        // Fetch latest version from DataManager to ensure we have the newest data
+        let latestTopic = DataManager.shared.getTopic(
+            subjectName: self.selectedSubject ?? "",
+            topicName: topic.name,
+            type: topic.materialType
+        ) ?? topic
+        
+        switch latestTopic.materialType {
+        case "Quiz":
+            if latestTopic.safeAttempts.isEmpty {
+                performSegue(withIdentifier: "ShowInstructionScreen", sender: latestTopic)
+            } else {
+                performSegue(withIdentifier: "ShowQuizHistory", sender: latestTopic)
+            }
+        case "Flashcards":
+            performSegue(withIdentifier: "openFlashcards", sender: latestTopic)
+        default:
+            // Handles "Notes" and "Cheatsheet"
+            performSegue(withIdentifier: "ShowMaterialDetail", sender: latestTopic)
         }
     }
-    
+    private func showSourcePreview(title: String, message: String) {
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Done", style: .cancel))
+            present(alert, animated: true)
+        }
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         if tableView.isEditing { updateToolbarForSelection() }
     }
+    func openFileWithQuickLook(fileName: String) {
+        let fileManager = FileManager.default
+        let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let fileURL = documentsDirectory.appendingPathComponent(fileName)
+        
+        if fileManager.fileExists(atPath: fileURL.path) {
+            let previewController = QLPreviewController()
+            previewController.dataSource = self
+            // We store the URL temporarily to provide it to the DataSource
+            self.currentPreviewURL = fileURL
+            present(previewController, animated: true)
+        } else {
+            showSourcePreview(title: "Error", message: "File not found on device.")
+        }
+    }
+
+    // You will need this property at the top of your class:
+    var currentPreviewURL: URL?
     
     // MARK: - Selection & Toolbar Logic
     func updateToolbarForSelection() {
@@ -647,6 +784,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         if let subject = selectedSubject {
             loadContentForSubject(subject, segmentIndex: sender.selectedSegmentIndex)
         }
+        optionsButton.menu = setupOptionsMenu()
         
         if sender.selectedSegmentIndex == 0 {
             filterButton.isEnabled = true
@@ -851,5 +989,42 @@ extension SubjectViewController: UISearchResultsUpdating {
             
             topicsTableView.reloadData()
         }
+    }
+}
+// MARK: - Document Picker Delegate
+extension SubjectViewController: UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let url = urls.first, let subject = selectedSubject else { return }
+        
+        // Start accessing the security-scoped resource
+        if url.startAccessingSecurityScopedResource() {
+            defer { url.stopAccessingSecurityScopedResource() }
+            
+            // 1. Save the file to DataManager
+            DataManager.shared.importFile(url: url, subject: subject)
+            
+            // 2. Refresh the UI so the new file appears in the list
+            self.handleDataUpdate()
+            
+            // 3. Success Feedback
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            print("✅ Document successfully imported to \(subject)")
+        }
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        picker.dismiss(animated: true)
+        print("✅ Finished picking image")
+        // Logic to save the image info
+    }
+}
+extension SubjectViewController: QLPreviewControllerDataSource {
+    func numberOfPreviewItems(in controller: QLPreviewController) -> Int {
+        return 1
+    }
+    
+    func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {
+        return currentPreviewURL! as QLPreviewItem
     }
 }
