@@ -141,19 +141,21 @@ class GenerationViewController: UIViewController {
     }
     
     private func setupUI() {
-        quizCard.configure(iconName: "timer", title: "Quiz", iconColor: UIColor(red: 0.45, green: 0.85, blue: 0.61, alpha: 1.0))
-        flashCard.configure(iconName: "rectangle.on.rectangle.angled", title: "Flashcards", iconColor: .systemBlue)
-        noteCard.configure(iconName: "book.pages", title: "Notes", iconColor: .systemOrange)
-        cheatCard.configure(iconName: "list.clipboard", title: "Cheatsheet", iconColor: .systemPurple)
-        
-        let allCards = [quizCard, flashCard, noteCard, cheatCard]
-        for card in allCards {
-            card?.addTarget(self, action: #selector(handleCardTap(_:)), for: .touchUpInside)
+            // ✅ Updated Colors for Quiz and Flashcards
+            quizCard.configure(iconName: "timer", title: "Quiz", iconColor: UIColor(hex: "88D769"))
+            flashCard.configure(iconName: "rectangle.on.rectangle.angled", title: "Flashcards", iconColor: UIColor(hex: "5AC8FA"))
+            
+            noteCard.configure(iconName: "book.pages", title: "Notes", iconColor: .systemOrange)
+            cheatCard.configure(iconName: "list.clipboard", title: "Cheatsheet", iconColor: .systemPurple)
+            
+            let allCards = [quizCard, flashCard, noteCard, cheatCard]
+            for card in allCards {
+                card?.addTarget(self, action: #selector(handleCardTap(_:)), for: .touchUpInside)
+            }
+            
+            generateButton.titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
+            generateButton.layer.cornerRadius = 12
         }
-        
-        generateButton.titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
-        generateButton.layer.cornerRadius = 12
-    }
     
     // MARK: - ✅ PROGRAMMATIC UI INJECTION
     private func setupProgrammaticUI() {
@@ -373,6 +375,7 @@ class GenerationViewController: UIViewController {
         else if let source = sourceItem as? Source { topicName = source.name }
         else if let str = sourceItem as? String { topicName = str }
         else if let url = sourceItem as? URL { topicName = url.lastPathComponent }
+        else if let studyContent = sourceItem as? StudyContent { topicName = studyContent.filename }
 
         let diffString: String
         switch currentDifficulty {
@@ -389,6 +392,7 @@ class GenerationViewController: UIViewController {
         Task {
             let extractedText = await ContentExtractor.shared.extractContent(from: sourceItem)
             
+            // ✅ ENHANCED STRICT FORMATTING PROMPTS
             var instruction = ""
             switch currentGenerationType {
             case .flashcards:
@@ -407,26 +411,47 @@ class GenerationViewController: UIViewController {
                 """
             case .cheatsheet:
                 instruction = """
-                STRICTLY GENERATE A CHEATSHEET.
-                DO NOT generate a quiz. DO NOT output JSON.
-                Format as clean MARKDOWN text.
-                Include:
-                - # Title
-                - ## Key Formulas
-                - ## Important Dates
-                - ## Bulleted Definitions
-                Topic: \(topicName)
+                You are an expert tutor creating a beautifully formatted Cheatsheet.
+                DO NOT output JSON. Output ONLY plain text.
+                You MUST use double line breaks (hit enter twice) to separate sections.
+                You MUST use bullet points for lists.
+                
+                Structure the output EXACTLY like this visual template:
+                
+                ### CHEATSHEET: \(topicName)
+                
+                ### KEY CONCEPTS:
+                • Concept 1: Definition goes here.
+                • Concept 2: Definition goes here.
+                
+                ### FORMULAS & FACTS:
+                • Fact or Formula 1
+                • Fact or Formula 2
+                
+                ### QUICK SUMMARY:
+                A short, readable summary goes here.
                 """
             case .notes:
                 instruction = """
-                STRICTLY GENERATE STUDY NOTES.
-                DO NOT generate a quiz. DO NOT output JSON.
-                Format as clean MARKDOWN text.
-                Include:
-                - # Main Heading
-                - ## Subheadings
-                - Bullet points for key concepts.
-                Topic: \(topicName)
+                You are an expert tutor creating detailed Study Notes.
+                DO NOT output JSON. Output ONLY plain text.
+                You MUST use double line breaks (hit enter twice) to separate paragraphs and sections.
+                You MUST use bullet points for lists.
+                
+                Structure the output EXACTLY like this visual template:
+                
+                ### STUDY NOTES: \(topicName)
+                
+                ### INTRODUCTION:
+                Brief introduction goes here.
+                
+                ### MAIN TOPICS:
+                • Topic 1: Detailed explanation here.
+                • Topic 2: Detailed explanation here.
+                
+                ### EXAMPLES:
+                • Example 1
+                • Example 2
                 """
             case .quiz:
                 instruction = """
@@ -542,7 +567,13 @@ class GenerationViewController: UIViewController {
             savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: "Flashcards", notes: serialized)
             
         } else {
-            let finalText = generatedContent.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("{") ? convertJsonToMarkdown(json: generatedContent, type: self.currentGenerationType.description) : generatedContent
+            // Note & Cheatsheet - Strip backticks just in case AI includes them
+            var finalText = generatedContent.trimmingCharacters(in: .whitespacesAndNewlines)
+            if finalText.hasPrefix("```markdown") {
+                finalText = finalText.replacingOccurrences(of: "```markdown", with: "")
+                finalText = finalText.replacingOccurrences(of: "```", with: "")
+            }
+            
             savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: self.currentGenerationType.description, notes: finalText)
         }
         
@@ -598,6 +629,9 @@ class GenerationViewController: UIViewController {
                 dest.currentTopic = data.topic
                 dest.parentSubjectName = self.parentSubjectName
                 dest.isFromGenerationScreen = true
+            } else if let dest = segue.destination as? FlashcardViewController {
+                dest.currentTopic = data.topic
+                dest.parentSubjectName = self.parentSubjectName
             }
         }
     }
@@ -606,17 +640,8 @@ class GenerationViewController: UIViewController {
 // MARK: - JSON & Markdown Helpers
 extension GenerationViewController {
     
-    func convertJsonToMarkdown(json: String, type: String) -> String {
-        let stripped = json.replacingOccurrences(of: "{", with: "").replacingOccurrences(of: "}", with: "").replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "").replacingOccurrences(of: "\"", with: "").replacingOccurrences(of: ",", with: "\n")
-        return "# Generated \(type) (Fallback)\n\n" + stripped
-    }
-    
     func parseQuizJSON(_ jsonString: String) -> [QuizQuestion] {
-        var cleanString = jsonString
-        if cleanString.contains("```json") {
-            cleanString = cleanString.replacingOccurrences(of: "```json", with: "").replacingOccurrences(of: "```", with: "")
-        }
-        cleanString = cleanString.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanString = cleanJSONText(jsonString)
         guard let data = cleanString.data(using: .utf8) else { return [] }
         
         struct AIResponse: Codable {
@@ -644,13 +669,8 @@ extension GenerationViewController {
         return []
     }
     
-    // ✅ RENAMED TO MATCH THE NEW STRUCT NAME
     func parseFlashcardsJSON(_ jsonString: String) -> [ParsedAIFlashcard] {
-        var cleanString = jsonString
-        if cleanString.contains("```json") {
-            cleanString = cleanString.replacingOccurrences(of: "```json", with: "").replacingOccurrences(of: "```", with: "")
-        }
-        cleanString = cleanString.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanString = cleanJSONText(jsonString)
         guard let data = cleanString.data(using: .utf8) else { return [] }
         
         let decoder = JSONDecoder()
@@ -666,5 +686,25 @@ extension GenerationViewController {
         
         print("⚠️ Failed to parse flashcards JSON. Raw Data: \(cleanString)")
         return []
+    }
+    
+    private func cleanJSONText(_ json: String) -> String {
+        var clean = json
+        if clean.contains("```json") { clean = clean.replacingOccurrences(of: "```json", with: "") }
+        clean = clean.replacingOccurrences(of: "```", with: "")
+        
+        if let startIndex = clean.firstIndex(of: "{") {
+            clean = String(clean[startIndex...])
+        } else if let startIndex = clean.firstIndex(of: "[") {
+            clean = String(clean[startIndex...])
+        }
+        
+        if let endIndex = clean.lastIndex(of: "}") {
+            clean = String(clean[...endIndex])
+        } else if let endIndex = clean.lastIndex(of: "]") {
+            clean = String(clean[...endIndex])
+        }
+        
+        return clean.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
