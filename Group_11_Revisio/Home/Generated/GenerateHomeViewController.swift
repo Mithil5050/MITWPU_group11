@@ -7,8 +7,17 @@ struct StudyContent {
 
 // ✅ FLASHCARD STRUCT
 struct GeneratedFlashcard: Codable {
-    let front: String
-    let back: String
+    let front: String?
+    let back: String?
+    let term: String?
+    let definition: String?
+    
+    var safeFront: String {
+        return front ?? term ?? "Term"
+    }
+    var safeBack: String {
+        return back ?? definition ?? "Definition"
+    }
 }
 
 // MARK: - Custom Card View
@@ -134,49 +143,38 @@ class GenerateHomeViewController: UIViewController {
     @IBOutlet weak var notesCardView: TappableCardView!
     @IBOutlet weak var cheatsheetCardView: TappableCardView!
 
+    // Empty containers in Storyboard
     @IBOutlet weak var quizConfigurationView: UIView!
     @IBOutlet weak var flashcardConfigurationView: UIView!
     @IBOutlet weak var defaultConfigurationPlaceholder: UIView!
     
-    @IBOutlet weak var flashcardCountStepper: UIStepper!
-    @IBOutlet weak var flashcardCountLabel: UILabel!
+    // ✅ PROGRAMMATIC UI ELEMENTS
+    private let flashcardCountStepper = UIStepper()
+    private let flashcardCountLabel = UILabel()
     
-    @IBOutlet weak var quizCountStepper: UIStepper!
-    @IBOutlet weak var quizCountLabel: UILabel!
+    private let quizCountStepper = UIStepper()
+    private let quizCountLabel = UILabel()
+    private let quizTimerStepper = UIStepper()
+    private let quizTimerLabel = UILabel()
     
-    @IBOutlet weak var quizTimerStepper: UIStepper!
-    @IBOutlet weak var quizTimerLabel: UILabel!
-    
-    @IBOutlet weak var easyButton: UIButton!
-    @IBOutlet weak var mediumButton: UIButton!
-    @IBOutlet weak var hardButton: UIButton!
+    private let easyButton = UIButton(type: .system)
+    private let mediumButton = UIButton(type: .system)
+    private let hardButton = UIButton(type: .system)
+    private var allDifficultyButtons: [UIButton] = []
     
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCards()
-        setupSteppers()
-        setupDifficultyButtons()
-        setupFonts()
+        setupProgrammaticUI() // ✅ Injects Steppers & Difficulty completely in code
+        
+        startCreationButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         
         // Default to Quiz
         handleCardSelection(selectedCard: quizCardView, type: .quiz)
         updateDifficultyUI()
         setupLoadingIndicator()
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        setupDividers()
-    }
-    
-    private func setupFonts() {
-        let labels = [flashcardCountLabel, quizCountLabel, quizTimerLabel]
-        labels.forEach { label in
-            label?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
-        }
-        startCreationButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
     }
     
     private func setupLoadingIndicator() {
@@ -226,82 +224,140 @@ class GenerateHomeViewController: UIViewController {
         startCreationButton.layer.cornerRadius = 14
     }
     
-    private func setupSteppers() {
-        if let fcStepper = flashcardCountStepper {
-            fcStepper.minimumValue = 5
-            fcStepper.maximumValue = 30
-            fcStepper.stepValue = 5
-            fcStepper.value = Double(selectedCount)
-            fcStepper.autorepeat = true
-            flashcardCountLabel.text = "\(Int(fcStepper.value))"
-        }
+    // MARK: - ✅ PROGRAMMATIC UI INJECTION
+    private func setupProgrammaticUI() {
+        guard let quizConfigView = quizConfigurationView,
+              let flashcardConfigView = flashcardConfigurationView else { return }
         
-        if let qcStepper = quizCountStepper {
-            qcStepper.minimumValue = 5
-            qcStepper.maximumValue = 30
-            qcStepper.stepValue = 5
-            qcStepper.value = Double(selectedCount)
-            qcStepper.autorepeat = true
-            quizCountLabel.text = "\(Int(qcStepper.value))"
-        }
+        // Clear containers just in case
+        quizConfigView.subviews.forEach { $0.removeFromSuperview() }
+        flashcardConfigView.subviews.forEach { $0.removeFromSuperview() }
         
-        if let qtStepper = quizTimerStepper {
-            qtStepper.minimumValue = 5
-            qtStepper.maximumValue = 60
-            qtStepper.stepValue = 5
-            qtStepper.value = Double(selectedTime)
-            qtStepper.autorepeat = true
-            quizTimerLabel.text = "\(Int(qtStepper.value))"
-        }
-    }
-    
-    private func setupDifficultyButtons() {
-        let buttons = [easyButton, mediumButton, hardButton]
-        buttons.forEach {
-            $0?.layer.cornerRadius = 12
-            $0?.clipsToBounds = true
-            $0?.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .medium)
-        }
-    }
-    
-    private func setupDividers() {
-        guard let quizView = quizConfigurationView,
-              let countStepper = quizCountStepper else { return }
+        // --- 1. QUIZ SETTINGS (No Difficulty) ---
+        quizCountStepper.minimumValue = 5
+        quizCountStepper.maximumValue = 30
+        quizCountStepper.stepValue = 5
+        quizCountStepper.value = Double(selectedCount)
+        quizCountLabel.text = "\(selectedCount)"
+        quizCountStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
         
-        quizView.subviews.filter { $0.tag == 888 }.forEach { $0.removeFromSuperview() }
+        quizTimerStepper.minimumValue = 5
+        quizTimerStepper.maximumValue = 60
+        quizTimerStepper.stepValue = 5
+        quizTimerStepper.value = Double(selectedTime)
+        quizTimerLabel.text = "\(selectedTime)"
+        quizTimerStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
         
-        let divider = UIView()
-        divider.backgroundColor = .systemGray5
-        divider.tag = 888
-        divider.translatesAutoresizingMaskIntoConstraints = false
+        let qSettingsTitle = createTitleLabel("Settings")
+        let qCountRow = createConfigRow(title: "Number of questions", stepper: quizCountStepper, label: quizCountLabel)
+        let qTimeRow = createConfigRow(title: "Time Limit (minutes)", stepper: quizTimerStepper, label: quizTimerLabel)
         
-        quizView.addSubview(divider)
+        let quizStack = UIStackView(arrangedSubviews: [qSettingsTitle, qCountRow, qTimeRow])
+        quizStack.axis = .vertical
+        quizStack.spacing = 24
+        quizStack.translatesAutoresizingMaskIntoConstraints = false
         
+        quizConfigView.addSubview(quizStack)
         NSLayoutConstraint.activate([
-            divider.heightAnchor.constraint(equalToConstant: 1),
-            divider.leadingAnchor.constraint(equalTo: quizView.leadingAnchor, constant: 16),
-            divider.trailingAnchor.constraint(equalTo: quizView.trailingAnchor, constant: -16),
-            divider.topAnchor.constraint(equalTo: countStepper.bottomAnchor, constant: 24)
+            quizStack.leadingAnchor.constraint(equalTo: quizConfigView.leadingAnchor, constant: 4),
+            quizStack.trailingAnchor.constraint(equalTo: quizConfigView.trailingAnchor, constant: -4),
+            quizStack.topAnchor.constraint(equalTo: quizConfigView.topAnchor, constant: 8)
         ])
+        
+        // --- 2. FLASHCARD SETTINGS (With Difficulty) ---
+        flashcardCountStepper.minimumValue = 5
+        flashcardCountStepper.maximumValue = 30
+        flashcardCountStepper.stepValue = 5
+        flashcardCountStepper.value = Double(selectedCount)
+        flashcardCountLabel.text = "\(selectedCount)"
+        flashcardCountStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
+        
+        let fcSettingsTitle = createTitleLabel("Settings")
+        let fcCountRow = createConfigRow(title: "Number of flashcards", stepper: flashcardCountStepper, label: flashcardCountLabel)
+        let diffTitle = createTitleLabel("Level of Difficulty", font: .systemFont(ofSize: 16, weight: .regular))
+        let fcDiffStack = createDifficultyRow()
+        
+        let fcMainStack = UIStackView(arrangedSubviews: [fcSettingsTitle, fcCountRow, diffTitle, fcDiffStack])
+        fcMainStack.axis = .vertical
+        fcMainStack.spacing = 16
+        fcMainStack.setCustomSpacing(24, after: fcCountRow)
+        fcMainStack.translatesAutoresizingMaskIntoConstraints = false
+        
+        flashcardConfigView.addSubview(fcMainStack)
+        NSLayoutConstraint.activate([
+            fcMainStack.leadingAnchor.constraint(equalTo: flashcardConfigView.leadingAnchor, constant: 4),
+            fcMainStack.trailingAnchor.constraint(equalTo: flashcardConfigView.trailingAnchor, constant: -4),
+            fcMainStack.topAnchor.constraint(equalTo: flashcardConfigView.topAnchor, constant: 8)
+        ])
+    }
+    
+    // Helpers to create perfect programmatic views
+    private func createTitleLabel(_ text: String, font: UIFont = .systemFont(ofSize: 17, weight: .semibold)) -> UILabel {
+        let lbl = UILabel()
+        lbl.text = text
+        lbl.font = font
+        lbl.textColor = .label
+        return lbl
+    }
+    
+    private func createConfigRow(title: String, stepper: UIStepper, label: UILabel) -> UIStackView {
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = .systemFont(ofSize: 16, weight: .regular)
+        
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textAlignment = .center
+        label.widthAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        let rightStack = UIStackView(arrangedSubviews: [label, stepper])
+        rightStack.spacing = 12
+        rightStack.alignment = .center
+        
+        let mainStack = UIStackView(arrangedSubviews: [titleLabel, rightStack])
+        mainStack.axis = .horizontal
+        mainStack.distribution = .equalSpacing
+        mainStack.alignment = .center
+        return mainStack
+    }
+    
+    private func createDifficultyRow() -> UIStackView {
+        easyButton.setTitle("Easy", for: .normal)
+        mediumButton.setTitle("Medium", for: .normal)
+        hardButton.setTitle("Hard", for: .normal)
+        
+        allDifficultyButtons = [easyButton, mediumButton, hardButton]
+        
+        for btn in allDifficultyButtons {
+            btn.layer.cornerRadius = 8
+            btn.clipsToBounds = true
+            btn.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+            btn.addTarget(self, action: #selector(difficultyButtonTapped(_:)), for: .touchUpInside)
+            btn.heightAnchor.constraint(equalToConstant: 34).isActive = true
+        }
+        
+        let stack = UIStackView(arrangedSubviews: allDifficultyButtons)
+        stack.axis = .horizontal
+        stack.distribution = .fillEqually
+        stack.spacing = 12
+        return stack
     }
 
     private func updateDifficultyUI() {
-        let allButtons = [easyButton, mediumButton, hardButton]
-        for button in allButtons {
-            button?.backgroundColor = UIColor.secondarySystemFill
-            button?.setTitleColor(UIColor.systemGray, for: .normal)
-        }
-        
-        switch currentDifficulty {
-        case .easy:
-            easyButton.backgroundColor = UIColor.systemGreen
-            easyButton.setTitleColor(.white, for: .normal)
-        case .medium:
-            mediumButton.backgroundColor = UIColor.systemYellow
-            mediumButton.setTitleColor(.black, for: .normal)
-        case .hard:
-            hardButton.backgroundColor = UIColor.systemRed
-            hardButton.setTitleColor(.white, for: .normal)
+        for button in allDifficultyButtons {
+            button.backgroundColor = UIColor.secondarySystemFill
+            button.setTitleColor(UIColor.systemGray, for: .normal)
+            
+            let title = button.title(for: .normal)
+            if title == "Easy" && currentDifficulty == .easy {
+                button.backgroundColor = UIColor.systemGreen
+                button.setTitleColor(.white, for: .normal)
+            } else if title == "Medium" && currentDifficulty == .medium {
+                button.backgroundColor = UIColor.systemYellow
+                button.setTitleColor(.black, for: .normal)
+            } else if title == "Hard" && currentDifficulty == .hard {
+                button.backgroundColor = UIColor.systemRed
+                button.setTitleColor(.white, for: .normal)
+            }
         }
     }
 
@@ -317,11 +373,18 @@ class GenerateHomeViewController: UIViewController {
         let isPlaceholderVisible = (type == .notes || type == .cheatsheet)
         defaultConfigurationPlaceholder.isHidden = !isPlaceholderVisible
         
+        // Sync selected counts
+        if type == .quiz {
+            selectedCount = Int(quizCountStepper.value)
+        } else if type == .flashcards {
+            selectedCount = Int(flashcardCountStepper.value)
+        }
+        
         let title = (type == .none) ? "Start Creation" : "Generate \(type.description)"
         startCreationButton.setTitle(title, for: .normal)
     }
 
-    @IBAction func stepperValueChanged(_ sender: UIStepper) {
+    @objc func stepperValueChanged(_ sender: UIStepper) {
         let intValue = Int(sender.value)
         
         if sender == flashcardCountStepper {
@@ -341,14 +404,11 @@ class GenerateHomeViewController: UIViewController {
         generator.selectionChanged()
     }
     
-    @IBAction func difficultyButtonTapped(_ sender: UIButton) {
-        if sender == easyButton {
-            currentDifficulty = .easy
-        } else if sender == mediumButton {
-            currentDifficulty = .medium
-        } else if sender == hardButton {
-            currentDifficulty = .hard
-        }
+    @objc func difficultyButtonTapped(_ sender: UIButton) {
+        let title = sender.title(for: .normal)
+        if title == "Easy" { currentDifficulty = .easy }
+        else if title == "Medium" { currentDifficulty = .medium }
+        else if title == "Hard" { currentDifficulty = .hard }
         
         UIView.animate(withDuration: 0.2) {
             self.updateDifficultyUI()
@@ -357,7 +417,6 @@ class GenerateHomeViewController: UIViewController {
     
     // MARK: - AI Creation Action
     @IBAction func startCreationButtonTapped(_ sender: UIButton) {
-        // 1. Get Topic Name
         let topicName: String
         if let sourceItem = inputSourceData?.first {
             topicName = extractName(from: sourceItem)
@@ -365,7 +424,6 @@ class GenerateHomeViewController: UIViewController {
             topicName = "New Material"
         }
 
-        // 2. Get Difficulty String
         let difficultyString: String
         switch currentDifficulty {
         case .easy: difficultyString = "Easy"
@@ -373,17 +431,12 @@ class GenerateHomeViewController: UIViewController {
         case .hard: difficultyString = "Hard"
         }
         
-        // 3. UI: Start Loading
         sender.isEnabled = false
         sender.setTitle("Processing...", for: .normal)
         loadingIndicator.startAnimating()
         view.isUserInteractionEnabled = false
         
-        print("🟢 STARTING GENERATION: Type = \(selectedMaterialType.description)")
-
-        // 4. Call AI Asynchronously
         Task {
-            // A. Extract Content
             guard let sourceItem = inputSourceData?.first else {
                 DispatchQueue.main.async {
                     self.showError("No source material found.")
@@ -394,11 +447,10 @@ class GenerateHomeViewController: UIViewController {
             
             let extractedText = await ContentExtractor.shared.extractContent(from: sourceItem)
             
-            // ✅ B. STRICT PROMPTS (FORCE MARKDOWN FOR NOTES)
             var instruction = ""
             switch selectedMaterialType {
             case .flashcards:
-                instruction = "Create \(selectedCount) flashcards. Return ONLY a JSON array of objects with 'front' and 'back' keys. No Markdown. No extra text."
+                instruction = "Create exactly \(selectedCount) flashcards covering the most important concepts. Return ONLY a JSON array of objects with 'front' and 'back' keys. No Markdown. No extra text."
                 
             case .cheatsheet:
                 instruction = """
@@ -429,7 +481,7 @@ class GenerateHomeViewController: UIViewController {
                 """
                 
             case .quiz:
-                instruction = "Generate \(selectedCount) quiz questions in JSON format."
+                instruction = "Generate exactly \(selectedCount) quiz questions in JSON format. The test is designed to be solved within a \(selectedTime) minute limit."
                 
             default: break
             }
@@ -442,7 +494,6 @@ class GenerateHomeViewController: UIViewController {
             }
 
             do {
-                // C. Call AI (With 70s Safe Retry)
                 let generatedContent = try await generateContentWithSmartWait(
                     topic: finalPrompt,
                     type: selectedMaterialType.description,
@@ -450,7 +501,6 @@ class GenerateHomeViewController: UIViewController {
                     difficulty: difficultyString
                 )
                 
-                // D. Success Handler
                 DispatchQueue.main.async {
                     self.handleSuccess(
                         generatedContent: generatedContent,
@@ -468,7 +518,6 @@ class GenerateHomeViewController: UIViewController {
         }
     }
     
-    // ✅ SMART RETRY (70s Buffer for Free Tier)
     private func generateContentWithSmartWait(topic: String, type: String, count: Int, difficulty: String, attempt: Int = 1) async throws -> String {
         do {
             return try await AIContentManager.shared.generateContent(
@@ -508,21 +557,28 @@ class GenerateHomeViewController: UIViewController {
         }
     }
     
-    // ✅ Handle Success (Now Saves BOTH Source and Result)
     private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
         self.resetUI(sender)
         
         let subjectName = self.contextSubjectTitle ?? "General Study"
         
-        // 1. ✅ NEW: Save the Original Source Files to the Folder
-        if let sourceURLs = self.inputSourceData as? [URL] {
-            for url in sourceURLs {
-                print("💾 Saving Source: \(url.lastPathComponent) to \(subjectName)")
-                DataManager.shared.importFile(url: url, subject: subjectName)
+        // ✅ NEW: Save the Original Source Files to the Folder
+        if let items = self.inputSourceData {
+            for item in items {
+                if let url = item as? URL {
+                    DataManager.shared.importFile(url: url, subject: subjectName)
+                } else if let str = item as? String {
+                    if str.hasPrefix("/") || str.hasPrefix("file://") {
+                        let url = URL(fileURLWithPath: str)
+                        DataManager.shared.importFile(url: url, subject: subjectName)
+                    } else if str.lowercased().hasPrefix("http://") || str.lowercased().hasPrefix("https://") {
+                        let linkSource = Source(name: str, fileType: "LINK", size: "Web Link")
+                        DataManager.shared.saveContent(subject: subjectName, content: linkSource)
+                    }
+                }
             }
         }
         
-        // 2. Save the Generated Topic (Quiz/Notes/Flashcards)
         var newTopic: Topic?
         
         if self.selectedMaterialType == .quiz {
@@ -538,19 +594,26 @@ class GenerateHomeViewController: UIViewController {
                 questions: parsedQuestions
             )
         } else if self.selectedMaterialType == .flashcards {
+            
+            // 1. Parse JSON into Array
             let parsedFlashcards = self.parseFlashcardsJSON(generatedContent)
+            
             if parsedFlashcards.isEmpty {
                 self.showError("AI generated empty flashcards. Please try again.")
                 return
             }
+            
+            // 2. Format it into Term|Definition string
+            let serializedCards = parsedFlashcards.map { "\($0.safeFront)|\($0.safeBack)" }.joined(separator: "\n")
+            
+            // 3. Save the formatted string to the database
             newTopic = DataManager.shared.saveGeneratedTopic(
                 name: topicName,
                 subject: subjectName,
                 type: "Flashcards",
-                notes: generatedContent
+                notes: serializedCards
             )
         } else {
-            // Notes & Cheatsheets (Clean JSON if needed)
             let finalText: String
             if generatedContent.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("{") {
                 finalText = convertJsonToMarkdown(json: generatedContent, type: self.selectedMaterialType.description)
@@ -568,13 +631,14 @@ class GenerateHomeViewController: UIViewController {
         
         if let savedTopic = newTopic {
             self.navigateToResult(type: self.selectedMaterialType, topic: savedTopic, sourceName: topicName)
+            
+            Task {
+                await RevisioManager.shared.earnXP(amount: 5, reason: "Material Generated")
+            }
+            
         } else {
             self.showError("Failed to save content.")
         }
-        Task {
-                
-                await RevisioManager.shared.earnXP(amount: 5, reason: "Material Generated")
-            }
     }
     
     // MARK: - UI Helpers
@@ -623,7 +687,7 @@ class GenerateHomeViewController: UIViewController {
             }
         }
         else if segue.identifier == "HomeToFlashcardView" {
-            if let dest = segue.destination as? FlashcardsViewController,
+            if let dest = segue.destination as? FlashcardViewController,
                let topic = sender as? Topic {
                 dest.currentTopic = topic
                 dest.parentSubjectName = self.parentSubjectName()
@@ -654,7 +718,6 @@ class GenerateHomeViewController: UIViewController {
 extension GenerateHomeViewController {
     
     func convertJsonToMarkdown(json: String, type: String) -> String {
-        print("⚠️ Warning: AI returned JSON for \(type). Converting to text.")
         let stripped = json
             .replacingOccurrences(of: "{", with: "")
             .replacingOccurrences(of: "}", with: "")
@@ -692,14 +755,27 @@ extension GenerateHomeViewController {
         return []
     }
     
+    // ✅ IMPROVED FLASHCARD PARSER
     func parseFlashcardsJSON(_ jsonString: String) -> [GeneratedFlashcard] {
         let cleanString = cleanJSONString(jsonString)
         guard let data = cleanString.data(using: .utf8) else { return [] }
         
         let decoder = JSONDecoder()
+        
+        // 1. Try treating it as a direct array: [{"front": "...", "back": "..."}]
         if let cards = try? decoder.decode([GeneratedFlashcard].self, from: data) {
             return cards
         }
+        
+        // 2. Try treating it as a wrapper object: {"flashcards": [{"front": "...", "back": "..."}]}
+        struct AIWrapper: Codable {
+            let flashcards: [GeneratedFlashcard]
+        }
+        if let wrapper = try? decoder.decode(AIWrapper.self, from: data) {
+            return wrapper.flashcards
+        }
+        
+        print("⚠️ Failed to parse flashcards JSON. Raw Data: \(cleanString)")
         return []
     }
     

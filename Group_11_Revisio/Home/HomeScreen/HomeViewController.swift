@@ -39,7 +39,7 @@ let showQuizStartSegueID = "ShowQuizStart"
 let showSubjectDetailSegueID = "ShowSubjectDetail"
 let showDailyChallengeSegueID = "ShowDailyChallenge"
 let showFlashcardsSegueID = "ShowFlashcardsSegue"
-let showCheatsheetSegueID = "ShowCheatsheet" // Make sure this exists in Storyboard
+let showCheatsheetSegueID = "ShowCheatsheet"
 
 protocol QuickGamesCellDelegate: AnyObject {
     func didSelectQuickGame(gameTitle: String)
@@ -120,9 +120,9 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     @objc func handleDataUpdate() {
         loadRecentLearningData()
     }
+    
     @objc func refreshXPUI() {
         DispatchQueue.main.async {
-            // Reload sections that might show XP or progress info
             self.collectionView.reloadData()
         }
     }
@@ -137,7 +137,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         )
         alert.addAction(UIAlertAction(title: "Awesome!", style: .default))
         
-        // Trigger haptic feedback for success
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
         
@@ -146,11 +145,9 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     
     // MARK: - Data Fetching
     func loadRecentLearningData() {
-        // 1. Get all topics (Already sorted by DataStore)
         let allTopics = DataManager.shared.getAllRecentTopics()
         let recentTopics = Array(allTopics.prefix(5))
         
-        // 2. Map to ContentItems for UI
         self.learningItems = recentTopics.map { topic in
             var type = topic.materialType
             if type == "Flashcards" { type = "Flashcard" } // Map Plural to Singular
@@ -253,7 +250,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         performSegue(withIdentifier: "showProfileSegue", sender: nil)
     }
     
-    // MARK: - Navigation Preparation
+    // MARK: - Navigation Preparation (✅ FIXED: Handles Both Flashcard Classes)
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         if segue.identifier == showUploadConfirmationSegueID {
@@ -262,16 +259,14 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 destinationVC.incomingDataPath = filePath
             }
         }
-        
-        if segue.identifier == showNotesDetailSegueID {
+        else if segue.identifier == showNotesDetailSegueID {
             if let destVC = segue.destination as? NotesViewController,
                let topic = sender as? Topic {
                 destVC.currentTopic = topic
                 destVC.parentSubjectName = topic.parentSubjectName
             }
         }
-        
-        if segue.identifier == showQuizStartSegueID {
+        else if segue.identifier == showQuizStartSegueID {
             if let destVC = segue.destination as? QuizStartViewController,
                let topic = sender as? Topic {
                 destVC.currentTopic = topic
@@ -279,23 +274,23 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 destVC.quizSourceName = topic.name
             }
         }
-        
-        if segue.identifier == showSubjectDetailSegueID {
+        else if segue.identifier == showSubjectDetailSegueID {
             if let destVC = segue.destination as? SubjectViewController,
                let subjectName = sender as? String {
                 destVC.selectedSubject = subjectName
             }
         }
-        
-        if segue.identifier == showFlashcardsSegueID {
-             if let destVC = segue.destination as? FlashcardsViewController,
-                let topic = sender as? Topic {
-                  destVC.currentTopic = topic
-             }
+        else if segue.identifier == showFlashcardsSegueID {
+            // ✅ Safely try casting to BOTH Flashcard View Controllers
+            if let destVC = segue.destination as? FlashcardViewController, let topic = sender as? Topic {
+                destVC.currentTopic = topic
+                destVC.parentSubjectName = topic.parentSubjectName
+            } else if let destVC = segue.destination as? FlashcardsViewController, let topic = sender as? Topic {
+                destVC.currentTopic = topic
+                destVC.parentSubjectName = topic.parentSubjectName
+            }
         }
-        
-        // Cheatsheet Navigation
-        if segue.identifier == "ShowCheatsheet" {
+        else if segue.identifier == showCheatsheetSegueID {
             if let destVC = segue.destination as? CheatsheetViewController,
                let topic = sender as? Topic {
                 destVC.currentTopic = topic
@@ -507,20 +502,17 @@ extension HomeViewController: SideQuestDelegate {
             lbl.removeFromSuperview()
         }
         Task {
-                    await RevisioManager.shared.earnXP(amount: amount, reason: "Side Quest Done")
-                }
+            await RevisioManager.shared.earnXP(amount: amount, reason: "Side Quest Done")
+        }
     }
 }
 
-// MARK: - Continue Learning Delegate (✅ FIXED HERE)
+// MARK: - Continue Learning Delegate
 extension HomeViewController: ContinueLearningCellDelegate {
     func didSelectLearningItem(_ item: ContentItem) {
         
-        // 1. ✅ FETCH THE REAL TOPIC from DataManager
-        // This ensures we get the version with Questions, History, etc.
         let allTopics = DataManager.shared.getAllRecentTopics()
         
-        // 2. Find the Topic matching Name AND Type (Case Insensitive)
         guard let realTopic = allTopics.first(where: { topic in
             let nameMatches = (topic.name == item.title)
             
@@ -534,7 +526,6 @@ extension HomeViewController: ContinueLearningCellDelegate {
             return
         }
         
-        // 3. ✅ NAVIGATE Correctly based on Type
         let typeLower = realTopic.materialType.lowercased()
         
         if typeLower.contains("quiz") {
@@ -542,7 +533,7 @@ extension HomeViewController: ContinueLearningCellDelegate {
         } else if typeLower.contains("flashcard") {
             performSegue(withIdentifier: showFlashcardsSegueID, sender: realTopic)
         } else if typeLower.contains("cheatsheet") {
-            performSegue(withIdentifier: "ShowCheatsheet", sender: realTopic)
+            performSegue(withIdentifier: showCheatsheetSegueID, sender: realTopic)
         } else {
             performSegue(withIdentifier: showNotesDetailSegueID, sender: realTopic)
         }

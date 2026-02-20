@@ -21,6 +21,17 @@ extension GenerationType: CustomStringConvertible {
     }
 }
 
+// ✅ RENAMED STRUCT to avoid "Invalid Redeclaration" conflicts with other files
+struct ParsedAIFlashcard: Codable {
+    let front: String?
+    let back: String?
+    let term: String?
+    let definition: String?
+    
+    var safeFront: String { return front ?? term ?? "Term" }
+    var safeBack: String { return back ?? definition ?? "Definition" }
+}
+
 // MARK: - 2. Custom Control
 @IBDesignable
 class MaterialSelectionCard: UIControl {
@@ -75,15 +86,23 @@ class MaterialSelectionCard: UIControl {
 // MARK: - 3. View Controller
 class GenerationViewController: UIViewController {
     
+    // ✅ RATE LIMIT PROTECTION
+    static var lastGenerationTime: Date?
+    let requiredCooldown: TimeInterval = 8.0
+    
     // PROPERTIES
     var currentGenerationType: GenerationType = .quiz
     var sourceItems: [Any]? // Contains URLs passed from SelectMaterialVC
     var parentSubjectName: String?
     
-    // SETTINGS
+    // SETTINGS STATE
     var selectedCount: Int = 10
     var selectedTime: Int = 15
-    var currentDifficulty: String = "Medium"
+    var currentDifficulty: DifficultyLevel = .easy
+    
+    enum DifficultyLevel {
+        case easy, medium, hard
+    }
     
     // LOADING UI
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
@@ -99,36 +118,26 @@ class GenerationViewController: UIViewController {
     @IBOutlet weak var emptySettingsPlaceholder: UIView!
     @IBOutlet weak var generateButton: UIButton!
     
-    // Steppers
-    @IBOutlet weak var flashcardCountStepper: UIStepper!
-    @IBOutlet weak var flashcardCountLabel: UILabel!
+    // ✅ PROGRAMMATIC UI ELEMENTS
+    private let fcCountStepper = UIStepper()
+    private let fcCountLabel = UILabel()
     
-    @IBOutlet weak var quizCountStepper: UIStepper!
-    @IBOutlet weak var quizCountLabel: UILabel!
+    private let qCountStepper = UIStepper()
+    private let qCountLabel = UILabel()
+    private let qTimeStepper = UIStepper()
+    private let qTimeLabel = UILabel()
     
-    @IBOutlet weak var quizTimerStepper: UIStepper!
-    @IBOutlet weak var quizTimerLabel: UILabel!
-    
-    // Difficulty
-    @IBOutlet weak var easyButton: UIButton!
-    @IBOutlet weak var mediumButton: UIButton!
-    @IBOutlet weak var hardButton: UIButton!
+    private var allDifficultyButtons: [UIButton] = []
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        setupSteppers()
+        setupProgrammaticUI() // Injects Settings Layout dynamically
         setupLoadingIndicator()
+        
+        // Default selection
         updateUISelection(selected: quizCard, type: .quiz)
-        
-        let buttons = [easyButton, mediumButton, hardButton]
-        for btn in buttons {
-            btn?.layer.cornerRadius = 12
-        }
-        
-        mediumButton.backgroundColor = .systemYellow
-        mediumButton.setTitleColor(.black, for: .normal)
     }
     
     private func setupUI() {
@@ -146,23 +155,139 @@ class GenerationViewController: UIViewController {
         generateButton.layer.cornerRadius = 12
     }
     
-    private func setupSteppers() {
-        quizCountStepper.minimumValue = 5; quizCountStepper.maximumValue = 30; quizCountStepper.stepValue = 5; quizCountStepper.value = 10
-        quizTimerStepper.minimumValue = 5; quizTimerStepper.maximumValue = 60; quizTimerStepper.stepValue = 5; quizTimerStepper.value = 15
-        flashcardCountStepper.minimumValue = 5; flashcardCountStepper.maximumValue = 30; flashcardCountStepper.stepValue = 5; flashcardCountStepper.value = 10
-    }
-    
-    private func setupLoadingIndicator() {
-        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
-        loadingIndicator.hidesWhenStopped = true
-        loadingIndicator.color = .systemBlue
-        view.addSubview(loadingIndicator)
+    // MARK: - ✅ PROGRAMMATIC UI INJECTION
+    private func setupProgrammaticUI() {
+        guard let quizConfigView = QuizSettingsView,
+              let flashcardConfigView = FlashcardSettingsView else { return }
+        
+        // Clear any old storyboard elements
+        quizConfigView.subviews.forEach { $0.removeFromSuperview() }
+        flashcardConfigView.subviews.forEach { $0.removeFromSuperview() }
+        
+        // --- 1. QUIZ SETTINGS (No Difficulty) ---
+        qCountStepper.minimumValue = 5; qCountStepper.maximumValue = 30; qCountStepper.stepValue = 5; qCountStepper.value = 10
+        qCountLabel.text = "10"
+        qCountStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
+        
+        qTimeStepper.minimumValue = 5; qTimeStepper.maximumValue = 60; qTimeStepper.stepValue = 5; qTimeStepper.value = 15
+        qTimeLabel.text = "15"
+        qTimeStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
+        
+        let qSettingsTitle = createTitleLabel("Settings")
+        let qCountRow = createConfigRow(title: "Number of questions", stepper: qCountStepper, label: qCountLabel)
+        let qTimeRow = createConfigRow(title: "Time Limit (minutes)", stepper: qTimeStepper, label: qTimeLabel)
+        
+        let quizStack = UIStackView(arrangedSubviews: [qSettingsTitle, qCountRow, qTimeRow])
+        quizStack.axis = .vertical
+        quizStack.spacing = 24
+        quizStack.translatesAutoresizingMaskIntoConstraints = false
+        
+        quizConfigView.addSubview(quizStack)
         NSLayoutConstraint.activate([
-            loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            quizStack.leadingAnchor.constraint(equalTo: quizConfigView.leadingAnchor, constant: 4),
+            quizStack.trailingAnchor.constraint(equalTo: quizConfigView.trailingAnchor, constant: -4),
+            quizStack.topAnchor.constraint(equalTo: quizConfigView.topAnchor, constant: 8)
         ])
+        
+        // --- 2. FLASHCARD SETTINGS (With Difficulty) ---
+        fcCountStepper.minimumValue = 5; fcCountStepper.maximumValue = 30; fcCountStepper.stepValue = 5; fcCountStepper.value = 10
+        fcCountLabel.text = "10"
+        fcCountStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
+        
+        let fcSettingsTitle = createTitleLabel("Settings")
+        let fcCountRow = createConfigRow(title: "Number of flashcards", stepper: fcCountStepper, label: fcCountLabel)
+        let diffTitle = createTitleLabel("Level of Difficulty", font: .systemFont(ofSize: 16, weight: .regular))
+        let (fcDiffStack, fcBtns) = createDifficultyRow()
+        allDifficultyButtons.append(contentsOf: fcBtns)
+        
+        let fcMainStack = UIStackView(arrangedSubviews: [fcSettingsTitle, fcCountRow, diffTitle, fcDiffStack])
+        fcMainStack.axis = .vertical
+        fcMainStack.spacing = 16
+        fcMainStack.setCustomSpacing(24, after: fcCountRow)
+        fcMainStack.translatesAutoresizingMaskIntoConstraints = false
+        
+        flashcardConfigView.addSubview(fcMainStack)
+        NSLayoutConstraint.activate([
+            fcMainStack.leadingAnchor.constraint(equalTo: flashcardConfigView.leadingAnchor, constant: 4),
+            fcMainStack.trailingAnchor.constraint(equalTo: flashcardConfigView.trailingAnchor, constant: -4),
+            fcMainStack.topAnchor.constraint(equalTo: flashcardConfigView.topAnchor, constant: 8)
+        ])
+        
+        updateDifficultyUI()
     }
     
+    private func createTitleLabel(_ text: String, font: UIFont = .systemFont(ofSize: 17, weight: .bold)) -> UILabel {
+        let lbl = UILabel()
+        lbl.text = text
+        lbl.font = font
+        lbl.textColor = .label
+        return lbl
+    }
+    
+    private func createConfigRow(title: String, stepper: UIStepper, label: UILabel) -> UIStackView {
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = .systemFont(ofSize: 16, weight: .regular)
+        
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textAlignment = .center
+        label.widthAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        let rightStack = UIStackView(arrangedSubviews: [label, stepper])
+        rightStack.spacing = 12
+        rightStack.alignment = .center
+        
+        let mainStack = UIStackView(arrangedSubviews: [titleLabel, rightStack])
+        mainStack.axis = .horizontal
+        mainStack.distribution = .equalSpacing
+        mainStack.alignment = .center
+        return mainStack
+    }
+    
+    private func createDifficultyRow() -> (UIStackView, [UIButton]) {
+        let easyBtn = UIButton(type: .system)
+        easyBtn.setTitle("Easy", for: .normal)
+        let medBtn = UIButton(type: .system)
+        medBtn.setTitle("Medium", for: .normal)
+        let hardBtn = UIButton(type: .system)
+        hardBtn.setTitle("Hard", for: .normal)
+        
+        let buttons = [easyBtn, medBtn, hardBtn]
+        for btn in buttons {
+            btn.layer.cornerRadius = 8
+            btn.clipsToBounds = true
+            btn.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+            btn.addTarget(self, action: #selector(difficultyButtonTapped(_:)), for: .touchUpInside)
+            btn.heightAnchor.constraint(equalToConstant: 34).isActive = true
+        }
+        
+        let stack = UIStackView(arrangedSubviews: buttons)
+        stack.axis = .horizontal
+        stack.distribution = .fillEqually
+        stack.spacing = 12
+        return (stack, buttons)
+    }
+
+    private func updateDifficultyUI() {
+        for button in allDifficultyButtons {
+            button.backgroundColor = UIColor.secondarySystemFill
+            button.setTitleColor(UIColor.systemGray, for: .normal)
+            
+            let title = button.title(for: .normal)
+            if title == "Easy" && currentDifficulty == .easy {
+                button.backgroundColor = UIColor.systemGreen
+                button.setTitleColor(.white, for: .normal)
+            } else if title == "Medium" && currentDifficulty == .medium {
+                button.backgroundColor = UIColor.systemYellow
+                button.setTitleColor(.black, for: .normal)
+            } else if title == "Hard" && currentDifficulty == .hard {
+                button.backgroundColor = UIColor.systemRed
+                button.setTitleColor(.white, for: .normal)
+            }
+        }
+    }
+    
+    // MARK: - Actions
     @objc func handleCardTap(_ sender: MaterialSelectionCard) {
         if sender == quizCard { updateUISelection(selected: quizCard, type: .quiz) }
         else if sender == flashCard { updateUISelection(selected: flashCard, type: .flashcards) }
@@ -182,11 +307,62 @@ class GenerationViewController: UIViewController {
         FlashcardSettingsView.isHidden = (type != .flashcards)
         emptySettingsPlaceholder.isHidden = (type == .quiz || type == .flashcards)
         
+        if type == .quiz { selectedCount = Int(qCountStepper.value) }
+        else if type == .flashcards { selectedCount = Int(fcCountStepper.value) }
+        
         generateButton.setTitle("Generate \(type.description)", for: .normal)
+    }
+    
+    @objc func stepperValueChanged(_ sender: UIStepper) {
+        let val = Int(sender.value)
+        if sender == fcCountStepper {
+            fcCountLabel.text = "\(val)"
+            selectedCount = val
+        } else if sender == qCountStepper {
+            qCountLabel.text = "\(val)"
+            selectedCount = val
+        } else if sender == qTimeStepper {
+            qTimeLabel.text = "\(val)"
+            selectedTime = val
+        }
+    }
+    
+    @objc func difficultyButtonTapped(_ sender: UIButton) {
+        let title = sender.title(for: .normal)
+        if title == "Easy" { currentDifficulty = .easy }
+        else if title == "Medium" { currentDifficulty = .medium }
+        else if title == "Hard" { currentDifficulty = .hard }
+        
+        UIView.animate(withDuration: 0.2) {
+            self.updateDifficultyUI()
+        }
+    }
+    
+    private func setupLoadingIndicator() {
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.hidesWhenStopped = true
+        loadingIndicator.color = .systemBlue
+        view.addSubview(loadingIndicator)
+        NSLayoutConstraint.activate([
+            loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
     }
 
     // MARK: - CORE AI LOGIC
     @IBAction func generateButtonTapped(_ sender: UIButton) {
+        // ✅ 1. CHECK RATE LIMIT COOLDOWN
+        if let lastTime = Self.lastGenerationTime {
+            let timeSinceLast = Date().timeIntervalSince(lastTime)
+            if timeSinceLast < requiredCooldown {
+                let waitTime = Int(requiredCooldown - timeSinceLast)
+                showError("Please wait \(waitTime) seconds before generating again to prevent rate limits.")
+                return
+            }
+        }
+        
+        Self.lastGenerationTime = Date()
+        
         guard let sourceItem = sourceItems?.first else {
             showError("No source material found.")
             return
@@ -198,22 +374,37 @@ class GenerationViewController: UIViewController {
         else if let str = sourceItem as? String { topicName = str }
         else if let url = sourceItem as? URL { topicName = url.lastPathComponent }
 
-        // Start Loading UI
+        let diffString: String
+        switch currentDifficulty {
+        case .easy: diffString = "Easy"
+        case .medium: diffString = "Medium"
+        case .hard: diffString = "Hard"
+        }
+
         sender.isEnabled = false
         sender.setTitle("Processing...", for: .normal)
         loadingIndicator.startAnimating()
         view.isUserInteractionEnabled = false
         
-        print("🟢 STARTING GENERATION: Type = \(currentGenerationType.description)")
-        
         Task {
             let extractedText = await ContentExtractor.shared.extractContent(from: sourceItem)
             
-            // STRICT PROMPTS
             var instruction = ""
             switch currentGenerationType {
             case .flashcards:
-                instruction = "Create \(selectedCount) flashcards. Return ONLY a JSON array of objects with 'front' and 'back' keys. No Markdown. No extra text."
+                instruction = """
+                Generate exactly \(selectedCount) flashcards covering the most important concepts.
+                The difficulty should be \(diffString).
+                STRICTLY use this EXACT JSON format:
+                {
+                  "flashcards": [
+                    {
+                      "front": "Term or concept here",
+                      "back": "Definition or explanation here"
+                    }
+                  ]
+                }
+                """
             case .cheatsheet:
                 instruction = """
                 STRICTLY GENERATE A CHEATSHEET.
@@ -224,7 +415,6 @@ class GenerationViewController: UIViewController {
                 - ## Key Formulas
                 - ## Important Dates
                 - ## Bulleted Definitions
-                
                 Topic: \(topicName)
                 """
             case .notes:
@@ -236,12 +426,24 @@ class GenerationViewController: UIViewController {
                 - # Main Heading
                 - ## Subheadings
                 - Bullet points for key concepts.
-                - Examples where applicable.
-                
                 Topic: \(topicName)
                 """
             case .quiz:
-                instruction = "Generate \(selectedCount) quiz questions in JSON format."
+                instruction = """
+                Generate exactly \(selectedCount) quiz questions in JSON format.
+                The test is designed to be solved within a \(selectedTime) minute limit.
+                STRICTLY use this EXACT JSON format:
+                {
+                  "questions": [
+                    {
+                      "question": "Question text here?",
+                      "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+                      "answer": "Option 1",
+                      "hint": "Explanation here"
+                    }
+                  ]
+                }
+                """
             default: break
             }
             
@@ -257,15 +459,11 @@ class GenerationViewController: UIViewController {
                     topic: finalPrompt,
                     type: currentGenerationType.description,
                     count: selectedCount,
-                    difficulty: currentDifficulty
+                    difficulty: diffString
                 )
                 
                 DispatchQueue.main.async {
-                    self.handleSuccess(
-                        generatedContent: generatedText,
-                        topicName: topicName,
-                        sender: sender
-                    )
+                    self.handleSuccess(generatedContent: generatedText, topicName: topicName, sender: sender)
                 }
                 
             } catch {
@@ -277,7 +475,6 @@ class GenerationViewController: UIViewController {
         }
     }
     
-    // ✅ SMART RETRY LOGIC (Prevents Code 500 / Death Spiral)
     private func generateContentWithSmartWait(topic: String, type: String, count: Int, difficulty: String, attempt: Int = 1) async throws -> String {
         do {
             return try await AIContentManager.shared.generateContent(
@@ -288,28 +485,18 @@ class GenerationViewController: UIViewController {
             )
         } catch {
             let errorString = error.localizedDescription.lowercased()
-            print("⚠️ AI Attempt \(attempt) Failed: \(error.localizedDescription)")
-            
-            let isQuotaError = errorString.contains("quota") ||
-                               errorString.contains("limit") ||
-                               errorString.contains("429") ||
-                               errorString.contains("500") ||
-                               errorString.contains("exceeded")
+            let isQuotaError = errorString.contains("quota") || errorString.contains("429") || errorString.contains("exceeded")
             
             if attempt < 3 {
                 if isQuotaError {
                     print("🚨 QUOTA HIT. Waiting 70s...")
                     for i in (1...70).reversed() {
-                        await MainActor.run {
-                            self.generateButton.setTitle("Limit Hit. Retrying in \(i)s...", for: .normal)
-                        }
+                        await MainActor.run { self.generateButton.setTitle("Limit Hit. Retrying in \(i)s...", for: .normal) }
                         try? await Task.sleep(nanoseconds: 1_000_000_000)
                     }
                 } else {
-                    print("🔄 Normal Retry (3s)...")
                     try? await Task.sleep(nanoseconds: 3 * 1_000_000_000)
                 }
-                
                 return try await generateContentWithSmartWait(topic: topic, type: type, count: count, difficulty: difficulty, attempt: attempt + 1)
             } else {
                 throw error
@@ -317,84 +504,67 @@ class GenerationViewController: UIViewController {
         }
     }
     
-    // ✅ Success Handler
+    // ✅ PROPERLY SAVE SOURCES AND PARSE DATA
     private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
         self.stopLoading(sender)
         
         let folder = self.parentSubjectName ?? "General Study"
         var savedTopic: Topic?
         
-        // 1. Save Original Source File
-        if let sourceURLs = self.sourceItems as? [URL] {
-            for url in sourceURLs {
-                print("💾 Saving Source: \(url.lastPathComponent) to \(folder)")
-                DataManager.shared.importFile(url: url, subject: folder)
+        // 1. Save Original Source Files
+        if let items = self.sourceItems {
+            for item in items {
+                if let url = item as? URL {
+                    DataManager.shared.importFile(url: url, subject: folder)
+                } else if let str = item as? String {
+                    if str.hasPrefix("/") || str.hasPrefix("file://") {
+                        let url = URL(fileURLWithPath: str)
+                        DataManager.shared.importFile(url: url, subject: folder)
+                    } else if str.lowercased().hasPrefix("http://") || str.lowercased().hasPrefix("https://") {
+                        let linkSource = Source(name: str, fileType: "LINK", size: "Web Link")
+                        DataManager.shared.saveContent(subject: folder, content: linkSource)
+                    }
+                }
             }
         }
         
-        // 2. Save Generated Content
+        // 2. Parse and Save Generated Content
         if self.currentGenerationType == .quiz {
             let questions = self.parseQuizJSON(generatedContent)
-            if questions.isEmpty {
-                self.showError("AI generated invalid quiz data.")
-                return
-            }
-            savedTopic = DataManager.shared.saveGeneratedTopic(
-                name: topicName,
-                subject: folder,
-                type: "Quiz",
-                questions: questions
-            )
-        } else if self.currentGenerationType == .flashcards {
-            savedTopic = DataManager.shared.saveGeneratedTopic(
-                name: topicName,
-                subject: folder,
-                type: "Flashcards",
-                notes: generatedContent
-            )
-        } else {
-            // Notes & Cheatsheets (Clean JSON if needed)
-            let finalText: String
-            if generatedContent.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("{") {
-                finalText = convertJsonToMarkdown(json: generatedContent, type: self.currentGenerationType.description)
-            } else {
-                finalText = generatedContent
-            }
+            if questions.isEmpty { self.showError("AI generated invalid quiz data."); return }
+            savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: "Quiz", questions: questions)
             
-            savedTopic = DataManager.shared.saveGeneratedTopic(
-                name: topicName,
-                subject: folder,
-                type: self.currentGenerationType.description,
-                notes: finalText
-            )
+        } else if self.currentGenerationType == .flashcards {
+            let parsedCards = self.parseFlashcardsJSON(generatedContent)
+            if parsedCards.isEmpty { self.showError("AI generated invalid flashcard data."); return }
+            
+            let serialized = parsedCards.map { "\($0.safeFront)|\($0.safeBack)" }.joined(separator: "\n")
+            savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: "Flashcards", notes: serialized)
+            
+        } else {
+            let finalText = generatedContent.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("{") ? convertJsonToMarkdown(json: generatedContent, type: self.currentGenerationType.description) : generatedContent
+            savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: self.currentGenerationType.description, notes: finalText)
         }
         
         // 3. Navigate
         if let finalTopic = savedTopic {
             let payload = (topic: finalTopic, sourceName: topicName)
             self.performNavigation(type: self.currentGenerationType, payload: payload)
+            
+            Task { await RevisioManager.shared.earnXP(amount: 5, reason: "Material Generated") }
         }
-        Task {
-                // Award 5 XP for successful AI generation
-                await RevisioManager.shared.earnXP(amount: 5, reason: "Material Generated")
-            }
     }
     
     // Navigation Helper
     func performNavigation(type: GenerationType, payload: (topic: Topic, sourceName: String)) {
         switch type {
-        case .quiz:
-            performSegue(withIdentifier: "ShowQuizInstructionsFromGen", sender: payload)
-        case .notes, .cheatsheet:
-            performSegue(withIdentifier: "ShowMaterial", sender: payload)
-        case .flashcards:
-            performSegue(withIdentifier: "HomeToFlashcardView", sender: payload)
-        case .none:
-            break
+        case .quiz: performSegue(withIdentifier: "ShowQuizInstructionsFromGen", sender: payload)
+        case .notes, .cheatsheet: performSegue(withIdentifier: "ShowMaterial", sender: payload)
+        case .flashcards: performSegue(withIdentifier: "HomeToFlashcardView", sender: payload)
+        case .none: break
         }
     }
     
-    // UI Helpers
     func stopLoading(_ sender: UIButton) {
         loadingIndicator.stopAnimating()
         view.isUserInteractionEnabled = true
@@ -406,42 +576,6 @@ class GenerationViewController: UIViewController {
         let alert = UIAlertController(title: "Error", message: msg, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
-    }
-
-    @IBAction func stepperValueChanged(_ sender: UIStepper) {
-        let val = Int(sender.value)
-        if sender == flashcardCountStepper {
-            flashcardCountLabel.text = "\(val)"
-            selectedCount = val
-        } else if sender == quizCountStepper {
-            quizCountLabel.text = "\(val)"
-            selectedCount = val
-        } else if sender == quizTimerStepper {
-            quizTimerLabel.text = "\(val)"
-            selectedTime = val
-        }
-    }
-    
-    @IBAction func difficultyTapped(_ sender: UIButton) {
-        let buttons = [easyButton, mediumButton, hardButton]
-        for btn in buttons {
-            btn?.backgroundColor = .systemGray6
-            btn?.setTitleColor(.label, for: .normal)
-        }
-        
-        sender.setTitleColor(.white, for: .normal)
-        
-        if sender == easyButton {
-            sender.backgroundColor = .systemGreen
-            currentDifficulty = "Easy"
-        } else if sender == mediumButton {
-            sender.backgroundColor = .systemYellow
-            sender.setTitleColor(.black, for: .normal)
-            currentDifficulty = "Medium"
-        } else if sender == hardButton {
-            sender.backgroundColor = .systemRed
-            currentDifficulty = "Hard"
-        }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -473,66 +607,64 @@ class GenerationViewController: UIViewController {
 extension GenerationViewController {
     
     func convertJsonToMarkdown(json: String, type: String) -> String {
-        print("⚠️ Warning: AI returned JSON for \(type). Converting to text.")
-        let stripped = json
-            .replacingOccurrences(of: "{", with: "")
-            .replacingOccurrences(of: "}", with: "")
-            .replacingOccurrences(of: "[", with: "")
-            .replacingOccurrences(of: "]", with: "")
-            .replacingOccurrences(of: "\"", with: "")
-            .replacingOccurrences(of: ",", with: "\n")
-        
+        let stripped = json.replacingOccurrences(of: "{", with: "").replacingOccurrences(of: "}", with: "").replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "").replacingOccurrences(of: "\"", with: "").replacingOccurrences(of: ",", with: "\n")
         return "# Generated \(type) (Fallback)\n\n" + stripped
     }
     
-    // ✅ FIXED PARSER: Uses Intermediate Struct to match AI Output
     func parseQuizJSON(_ jsonString: String) -> [QuizQuestion] {
         var cleanString = jsonString
         if cleanString.contains("```json") {
-            cleanString = cleanString.replacingOccurrences(of: "```json", with: "")
-            cleanString = cleanString.replacingOccurrences(of: "```", with: "")
+            cleanString = cleanString.replacingOccurrences(of: "```json", with: "").replacingOccurrences(of: "```", with: "")
         }
         cleanString = cleanString.trimmingCharacters(in: .whitespacesAndNewlines)
-        
         guard let data = cleanString.data(using: .utf8) else { return [] }
         
-        // 1. Define structure matching AI output exactly
         struct AIResponse: Codable {
             struct AIQuestion: Codable {
                 let question: String
                 let options: [String]
-                let answer: String // AI sends a String
+                let answer: String
                 let hint: String?
             }
             let questions: [AIQuestion]
         }
         
         let decoder = JSONDecoder()
-        
         do {
             let wrapper = try decoder.decode(AIResponse.self, from: data)
-            
-            // 2. Map to App's QuizQuestion (String -> Int Index)
             return wrapper.questions.map { aiQ in
                 let correctIndex = aiQ.options.firstIndex(of: aiQ.answer) ?? 0
-                
-                return QuizQuestion(
-                    questionText: aiQ.question,
-                    answers: aiQ.options,
-                    correctAnswerIndex: correctIndex,
-                    userAnswerIndex: nil,
-                    isFlagged: false,
-                    hint: aiQ.hint ?? "No hint available."
-                )
+                return QuizQuestion(questionText: aiQ.question, answers: aiQ.options, correctAnswerIndex: correctIndex, userAnswerIndex: nil, isFlagged: false, hint: aiQ.hint ?? "No hint available.")
             }
         } catch {
-            print("⚠️ Failed to parse AI JSON: \(error)")
-            // Fallback for direct array if AI forgets wrapper
             if let directList = try? decoder.decode([QuizQuestion].self, from: data) {
                 return directList
             }
         }
+        return []
+    }
+    
+    // ✅ RENAMED TO MATCH THE NEW STRUCT NAME
+    func parseFlashcardsJSON(_ jsonString: String) -> [ParsedAIFlashcard] {
+        var cleanString = jsonString
+        if cleanString.contains("```json") {
+            cleanString = cleanString.replacingOccurrences(of: "```json", with: "").replacingOccurrences(of: "```", with: "")
+        }
+        cleanString = cleanString.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let data = cleanString.data(using: .utf8) else { return [] }
         
+        let decoder = JSONDecoder()
+        
+        if let cards = try? decoder.decode([ParsedAIFlashcard].self, from: data) {
+            return cards
+        }
+        
+        struct AIWrapper: Codable { let flashcards: [ParsedAIFlashcard] }
+        if let wrapper = try? decoder.decode(AIWrapper.self, from: data) {
+            return wrapper.flashcards
+        }
+        
+        print("⚠️ Failed to parse flashcards JSON. Raw Data: \(cleanString)")
         return []
     }
 }

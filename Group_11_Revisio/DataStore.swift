@@ -1,5 +1,4 @@
 import Foundation
-// ✅ ADD THIS IMPORT (Crucial for the cloud sync code below to work)
 import Supabase
 
 // MARK: - Models
@@ -14,6 +13,9 @@ class DataManager {
     static let shared = DataManager()
     
     var savedMaterials: [String: [String: [StudyItem]]] = [:]
+    
+    // ✅ 1. CREATE A SERIAL QUEUE: This stops saves from racing and overwriting each other.
+    private let diskQueue = DispatchQueue(label: "com.app.datamanager.diskQueue", qos: .utility)
     
     private var fileURL: URL {
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -31,7 +33,7 @@ class DataManager {
         }
     }
     
-    // MARK: - ✅ FIXED: Save AI Content Function
+    // MARK: - Save AI Content Function
     func saveGeneratedTopic(name: String,
                             subject: String,
                             type: String,
@@ -40,30 +42,36 @@ class DataManager {
         
         let folder = subject.isEmpty ? "General Study" : subject
         
-        // 1. Convert Quiz Questions to "Legacy String Format"
-        var serializedQuizBody: String = ""
-        if let quizData = questions, !quizData.isEmpty {
-            serializedQuizBody = quizData.map { q in
+        // Prepare Storage Fields
+        var finalLargeBody: String = ""
+        var finalNotes: String? = nil
+        var finalCheatsheet: String? = nil
+        
+        if type == "Quiz", let quizData = questions, !quizData.isEmpty {
+            finalLargeBody = quizData.map { q in
                 var options = q.answers
                 while options.count < 4 { options.append("-") }
                 let safeOptions = options.prefix(4).joined(separator: "|")
                 return "\(q.questionText)|\(safeOptions)|\(q.correctAnswerIndex)|\(q.hint ?? "No Hint")"
             }.joined(separator: "\n")
+            
+        } else if type == "Flashcards" {
+            finalLargeBody = notes ?? ""
+        } else if type == "Cheatsheet" {
+            finalCheatsheet = notes
+        } else {
+            finalNotes = notes
         }
         
-        // 2. ✅ CHECK TYPE: Determine where to save the text
-        let isCheatsheet = (type == "Cheatsheet")
-        
-        // 3. Create Topic with correct field population
         let newTopic = Topic(
             name: name,
             lastAccessed: "Just now",
             materialType: type,
             parentSubjectName: folder,
             quizQuestions: questions,
-            largeContentBody: serializedQuizBody,
-            notesContent: isCheatsheet ? nil : notes,      // Save to notesContent if Note
-            cheatsheetContent: isCheatsheet ? notes : nil  // Save to cheatsheetContent if Cheatsheet
+            largeContentBody: finalLargeBody,
+            notesContent: finalNotes,
+            cheatsheetContent: finalCheatsheet
         )
         
         addTopic(to: folder, topic: newTopic)
@@ -138,35 +146,31 @@ class DataManager {
             DataManager.sourcesKey: []
         ]
         saveToDisk()
-        NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
+        postUpdateNotification()
     }
     
     func deleteFolder(name: String) {
         savedMaterials.removeValue(forKey: name)
         saveToDisk()
-        NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
+        postUpdateNotification()
     }
     
-    func createNewSubjectFolder(name: String) {
-        addFolder(name: name)
-    }
+    func createNewSubjectFolder(name: String) { addFolder(name: name) }
+    func deleteSubjectFolder(name: String) { deleteFolder(name: name) }
     
-    func deleteSubjectFolder(name: String) {
-        deleteFolder(name: name)
-    }
-    
-    // MARK: - Persistence
+    // MARK: - ✅ 2. BULLETPROOF PERSISTENCE
     func saveToDisk() {
         let dataToSave = savedMaterials
-        DispatchQueue.global(qos: .background).async { [weak self] in
+        // Passes to the SERIAL queue, ensuring files are written in the exact order they were queued
+        diskQueue.async { [weak self] in
             guard let self = self else { return }
             do {
                 let encoder = JSONEncoder()
-                encoder.outputFormatting = .prettyPrinted
+                // Removing prettyPrinted makes encoding much faster and files smaller, reducing lag
                 let data = try encoder.encode(dataToSave)
                 try data.write(to: self.fileURL, options: .atomic)
             } catch {
-                print("Error saving: \(error)")
+                print("❌ Error saving: \(error)")
             }
         }
     }
@@ -177,7 +181,7 @@ class DataManager {
             let data = try Data(contentsOf: fileURL)
             savedMaterials = try JSONDecoder().decode([String: [String: [StudyItem]]].self, from: data)
         } catch {
-            print("Error loading: \(error)")
+            print("❌ Error loading: \(error)")
         }
     }
     
@@ -204,13 +208,10 @@ class DataManager {
         subjectData[DataManager.materialsKey] = materials
         savedMaterials[folder] = subjectData
         
-        NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
-        
+        postUpdateNotification()
         saveToDisk()
         
-        Task {
-            await SupabaseManager.shared.backupTopic(topic)
-        }
+        Task { await SupabaseManager.shared.backupTopic(topic) }
     }
     
     func saveContent(subject: String, content: Any) {
@@ -237,7 +238,7 @@ class DataManager {
         }
         
         savedMaterials[subject]?[segmentKey]?.append(wrappedItem)
-        NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+        postUpdateNotification()
         saveToDisk()
     }
     
@@ -246,7 +247,7 @@ class DataManager {
         savedMaterials[newName] = data
         savedMaterials.removeValue(forKey: oldName)
         
-        NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
+        postUpdateNotification()
         saveToDisk()
     }
     
@@ -271,7 +272,7 @@ class DataManager {
         subjectData[DataManager.sourcesKey] = sources
         savedMaterials[subjectName] = subjectData
         
-        NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+        postUpdateNotification()
         saveToDisk()
     }
     
@@ -314,16 +315,9 @@ class DataManager {
         
         for item in materials {
             if case .topic(let topic) = item, topic.name == topicName {
-                // ✅ Check Cheatsheet first if that's what is being requested implicitly
-                if let cheatsheet = topic.cheatsheetContent, !cheatsheet.isEmpty {
-                    return cheatsheet
-                }
-                if let notes = topic.notesContent, !notes.isEmpty {
-                    return notes
-                }
-                if let oldContent = topic.largeContentBody, !oldContent.isEmpty {
-                    return oldContent
-                }
+                if let cheatsheet = topic.cheatsheetContent, !cheatsheet.isEmpty { return cheatsheet }
+                if let notes = topic.notesContent, !notes.isEmpty { return notes }
+                if let oldContent = topic.largeContentBody, !oldContent.isEmpty { return oldContent }
                 return "No content available."
             }
         }
@@ -342,12 +336,10 @@ class DataManager {
             subjectData[DataManager.materialsKey] = materials
             savedMaterials[subjectName] = subjectData
             
-            NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+            postUpdateNotification()
             saveToDisk()
             
-            Task {
-                await SupabaseManager.shared.backupTopic(topic)
-            }
+            Task { await SupabaseManager.shared.backupTopic(topic) }
         }
     }
     
@@ -357,7 +349,6 @@ class DataManager {
         for (index, item) in materials.enumerated() {
             if case .topic(var topic) = item, topic.name == topicName {
                 
-                // ✅ Update correct field based on Type
                 if type == "Notes" {
                     topic.notesContent = newText
                 } else if type == "Cheatsheet" {
@@ -370,9 +361,7 @@ class DataManager {
                 savedMaterials[subject]?[DataManager.materialsKey] = materials
                 saveToDisk()
                 
-                Task {
-                    await SupabaseManager.shared.backupTopic(topic)
-                }
+                Task { await SupabaseManager.shared.backupTopic(topic) }
                 break
             }
         }
@@ -406,7 +395,7 @@ class DataManager {
                     subjectDict[key] = items
                     savedMaterials[subjectName] = subjectDict
                     
-                    NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+                    postUpdateNotification()
                     saveToDisk()
                     return
                 }
@@ -414,7 +403,15 @@ class DataManager {
         }
     }
     
-    // MARK: - Defaults
+    // ✅ 3. MAIN THREAD NOTIFICATION HELPER
+    // Guarantees that when the UI listens for updates, it refreshes instantly on the main thread
+    private func postUpdateNotification() {
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
+            NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
+        }
+    }
+    
     private func setupDefaultData() {
         // Empty by design
     }
