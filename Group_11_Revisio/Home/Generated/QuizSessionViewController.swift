@@ -38,11 +38,17 @@ class QuizSessionViewController: UIViewController {
         configureNavBarItems()
         renderQuestion()
         initiateTimer()
+        
+        // ✅ Disable swipe-to-go-back so they can't bypass the warning
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = false
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         sessionTimer?.invalidate()
+        
+        // ✅ Re-enable swipe-to-go-back for the rest of the app
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
     }
     
     // MARK: - Data Loading
@@ -137,6 +143,13 @@ class QuizSessionViewController: UIViewController {
     }
     
     func configureNavBarItems() {
+        // ✅ Custom Back Button that triggers the Exit Warning
+        let backAction = UIAction { [weak self] _ in
+            self?.showExitWarning()
+        }
+        let backButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), primaryAction: backAction)
+        navigationItem.leftBarButtonItem = backButton
+        
         let flagImg = UIImage(systemName: "flag")
         flagItem = UIBarButtonItem(image: flagImg, style: .plain, target: self, action: #selector(toggleFlag))
         let hintImg = UIImage(systemName: "lightbulb")
@@ -178,6 +191,27 @@ class QuizSessionViewController: UIViewController {
         present(alert, animated: true)
     }
     
+    // ✅ Exit Warning Pop-up
+    private func showExitWarning() {
+        let alert = UIAlertController(
+            title: "Quit Quiz?",
+            message: "Your progress for this attempt will be lost. Are you sure you want to Quit?",
+            preferredStyle: .alert
+        )
+        
+        let resumeAction = UIAlertAction(title: "Resume", style: .cancel, handler: nil)
+        
+        let quitAction = UIAlertAction(title: "Quit", style: .destructive) { [weak self] _ in
+            self?.sessionTimer?.invalidate()
+            self?.navigationController?.popViewController(animated: true)
+        }
+        
+        alert.addAction(resumeAction)
+        alert.addAction(quitAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
     // MARK: - Finish & Save
     func finishQuiz() {
         sessionTimer?.invalidate()
@@ -212,12 +246,9 @@ class QuizSessionViewController: UIViewController {
             details.append(detail)
         }
         
-        // ✅ CRITICAL FIX: Serialize the detailed data properly
-        // This format matches what QuizHistoryViewController expects:
-        // Question|Opt1|Opt2|Opt3|Opt4|CorrectIdx|Hint|UserIdx
         let serializedData = summaryItems.map { item in
             var opts = item.allOptions
-            while opts.count < 4 { opts.append("-") } // Pad to 4
+            while opts.count < 4 { opts.append("-") }
             let optsString = opts.prefix(4).joined(separator: "|")
             let uIdx = item.userAnswerIndex ?? -1
             return "\(item.questionText)|\(optsString)|\(item.correctAnswerIndex)|\(item.explanation)|\(uIdx)"
@@ -228,7 +259,7 @@ class QuizSessionViewController: UIViewController {
             date: Date(),
             score: score,
             totalQuestions: sessionQuestions.count,
-            summaryData: serializedData // ✅ Saved correctly now
+            summaryData: serializedData
         )
         
         saveAttemptToTopic(attempt: newAttempt)
@@ -251,13 +282,10 @@ class QuizSessionViewController: UIViewController {
         if topic.attempts == nil { topic.attempts = [] }
         topic.attempts?.append(attempt)
         
-        // Update Metadata for quick display
         topic.lastAccessed = "Score: \(attempt.score)/\(attempt.totalQuestions)"
         
-        // ✅ Local Update
         self.currentTopic = topic
         
-        // ✅ Disk Update
         DataManager.shared.updateTopic(subjectName: parentSubject ?? "General Study", topic: topic)
         print("✅ Saved Quiz Attempt: \(attempt.score)")
     }

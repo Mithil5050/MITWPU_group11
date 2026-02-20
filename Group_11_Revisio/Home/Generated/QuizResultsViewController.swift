@@ -21,6 +21,22 @@ class QuizResultsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        
+        // ✅ Disable swipe-to-go-back so they can't bypass the warning
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = false
+        
+        // ✅ Override the default back button with our custom warning
+        let backAction = UIAction { [weak self] _ in
+            self?.showExitWarning()
+        }
+        let backButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), primaryAction: backAction)
+        navigationItem.leftBarButtonItem = backButton
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // ✅ Re-enable swipe-to-go-back for the rest of the app
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
     }
     
     func setupUI() {
@@ -52,14 +68,13 @@ class QuizResultsViewController: UIViewController {
         
         // 6. Handle Navigation Logic (Hide Retake if it's a quick quiz without a saved topic)
         if topicToSave == nil {
-            retakeButton.isHidden = true // Typo 'truea' fixed here
+            retakeButton.isHidden = true
             homeButton.setTitle("Back to Home", for: .normal)
         } else {
             retakeButton.isHidden = false
         }
 
         // 7. ✅ INTEGRATE XP SYSTEM
-        // Using the 20 Base + 5 per correct answer formula
         Task {
             let baseXP = 20
             let performanceXP = result.finalScore * 5
@@ -68,6 +83,31 @@ class QuizResultsViewController: UIViewController {
             // This triggers the sliding banner, haptic feedback, and cloud sync automatically
             await RevisioManager.shared.earnXP(amount: totalEarned, reason: "Quiz Mastery")
         }
+    }
+    
+    // ✅ Exit Warning Pop-up
+    private func showExitWarning() {
+        let alert = UIAlertController(
+            title: "Quit Quiz?",
+            message: "Your progress for this attempt will be lost. Are you sure you want to Quit?",
+            preferredStyle: .alert
+        )
+        
+        let resumeAction = UIAlertAction(title: "Resume", style: .cancel, handler: nil)
+        
+        let quitAction = UIAlertAction(title: "Quit", style: .destructive) { [weak self] _ in
+            // Navigate to Home
+            if let nav = self?.navigationController {
+                nav.popToRootViewController(animated: true)
+            } else {
+                self?.dismiss(animated: true, completion: nil)
+            }
+        }
+        
+        alert.addAction(resumeAction)
+        alert.addAction(quitAction)
+        
+        present(alert, animated: true, completion: nil)
     }
 
     // MARK: - Actions
@@ -87,9 +127,7 @@ class QuizResultsViewController: UIViewController {
     }
     
     @IBAction func homeButtonTapped(_ sender: UIButton) {
-        // ✅ FIX: Do NOT save again here. Data was already saved in QuizSessionViewController.
-        // We just need to go home.
-        
+        // Just Navigate Home
         if let nav = self.navigationController {
             nav.popToRootViewController(animated: true)
         } else {
