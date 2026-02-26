@@ -4,9 +4,9 @@ protocol SideQuestDelegate: AnyObject {
     func didUpdateQuests(_ quests: [SideQuest])
     func didEarnXP(amount: Int, sourceView: UIView)
     
-    // 🆕 New Methods
-    func didCompleteQuest(_ quest: SideQuest) // Save to history
-    func didTapHistory() // Open history screen
+    // History Methods
+    func didCompleteQuest(_ quest: SideQuest)
+    func didTapHistory()
 }
 
 class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, QuestCellDelegate {
@@ -16,8 +16,6 @@ class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource,
     @IBOutlet weak var inputTextField: UITextField!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var tableHeightConstraint: NSLayoutConstraint!
-    
-    // 🆕 History Button Outlet
     @IBOutlet weak var historyButton: UIButton!
     
     // MARK: - Properties
@@ -28,8 +26,6 @@ class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource,
         super.awakeFromNib()
         setupUI()
         setupTable()
-        
-        // 🆕 Setup History Button Action
         historyButton.addTarget(self, action: #selector(historyTapped), for: .touchUpInside)
     }
     
@@ -79,23 +75,34 @@ class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource,
     
     func updateHeight() {
         let count = CGFloat(quests.count)
-        tableHeightConstraint.constant = max(50, count * 50)
+        tableHeightConstraint.constant = count * 50
     }
 
-    // MARK: - Add Task
+    // MARK: - Add Task (✅ FIXED: Saves no matter how the keyboard closes)
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        guard let text = textField.text, !text.isEmpty else { return true }
-        if quests.count >= 5 { return true }
+        // Just hide the keyboard. The saving happens below in didEndEditing!
+        textField.resignFirstResponder()
+        return true
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        // If the user typed nothing and closed the keyboard, just return
+        guard let text = textField.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         
-        let newQuest = SideQuest(title: text)
+        if quests.count >= 5 {
+            textField.text = ""
+            return
+        }
+        
+        let newQuest = SideQuest(title: text.trimmingCharacters(in: .whitespacesAndNewlines))
         quests.append(newQuest)
         
         textField.text = ""
-        textField.resignFirstResponder()
         tableView.reloadData()
         updateHeight()
+        
+        // Notify the HomeVC so it saves immediately
         delegate?.didUpdateQuests(quests)
-        return true
     }
 
     // MARK: - Table View Logic
@@ -125,13 +132,9 @@ class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource,
         
         let completedQuest = quests[indexPath.row]
         
-        // 1. Give XP
         delegate?.didEarnXP(amount: 10, sourceView: cell.checkButton)
-        
-        // 2. Notify Delegate to archive
         delegate?.didCompleteQuest(completedQuest)
         
-        // 3. Remove from Active List
         quests.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .fade)
         updateHeight()
