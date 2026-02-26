@@ -32,37 +32,34 @@ class AllBadgesCollectionViewCell: UICollectionViewCell {
         allBadgeDetailLabel.textAlignment = .center
 
     }
-        func configure(with badge: Badge) {
-            allBadgeTitleLabel.text = badge.title
-            allBadgeImageView.image = UIImage(named: badge.imageAssetName)
-            
-            
-            allBadgeDetailLabel.text = badge.detail
-            
-            if badge.isLocked {
-                allBadgeImageView.alpha = 0.5
-                allBadgeDetailLabel.textColor = .secondaryLabel
-            } else {
-                allBadgeImageView.alpha = 1.0
-                allBadgeDetailLabel.textColor = .systemGray
-            }
-        }
-        
-        private func setupCardStyle() {
-            allBadgeCardView.backgroundColor = .systemGray6
-            allBadgeCardView.layer.cornerRadius = 12
-            allBadgeCardView.layer.masksToBounds = true
-            
-            // Shadow configuration to match your original design
-            self.layer.shadowColor = UIColor.black.cgColor
-            self.layer.shadowOpacity = 0.1
-            self.layer.shadowOffset = CGSize(width: 0, height: 1)
-            self.layer.shadowRadius = 3
-            self.layer.masksToBounds = false
-        }
-        
-        override func layoutSubviews() {
-            super.layoutSubviews()
-            self.layer.shadowPath = UIBezierPath(roundedRect: self.bounds, cornerRadius: 12).cgPath
-        }
+    func configure(with badge: Badge) {
+        // Title and image from available Badge properties
+        allBadgeTitleLabel.text = badge.title
+        allBadgeImageView.image = UIImage(named: badge.imageAssetName)
+
+        // Detail may not exist on Badge; clear or hide to avoid stale content
+        allBadgeDetailLabel.text = nil
+
+        // Since `isLocked` is not a member of Badge, apply default styling
+        allBadgeImageView.alpha = 1.0
+        allBadgeDetailLabel.textColor = .secondaryLabel
     }
+        
+    private func setupCardStyle() {
+        allBadgeCardView.backgroundColor = .systemGray6
+        allBadgeCardView.layer.cornerRadius = 12
+        allBadgeCardView.layer.masksToBounds = true
+        
+        // Shadow configuration to match your original design
+        self.layer.shadowColor = UIColor.black.cgColor
+        self.layer.shadowOpacity = 0.1
+        self.layer.shadowOffset = CGSize(width: 0, height: 1)
+        self.layer.shadowRadius = 3
+        self.layer.masksToBounds = false
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        self.layer.shadowPath = UIBezierPath(roundedRect: self.bounds, cornerRadius: 12).cgPath
+    }
+}

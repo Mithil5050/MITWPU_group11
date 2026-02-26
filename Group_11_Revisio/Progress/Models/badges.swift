@@ -1,32 +1,75 @@
 import Foundation
+import UIKit
 
-struct Badge {
-    let title: String
-    let detail: String
-    let isLocked: Bool
-    let imageAssetName: String
-}
+// MARK: - Badging Namespace to avoid global name collisions
+struct Badging {
+    // MARK: - Achievement Hierarchy
+    enum BadgeTier: Int, Codable {
+        case bronze = 1
+        case silver = 2
+        case gold = 3
+    }
 
-struct BadgeData {
-    
-    static let allBadges: [Badge] = [
-        Badge(title: "Monthly Challenge", detail: "10 of 14 days", isLocked: false, imageAssetName: "awards_monthly_main"),
-        
-        Badge(title: "Summary Genius", detail: "6 out of 10", isLocked: true, imageAssetName: "badge5_summary_genius"),
-        Badge(title: "Quiz Master", detail: "6 out of 10", isLocked: true, imageAssetName: "badge4_quiz_master"),
-        Badge(title: "Ultimate Grinder", detail: "6 out of 10", isLocked: true, imageAssetName: "badge6_ultimate_grinder_lock"),
-        Badge(title: "Plan Perfected II", detail: "6 out of 10", isLocked: true, imageAssetName: "badge7_plan_perfected"),
-        Badge(title: "Streak Master III", detail: "6 out of 10", isLocked: true, imageAssetName: "streak master 3"),
-        Badge(title: "Flash Genius", detail: "6 out of 10", isLocked: true, imageAssetName: "badge2_flash_genuis"),
-    ]
-    
-   
-    static let earnedBadges: [Badge] = [
-        Badge(title: "Streak Master I", detail: "Earned: 11/10/2025", isLocked: false, imageAssetName: "streak master 1"),
-        Badge(title: "Summary Genius", detail: "Earned: 11/10/2025", isLocked: false, imageAssetName: "badge5_summary_genius"),
-        Badge(title: "Streak Master II", detail: "Earned: 14/11/2025", isLocked: false, imageAssetName: "streak master 2"),
-        Badge(title: "Plan Perfected", detail: "Earned: 14/11/2025", isLocked: false, imageAssetName: "badge7_plan_perfected"),
-        Badge(title: "CheatSheet Pro", detail: "Earned: 14/11/2025", isLocked: false, imageAssetName: "badge3_cheatsheet_pro"),
-//        Badge(title: "Monthly Hustler I", detail: "Earned: 17/10/2025", isLocked: false, imageAssetName: "monthly_hustler1"),
-    ]
+    // MARK: - Activity Categories
+    enum BadgeCategory: String, Codable, CaseIterable {
+        case globalXP = "Global Level" // Added to keep your existing XP logic
+        case quizMaster = "Quiz Master"
+        case flashGenius = "Flash Genius"
+        case notesCreator = "Notes Creator"
+        case cheatsheetPro = "Cheatsheet Pro"
+        case questSeeker = "Quest Seeker"
+        case wordFiller = "Word Filler"
+        case connector = "Connector"
+        case dailyWord = "Daily Word"
+        case streakMaster = "Streak Master"
+        case deepFocus = "Deep Focus"
+        case socialScholar = "Social Scholar"
+        case sourceMaster = "Source Master"
+    }
+
+    // MARK: - Badge Model
+    struct Badge: Codable, Identifiable {
+        let id: String
+        let title: String
+        let category: BadgeCategory
+        let tier: BadgeTier
+        let goalValue: Int
+        let detail: String
+        let earnedDate: Date?
+
+        // ✅ READS FROM BOTH GLOBAL XP AND NEW COUNTERS
+        var currentValue: Int {
+            let stats = ProgressDataManager.shared
+            switch category {
+            case .globalXP: return stats.totalXP // Preserves your main XP logic
+            case .quizMaster: return stats.totalQuizzesDone
+            case .flashGenius: return stats.totalFlashcardsViewed
+            case .notesCreator: return stats.totalNotesGenerated
+            case .cheatsheetPro: return stats.totalCheatsheetsGenerated
+            case .questSeeker: return stats.totalQuestsCompleted
+            case .wordFiller: return stats.totalWordFillsDone
+            case .connector: return stats.totalConnectionsWon
+            case .dailyWord: return stats.totalDailyChallengesSolved
+            case .streakMaster: return stats.currentStreak
+            case .deepFocus: return stats.totalFocusSessions
+            case .socialScholar: return stats.totalMessagesSent
+            case .sourceMaster: return stats.totalDocumentsUploaded
+            }
+        }
+
+        var isEarned: Bool {
+            return currentValue >= goalValue
+        }
+
+        var progress: Float {
+            return min(Float(currentValue) / Float(goalValue), 1.0)
+        }
+
+        var imageAssetName: String {
+            let categoryKey = category.rawValue.replacingOccurrences(of: " ", with: "").lowercased()
+            let tierNames = ["bronze", "silver", "gold"]
+            let tierKey = tierNames[tier.rawValue - 1]
+            return "exora_\(categoryKey)_\(tierKey)"
+        }
+    }
 }

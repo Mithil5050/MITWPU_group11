@@ -19,51 +19,50 @@ class BadgeCollectionViewCell: UICollectionViewCell {
     override func awakeFromNib() {
             super.awakeFromNib()
             setupUI()
-            setupCardStyle()
         }
         
-       private func setupUI() {
+        private func setupUI() {
+            // Transparent grey card style
+            badgeCardView.backgroundColor = UIColor(white: 1.0, alpha: 0.08)
+            badgeCardView.layer.cornerRadius = 12
+            badgeCardView.clipsToBounds = true
             
-            badgeTitleLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
-            badgeTitleLabel.textColor = .label
+            badgeTitleLabel.font = UIFont.systemFont(ofSize: 11, weight: .bold)
+            badgeTitleLabel.textColor = .white
             badgeTitleLabel.textAlignment = .center
             
-            badgeDetailLabel.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-            badgeDetailLabel.textColor = .secondaryLabel
+            badgeDetailLabel.font = UIFont.systemFont(ofSize: 9, weight: .medium)
+            badgeDetailLabel.textColor = .systemGray
             badgeDetailLabel.textAlignment = .center
             
-            badgeProgressBar.progressTintColor = .systemBlue
-            badgeProgressBar.trackTintColor = .systemGray4
+            // Prepare image view for lock placeholders
+            badgeImageView.contentMode = .scaleAspectFit
+            badgeImageView.tintColor = .systemGray
         }
-            
-        func configure(with badge: Badge) {
-            
+                
+        func configure(with badge: Badge, forSection section: AwardsSection) {
             badgeTitleLabel.text = badge.title
-            badgeDetailLabel.text = badge.detail
-            badgeImageView.image = UIImage(named: badge.imageAssetName)
             
-            badgeProgressBar?.setProgress(0.6, animated: false)
-        }
-        
-        private func setupCardStyle() {
-            let radius: CGFloat = 12
+            // FOR NOW: Reserve space with a lock icon
+            badgeImageView.image = UIImage(systemName: "lock.fill")
+            badgeImageView.alpha = 0.3
             
-            badgeCardView.backgroundColor = .secondarySystemBackground
-            badgeCardView.layer.cornerRadius = radius
-            badgeCardView.layer.masksToBounds = true
-            
-            self.layer.shadowColor = UIColor.black.cgColor
-            self.layer.shadowOpacity = 0.1
-            self.layer.shadowOffset = CGSize(width: 0, height: 1)
-            self.layer.shadowRadius = 3
-            self.layer.masksToBounds = false
-            self.layer.shouldRasterize = true
-            self.layer.rasterizationScale = UIScreen.main.scale
-            
-        }
-        
-        override func layoutSubviews() {
-            super.layoutSubviews()
-            self.layer.shadowPath = UIBezierPath(roundedRect: self.bounds, cornerRadius: 12).cgPath
+            switch section {
+            case .activeChallenges:
+                badgeProgressBar.isHidden = false
+                badgeDetailLabel.text = "0 / \(badge.goalValue) XP"
+                badgeProgressBar.setProgress(0, animated: false)
+
+            case .recentWins:
+                badgeProgressBar.isHidden = true
+                badgeDetailLabel.text = "Not Earned"
+
+            case .allMilestones:
+                badgeProgressBar.isHidden = true
+                badgeDetailLabel.text = "Locked"
+                
+            default:
+                badgeProgressBar.isHidden = true
+            }
         }
     }

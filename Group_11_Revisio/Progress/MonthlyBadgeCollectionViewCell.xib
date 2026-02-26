@@ -23,7 +23,7 @@
                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="O4m-PW-F74">
                                 <rect key="frame" x="16" y="12" width="338" height="84"/>
                                 <subviews>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="4L8-hV-wqe">
+                                    <imageView clipsSubviews="YES" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="4L8-hV-wqe">
                                         <rect key="frame" x="0.0" y="0.0" width="76" height="84"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="76" id="qEv-YK-qhJ"/>
@@ -42,10 +42,13 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="kcl-3N-uE8">
-                                                <rect key="frame" x="0.0" y="44" width="230" height="4"/>
+                                                <rect key="frame" x="0.0" y="44" width="230" height="8"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="8" id="MVv-el-HRq"/>
+                                                </constraints>
                                             </progressView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zgo-ZG-9Mr">
-                                                <rect key="frame" x="0.0" y="52" width="230" height="32"/>
+                                                <rect key="frame" x="0.0" y="56" width="230" height="28"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="20" id="ggb-GB-gJS"/>
                                                 </constraints>
@@ -73,7 +76,7 @@
                                 </constraints>
                             </stackView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="O4m-PW-F74" firstAttribute="leading" secondItem="qI9-jV-5yP" secondAttribute="leading" constant="16" id="1A8-jT-G9r"/>
                             <constraint firstItem="O4m-PW-F74" firstAttribute="centerY" secondItem="qI9-jV-5yP" secondAttribute="centerY" id="CsA-eu-WWb"/>
@@ -92,9 +95,9 @@
                 <constraint firstItem="qI9-jV-5yP" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="Kkv-yg-DhD"/>
             </constraints>
             <connections>
-                <outlet property="mainTitleLabel" destination="4cK-ip-vsX" id="B6Z-Du-rFi"/>
+                <outlet property="levelLabel" destination="4cK-ip-vsX" id="GfA-zu-LQ0"/>
+                <outlet property="monthlyBadgeContainerView" destination="qI9-jV-5yP" id="hNd-Wx-JqF"/>
                 <outlet property="monthlyBadgeImageView" destination="4L8-hV-wqe" id="b4i-aS-DRR"/>
-                <outlet property="showAllContainerView" destination="qI9-jV-5yP" id="w7v-Lo-39c"/>
                 <outlet property="xpProgressBar" destination="kcl-3N-uE8" id="ssv-7n-JHB"/>
                 <outlet property="xpValueLabel" destination="zgo-ZG-9Mr" id="u0g-LL-vtr"/>
             </connections>
@@ -102,9 +105,6 @@
         </collectionViewCell>
     </objects>
     <resources>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
         <systemColor name="systemGrayColor">
             <color red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
