@@ -3,7 +3,8 @@ import UIKit
 class ConnectionsResultsViewController: UIViewController {
 
     // MARK: - Properties
-    var categories: [CategoryModel] = CategoryModel.allCategories
+    // ✅ Now defaults to empty, perfectly accepting the AI categories passed from the game
+    var categories: [CategoryModel] = []
     var resultTitle: String = "Great Job!"
     
     // MARK: - UI Elements
@@ -11,7 +12,7 @@ class ConnectionsResultsViewController: UIViewController {
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.text = resultTitle
-        label.font = .systemFont(ofSize: 24, weight: .bold)
+        label.font = .systemFont(ofSize: 28, weight: .bold)
         label.textAlignment = .center
         label.textColor = .label
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -56,6 +57,9 @@ class ConnectionsResultsViewController: UIViewController {
     private func setupAppearance() {
         view.backgroundColor = .systemBackground
         titleLabel.text = resultTitle
+        
+        // Hide the back button so they have to use "Back to Home"
+        navigationItem.hidesBackButton = true
     }
     
     private func setupLayout() {
@@ -102,6 +106,8 @@ class ConnectionsResultsViewController: UIViewController {
         catTitle.font = .systemFont(ofSize: 16, weight: .black)
         catTitle.textColor = .black
         catTitle.textAlignment = .center
+        catTitle.numberOfLines = 1
+        catTitle.adjustsFontSizeToFitWidth = true
         catTitle.translatesAutoresizingMaskIntoConstraints = false
         
         let wordsLabel = UILabel()
@@ -109,6 +115,7 @@ class ConnectionsResultsViewController: UIViewController {
         wordsLabel.font = .systemFont(ofSize: 14, weight: .medium)
         wordsLabel.textColor = .black
         wordsLabel.textAlignment = .center
+        wordsLabel.numberOfLines = 2
         wordsLabel.translatesAutoresizingMaskIntoConstraints = false
         
         container.addSubview(catTitle)
@@ -116,11 +123,13 @@ class ConnectionsResultsViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             catTitle.centerXAnchor.constraint(equalTo: container.centerXAnchor),
-            catTitle.centerYAnchor.constraint(equalTo: container.centerYAnchor, constant: -10),
+            catTitle.centerYAnchor.constraint(equalTo: container.centerYAnchor, constant: -12),
+            catTitle.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 8),
+            catTitle.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
             
             wordsLabel.topAnchor.constraint(equalTo: catTitle.bottomAnchor, constant: 4),
-            wordsLabel.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: 8),
-            wordsLabel.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -8),
+            wordsLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 8),
+            wordsLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
             wordsLabel.centerXAnchor.constraint(equalTo: container.centerXAnchor)
         ])
         
@@ -128,7 +137,6 @@ class ConnectionsResultsViewController: UIViewController {
     }
     
     // MARK: - Helpers
-    
     private func getPastelColor(for color: UIColor) -> UIColor {
         switch color {
         case .systemPurple:

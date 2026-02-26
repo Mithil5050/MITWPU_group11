@@ -12,12 +12,11 @@ struct GameItem: Hashable, Sendable {
     let imageAsset: String
 }
 
-// ✅ Updated Enum Order
 enum HomeSection: Int, CaseIterable {
     case hero = 0
     case uploadContent
     case continueLearning
-    case sideQuests // Placed right after Hero
+    case sideQuests
     case quickGames
 }
 
@@ -56,6 +55,10 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // Side Quests Data
     var sideQuests: [SideQuest] = []
     var completedQuests: [SideQuest] = [] // For History
+    
+    // ✅ NEW Keys to ensure a completely fresh save state
+    private let activeQuestsKey = "Exora_ActiveQuests_v3"
+    private let completedQuestsKey = "Exora_CompletedQuests_v3"
     
     var isLearningExpanded: Bool = false
     
@@ -101,7 +104,10 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         setupProfileIcon()
         setupFloatingAIButton()
         
-        // Listen for updates immediately
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
+        
         NotificationCenter.default.addObserver(self, selector: #selector(handleDataUpdate), name: .didUpdateStudyMaterials, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(refreshXPUI), name: .xpDidUpdate, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(showLevelUpCelebration), name: NSNotification.Name("UserLeveledUp"), object: nil)
@@ -116,7 +122,10 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         NotificationCenter.default.removeObserver(self)
     }
     
-    // Handler for Notification
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
     @objc func handleDataUpdate() {
         loadRecentLearningData()
     }
@@ -129,18 +138,45 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
 
     @objc func showLevelUpCelebration() {
         let newLevel = ProgressDataManager.shared.currentLevel
-        
-        let alert = UIAlertController(
-            title: "🎉 LEVEL UP!",
-            message: "Congratulations! You've reached Level \(newLevel). Keep conquering your studies!",
-            preferredStyle: .alert
-        )
+        let alert = UIAlertController(title: "🎉 LEVEL UP!", message: "Congratulations! You've reached Level \(newLevel). Keep conquering your studies!", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Awesome!", style: .default))
         
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
-        
         self.present(alert, animated: true)
+    }
+    
+    // MARK: - Persistence (Save & Load Tasks)
+    private func loadQuests() {
+        let defaults = UserDefaults.standard
+        
+        if let data = defaults.data(forKey: activeQuestsKey),
+           let saved = try? JSONDecoder().decode([SideQuest].self, from: data) {
+            self.sideQuests = saved
+        } else {
+            self.sideQuests = []
+        }
+        
+        if let data = defaults.data(forKey: completedQuestsKey),
+           let saved = try? JSONDecoder().decode([SideQuest].self, from: data) {
+            self.completedQuests = saved
+        } else {
+            self.completedQuests = []
+        }
+    }
+
+    private func saveQuests() {
+        let defaults = UserDefaults.standard
+        
+        if let data = try? JSONEncoder().encode(sideQuests) {
+            defaults.set(data, forKey: activeQuestsKey)
+        }
+        if let data = try? JSONEncoder().encode(completedQuests) {
+            defaults.set(data, forKey: completedQuestsKey)
+        }
+        
+        // ✅ GUARANTEE SAVE: Forces iOS to write to disk instantly, preventing Xcode from terminating it early!
+        defaults.synchronize()
     }
     
     // MARK: - Data Fetching
@@ -151,36 +187,26 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         self.learningItems = recentTopics.map { topic in
             var type = topic.materialType
             if type == "Flashcards" { type = "Flashcard" } // Map Plural to Singular
-            
             return ContentItem(title: topic.name, iconName: "doc.text", itemType: type)
         }
-        
-        DispatchQueue.main.async {
-            self.collectionView.reloadData()
-        }
+        DispatchQueue.main.async { self.collectionView.reloadData() }
     }
     
     // MARK: - Setup
     private func setupData() {
         heroData = [ContentItem(title: "Hi Alex !", iconName: "", itemType: "Greeting")]
-        
         uploadItems = [
             ContentItem(title: "Big Data.pdf", iconName: "doc.fill", itemType: "PDF"),
             ContentItem(title: "Data Structures- Trees.com", iconName: "link", itemType: "Link"),
             ContentItem(title: "New File", iconName: "plus.circle.fill", itemType: "AddButton")
         ]
-        
         learningItems = []
-        
         gameItems = [
             GameItem(title: "", imageAsset: "Gemini_Generated_Image_p66f9tp66f9tp66f-removebg-preview"),
             GameItem(title: "", imageAsset: "Gemini_Generated_Image_y6xx8iy6xx8iy6xx-removebg-preview")
         ]
         
-        sideQuests = [
-            SideQuest(title: "Read Chapter 1"),
-            SideQuest(title: "Complete Assignment")
-        ]
+        loadQuests()
     }
     
     private func setupCollectionView() {
@@ -189,6 +215,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.contentInsetAdjustmentBehavior = .never
+        collectionView.keyboardDismissMode = .onDrag
     }
     
     func registerCustomCells() {
@@ -250,38 +277,32 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         performSegue(withIdentifier: "showProfileSegue", sender: nil)
     }
     
-    // MARK: - Navigation Preparation (✅ FIXED: Handles Both Flashcard Classes)
+    // MARK: - Navigation Preparation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
         if segue.identifier == showUploadConfirmationSegueID {
-            if let destinationVC = segue.destination as? UploadConfirmationViewController,
-               let filePath = sender as? String {
+            if let destinationVC = segue.destination as? UploadConfirmationViewController, let filePath = sender as? String {
                 destinationVC.incomingDataPath = filePath
             }
         }
         else if segue.identifier == showNotesDetailSegueID {
-            if let destVC = segue.destination as? NotesViewController,
-               let topic = sender as? Topic {
+            if let destVC = segue.destination as? NotesViewController, let topic = sender as? Topic {
                 destVC.currentTopic = topic
                 destVC.parentSubjectName = topic.parentSubjectName
             }
         }
         else if segue.identifier == showQuizStartSegueID {
-            if let destVC = segue.destination as? QuizStartViewController,
-               let topic = sender as? Topic {
+            if let destVC = segue.destination as? QuizStartViewController, let topic = sender as? Topic {
                 destVC.currentTopic = topic
                 destVC.parentSubject = topic.parentSubjectName
                 destVC.quizSourceName = topic.name
             }
         }
         else if segue.identifier == showSubjectDetailSegueID {
-            if let destVC = segue.destination as? SubjectViewController,
-               let subjectName = sender as? String {
+            if let destVC = segue.destination as? SubjectViewController, let subjectName = sender as? String {
                 destVC.selectedSubject = subjectName
             }
         }
         else if segue.identifier == showFlashcardsSegueID {
-            // ✅ Safely try casting to BOTH Flashcard View Controllers
             if let destVC = segue.destination as? FlashcardViewController, let topic = sender as? Topic {
                 destVC.currentTopic = topic
                 destVC.parentSubjectName = topic.parentSubjectName
@@ -291,8 +312,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             }
         }
         else if segue.identifier == showCheatsheetSegueID {
-            if let destVC = segue.destination as? CheatsheetViewController,
-               let topic = sender as? Topic {
+            if let destVC = segue.destination as? CheatsheetViewController, let topic = sender as? Topic {
                 destVC.currentTopic = topic
                 destVC.parentSubjectName = topic.parentSubjectName
             }
@@ -309,7 +329,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             
             let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(40))
             let headerItem = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
-            
             let itemWidth = NSCollectionLayoutDimension.fractionalWidth(1.0)
             
             switch sectionType {
@@ -364,18 +383,13 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     }
     
     // MARK: - UICollectionViewDataSource
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return HomeSection.allCases.count
-    }
+    func numberOfSections(in collectionView: UICollectionView) -> Int { return HomeSection.allCases.count }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         let sectionType = HomeSection.allCases[section]
         switch sectionType {
         case .hero: return heroData.count
-        case .sideQuests: return 1
-        case .uploadContent: return 1
-        case .continueLearning: return 1
-        case .quickGames: return 1
+        default: return 1
         }
     }
     
@@ -410,9 +424,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         case .quickGames:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: quickGamesCellID, for: indexPath) as! QuickGamesCollectionViewCell
             cell.delegate = self
-            if gameItems.count >= 2 {
-                cell.configure(with: gameItems[0], and: gameItems[1])
-            }
+            if gameItems.count >= 2 { cell.configure(with: gameItems[0], and: gameItems[1]) }
             return cell
         }
     }
@@ -459,6 +471,8 @@ extension HomeViewController: HeaderViewDelegate {
 extension HomeViewController: SideQuestDelegate {
     func didUpdateQuests(_ quests: [SideQuest]) {
         self.sideQuests = quests
+        saveQuests()
+        
         if let sectionIndex = HomeSection.allCases.firstIndex(of: .sideQuests) {
             collectionView.reloadSections(IndexSet(integer: sectionIndex))
         }
@@ -468,13 +482,7 @@ extension HomeViewController: SideQuestDelegate {
         var completedTask = quest
         completedTask.isCompleted = true
         self.completedQuests.insert(completedTask, at: 0)
-        
-        if let index = self.sideQuests.firstIndex(where: { $0.id == quest.id }) {
-            self.sideQuests.remove(at: index)
-            if let sectionIndex = HomeSection.allCases.firstIndex(of: .sideQuests) {
-                collectionView.reloadSections(IndexSet(integer: sectionIndex))
-            }
-        }
+        saveQuests()
     }
     
     func didTapHistory() {
@@ -501,42 +509,28 @@ extension HomeViewController: SideQuestDelegate {
         }) { _ in
             lbl.removeFromSuperview()
         }
-        Task {
-            await RevisioManager.shared.earnXP(amount: amount, reason: "Side Quest Done")
-        }
+        Task { await RevisioManager.shared.earnXP(amount: amount, reason: "Side Quest Done") }
     }
 }
 
 // MARK: - Continue Learning Delegate
 extension HomeViewController: ContinueLearningCellDelegate {
     func didSelectLearningItem(_ item: ContentItem) {
-        
         let allTopics = DataManager.shared.getAllRecentTopics()
         
         guard let realTopic = allTopics.first(where: { topic in
             let nameMatches = (topic.name == item.title)
-            
             let topicType = topic.materialType.lowercased()
             let itemType = item.itemType.lowercased()
             let typeMatches = topicType.contains(itemType) || itemType.contains(topicType)
-            
             return nameMatches && typeMatches
-        }) else {
-            print("Error: Could not find topic matching \(item.title) in Database.")
-            return
-        }
+        }) else { return }
         
         let typeLower = realTopic.materialType.lowercased()
-        
-        if typeLower.contains("quiz") {
-            performSegue(withIdentifier: showQuizStartSegueID, sender: realTopic)
-        } else if typeLower.contains("flashcard") {
-            performSegue(withIdentifier: showFlashcardsSegueID, sender: realTopic)
-        } else if typeLower.contains("cheatsheet") {
-            performSegue(withIdentifier: showCheatsheetSegueID, sender: realTopic)
-        } else {
-            performSegue(withIdentifier: showNotesDetailSegueID, sender: realTopic)
-        }
+        if typeLower.contains("quiz") { performSegue(withIdentifier: showQuizStartSegueID, sender: realTopic) }
+        else if typeLower.contains("flashcard") { performSegue(withIdentifier: showFlashcardsSegueID, sender: realTopic) }
+        else if typeLower.contains("cheatsheet") { performSegue(withIdentifier: showCheatsheetSegueID, sender: realTopic) }
+        else { performSegue(withIdentifier: showNotesDetailSegueID, sender: realTopic) }
     }
 }
 
@@ -550,10 +544,7 @@ extension HomeViewController: QuickGamesCellDelegate {
 
 // MARK: - Upload Delegate & Document Picker
 extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    
-    func navigateToConfirmation(with contentPath: String) {
-        performSegue(withIdentifier: showUploadConfirmationSegueID, sender: contentPath)
-    }
+    func navigateToConfirmation(with contentPath: String) { performSegue(withIdentifier: showUploadConfirmationSegueID, sender: contentPath) }
     
     func uploadCellDidTapDocument(_ cell: UploadContentCollectionViewCell) {
         let types: [UTType] = [.pdf, .text, .image, .data, .content]
@@ -569,15 +560,11 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
         present(picker, animated: true)
     }
     
-    func uploadCellDidTapLink(_ cell: UploadContentCollectionViewCell) {
-        showLinkInputAlert()
-    }
+    func uploadCellDidTapLink(_ cell: UploadContentCollectionViewCell) { showLinkInputAlert() }
     
     func uploadCellDidTapText(_ cell: UploadContentCollectionViewCell) {
         let noteVC = NoteInputViewController()
-        noteVC.onSave = { [weak self] text in
-            self?.navigateToConfirmation(with: text)
-        }
+        noteVC.onSave = { [weak self] text in self?.navigateToConfirmation(with: text) }
         let nav = UINavigationController(rootViewController: noteVC)
         if let sheet = nav.sheetPresentationController {
             sheet.detents = [.medium(), .large()]
@@ -589,23 +576,17 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
     private func showLinkInputAlert() {
         let alert = UIAlertController(title: "Add Resource Link", message: nil, preferredStyle: .alert)
         alert.addTextField { $0.placeholder = "https://..." }
-        
         alert.addAction(UIAlertAction(title: "Confirm", style: .default) { _ in
             guard let text = alert.textFields?.first?.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-            
             let lower = text.lowercased()
-            if (lower.hasPrefix("http://") || lower.hasPrefix("https://")),
-               let url = URL(string: text), UIApplication.shared.canOpenURL(url) {
+            if (lower.hasPrefix("http://") || lower.hasPrefix("https://")), let url = URL(string: text), UIApplication.shared.canOpenURL(url) {
                 self.navigateToConfirmation(with: text)
             } else {
                 let errorAlert = UIAlertController(title: "Invalid Link", message: "URL must start with http:// or https://", preferredStyle: .alert)
-                errorAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                    self.showLinkInputAlert()
-                })
+                errorAlert.addAction(UIAlertAction(title: "OK", style: .default) { _ in self.showLinkInputAlert() })
                 self.present(errorAlert, animated: true)
             }
         })
-        
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
@@ -617,19 +598,14 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true) {
-            guard let image = info[.originalImage] as? UIImage,
-                  let data = image.jpegData(compressionQuality: 0.8) else { return }
-            
+            guard let image = info[.originalImage] as? UIImage, let data = image.jpegData(compressionQuality: 0.8) else { return }
             let tempDir = FileManager.default.temporaryDirectory
             let fileName = "Media_\(Int(Date().timeIntervalSince1970)).jpg"
             let fileURL = tempDir.appendingPathComponent(fileName)
-            
             do {
                 try data.write(to: fileURL)
                 self.navigateToConfirmation(with: fileURL.path)
-            } catch {
-                print("Error saving image: \(error)")
-            }
+            } catch { print("Error saving image: \(error)") }
         }
     }
 }
@@ -638,32 +614,25 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
 class NoteInputViewController: UIViewController {
     var onSave: ((String) -> Void)?
     private let textView = UITextView()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = "New Note"
-        
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelTapped))
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(saveTapped))
-        
         textView.font = .systemFont(ofSize: 18)
         textView.translatesAutoresizingMaskIntoConstraints = false
         textView.textContainerInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
         view.addSubview(textView)
-        
         NSLayoutConstraint.activate([
             textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             textView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             textView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             textView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor)
         ])
-        
         textView.becomeFirstResponder()
     }
-    
     @objc private func cancelTapped() { dismiss(animated: true) }
-    
     @objc private func saveTapped() {
         guard let text = textView.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         onSave?(text)
@@ -673,7 +642,5 @@ class NoteInputViewController: UIViewController {
 
 // MARK: - Daily Challenge Delegate
 extension HomeViewController: HiAlexCellDelegate {
-    func didTapPlayNow() {
-        performSegue(withIdentifier: showDailyChallengeSegueID, sender: nil)
-    }
+    func didTapPlayNow() { performSegue(withIdentifier: showDailyChallengeSegueID, sender: nil) }
 }

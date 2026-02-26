@@ -1,5 +1,12 @@
 import UIKit
 
+// MARK: - AI Model
+struct AIWordleResponse: Codable {
+    let word: String
+    let hints: [String]
+    let definition: String
+}
+
 class DailyChallengeViewController: UIViewController {
 
     // MARK: - Outlets
@@ -7,9 +14,6 @@ class DailyChallengeViewController: UIViewController {
     @IBOutlet weak var ProfitPoints: UIProgressView!
     @IBOutlet weak var keyboardStack: UIStackView!
     @IBOutlet weak var gridContainer: UIStackView!
-    
-    // Kept this outlet optional in case you still want the cheat button,
-    // otherwise you can disconnect and remove it in Storyboard.
     @IBOutlet weak var revealButton: UIButton!
     
     // MARK: - Properties
@@ -17,12 +21,10 @@ class DailyChallengeViewController: UIViewController {
     private var keyStates: [Character: LetterTileView.State] = [:]
     private var isGameOver = false
     
-    // 🔥 Data
-    private var hints: [String] = [
-        "A linear data structure that follows the LIFO (Last-In-First-Out) principle.",
-                "Key operations include 'push' to add and 'pop' to remove elements."
-    ]
-    private let engine = WordleEngine(answer: "stack")
+    // Dynamic Data
+    private var hints: [String] = []
+    private var wordDefinition: String = ""
+    private var engine: WordleEngine!
     
     private var revealedPositions: Set<Int> = []
     private var currentHintIndex = 0
@@ -30,27 +32,47 @@ class DailyChallengeViewController: UIViewController {
     private var progressScore: Float = 0.0
     private var currentGuess = ""
 
+    // Loading UI
+    private let loadingOverlay = UIView()
+    private let loadingIndicator = UIActivityIndicatorView(style: .large)
+    private let loadingLabel = UILabel()
+    
+    // MARK: - Daily State Management
+    private let defaults = UserDefaults.standard
+    private let lastDateKey = "DailyWordle_LastDate"
+    private let wordKey = "DailyWordle_Word"
+    private let hintsKey = "DailyWordle_Hints"
+    private let defKey = "DailyWordle_Definition"
+    private let completedKey = "DailyWordle_Completed"
+    
+    private var todayString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: Date())
+    }
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        setupNavigationBar() // 👈 Adds the Hint button to the top
+        setupNavigationBar()
         buildGrid()
         setupKeyboard()
+        
+        setupLoadingOverlay()
+        handleDailyWordle()
     }
     
     private func setupUI() {
         title = "Daily Challenge"
         view.backgroundColor = .systemBackground
         
-        // Setup Hint Label (Hidden initially)
         hintLabel.alpha = 0
         hintLabel.numberOfLines = 0
         hintLabel.textAlignment = .center
         hintLabel.text = "Tap the bulb above for a hint!"
         hintLabel.textColor = .secondaryLabel
         
-        // Animate label in
         UIView.animate(withDuration: 0.5, delay: 0.5) {
             self.hintLabel.alpha = 1
         }
@@ -58,19 +80,176 @@ class DailyChallengeViewController: UIViewController {
         ProfitPoints.layer.cornerRadius = 4
         ProfitPoints.clipsToBounds = true
     }
+    
+    private func setupLoadingOverlay() {
+        loadingOverlay.backgroundColor = .systemBackground
+        loadingOverlay.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(loadingOverlay)
+        
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.color = .systemBlue
+        loadingIndicator.startAnimating()
+        loadingOverlay.addSubview(loadingIndicator)
+        
+        loadingLabel.text = "Loading today's puzzle..."
+        loadingLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        loadingLabel.textColor = .secondaryLabel
+        loadingLabel.textAlignment = .center
+        loadingLabel.numberOfLines = 0
+        loadingLabel.translatesAutoresizingMaskIntoConstraints = false
+        loadingOverlay.addSubview(loadingLabel)
+        
+        NSLayoutConstraint.activate([
+            loadingOverlay.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            loadingOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            loadingOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            loadingOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            loadingIndicator.centerXAnchor.constraint(equalTo: loadingOverlay.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: loadingOverlay.centerYAnchor, constant: -20),
+            
+            loadingLabel.topAnchor.constraint(equalTo: loadingIndicator.bottomAnchor, constant: 16),
+            loadingLabel.leadingAnchor.constraint(equalTo: loadingOverlay.leadingAnchor, constant: 32),
+            loadingLabel.trailingAnchor.constraint(equalTo: loadingOverlay.trailingAnchor, constant: -32)
+        ])
+    }
+
+    // MARK: - ✅ DAILY GENERATION LOGIC
+    private func handleDailyWordle() {
+        let lastDate = defaults.string(forKey: lastDateKey)
+        
+        if lastDate == todayString {
+            // Already generated today
+            if defaults.bool(forKey: completedKey) {
+                // User already finished today's puzzle
+                showAlreadyPlayedAlert()
+            } else {
+                // User started but didn't finish. Load saved puzzle instantly.
+                let savedWord = defaults.string(forKey: wordKey) ?? "STACK"
+                let savedHints = defaults.stringArray(forKey: hintsKey) ?? []
+                let savedDef = defaults.string(forKey: defKey) ?? "A linear data structure."
+                startGame(with: savedWord, hints: savedHints, definition: savedDef)
+            }
+        } else {
+            // It's a new day! Reset completion and generate a new word.
+            defaults.set(false, forKey: completedKey)
+            loadingLabel.text = "Generating your puzzle from Study Materials..."
+            generateWordleFromStudyMaterials()
+        }
+    }
+    
+    private func showAlreadyPlayedAlert() {
+        loadingOverlay.removeFromSuperview()
+        let alert = UIAlertController(
+            title: "Come back tomorrow!",
+            message: "You have already completed the Daily Wordle for today. Great job staying consistent!",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            self.navigationController?.popViewController(animated: true)
+        })
+        present(alert, animated: true)
+    }
+
+    private func generateWordleFromStudyMaterials() {
+        Task {
+            let allTopics = DataManager.shared.getAllRecentTopics()
+            let contextParts = allTopics.compactMap { $0.largeContentBody ?? $0.notesContent ?? $0.cheatsheetContent }
+            let combinedContext = contextParts.joined(separator: "\n")
+            let safeContext = String(combinedContext.prefix(15000))
+            
+            let prompt = """
+            You are an educational game master. Based on the provided study materials, select ONE universally recognizable term.
+            
+            CRITICAL RULES:
+            1. The word MUST be EXACTLY 5 letters long.
+            2. NO special characters, NO numbers, NO spaces.
+            3. Generate 2 helpful hints for guessing this word.
+            4. Generate a short, educational definition (1-2 sentences).
+            5. Output ONLY valid JSON in this exact format:
+            {
+              "word": "APPLE",
+              "hints": ["A common red or green fruit.", "Keeps the doctor away."],
+              "definition": "A round fruit with red or green skin and a whitish interior."
+            }
+
+            STUDY MATERIALS:
+            \(safeContext.isEmpty ? "General Computer Science and General Knowledge concepts." : safeContext)
+            """
+            
+            do {
+                let jsonResponse = try await AIContentManager.shared.generateContent(
+                    topic: prompt,
+                    type: "Wordle",
+                    count: 1,
+                    difficulty: "Medium"
+                )
+                
+                let cleanJSON = cleanJSONText(jsonResponse)
+                guard let data = cleanJSON.data(using: .utf8) else { throw URLError(.cannotDecodeContentData) }
+                
+                let decoder = JSONDecoder()
+                let result = try decoder.decode(AIWordleResponse.self, from: data)
+                
+                let finalWord = result.word.count == 5 ? result.word.uppercased() : "STACK"
+                
+                // ✅ SAVE TODAY'S PUZZLE TO USERDEFAULTS
+                self.defaults.set(self.todayString, forKey: self.lastDateKey)
+                self.defaults.set(finalWord, forKey: self.wordKey)
+                self.defaults.set(result.hints, forKey: self.hintsKey)
+                self.defaults.set(result.definition, forKey: self.defKey)
+                
+                DispatchQueue.main.async {
+                    self.startGame(with: finalWord, hints: result.hints, definition: result.definition)
+                }
+            } catch {
+                print("⚠️ AI Wordle Failed: \(error.localizedDescription). Using fallback.")
+                // Save fallback so it doesn't try to regenerate continuously on error
+                let fbWord = "ARRAY"
+                let fbHints = ["A collection of elements.", "Uses index numbers."]
+                let fbDef = "A data structure that stores a fixed-size sequential collection of elements."
+                
+                self.defaults.set(self.todayString, forKey: self.lastDateKey)
+                self.defaults.set(fbWord, forKey: self.wordKey)
+                self.defaults.set(fbHints, forKey: self.hintsKey)
+                self.defaults.set(fbDef, forKey: self.defKey)
+                
+                DispatchQueue.main.async {
+                    self.startGame(with: fbWord, hints: fbHints, definition: fbDef)
+                }
+            }
+        }
+    }
+    
+    private func startGame(with word: String, hints: [String], definition: String) {
+        self.engine = WordleEngine(answer: word)
+        self.hints = hints.isEmpty ? ["No hints available for this word."] : hints
+        self.wordDefinition = definition
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            self.loadingOverlay.alpha = 0
+        }) { _ in
+            self.loadingOverlay.removeFromSuperview()
+        }
+    }
+    
+    private func cleanJSONText(_ json: String) -> String {
+        var clean = json
+        if clean.contains("```json") { clean = clean.replacingOccurrences(of: "```json", with: "") }
+        clean = clean.replacingOccurrences(of: "```", with: "")
+        if let startIndex = clean.firstIndex(of: "{") { clean = String(clean[startIndex...]) }
+        if let endIndex = clean.lastIndex(of: "}") { clean = String(clean[...endIndex]) }
+        return clean.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 
     // MARK: - Navigation Bar Setup
     private func setupNavigationBar() {
-        // Create the Lightbulb Button
         let hintBtn = UIBarButtonItem(
-            image: UIImage(systemName: "lightbulb.max"), // Bulb Icon
+            image: UIImage(systemName: "lightbulb.max"),
             style: .plain,
             target: self,
             action: #selector(hintTapped)
         )
-//        hintBtn.tintColor = .systemYellow
-        
-        // Add to the right side
         navigationItem.rightBarButtonItem = hintBtn
     }
 
@@ -104,7 +283,7 @@ class DailyChallengeViewController: UIViewController {
 
     // MARK: - Game Logic
     func addLetter(_ letter: Character) {
-        guard !isGameOver else { return }
+        guard !isGameOver, engine != nil else { return }
         let row = engine.attempts
         guard let index = (0..<5).first(where: { i in
             let tile = tileGrid[row][i]
@@ -118,7 +297,7 @@ class DailyChallengeViewController: UIViewController {
     }
 
     func removeLetter() {
-        guard !isGameOver else { return }
+        guard !isGameOver, engine != nil else { return }
         let row = engine.attempts
         guard let index = (0..<5).reversed().first(where: { i in
             let tile = tileGrid[row][i]
@@ -132,7 +311,7 @@ class DailyChallengeViewController: UIViewController {
     }
 
     func submitGuess() {
-        guard !isGameOver else { return }
+        guard !isGameOver, engine != nil else { return }
         updateCurrentGuess()
         guard currentGuess.count == 5 else {
             shakeGrid()
@@ -169,6 +348,7 @@ class DailyChallengeViewController: UIViewController {
 
     // MARK: - Actions
     @objc func hintTapped() {
+        guard engine != nil else { return }
         guard currentHintIndex < hints.count else {
             let alert = UIAlertController(title: "No more hints!", message: "You're on your own now.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default))
@@ -178,16 +358,12 @@ class DailyChallengeViewController: UIViewController {
         
         let newHint = hints[currentHintIndex]
         currentHintIndex += 1
-        
-        // Update the Hint Label on screen
         slideHintText(newHint)
-        
         incrementProgress(by: -0.05) // Penalty
     }
     
-    // (Optional: Keep or remove based on storyboard cleanup)
     @IBAction func revealAlphabetTapped(_ sender: UIButton) {
-        guard !isGameOver, !revealUsed else { return }
+        guard !isGameOver, !revealUsed, engine != nil else { return }
         
         let row = engine.attempts
         let answerChars = Array(engine.revealedAnswer.uppercased())
@@ -204,7 +380,6 @@ class DailyChallengeViewController: UIViewController {
         guard let index = eligibleIndices.randomElement() else { return }
 
         revealUsed = true
-        // Disable button if it exists
         if let btn = revealButton {
             btn.isEnabled = false
             btn.alpha = 0.5
@@ -331,7 +506,7 @@ class DailyChallengeViewController: UIViewController {
     }
     
     private func slideHintText(_ text: String) {
-        hintLabel.textColor = .label // Make text dark/light (readable) when showing actual hint
+        hintLabel.textColor = .label
         UIView.animate(withDuration: 0.2, animations: {
             self.hintLabel.alpha = 0
             self.hintLabel.transform = CGAffineTransform(translationX: 0, y: -10)
@@ -347,8 +522,11 @@ class DailyChallengeViewController: UIViewController {
     
     private func endGame(won: Bool) {
         isGameOver = true
+        
+        // ✅ MARK GAME AS COMPLETED FOR TODAY
+        defaults.set(true, forKey: completedKey)
+        
         if won {
-            // Simple Confetti Animation
             let emitter = CAEmitterLayer()
             emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: 0)
             emitter.emitterShape = .line
@@ -362,11 +540,13 @@ class DailyChallengeViewController: UIViewController {
             cell.color = UIColor.systemYellow.cgColor
             emitter.emitterCells = [cell]
             view.layer.addSublayer(emitter)
+            
+            Task { await RevisioManager.shared.earnXP(amount: 15, reason: "Won Daily Wordle") }
         }
         
         let sheet = LearnMoreViewController(
             word: engine.revealedAnswer.uppercased(),
-            definition: "A Stack is a linear data structure which follows a particular order in which the operations are performed. The order may be LIFO (Last In First Out) or FILO (First In Last Out)."
+            definition: wordDefinition
         )
         sheet.modalPresentationStyle = .overFullScreen
         sheet.modalTransitionStyle = .crossDissolve
