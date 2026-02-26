@@ -12,28 +12,96 @@ class ProgressDataManager {
     
     var history: [LogHistoryItem] = []
     
-    // MARK: - Persistent Properties
+    // MARK: - Constants
+    // Setting this to 100 makes the Level 1 -> Level 2 transition occur at exactly 100 XP
+    let pointsPerLevel: Int = 100
     
-    /// The core XP value. Every time this is set, it triggers local storage, cloud sync, and level-up checks.
+    // MARK: - Persistent Properties (Global XP)
     var totalXP: Int {
         get { UserDefaults.standard.integer(forKey: "user_total_xp") }
         set {
-            let oldLevel = currentLevel // Snapshot before change
+            let oldLevel = currentLevel
             UserDefaults.standard.set(newValue, forKey: "user_total_xp")
             
-            // Check if level changed
-            if currentLevel > oldLevel {
-                print("🎉 Level Up detected: \(currentLevel)")
+            let newLevel = currentLevel
+            // Detect if the user has crossed a 100 XP threshold
+            if newLevel > oldLevel {
+                print("🎉 Level Up detected: \(newLevel)")
                 DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: NSNotification.Name("UserLeveledUp"), object: nil)
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("UserLeveledUp"),
+                        object: nil,
+                        userInfo: ["level": newLevel]
+                    )
+                    // Also trigger general XP update to refresh bars to 0
+                    NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
                 }
             }
             
-            // Background Cloud Sync
-            Task { await SupabaseManager.shared.syncXP(totalXP: newValue) }
+            // Syncing with Supabase
+            Task {
+                await SupabaseManager.shared.syncXP(totalXP: newValue)
+            }
         }
     }
+
+    // MARK: - Activity-Specific Counters (For Badges)
+    var totalQuizzesDone: Int {
+        get { UserDefaults.standard.integer(forKey: "stat_quizzes_done") }
+        set { UserDefaults.standard.set(newValue, forKey: "stat_quizzes_done") }
+    }
     
+    var totalFlashcardsViewed: Int {
+        get { UserDefaults.standard.integer(forKey: "stat_cards_viewed") }
+        set { UserDefaults.standard.set(newValue, forKey: "stat_cards_viewed") }
+    }
+
+    var totalNotesGenerated: Int {
+        get { UserDefaults.standard.integer(forKey: "stat_notes_gen") }
+        set { UserDefaults.standard.set(newValue, forKey: "stat_notes_gen") }
+    }
+
+    var totalCheatsheetsGenerated: Int {
+        get { UserDefaults.standard.integer(forKey: "stat_cheat_gen") }
+        set { UserDefaults.standard.set(newValue, forKey: "stat_cheat_gen") }
+    }
+
+    var totalQuestsCompleted: Int {
+        get { UserDefaults.standard.integer(forKey: "stat_quests_done") }
+        set { UserDefaults.standard.set(newValue, forKey: "stat_quests_done") }
+    }
+
+    var totalWordFillsDone: Int {
+        get { UserDefaults.standard.integer(forKey: "stat_wordfill_done") }
+        set { UserDefaults.standard.set(newValue, forKey: "stat_wordfill_done") }
+    }
+
+    var totalConnectionsWon: Int {
+        get { UserDefaults.standard.integer(forKey: "stat_connections_win") }
+        set { UserDefaults.standard.set(newValue, forKey: "stat_connections_win") }
+    }
+
+    var totalDailyChallengesSolved: Int {
+        get { UserDefaults.standard.integer(forKey: "stat_daily_solved") }
+        set { UserDefaults.standard.set(newValue, forKey: "stat_daily_solved") }
+    }
+
+    var totalFocusSessions: Int {
+        get { UserDefaults.standard.integer(forKey: "stat_focus_sessions") }
+        set { UserDefaults.standard.set(newValue, forKey: "stat_focus_sessions") }
+    }
+
+    var totalMessagesSent: Int {
+        get { UserDefaults.standard.integer(forKey: "stat_messages_sent") }
+        set { UserDefaults.standard.set(newValue, forKey: "stat_messages_sent") }
+    }
+
+    var totalDocumentsUploaded: Int {
+        get { UserDefaults.standard.integer(forKey: "stat_docs_uploaded") }
+        set { UserDefaults.standard.set(newValue, forKey: "stat_docs_uploaded") }
+    }
+    
+    // MARK: - Streak Logic
     var currentStreak: Int {
         get { UserDefaults.standard.integer(forKey: "user_current_streak") }
         set { UserDefaults.standard.set(newValue, forKey: "user_current_streak") }
@@ -44,82 +112,67 @@ class ProgressDataManager {
         set { UserDefaults.standard.set(newValue, forKey: "user_last_active_date") }
     }
     
-    // MARK: - Calculations (The Conqueror Formulas)
+    // MARK: - Updated Calculations (Leveling Logic)
     
-    /// Calculates the user's level based on XP: (0.1 * sqrt(XP)) + 1
+    /// Increments indefinitely: Level 1 (0-99 XP), Level 2 (100-199 XP), etc.
     var currentLevel: Int {
-        return Int(sqrt(Double(totalXP)) * 0.1) + 1
+        // Floor division ensures Level increases every 100 points
+        return (totalXP / pointsPerLevel) + 1
     }
-    
-    /// Calculates how much XP is needed to reach the start of the next level
-    var xpToNextLevel: Int {
-        let nextLevel = currentLevel + 1
-        let requiredXP = Int(pow(Double(nextLevel) / 0.1, 2))
-        return max(0, requiredXP - totalXP)
+
+    var userLevel: Int {
+        return currentLevel
+    }
+
+    /// The base XP required for the current level (e.g., Level 2 starts at 100)
+    var xpAtStartOfCurrentLevel: Int {
+        return (currentLevel - 1) * pointsPerLevel
+    }
+
+    /// Resetting Display: Returns 0-99 for the progress bar
+    var currentLevelXP: Int {
+        // Modulo math ensures 100/100 becomes 0/100 visually
+        return totalXP % pointsPerLevel
+    }
+
+    /// Always 100 for a consistent Apple-style UI
+    var nextLevelXP: Int {
+        return pointsPerLevel
     }
 
     private init() { }
 
-    /// Call this on app launch to load data and check if the streak was broken
-    func start() {
-        loadInitialData()
-        refreshStreakStatus()
-    }
-    
     // MARK: - Actions
     
-    /// Use this function to grant XP from Wordle, Quizzes, or Daily Login
     func addXP(amount: Int, source: String) {
-        // Updating totalXP here triggers the 'set' logic at the top of the file
         totalXP += amount
-        
-        // Ensure the streak is recorded for today's activity
         updateStreak()
         
-        // Post a notification so all screens (Profile, Awards) refresh their bars
-        NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
-        print("🌟 Earned \(amount) XP from \(source). Total: \(totalXP)")
-    }
-    
-    // MARK: - Streak Logic
-    
-    /// Checks if a streak was broken (more than 24 hours of inactivity)
-    private func refreshStreakStatus() {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        guard let lastDate = lastActiveDate else { return }
-        let lastActiveStart = calendar.startOfDay(for: lastDate)
-        
-        let components = calendar.dateComponents([.day], from: lastActiveStart, to: today)
-        
-        if let daysPassed = components.day, daysPassed > 1 {
-            currentStreak = 0 // Reset streak if user missed a day
-            print("💔 Streak broken.")
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
         }
+        print("🌟 Earned \(amount) XP from \(source). Total: \(totalXP). Level: \(currentLevel)")
     }
     
-    /// Increments the streak when the user performs an action
     private func updateStreak() {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let lastDate = lastActiveDate != nil ? calendar.startOfDay(for: lastActiveDate!) : nil
         
-        if lastDate == today {
-            return // Already updated today, do nothing
-        }
+        if lastDate == today { return }
         
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: today), lastDate == yesterday {
-            currentStreak += 1 // Logged in two days in a row
+            currentStreak += 1
         } else {
-            currentStreak = 1 // New streak or restarted after a break
+            currentStreak = 1
         }
-        
         lastActiveDate = Date()
     }
 
-    // MARK: - Data Loading
-    
-    /// Loads the dummy JSON data for the Progress Graph
+    func start() {
+        loadInitialData()
+    }
+
     func loadInitialData() {
         guard let url = Bundle.main.url(forResource: "ProgressLogData", withExtension: "json"),
               let data = try? Data(contentsOf: url) else { return }
