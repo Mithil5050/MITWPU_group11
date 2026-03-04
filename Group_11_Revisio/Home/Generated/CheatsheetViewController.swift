@@ -57,30 +57,40 @@ class CheatsheetViewController: UIViewController {
     
     // MARK: - Content Loading & Management
     func displayContent() {
-        guard let topic = currentTopic else {
-            contentView.text = "Cheatsheet or Parent Subject not found."
-            return
-        }
-        
+        guard let topic = currentTopic else { return }
         title = topic.name
         
         var textToDisplay = ""
-        
-        // 1. Get raw text
-        if let directContent = topic.notesContent, !directContent.isEmpty {
+        if let directContent = topic.cheatsheetContent, !directContent.isEmpty {
             textToDisplay = directContent
         } else if let subject = parentSubjectName {
             textToDisplay = DataManager.shared.getDetailedContent(for: subject, topicName: topic.name)
         }
-        
-        // 2. Render as Markdown
+
         if !textToDisplay.isEmpty {
-            contentView.attributedText = renderMarkdown(text: textToDisplay)
+            let fullAttributedString = NSMutableAttributedString(string: textToDisplay)
+            let range = NSRange(location: 0, length: textToDisplay.utf16.count)
+            
+            // Slightly smaller base font for cheatsheet tables
+            fullAttributedString.addAttribute(.font, value: UIFont.monospacedSystemFont(ofSize: 14, weight: .regular), range: range)
+            fullAttributedString.addAttribute(.foregroundColor, value: UIColor.label, range: range)
+
+            let lines = textToDisplay.components(separatedBy: "\n")
+            var currentOffset = 0
+            
+            for line in lines {
+                if line.hasPrefix("##") || line.hasPrefix("###") {
+                    let lineRange = NSRange(location: currentOffset, length: line.utf16.count)
+                    fullAttributedString.addAttribute(.font, value: UIFont.monospacedSystemFont(ofSize: 17, weight: .bold), range: lineRange)
+                    fullAttributedString.addAttribute(.foregroundColor, value: UIColor.systemIndigo, range: lineRange)
+                }
+                currentOffset += line.utf16.count + 1
+            }
+            
+            contentView.attributedText = fullAttributedString
         } else {
             showPlaceholder()
         }
-        
-        updateUIForState()
     }
     
     // ✅ NEW: Markdown Renderer
