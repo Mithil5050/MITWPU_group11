@@ -2,9 +2,6 @@
 //  SupabaseManager.swift
 //  Group_11_Revisio
 //
-//  Created by Mithil on 09/02/26.
-//
-
 
 import Foundation
 import Supabase
@@ -22,23 +19,7 @@ class SupabaseManager {
         self.client = SupabaseClient(supabaseURL: projectURL, supabaseKey: apiKey)
     }
     
-    // MARK: - 1. Auth
-    func signInAnonymously() async {
-        do {
-            let _ = try await client.auth.session
-            print("✅ Supabase: Session active.")
-        } catch {
-            print("👤 Supabase: Signing in anonymously...")
-            do {
-                _ = try await client.auth.signInAnonymously()
-                print("✅ Supabase: Signed in!")
-            } catch {
-                print("❌ Supabase Auth Error: \(error)")
-            }
-        }
-    }
-    
-    // MARK: - 2. Sync XP
+    // MARK: - 1. Sync XP
     func syncXP(totalXP: Int) async {
         guard let userId = client.auth.currentUser?.id else { return }
         
@@ -55,7 +36,7 @@ class SupabaseManager {
         }
     }
     
-    // MARK: - 3. Backup Topic
+    // MARK: - 2. Backup Topic
     func backupTopic(_ topic: Topic) async {
         guard let userId = client.auth.currentUser?.id else { return }
         
@@ -85,3 +66,6 @@ class SupabaseManager {
         }
     }
 }
+
+// ✅ Global Supabase variable for easy access everywhere in the app
+let supabase = SupabaseManager.shared.client
