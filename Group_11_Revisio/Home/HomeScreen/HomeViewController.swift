@@ -5,6 +5,7 @@
 
 import UIKit
 import UniformTypeIdentifiers
+import Supabase // ✅ Added Supabase Import
 
 // MARK: - Supporting Structures
 struct GameItem: Hashable, Sendable {
@@ -62,6 +63,10 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     
     var isLearningExpanded: Bool = false
     
+    // ✅ User Data Properties
+    var userName: String = "User" // Default until fetched
+    var userProfileImage: UIImage? = UIImage(named: "profile_placeholder")
+    
     @IBOutlet weak var collectionView: UICollectionView!
     
     // Floating AI Button
@@ -101,13 +106,17 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         super.viewDidLoad()
         setupData()
         setupCollectionView()
-        setupProfileIcon()
+        setupProfileIcon() // Initial setup with placeholder
         setupFloatingAIButton()
+        
+        // ✅ Fetch Real Data from Supabase
+        fetchSupabaseUserData()
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
-        
+        // ✅ 2. Listen for the update message
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshUserData), name: NSNotification.Name("ProfileDidUpdate"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleDataUpdate), name: .didUpdateStudyMaterials, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(refreshXPUI), name: .xpDidUpdate, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(showLevelUpCelebration), name: NSNotification.Name("UserLeveledUp"), object: nil)
@@ -116,10 +125,53 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadRecentLearningData()
+        // Refresh data when returning to home in case profile was edited
+        fetchSupabaseUserData()
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+    
+    // MARK: - Supabase Data Fetching
+    private func fetchSupabaseUserData() {
+        Task {
+            do {
+                let user = try await supabase.auth.session.user
+                let userId = user.id.uuidString
+                
+                let profile: UserProfile = try await supabase
+                    .from("profiles")
+                    .select("username, avatar_url")
+                    .eq("id", value: userId)
+                    .single()
+                    .execute()
+                    .value
+                
+                DispatchQueue.main.async {
+                    self.userName = profile.username
+                    // Reload hero section to update Greeting
+                    self.collectionView.reloadSections(IndexSet(integer: 0))
+                }
+                // In fetchSupabaseUserData...
+                if let avatarString = profile.avatar_url {
+                    // ✅ Force a fresh download
+                    let cacheBuster = "?v=\(Date().timeIntervalSince1970)"
+                    if let url = URL(string: avatarString + cacheBuster) {
+                        let (data, _) = try await URLSession.shared.data(from: url)
+                        if let downloadedImage = UIImage(data: data) {
+                            DispatchQueue.main.async {
+                                self.userProfileImage = downloadedImage
+                                self.setupProfileIcon() // Refresh bar button with real image
+                            }
+                        }
+                    }
+                }
+            
+            } catch {
+                print("Home Fetch Error: \(error.localizedDescription)")
+            }
+        }
     }
     
     @objc func dismissKeyboard() {
@@ -135,7 +187,11 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             self.collectionView.reloadData()
         }
     }
-
+    
+    @objc private func refreshUserData() {
+        fetchSupabaseUserData() // This re-downloads the latest name and image
+    }
+    
     @objc func showLevelUpCelebration() {
         let newLevel = ProgressDataManager.shared.currentLevel
         let alert = UIAlertController(title: "🎉 LEVEL UP!", message: "Congratulations! You've reached Level \(newLevel). Keep conquering your studies!", preferredStyle: .alert)
@@ -174,23 +230,41 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         if let data = try? JSONEncoder().encode(completedQuests) {
             defaults.set(data, forKey: completedQuestsKey)
         }
-        
-        // ✅ GUARANTEE SAVE: Forces iOS to write to disk instantly, preventing Xcode from terminating it early!
         defaults.synchronize()
     }
     
     // MARK: - Data Fetching
-    func loadRecentLearningData() {
-        let allTopics = DataManager.shared.getAllRecentTopics()
-        let recentTopics = Array(allTopics.prefix(5))
-        
-        self.learningItems = recentTopics.map { topic in
-            var type = topic.materialType
-            if type == "Flashcards" { type = "Flashcard" } // Map Plural to Singular
-            return ContentItem(title: topic.name, iconName: "doc.text", itemType: type)
+        func loadRecentLearningData() {
+            let allTopics = DataManager.shared.getAllRecentTopics()
+            
+            // ✅ PRO FIX: Filter the data!
+            let incompleteTasks = allTopics.filter { topic in
+                let typeLower = topic.materialType.lowercased()
+                
+                // 1. Only show interactive materials (No PDFs or standard Notes)
+                let isInteractive = typeLower.contains("quiz") || typeLower.contains("flashcard")
+                
+                // 2. Check if it is incomplete
+                // ⚠️ Note: Adjust this line based on how your 'Topic' model actually tracks progress!
+                // If you don't have a progress variable yet, just use 'true' for now.
+                let isNotFinished = true // Example: topic.completionPercentage < 100
+                
+                return isInteractive && isNotFinished
+            }
+            
+            // Grab only the top 5 incomplete interactive tasks
+            let recentTopics = Array(incompleteTasks.prefix(5))
+            
+            // Map them to your ContentItem array
+            self.learningItems = recentTopics.map { topic in
+                var type = topic.materialType
+                if type == "Flashcards" { type = "Flashcard" } // Map Plural to Singular
+                return ContentItem(title: topic.name, iconName: "doc.text", itemType: type)
+            }
+            
+            // Refresh the UI
+            DispatchQueue.main.async { self.collectionView.reloadData() }
         }
-        DispatchQueue.main.async { self.collectionView.reloadData() }
-    }
     
     // MARK: - Setup
     private func setupData() {
@@ -256,11 +330,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // MARK: - Profile Icon
     private func setupProfileIcon() {
         let button = UIButton(type: .custom)
-        if let image = UIImage(named: "profile_placeholder") {
-            button.setImage(image, for: .normal)
-        } else {
-            button.setImage(UIImage(systemName: "person.circle.fill"), for: .normal)
-        }
+        button.setImage(userProfileImage, for: .normal)
+        
         button.translatesAutoresizingMaskIntoConstraints = false
         button.widthAnchor.constraint(equalToConstant: 40).isActive = true
         button.heightAnchor.constraint(equalToConstant: 40).isActive = true
@@ -399,6 +470,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         switch sectionType {
         case .hero:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: hiAlexCellID, for: indexPath) as! HiAlexCollectionViewCell
+            // ✅ Dynamically Update the Greeting with the real Username
             cell.delegate = self
             return cell
             
