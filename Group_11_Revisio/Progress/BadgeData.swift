@@ -30,7 +30,7 @@ struct BadgeData {
         // MARK: - Word Filler
         Badging.Badge(id: "wf_1", title: "Typer", category: .wordFiller, tier: .bronze, goalValue: 10, detail: "Finish 10 Word Fills.", earnedDate: nil),
         Badging.Badge(id: "wf_2", title: "Linguist", category: .wordFiller, tier: .silver, goalValue: 50, detail: "Finish 50 Word Fills.", earnedDate: nil),
-        Badging.Badge(id: "wf_3", title: "Lexicographer", category: .wordFiller, tier: .gold, goalValue: 150, detail: "Lexicographer: 150 Word Fills.", earnedDate: nil),
+        Badging.Badge(id: "wf_3", title: "Lexicographer", category: .wordFiller, tier: .gold, goalValue: 150, detail: "150 Word Fills.", earnedDate: nil),
 
         // MARK: - Connector
         Badging.Badge(id: "con_1", title: "Linker", category: .connector, tier: .bronze, goalValue: 10, detail: "Win 10 Connections.", earnedDate: nil),
@@ -64,7 +64,7 @@ struct BadgeData {
     ]
     
     static func imageName(for badge: Badging.Badge) -> String? {
-        // Map these to your asset names
+        // Return your asset image name string here
         return nil
     }
 }

@@ -593,10 +593,45 @@ class GenerateHomeViewController: UIViewController {
         }
     }
     
+//    private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
+//        self.resetUI(sender)
+//        
+//        let subjectName = self.contextSubjectTitle ?? "General Study"
+//        
+//        // Save the Original Source Files to the Folder
+//        if let items = self.inputSourceData {
+//            for item in items {
+//                if let url = item as? URL {
+//                    DataManager.shared.importFile(url: url, subject: subjectName)
+//                } else if let str = item as? String {
+//                    if str.hasPrefix("/") || str.hasPrefix("file://") {
+//                        let url = URL(fileURLWithPath: str)
+//                        DataManager.shared.importFile(url: url, subject: subjectName)
+//                    } else if str.lowercased().hasPrefix("http://") || str.lowercased().hasPrefix("https://") {
+//                        let linkSource = Source(name: str, fileType: "LINK", size: "Web Link")
+//                        DataManager.shared.saveContent(subject: subjectName, content: linkSource)
+//                    }
+//                }
+//            }
+//        }
+    
     private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
         self.resetUI(sender)
         
         let subjectName = self.contextSubjectTitle ?? "General Study"
+        
+        // --- ✅ NEW: BADGE COUNTER LOGIC ---
+        
+        // Increment stats based on what was actually generated
+        if self.selectedMaterialType == .notes {
+            // Progresses Scribe, Scholar, and Chronicler badges
+            ProgressDataManager.shared.totalNotesGenerated += 1
+        } else if self.selectedMaterialType == .cheatsheet {
+            // Progresses Minimalist, Optimizer, and Strategist badges
+            ProgressDataManager.shared.totalCheatsheetsGenerated += 1
+        }
+        
+        // ----------------------------------
         
         // Save the Original Source Files to the Folder
         if let items = self.inputSourceData {

@@ -16,7 +16,9 @@ class ProgressViewContoller: UIViewController {
     @IBOutlet weak var stackView: UIStackView!
     
     @IBOutlet weak var chartContainerView: UIView!
+    @IBOutlet weak var hoursStudiedHeaderLabel: UILabel!
     
+    @IBOutlet weak var achievementsHeaderLabel: UILabel!
     @IBOutlet weak var streaksCard: UIView!
     @IBOutlet weak var streaksLabel: UILabel!
     @IBOutlet weak var streaksCountLabel: UILabel!
@@ -32,13 +34,7 @@ class ProgressViewContoller: UIViewController {
                     
     override func viewDidLoad() {
             super.viewDidLoad()
-            
-            // 🛑 ONE-TIME RESET:
-            // Run once to start fresh today, then delete these 3 lines.
-            UserDefaults.standard.removeObject(forKey: "user_current_streak")
-            UserDefaults.standard.removeObject(forKey: "user_last_active_date")
-            ProgressDataManager.shared.history = []
-            
+        
             setupUI()
             
             // This will now find .xpDidUpdate because of the extension in the other file
@@ -78,14 +74,21 @@ class ProgressViewContoller: UIViewController {
         chartContainerView.layer.cornerRadius = 20
         chartContainerView.clipsToBounds = true
         
-        // ✅ RESTORE CARD TITLES
+        hoursStudiedHeaderLabel.text = "Hours Studied"
+        hoursStudiedHeaderLabel.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
+        
+        achievementsHeaderLabel.text = "Achievements"
+        achievementsHeaderLabel.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
+        
         streaksCard.backgroundColor = .systemGray6
         streaksCard.layer.cornerRadius = 16
         streaksLabel.text = "Streaks"
+        streaksLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
         
         awardsCard.backgroundColor = .systemGray6
         awardsCard.layer.cornerRadius = 16
         awardsLabel.text = "Awards"
+        awardsLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
         
         monthNameLabel.text = "March Challenge"
         mainMonthBagdeImageView.image = UIImage(named: "awards_monthly_main")

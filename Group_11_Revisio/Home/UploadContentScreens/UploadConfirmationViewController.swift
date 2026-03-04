@@ -107,6 +107,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
     
     // ✅ Add File with Explicit Type
     private func addFile(url: URL, type: FileSourceType) {
+        ProgressDataManager.shared.totalDocumentsUploaded += 1
         var newFile = UploadedFileModel(url: url, type: type)
         newFile.isWaiting = true
         newFile.isAnalyzing = false

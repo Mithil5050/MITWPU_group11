@@ -25,12 +25,14 @@ struct Badging {
         let detail: String
         let earnedDate: Date?
 
-        // ✅ UPDATED: Points to the new exact member names in ProgressDataManager
+        // ✅ Reads the specific stat from ProgressDataManager based on the category
         var currentValue: Int {
             let stats = ProgressDataManager.shared
             switch category {
             case .globalXP: return stats.totalXP
-            case .quizMaster: return stats.totalQuizzesDone
+            case .quizMaster:
+                // Legend badge tracks 90%+ scores, Novice/Master track total count
+                return tier == .gold ? stats.totalHighLevelQuizzes : stats.totalQuizzesDone
             case .flashGenius: return stats.totalFlashcardsViewed
             case .notesCreator: return stats.totalNotesGenerated
             case .cheatsheetPro: return stats.totalCheatsheetsGenerated

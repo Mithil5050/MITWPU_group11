@@ -116,12 +116,80 @@ class ResultsViewController: UIViewController {
         }
     }
     
+//    @IBAction func saveButtonTapped(_ sender: Any) {
+//        // 1. Validate required data exists
+//        guard let result = finalResult, var topic = topicToSave, let folder = parentFolder else {
+//            print("DEBUG: Missing data in ResultsViewController. Result: \(finalResult != nil), Topic: \(topicToSave != nil), Folder: \(parentFolder != nil)")
+//            return
+//        }
+//        
+//        // 2. Pack the summary data into a 5-part string per line
+//        // Format: Question | Options | CorrectIndex | Explanation | UserAnswerIndex
+//        let packedData = summaryData.map { item in
+//            let answers = item.allOptions.joined(separator: "|")
+//            let userIdx = item.userAnswerIndex ?? -1 // Use -1 if user didn't answer
+//            return "\(item.questionText)|\(answers)|\(item.correctAnswerIndex)|\(item.explanation)|\(userIdx)"
+//        }.joined(separator: "\n")
+//        
+//        // 3. Create a new History Attempt object
+//        let newAttempt = QuizAttempt(
+//            id: UUID(),
+//            date: Date(),
+//            score: result.finalScore,
+//            totalQuestions: result.totalQuestions,
+//            summaryData: packedData
+//        )
+//        
+//        // 4. Update the topic's attempts array
+//        if topic.attempts == nil {
+//            topic.attempts = []
+//        }
+//        topic.attempts?.append(newAttempt)
+//        
+//        // 5. Update metadata so the "History" list reflects the latest run
+//        topic.lastAccessed = "Score: \(result.finalScore)/\(result.totalQuestions)"
+//        topic.largeContentBody = packedData
+//        
+//        // 6. Save to Disk via DataManager
+//        DataManager.shared.updateTopic(subjectName: folder, topic: topic)
+//        
+//        // 7. Show Success Alert and Navigate Back
+//        let alert = UIAlertController(title: "Saved!", message: "Quiz result archived.", preferredStyle: .alert)
+//        alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+//            if let nav = self.navigationController {
+//                // Find SubjectViewController in stack so "Gatekeeper" logic refreshes
+//                for vc in nav.viewControllers {
+//                    if vc is SubjectViewController {
+//                        nav.popToViewController(vc, animated: true)
+//                        return
+//                    }
+//                }
+//                nav.popToRootViewController(animated: true)
+//            }
+//        })
+//        present(alert, animated: true)
+//    }
+    
     @IBAction func saveButtonTapped(_ sender: Any) {
         // 1. Validate required data exists
         guard let result = finalResult, var topic = topicToSave, let folder = parentFolder else {
             print("DEBUG: Missing data in ResultsViewController. Result: \(finalResult != nil), Topic: \(topicToSave != nil), Folder: \(parentFolder != nil)")
             return
         }
+        
+        // --- ✅ NEW: BADGE COUNTER LOGIC ---
+        
+        // Increment Total Quizzes Done (Progresses Novice & Master badges)
+        ProgressDataManager.shared.totalQuizzesDone += 1
+        
+        // Check for Legend Badge (>90% score requirement)
+        let percentage = Double(result.finalScore) / Double(result.totalQuestions)
+        if percentage >= 0.9 {
+            // Increment the high-score counter specifically for the Level III Legend badge
+            ProgressDataManager.shared.totalHighLevelQuizzes += 1
+        }
+        
+        // ----------------------------------
         
         // 2. Pack the summary data into a 5-part string per line
         // Format: Question | Options | CorrectIndex | Explanation | UserAnswerIndex

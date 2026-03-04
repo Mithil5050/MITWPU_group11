@@ -338,12 +338,19 @@ class ConnectionsViewController: UIViewController {
     }
     
     private func finishGame(won: Bool) {
+      
         didWin = won
         collectionView.isUserInteractionEnabled = false
         
         if won {
-            Task { await RevisioManager.shared.earnXP(amount: 20, reason: "Beat Connections") }
-        }
+                // ✅ 1. Update Badge Stat
+                ProgressDataManager.shared.totalConnectionsWon += 1
+                
+                // ✅ 2. Award XP and trigger UI refresh
+                Task {
+                    await RevisioManager.shared.earnXP(amount: 20, reason: "Beat Connections")
+                }
+            }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.performSegue(withIdentifier: "ShowConnectionsResults", sender: nil)

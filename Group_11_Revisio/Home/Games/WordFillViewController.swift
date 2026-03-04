@@ -287,6 +287,8 @@ class WordFillViewController: UIViewController {
     }
 
     private func showFinalResults() {
+        
+        ProgressDataManager.shared.totalWordFillsDone += 1
         timer?.invalidate()
         
         let (result, summaryItems) = processQuizData()

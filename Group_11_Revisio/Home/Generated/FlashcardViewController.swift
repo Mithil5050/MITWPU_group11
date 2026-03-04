@@ -296,6 +296,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     }
     
     func didCreateNewFlashcard(card: Flashcard) {
+        ProgressDataManager.shared.totalFlashcardsViewed += 1
         flashcards.append(card)
         let updatedText = flashcards.map { "\($0.term)|\($0.definition)" }.joined(separator: "\n")
         currentTopic?.largeContentBody = updatedText
