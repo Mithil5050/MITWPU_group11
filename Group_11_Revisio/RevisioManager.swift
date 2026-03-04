@@ -23,7 +23,11 @@ class RevisioManager: ObservableObject {
     // MARK: - THE CONQUEROR FUNCTION: XP & STREAK
     func earnXP(amount: Int, reason: String) async {
         // 1. Update the Local Manager (Triggers persistence and Level-Up check)
-        ProgressDataManager.shared.addXP(amount: amount, source: reason)
+        // Safely update local progress since ProgressDataManager has no addXP(amount:source:)
+        // Increment total XP and today XP, and update streak status
+        progressStore.totalXP += amount
+        self.todayXP += amount
+        updateStreakStatus()
         
         // 2. Refresh the UI (Profile and Awards screens)
         DispatchQueue.main.async {

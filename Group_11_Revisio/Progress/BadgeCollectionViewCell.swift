@@ -15,54 +15,86 @@ class BadgeCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var badgeProgressBar: UIProgressView!
     @IBOutlet weak var badgeDetailLabel: UILabel!
     
-    
     override func awakeFromNib() {
             super.awakeFromNib()
             setupUI()
         }
         
         private func setupUI() {
-            // Transparent grey card style
-            badgeCardView.backgroundColor = UIColor(white: 1.0, alpha: 0.08)
             badgeCardView.layer.cornerRadius = 12
             badgeCardView.clipsToBounds = true
             
-            badgeTitleLabel.font = UIFont.systemFont(ofSize: 11, weight: .bold)
+            // Setup labels for multi-line centering
+            badgeTitleLabel.numberOfLines = 0
+            badgeDetailLabel.numberOfLines = 0
+        }
+
+        /// Renders the specific centered text for empty states
+        func showEmptyState(section: AwardsSection) {
+            // Keep container visible but clear background so text is on black
+            badgeCardView.isHidden = false
+            badgeCardView.backgroundColor = .clear
+            
+            // Hide graphical elements
+            badgeProgressBar.isHidden = true
+            badgeImageView.isHidden = true
+            
+            // Set your recommended final text
+            if section == .activeChallenges {
+                badgeTitleLabel.text = "No challenges yet"
+                badgeDetailLabel.text = "Generate to start earning XP."
+            } else if section == .recentWins {
+                badgeTitleLabel.text = "No achievements yet"
+                badgeDetailLabel.text = "Your badges will appear here as you learn."
+            }
+            
+            // Force text styling and centering
+            badgeTitleLabel.isHidden = false
             badgeTitleLabel.textColor = .white
+            badgeTitleLabel.font = .systemFont(ofSize: 14, weight: .bold)
             badgeTitleLabel.textAlignment = .center
             
-            badgeDetailLabel.font = UIFont.systemFont(ofSize: 9, weight: .medium)
+            badgeDetailLabel.isHidden = false
             badgeDetailLabel.textColor = .systemGray
+            badgeDetailLabel.font = .systemFont(ofSize: 12, weight: .medium)
             badgeDetailLabel.textAlignment = .center
             
-            // Prepare image view for lock placeholders
-            badgeImageView.contentMode = .scaleAspectFit
-            badgeImageView.tintColor = .systemGray
+            // Adjust the StackView to center children
+            if let stackView = badgeTitleLabel.superview as? UIStackView {
+                stackView.alignment = .center
+                stackView.axis = .vertical
+                stackView.distribution = .fill
+                stackView.spacing = 4
+            }
         }
-                
-        func configure(with badge: Badge, forSection section: AwardsSection) {
+
+        func configure(with badge: Badging.Badge, forSection section: AwardsSection) {
+            // Reset to standard badge look
+            badgeCardView.isHidden = false
+            badgeCardView.backgroundColor = UIColor(white: 1.0, alpha: 0.08)
+            badgeImageView.isHidden = false
+            badgeTitleLabel.isHidden = false
+            badgeDetailLabel.isHidden = false
+            
             badgeTitleLabel.text = badge.title
+            badgeTitleLabel.font = .systemFont(ofSize: 14, weight: .bold)
+            badgeTitleLabel.textAlignment = section == .allMilestones ? .center : .left
             
-            // FOR NOW: Reserve space with a lock icon
-            badgeImageView.image = UIImage(systemName: "lock.fill")
-            badgeImageView.alpha = 0.3
+            if let imageName = BadgeData.imageName(for: badge) {
+                badgeImageView.image = UIImage(named: imageName)
+                badgeImageView.alpha = badge.isEarned ? 1.0 : 0.3
+            } else {
+                badgeImageView.image = UIImage(systemName: "lock.fill")
+                badgeImageView.tintColor = .systemGray
+            }
             
-            switch section {
-            case .activeChallenges:
+            if section == .activeChallenges {
                 badgeProgressBar.isHidden = false
-                badgeDetailLabel.text = "0 / \(badge.goalValue) XP"
-                badgeProgressBar.setProgress(0, animated: false)
-
-            case .recentWins:
+                badgeProgressBar.setProgress(badge.progress, animated: true)
+                badgeDetailLabel.text = "\(badge.currentValue) / \(badge.goalValue)"
+            } else {
                 badgeProgressBar.isHidden = true
-                badgeDetailLabel.text = "Not Earned"
-
-            case .allMilestones:
-                badgeProgressBar.isHidden = true
-                badgeDetailLabel.text = "Locked"
-                
-            default:
-                badgeProgressBar.isHidden = true
+                badgeDetailLabel.text = badge.isEarned ? "Earned!" : "Locked"
             }
         }
     }

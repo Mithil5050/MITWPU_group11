@@ -20,7 +20,7 @@ class AllBadgesCollectionViewCell: UICollectionViewCell {
             setupCardStyle()
         }
         
-    
+
     private func setupUI() {
         
         allBadgeTitleLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
@@ -32,10 +32,21 @@ class AllBadgesCollectionViewCell: UICollectionViewCell {
         allBadgeDetailLabel.textAlignment = .center
 
     }
-    func configure(with badge: Badge) {
+    // ✅ Fixes the error on line 121 of AwardsViewController
+        func showEmptyState(message: String) {
+            allBadgeImageView.image = UIImage(systemName: "lock.shield")
+            allBadgeImageView.tintColor = .systemGray4
+            allBadgeTitleLabel.text = "Start learning to unlock"
+            allBadgeDetailLabel.text = message
+            self.alpha = 0.7
+        }
+    
+    func configure(with badge: Badging.Badge) {
         // Title and image from available Badge properties
         allBadgeTitleLabel.text = badge.title
-        allBadgeImageView.image = UIImage(named: badge.imageAssetName)
+        // Badge does not expose an image asset name; use a neutral placeholder until a proper mapping is provided
+        // TODO: Replace with a real image source from Badge (e.g., badge.imageName or a lookup)
+        allBadgeImageView.image = UIImage(systemName: "seal")
 
         // Detail may not exist on Badge; clear or hide to avoid stale content
         allBadgeDetailLabel.text = nil
@@ -63,3 +74,4 @@ class AllBadgesCollectionViewCell: UICollectionViewCell {
         self.layer.shadowPath = UIBezierPath(roundedRect: self.bounds, cornerRadius: 12).cgPath
     }
 }
+

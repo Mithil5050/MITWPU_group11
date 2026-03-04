@@ -1,7 +1,7 @@
 import UIKit
 import Supabase
 
-// ✅ Create a simple struct to decode the data coming back from Supabase
+// ✅ Structure to decode Supabase data
 struct UserProfile: Decodable {
     let username: String
     let avatar_url: String?
@@ -12,7 +12,7 @@ class ProfileViewController: UIViewController {
     // MARK: - UI Components
     var collectionView: UICollectionView!
     
-    // MARK: - User Data (Default placeholders until data loads)
+    // MARK: - User Data (Placeholders)
     var userName: String = "Loading..."
     var userEmail: String = "Loading..."
     var userImage: UIImage? = UIImage(named: "profile_placeholder")
@@ -35,7 +35,7 @@ class ProfileViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(reloadProfile), name: NSNotification.Name("ProfileDidUpdate"), object: nil)
         // Listen for updates to refresh Level Card
         NotificationCenter.default.addObserver(forName: .xpDidUpdate, object: nil, queue: .main) { [weak self] _ in
-            self?.collectionView.reloadSections(IndexSet(integer: 1))
+            self?.collectionView.reloadSections(IndexSet(integersIn: 1...2))
         }
         
         // ✅ Add Close Button to Navigation Bar
@@ -95,10 +95,10 @@ class ProfileViewController: UIViewController {
                     }
                 }
             } catch {
-                print("Error fetching user data: \(error.localizedDescription)")
+                print("❌ Error fetching user data: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     self.userName = "User Not Found"
-                    self.userEmail = "Error loading email"
+                    self.userEmail = "Offline"
                     self.collectionView.reloadSections(IndexSet(integer: 0))
                 }
             }
@@ -142,14 +142,12 @@ class ProfileViewController: UIViewController {
         return UICollectionViewCompositionalLayout { (sectionIndex, env) -> NSCollectionLayoutSection? in
             if sectionIndex == 0 {
                 let item = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(104)))
-                let group = NSCollectionLayoutGroup.horizontal(layoutSize: item.layoutSize, subitems: [item])
-                let section = NSCollectionLayoutSection(group: group)
+                let section = NSCollectionLayoutSection(group: NSCollectionLayoutGroup.horizontal(layoutSize: item.layoutSize, subitems: [item]))
                 section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 16, bottom: 16, trailing: 16)
                 return section
             } else if sectionIndex == 1 {
                 let item = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(80)))
-                let group = NSCollectionLayoutGroup.horizontal(layoutSize: item.layoutSize, subitems: [item])
-                let section = NSCollectionLayoutSection(group: group)
+                let section = NSCollectionLayoutSection(group: NSCollectionLayoutGroup.horizontal(layoutSize: item.layoutSize, subitems: [item]))
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 16, trailing: 16)
                 return section
             } else if sectionIndex == 2 {
@@ -165,10 +163,10 @@ class ProfileViewController: UIViewController {
                 return NSCollectionLayoutSection.list(using: config, layoutEnvironment: env)
             } else {
                 let item = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(60)))
-                let group = NSCollectionLayoutGroup.horizontal(layoutSize: item.layoutSize, subitems: [item])
-                let section = NSCollectionLayoutSection(group: group)
+                let section = NSCollectionLayoutSection(group: NSCollectionLayoutGroup.horizontal(layoutSize: item.layoutSize, subitems: [item]))
                 section.contentInsets = NSDirectionalEdgeInsets(top: 20, leading: 16, bottom: 40, trailing: 16)
                 return section
+            default: return nil
             }
         }
     }
@@ -239,8 +237,12 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
             return cell
         } else if indexPath.section == 2 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StatCardCell", for: indexPath) as! StatCardCell
-            if indexPath.item == 0 { cell.configure(title: "Streak", value: "7 Days", icon: "flame", color: .systemOrange) }
-            else { cell.configure(title: "Badges", value: "8 Unlocked", icon: "trophy", color: .systemYellow) }
+            if indexPath.item == 0 {
+                let streak = ProgressDataManager.shared.currentStreak
+                cell.configure(title: "Streak", value: "\(streak) Days", icon: "flame.fill", color: .systemOrange)
+            } else {
+                cell.configure(title: "Badges", value: "8 Unlocked", icon: "trophy.fill", color: .systemYellow)
+            }
             return cell
         } else if indexPath.section == 3 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SettingsCell", for: indexPath) as! SettingsCell
@@ -259,6 +261,13 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
         if indexPath.section == 4 { handleLogout() }
+    }
+
+    // ✅ Handle tapping the Logout row or any other selection
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if indexPath.section == 4 {
+            handleLogout()
+        }
     }
 }
 

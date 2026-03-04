@@ -18,13 +18,10 @@ enum AwardsSection: Int, CaseIterable {
 class AwardsViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
     @IBOutlet weak var collectionView: UICollectionView!
-    
-    // Core data properties
-        var activeChallenges: [Badge] = []
-        var recentWins: [Badge] = []
-        var milestones: [Badge] = []
+        
+    var milestones: [Badging.Badge] = []
 
-    override func viewDidLoad() {
+        override func viewDidLoad() {
             super.viewDidLoad()
             setupData()
             setupCollectionView()
@@ -33,32 +30,19 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
             NotificationCenter.default.addObserver(self, selector: #selector(refreshAwardsData), name: .xpDidUpdate, object: nil)
         }
         
-        deinit {
-            NotificationCenter.default.removeObserver(self, name: .xpDidUpdate, object: nil)
-        }
-        
         @objc private func refreshAwardsData() {
-            setupData()
-            collectionView.reloadData()
+            DispatchQueue.main.async { self.collectionView.reloadData() }
         }
 
         private func setupData() {
-            let allBadges = BadgeData.allBadges
-            // Logic: 2 cards per heading as requested
-            self.activeChallenges = Array(allBadges.prefix(2))
-            self.recentWins = Array(allBadges.suffix(2))
-            self.milestones = Array(BadgeData.milestoneBadges.prefix(2))
+            self.milestones = BadgeData.allMilestones
         }
 
         private func setupCollectionView() {
             collectionView.dataSource = self
             collectionView.delegate = self
+            collectionView.collectionViewLayout = createLayout()
             
-            let layout = createLayout()
-            layout.register(SectionBackgroundView.self, forDecorationViewOfKind: "section-background")
-            collectionView.collectionViewLayout = layout
-            
-            // ✅ FIX: Corrected the missing argument syntax error
             collectionView.register(UINib(nibName: "MonthlyBadgeCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "MonthlyFeatureCell")
             collectionView.register(UINib(nibName: "BadgeCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "BadgeCell")
             collectionView.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
@@ -70,75 +54,79 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
             return UICollectionViewCompositionalLayout { (sectionIndex, env) -> NSCollectionLayoutSection? in
                 guard let sectionType = AwardsSection(rawValue: sectionIndex) else { return nil }
                 
-                let item = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0)))
-                let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(45))
+                let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(35))
                 let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
 
                 switch sectionType {
                 case .feature:
-                    // Breathable Apple-style height
-                    let group = NSCollectionLayoutGroup.horizontal(layoutSize: .init(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(95)), subitems: [item])
+                    let item = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0)))
+                    let group = NSCollectionLayoutGroup.horizontal(layoutSize: .init(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(110)), subitems: [item])
                     let section = NSCollectionLayoutSection(group: group)
                     section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16)
                     return section
 
-                default:
-                    item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8)
-                    // Width 0.45 for exactly 2 cards
-                    let group = NSCollectionLayoutGroup.horizontal(layoutSize: .init(widthDimension: .fractionalWidth(0.45), heightDimension: .absolute(155)), subitems: [item])
+                case .allMilestones:
+                    let item = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(0.5), heightDimension: .absolute(150)))
+                    item.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8)
+                    let group = NSCollectionLayoutGroup.horizontal(layoutSize: .init(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(150)), subitems: [item])
                     let section = NSCollectionLayoutSection(group: group)
-                    section.orthogonalScrollingBehavior = .continuous
-                    section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 12, bottom: 20, trailing: 12)
+                    section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 8, bottom: 20, trailing: 8)
+                    section.boundarySupplementaryItems = [header]
+                    return section
+
+                default: // activeChallenges and recentWins
+                    let item = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0)))
+                    // ✅ absolute(85) height ensures the centered multi-line text is visible
+                    let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(85))
+                    let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+                    let section = NSCollectionLayoutSection(group: group)
+                    section.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
                     section.boundarySupplementaryItems = [header]
                     return section
                 }
             }
         }
 
-        func numberOfSections(in collectionView: UICollectionView) -> Int { return 4 }
-        
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            return [1, activeChallenges.count, recentWins.count, milestones.count][section]
+            let type = AwardsSection(rawValue: section)!
+            if type == .allMilestones { return 4 } // ✅ Fixed 4 grids as requested
+            return 1
         }
 
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             let section = AwardsSection(rawValue: indexPath.section)!
+            let hasActivity = ProgressDataManager.shared.hasEarnedAnyXP
+            
             if section == .feature {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MonthlyFeatureCell", for: indexPath) as! MonthlyBadgeCollectionViewCell
-                cell.configure(with: BadgeData.allBadges[0])
-                cell.delegate = self
+                cell.configure(with: milestones[0])
                 return cell
-            } else {
+            }
+            else if section == .activeChallenges || section == .recentWins {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BadgeCell", for: indexPath) as! BadgeCollectionViewCell
-                let badgeList = [activeChallenges, recentWins, milestones][indexPath.section - 1]
-                cell.configure(with: badgeList[indexPath.row], forSection: section)
+                if !hasActivity {
+                    cell.showEmptyState(section: section) // ✅ Use the updated centered state
+                } else {
+                    cell.badgeCardView.isHidden = false
+                    cell.configure(with: milestones[indexPath.row], forSection: section)
+                }
+                return cell
+            }
+            else {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BadgeCell", for: indexPath) as! BadgeCollectionViewCell
+                cell.badgeCardView.isHidden = false
+                cell.configure(with: milestones[indexPath.row], forSection: section)
                 return cell
             }
         }
+
+        func numberOfSections(in collectionView: UICollectionView) -> Int { return AwardsSection.allCases.count }
 
         func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
             let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as! SectionHeaderView
             let titles = ["", "Focus Challenges", "Recent Achievements", "All Milestones"]
             header.titleLabel.text = titles[indexPath.section]
-            header.showAllButton.isHidden = true
+            header.showAllButton.isHidden = true // ✅ REMOVE SHOW ALL BUTTON
             return header
-        }
-    }
-
-    // ✅ REMOVE SectionBackgroundView.swift file and keep this one here
-    class SectionBackgroundView: UICollectionReusableView {
-        override init(frame: CGRect) {
-            super.init(frame: frame)
-            self.backgroundColor = UIColor(white: 1.0, alpha: 0.08)
-            self.layer.cornerRadius = 16
-        }
-        required init?(coder: NSCoder) { fatalError() }
-    }
-
-    extension AwardsViewController: MonthlyBadgeCellDelegate {
-        func didTapShowAllButton() { }
-        func didTapMonthlyBadgeCard() {
-            let detailVC = MonthlyChallengeDetailViewController(nibName: "MonthlyChallengeDetailViewController", bundle: nil)
-            self.navigationController?.pushViewController(detailVC, animated: true)
         }
     }
