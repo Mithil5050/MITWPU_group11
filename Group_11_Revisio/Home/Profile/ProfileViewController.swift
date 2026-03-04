@@ -31,8 +31,10 @@ class ProfileViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .black
         setupCollectionView()
-        // ✅ 3. Listen for the update message
+        
+        // Listen for updates to refresh Profile info
         NotificationCenter.default.addObserver(self, selector: #selector(reloadProfile), name: NSNotification.Name("ProfileDidUpdate"), object: nil)
+        
         // Listen for updates to refresh Level Card
         NotificationCenter.default.addObserver(forName: .xpDidUpdate, object: nil, queue: .main) { [weak self] _ in
             self?.collectionView.reloadSections(IndexSet(integersIn: 1...2))
@@ -52,7 +54,6 @@ class ProfileViewController: UIViewController {
     
     // MARK: - Navigation Logic
     @objc private func handleDismiss() {
-        // ✅ Logic moved inside the class scope
         if isBeingPresented || navigationController?.presentingViewController != nil {
             self.dismiss(animated: true)
         } else {
@@ -61,7 +62,7 @@ class ProfileViewController: UIViewController {
     }
     
     @objc private func reloadProfile() {
-        fetchUserData() // Re-fetches the username and avatar_url
+        fetchUserData()
     }
     
     // MARK: - Fetch Data Logic
@@ -86,9 +87,8 @@ class ProfileViewController: UIViewController {
                     self.collectionView.reloadSections(IndexSet(integer: 0))
                 }
                 
-                // In fetchUserData...
                 if let avatarString = profile.avatar_url {
-                    // ✅ Add a 'timestamp' to the end of the URL to bypass the cache
+                    // Bypass the cache to get the newest photo
                     let cacheBuster = "?v=\(Date().timeIntervalSince1970)"
                     if let url = URL(string: avatarString + cacheBuster) {
                         downloadProfileImage(from: url)
@@ -166,7 +166,6 @@ class ProfileViewController: UIViewController {
                 let section = NSCollectionLayoutSection(group: NSCollectionLayoutGroup.horizontal(layoutSize: item.layoutSize, subitems: [item]))
                 section.contentInsets = NSDirectionalEdgeInsets(top: 20, leading: 16, bottom: 40, trailing: 16)
                 return section
-            default: return nil
             }
         }
     }
@@ -252,19 +251,18 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LogoutCell", for: indexPath)
             cell.contentView.subviews.forEach { $0.removeFromSuperview() }
-            let lbl = UILabel(frame: cell.bounds); lbl.text = "Log Out"; lbl.textColor = .systemRed; lbl.textAlignment = .center
+            let lbl = UILabel(frame: cell.bounds)
+            lbl.text = "Log Out"
+            lbl.textColor = .systemRed
+            lbl.textAlignment = .center
             cell.contentView.addSubview(lbl)
             return cell
         }
     }
 
+    // ✅ Cleaned up duplicate functions!
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        if indexPath.section == 4 { handleLogout() }
-    }
-
-    // ✅ Handle tapping the Logout row or any other selection
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if indexPath.section == 4 {
             handleLogout()
         }
