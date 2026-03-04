@@ -10,8 +10,6 @@ import UIKit
 
 class SectionHeaderView: UICollectionReusableView {
     let titleLabel = UILabel()
-    let showAllButton = UIButton(type: .system)
-    var onShowAllTapped: (() -> Void)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -25,27 +23,18 @@ class SectionHeaderView: UICollectionReusableView {
 
     private func setupHeader() {
         titleLabel.textColor = .white
-        titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
-        
-        showAllButton.setTitle("Show All", for: .normal)
-        showAllButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
-        showAllButton.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
+        titleLabel.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
         
         addSubview(titleLabel)
-        addSubview(showAllButton)
-        
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        showAllButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            // ✅ CHANGED: Set to 0.
+            // The Collection View section already pushes everything 16px to the right.
+            // By setting this to 0, we stop it from adding another layer of padding!
+            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            showAllButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
-            showAllButton.centerYAnchor.constraint(equalTo: centerYAnchor)
+            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16)
         ])
-    }
-    
-    @objc private func buttonTapped() {
-        onShowAllTapped?()
     }
 }

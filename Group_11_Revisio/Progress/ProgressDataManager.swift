@@ -13,7 +13,7 @@ class ProgressDataManager {
     var history: [LogHistoryItem] = []
     let pointsPerLevel: Int = 100
     
-    // Check if the user has earned any XP yet
+    // Check if the user has earned any XP yet to toggle the Awards empty state
     var hasEarnedAnyXP: Bool {
         return totalXP > 0
     }
@@ -36,8 +36,9 @@ class ProgressDataManager {
         }
     }
 
-    // MARK: - 🛠 DATA MEMBERS (Resolves all "no member" errors)
+    // MARK: - Statistic Counters (Updated for all Badge Categories)
     var totalQuizzesDone: Int { get { UserDefaults.standard.integer(forKey: "stat_quizzes_done") } set { UserDefaults.standard.set(newValue, forKey: "stat_quizzes_done") } }
+    var totalHighLevelQuizzes: Int { get { UserDefaults.standard.integer(forKey: "stat_high_quizzes") } set { UserDefaults.standard.set(newValue, forKey: "stat_high_quizzes") } }
     var totalFlashcardsViewed: Int { get { UserDefaults.standard.integer(forKey: "stat_cards_viewed") } set { UserDefaults.standard.set(newValue, forKey: "stat_cards_viewed") } }
     var totalNotesGenerated: Int { get { UserDefaults.standard.integer(forKey: "stat_notes_gen") } set { UserDefaults.standard.set(newValue, forKey: "stat_notes_gen") } }
     var totalCheatsheetsGenerated: Int { get { UserDefaults.standard.integer(forKey: "stat_cheat_gen") } set { UserDefaults.standard.set(newValue, forKey: "stat_cheat_gen") } }
@@ -76,7 +77,7 @@ class ProgressDataManager {
         lastActiveDate = Date()
     }
     
-    // MARK: - Level Math (Resolves error in MonthlyBadgeCell)
+    // MARK: - Level Math
     var currentLevel: Int { (totalXP / pointsPerLevel) + 1 }
     var userLevel: Int { currentLevel }
     var currentLevelXP: Int { totalXP % pointsPerLevel }
@@ -84,7 +85,6 @@ class ProgressDataManager {
     private init() { }
 }
 
-// ✅ Resolve '.xpDidUpdate' error in AwardsViewController
 extension Notification.Name {
     static let xpDidUpdate = Notification.Name("xpDidUpdate")
 }

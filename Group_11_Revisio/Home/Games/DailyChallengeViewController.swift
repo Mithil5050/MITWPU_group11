@@ -521,6 +521,7 @@ class DailyChallengeViewController: UIViewController {
     }
     
     private func endGame(won: Bool) {
+        ProgressDataManager.shared.totalDailyChallengesSolved += 1
         isGameOver = true
         
         // ✅ MARK GAME AS COMPLETED FOR TODAY

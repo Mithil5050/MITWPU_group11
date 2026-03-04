@@ -554,6 +554,7 @@ extension HomeViewController: SideQuestDelegate {
         var completedTask = quest
         completedTask.isCompleted = true
         self.completedQuests.insert(completedTask, at: 0)
+        ProgressDataManager.shared.totalQuestsCompleted += 1
         saveQuests()
     }
     
