@@ -1,13 +1,20 @@
 import UIKit
+import Supabase
+
+// ✅ Create a simple struct to decode the data coming back from Supabase
+struct UserProfile: Decodable {
+    let username: String
+    // We only need the username for now, but you can add institution/XP here later!
+}
 
 class ProfileViewController: UIViewController {
 
     // MARK: - UI Components
     var collectionView: UICollectionView!
     
-    // MARK: - User Data
-    var userName: String = "Alex Smith"
-    var userEmail: String = "alexsmith@gmail.com"
+    // MARK: - User Data (Default placeholders until data loads)
+    var userName: String = "Loading..."
+    var userEmail: String = "Loading..."
     var userImage: UIImage? = UIImage(named: "profile_placeholder")
 
     // MARK: - Settings Data
@@ -28,10 +35,51 @@ class ProfileViewController: UIViewController {
         NotificationCenter.default.addObserver(forName: .xpDidUpdate, object: nil, queue: .main) { [weak self] _ in
             self?.collectionView.reloadSections(IndexSet(integer: 1))
         }
+        
+        // ✅ Fetch the real user data as soon as the screen loads
+        fetchUserData()
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+    
+    // MARK: - Fetch Data from Supabase
+    private func fetchUserData() {
+        Task {
+            do {
+                // 1. Get the current logged-in user from Auth
+                let user = try await supabase.auth.session.user
+                let userId = user.id.uuidString
+                let email = user.email ?? "No Email"
+                
+                // 2. Fetch their matching profile from your 'profiles' table
+                let profile: UserProfile = try await supabase
+                    .from("profiles")
+                    .select("username") // Only grab the username to be efficient
+                    .eq("id", value: userId)
+                    .single()
+                    .execute()
+                    .value
+                
+                // 3. Update the UI on the Main Thread
+                DispatchQueue.main.async {
+                    self.userName = profile.username
+                    self.userEmail = email
+                    
+                    // Reload only the top section (Index 0) to show the new text
+                    self.collectionView.reloadSections(IndexSet(integer: 0))
+                }
+                
+            } catch {
+                print("Error fetching user data: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self.userName = "User Not Found"
+                    self.userEmail = "Error loading email"
+                    self.collectionView.reloadSections(IndexSet(integer: 0))
+                }
+            }
+        }
     }
     
     func setupCollectionView() {
@@ -100,7 +148,7 @@ class ProfileViewController: UIViewController {
                 return NSCollectionLayoutSection.list(using: config, layoutEnvironment: env)
             }
             
-            // Section 4: Logout (FIXED CRASH HERE)
+            // Section 4: Logout
             if sectionIndex == 4 {
                 let item = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(60)))
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: item.layoutSize, subitems: [item])
@@ -152,6 +200,7 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
             return cell
         }
         
+        // Logout Cell
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LogoutCell", for: indexPath)
         cell.contentView.subviews.forEach { $0.removeFromSuperview() }
         let lbl = UILabel(frame: cell.bounds); lbl.text = "Log Out"; lbl.textColor = .systemRed; lbl.textAlignment = .center
