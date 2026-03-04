@@ -31,7 +31,7 @@ class LevelCell: UICollectionViewCell {
         // Progress Bar styling
         progressBar.layer.cornerRadius = 4
         progressBar.clipsToBounds = true
-        progressBar.progressTintColor = .systemPurple
+        progressBar.progressTintColor = .systemBlue
         progressBar.trackTintColor = UIColor.systemBlue.withAlphaComponent(0.2)
         
         // Setup Badge inside the container

@@ -11,10 +11,12 @@ class ProgressDataManager {
     static let shared = ProgressDataManager()
     
     var history: [LogHistoryItem] = []
-    
-    // MARK: - Constants
-    // Setting this to 100 makes the Level 1 -> Level 2 transition occur at exactly 100 XP
     let pointsPerLevel: Int = 100
+    
+    // Check if the user has earned any XP yet
+    var hasEarnedAnyXP: Bool {
+        return totalXP > 0
+    }
     
     // MARK: - Persistent Properties (Global XP)
     var totalXP: Int {
@@ -24,169 +26,65 @@ class ProgressDataManager {
             UserDefaults.standard.set(newValue, forKey: "user_total_xp")
             
             let newLevel = currentLevel
-            // Detect if the user has crossed a 100 XP threshold
             if newLevel > oldLevel {
-                print("🎉 Level Up detected: \(newLevel)")
                 DispatchQueue.main.async {
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("UserLeveledUp"),
-                        object: nil,
-                        userInfo: ["level": newLevel]
-                    )
-                    // Also trigger general XP update to refresh bars to 0
+                    NotificationCenter.default.post(name: NSNotification.Name("UserLeveledUp"), object: nil, userInfo: ["level": newLevel])
                     NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
                 }
             }
-            
-            // Syncing with Supabase
-            Task {
-                await SupabaseManager.shared.syncXP(totalXP: newValue)
-            }
+            Task { await SupabaseManager.shared.syncXP(totalXP: newValue) }
         }
     }
 
-    // MARK: - Activity-Specific Counters (For Badges)
-    var totalQuizzesDone: Int {
-        get { UserDefaults.standard.integer(forKey: "stat_quizzes_done") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_quizzes_done") }
-    }
-    
-    var totalFlashcardsViewed: Int {
-        get { UserDefaults.standard.integer(forKey: "stat_cards_viewed") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_cards_viewed") }
-    }
+    // MARK: - 🛠 DATA MEMBERS (Resolves all "no member" errors)
+    var totalQuizzesDone: Int { get { UserDefaults.standard.integer(forKey: "stat_quizzes_done") } set { UserDefaults.standard.set(newValue, forKey: "stat_quizzes_done") } }
+    var totalFlashcardsViewed: Int { get { UserDefaults.standard.integer(forKey: "stat_cards_viewed") } set { UserDefaults.standard.set(newValue, forKey: "stat_cards_viewed") } }
+    var totalNotesGenerated: Int { get { UserDefaults.standard.integer(forKey: "stat_notes_gen") } set { UserDefaults.standard.set(newValue, forKey: "stat_notes_gen") } }
+    var totalCheatsheetsGenerated: Int { get { UserDefaults.standard.integer(forKey: "stat_cheat_gen") } set { UserDefaults.standard.set(newValue, forKey: "stat_cheat_gen") } }
+    var totalQuestsCompleted: Int { get { UserDefaults.standard.integer(forKey: "stat_quests_done") } set { UserDefaults.standard.set(newValue, forKey: "stat_quests_done") } }
+    var totalWordFillsDone: Int { get { UserDefaults.standard.integer(forKey: "stat_wordfill_done") } set { UserDefaults.standard.set(newValue, forKey: "stat_wordfill_done") } }
+    var totalConnectionsWon: Int { get { UserDefaults.standard.integer(forKey: "stat_connections_win") } set { UserDefaults.standard.set(newValue, forKey: "stat_connections_win") } }
+    var totalDailyChallengesSolved: Int { get { UserDefaults.standard.integer(forKey: "stat_daily_solved") } set { UserDefaults.standard.set(newValue, forKey: "stat_daily_solved") } }
+    var totalFocusSessions: Int { get { UserDefaults.standard.integer(forKey: "stat_focus_sessions") } set { UserDefaults.standard.set(newValue, forKey: "stat_focus_sessions") } }
+    var totalMessagesSent: Int { get { UserDefaults.standard.integer(forKey: "stat_messages_sent") } set { UserDefaults.standard.set(newValue, forKey: "stat_messages_sent") } }
+    var totalDocumentsUploaded: Int { get { UserDefaults.standard.integer(forKey: "stat_docs_uploaded") } set { UserDefaults.standard.set(newValue, forKey: "stat_docs_uploaded") } }
 
-    var totalNotesGenerated: Int {
-        get { UserDefaults.standard.integer(forKey: "stat_notes_gen") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_notes_gen") }
-    }
-
-    var totalCheatsheetsGenerated: Int {
-        get { UserDefaults.standard.integer(forKey: "stat_cheat_gen") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_cheat_gen") }
-    }
-
-    var totalQuestsCompleted: Int {
-        get { UserDefaults.standard.integer(forKey: "stat_quests_done") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_quests_done") }
-    }
-
-    var totalWordFillsDone: Int {
-        get { UserDefaults.standard.integer(forKey: "stat_wordfill_done") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_wordfill_done") }
-    }
-
-    var totalConnectionsWon: Int {
-        get { UserDefaults.standard.integer(forKey: "stat_connections_win") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_connections_win") }
-    }
-
-    var totalDailyChallengesSolved: Int {
-        get { UserDefaults.standard.integer(forKey: "stat_daily_solved") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_daily_solved") }
-    }
-
-    var totalFocusSessions: Int {
-        get { UserDefaults.standard.integer(forKey: "stat_focus_sessions") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_focus_sessions") }
-    }
-
-    var totalMessagesSent: Int {
-        get { UserDefaults.standard.integer(forKey: "stat_messages_sent") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_messages_sent") }
-    }
-
-    var totalDocumentsUploaded: Int {
-        get { UserDefaults.standard.integer(forKey: "stat_docs_uploaded") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_docs_uploaded") }
-    }
-    
     // MARK: - Streak Logic
     var currentStreak: Int {
         get { UserDefaults.standard.integer(forKey: "user_current_streak") }
-        set { UserDefaults.standard.set(newValue, forKey: "user_current_streak") }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "user_current_streak")
+            DispatchQueue.main.async { NotificationCenter.default.post(name: .xpDidUpdate, object: nil) }
+        }
     }
     
     private var lastActiveDate: Date? {
         get { UserDefaults.standard.object(forKey: "user_last_active_date") as? Date }
         set { UserDefaults.standard.set(newValue, forKey: "user_last_active_date") }
     }
-    
-    // MARK: - Updated Calculations (Leveling Logic)
-    
-    /// Increments indefinitely: Level 1 (0-99 XP), Level 2 (100-199 XP), etc.
-    var currentLevel: Int {
-        // Floor division ensures Level increases every 100 points
-        return (totalXP / pointsPerLevel) + 1
-    }
 
-    var userLevel: Int {
-        return currentLevel
-    }
-
-    /// The base XP required for the current level (e.g., Level 2 starts at 100)
-    var xpAtStartOfCurrentLevel: Int {
-        return (currentLevel - 1) * pointsPerLevel
-    }
-
-    /// Resetting Display: Returns 0-99 for the progress bar
-    var currentLevelXP: Int {
-        // Modulo math ensures 100/100 becomes 0/100 visually
-        return totalXP % pointsPerLevel
-    }
-
-    /// Always 100 for a consistent Apple-style UI
-    var nextLevelXP: Int {
-        return pointsPerLevel
-    }
-
-    private init() { }
-
-    // MARK: - Actions
-    
-    func addXP(amount: Int, source: String) {
-        totalXP += amount
-        updateStreak()
-        
-        DispatchQueue.main.async {
-            NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
-        }
-        print("🌟 Earned \(amount) XP from \(source). Total: \(totalXP). Level: \(currentLevel)")
-    }
-    
-    private func updateStreak() {
+    func updateDailyStreak() {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        let lastDate = lastActiveDate != nil ? calendar.startOfDay(for: lastActiveDate!) : nil
-        
-        if lastDate == today { return }
-        
-        if let yesterday = calendar.date(byAdding: .day, value: -1, to: today), lastDate == yesterday {
-            currentStreak += 1
+        if let lastActive = lastActiveDate, calendar.isDate(lastActive, inSameDayAs: today) { return }
+        if let lastActive = lastActiveDate {
+            let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+            currentStreak = calendar.isDate(lastActive, inSameDayAs: yesterday) ? (currentStreak + 1) : 1
         } else {
             currentStreak = 1
         }
         lastActiveDate = Date()
     }
+    
+    // MARK: - Level Math (Resolves error in MonthlyBadgeCell)
+    var currentLevel: Int { (totalXP / pointsPerLevel) + 1 }
+    var userLevel: Int { currentLevel }
+    var currentLevelXP: Int { totalXP % pointsPerLevel }
 
-    func start() {
-        loadInitialData()
-    }
-
-    func loadInitialData() {
-        guard let url = Bundle.main.url(forResource: "ProgressLogData", withExtension: "json"),
-              let data = try? Data(contentsOf: url) else { return }
-
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-
-        if let decodedWrapper = try? decoder.decode(LogDataWrapper.self, from: data) {
-            self.history = decodedWrapper.logs
-        }
-    }
+    private init() { }
 }
 
-// MARK: - Notification Extension
+// ✅ Resolve '.xpDidUpdate' error in AwardsViewController
 extension Notification.Name {
     static let xpDidUpdate = Notification.Name("xpDidUpdate")
 }

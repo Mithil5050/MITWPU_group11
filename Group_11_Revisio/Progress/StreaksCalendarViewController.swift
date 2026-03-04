@@ -14,39 +14,27 @@ class StreaksCalendarViewController: UIViewController, UICalendarSelectionSingle
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var calendarContainerView: UIView!
     
-    // MARK: - Properties
     private var calendarView: UICalendarView!
-    
-    // Demo streak dates
-    private let streakDates: [Date] = [
-        Calendar.current.date(byAdding: .day, value: -1, to: Date())!,
-        Calendar.current.date(byAdding: .day, value: -2, to: Date())!,
-        Calendar.current.date(byAdding: .day, value: -3, to: Date())!,
-        Calendar.current.date(byAdding: .day, value: -4, to: Date())!
-    ]
-    
-    // MARK: - Lifecycle
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupInfoCard()
-        setupCalendar()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            // Refresh decorations in case new study logs were added
-            calendarView.reloadDecorations(forDateComponents: [], animated: true)
+        
+        override func viewDidLoad() {
+            super.viewDidLoad()
+            setupCalendar()
+            streakInfoCardView.layer.cornerRadius = 16
         }
         
-        private func setupInfoCard() {
-            streakInfoCardView.layer.cornerRadius = 16
-            streakInfoCardView.clipsToBounds = true
+        override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            calendarView.reloadDecorations(forDateComponents: [], animated: true)
         }
         
         private func setupCalendar() {
             calendarView = UICalendarView()
             calendarView.translatesAutoresizingMaskIntoConstraints = false
             calendarContainerView.addSubview(calendarView)
+            
+            // ✅ CENTER ON TODAY (MARCH 2026)
+            let now = Date()
+            calendarView.visibleDateComponents = Calendar.current.dateComponents([.year, .month], from: now)
             
             NSLayoutConstraint.activate([
                 calendarView.topAnchor.constraint(equalTo: calendarContainerView.topAnchor),
@@ -56,31 +44,26 @@ class StreaksCalendarViewController: UIViewController, UICalendarSelectionSingle
             ])
             
             let selection = UICalendarSelectionSingleDate(delegate: self)
-            selection.selectedDate = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+            selection.selectedDate = Calendar.current.dateComponents([.year, .month, .day], from: now)
             calendarView.selectionBehavior = selection
             
             calendarView.delegate = self
         }
         
-        // MARK: - Calendar Decoration (Real Study Logs)
         func calendarView(_ calendarView: UICalendarView, decorationFor dateComponents: DateComponents) -> UICalendarView.Decoration? {
             let calendar = Calendar.current
             guard let date = calendar.date(from: dateComponents) else { return nil }
 
-            // ✅ Check real history instead of demo dates
+            // ✅ Check dynamic history for today's login dot
             let hasStudied = ProgressDataManager.shared.history.contains { log in
                 calendar.isDate(log.date, inSameDayAs: date)
             }
 
             if hasStudied {
-                // Orange dot for days with study logs
                 return .default(color: .systemOrange, size: .medium)
             }
-
             return nil
         }
         
-        func dateSelection(_ selection: UICalendarSelectionSingleDate, didSelectDate dateComponents: DateComponents?) {
-            // Optional: Show logs for the specific selected day
-        }
+        func dateSelection(_ selection: UICalendarSelectionSingleDate, didSelectDate dateComponents: DateComponents?) { }
     }
