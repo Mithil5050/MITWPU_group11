@@ -1,5 +1,6 @@
 import UIKit
 
+
 class NotesViewController: UIViewController {
     
     // MARK: - Outlets
@@ -56,30 +57,41 @@ class NotesViewController: UIViewController {
     }
     // MARK: - Content Loading & Management
     func displayContent() {
-        guard let topic = currentTopic else {
-            contentView.text = "Note or Parent Subject not found."
-            return
-        }
-        
+        guard let topic = currentTopic else { return }
         title = topic.name
         
         var textToDisplay = ""
-        
-        // 1. Get the raw text (AI or Database)
         if let directContent = topic.notesContent, !directContent.isEmpty {
             textToDisplay = directContent
         } else if let subject = parentSubjectName {
             textToDisplay = DataManager.shared.getDetailedContent(for: subject, topicName: topic.name)
         }
-        
-        // 2. Render it as Markdown (Bold, Headings, etc.)
+
         if !textToDisplay.isEmpty {
-            contentView.attributedText = renderMarkdown(text: textToDisplay)
+            let fullAttributedString = NSMutableAttributedString(string: textToDisplay)
+            let range = NSRange(location: 0, length: textToDisplay.utf16.count)
+            
+            // Base monospaced font for clean alignment
+            fullAttributedString.addAttribute(.font, value: UIFont.monospacedSystemFont(ofSize: 15, weight: .regular), range: range)
+            fullAttributedString.addAttribute(.foregroundColor, value: UIColor.label, range: range)
+
+            let lines = textToDisplay.components(separatedBy: "\n")
+            var currentOffset = 0
+            
+            for line in lines {
+                // Checks for both ## and ### to ensure all header levels are colored
+                if line.hasPrefix("##") || line.hasPrefix("###") {
+                    let lineRange = NSRange(location: currentOffset, length: line.utf16.count)
+                    fullAttributedString.addAttribute(.font, value: UIFont.monospacedSystemFont(ofSize: 18, weight: .bold), range: lineRange)
+                    fullAttributedString.addAttribute(.foregroundColor, value: UIColor.systemIndigo, range: lineRange)
+                }
+                currentOffset += line.utf16.count + 1
+            }
+            
+            contentView.attributedText = fullAttributedString
         } else {
             showPlaceholder()
         }
-        
-        updateUIForState()
     }
     
     // ✅ NEW: Helper to convert ** and ## into Bold and Headings

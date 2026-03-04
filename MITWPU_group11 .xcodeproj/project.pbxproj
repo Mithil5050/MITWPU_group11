@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		5490EA1F2EF2AE8200EDE4AB /* MessageKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5490EA1E2EF2AE8200EDE4AB /* MessageKit */; };
 		5490EA222EF2AE9900EDE4AB /* InputBarAccessoryView in Frameworks */ = {isa = PBXBuildFile; productRef = 5490EA212EF2AE9900EDE4AB /* InputBarAccessoryView */; };
+		5678199A2F504621006623B6 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 567819992F504621006623B6 /* Supabase */; };
+		569EDBDA2F5833F80009284A /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 569EDBD92F5833F80009284A /* MarkdownUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +45,8 @@
 			files = (
 				5490EA1F2EF2AE8200EDE4AB /* MessageKit in Frameworks */,
 				5490EA222EF2AE9900EDE4AB /* InputBarAccessoryView in Frameworks */,
+				5678199A2F504621006623B6 /* Supabase in Frameworks */,
+				569EDBDA2F5833F80009284A /* MarkdownUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,6 +57,7 @@
 			isa = PBXGroup;
 			children = (
 				546963C02ED6CB31001C03B8 /* Group_11_Revisio */,
+				567819982F504621006623B6 /* Frameworks */,
 				546963BF2ED6CB31001C03B8 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -63,6 +68,13 @@
 				546963BE2ED6CB31001C03B8 /* MITWPU_group11 .app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		567819982F504621006623B6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -87,6 +99,8 @@
 			packageProductDependencies = (
 				5490EA1E2EF2AE8200EDE4AB /* MessageKit */,
 				5490EA212EF2AE9900EDE4AB /* InputBarAccessoryView */,
+				567819992F504621006623B6 /* Supabase */,
+				569EDBD92F5833F80009284A /* MarkdownUI */,
 			);
 			productName = Group_11_Revisio;
 			productReference = 546963BE2ED6CB31001C03B8 /* MITWPU_group11 .app */;
@@ -119,6 +133,8 @@
 			packageReferences = (
 				5490EA1D2EF2AE8200EDE4AB /* XCRemoteSwiftPackageReference "MessageKit" */,
 				5490EA202EF2AE9900EDE4AB /* XCRemoteSwiftPackageReference "InputBarAccessoryView" */,
+				567819972F504588006623B6 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				569EDBD82F5833F80009284A /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 546963BF2ED6CB31001C03B8 /* Products */;
@@ -158,7 +174,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 32C5NG7QRW;
+				DEVELOPMENT_TEAM = J7YL3VJ49R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Group_11_Revisio/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -190,7 +206,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 32C5NG7QRW;
+				DEVELOPMENT_TEAM = J7YL3VJ49R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Group_11_Revisio/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -376,6 +392,22 @@
 				minimumVersion = 7.0.4;
 			};
 		};
+		567819972F504588006623B6 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase-community/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+		569EDBD82F5833F80009284A /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -388,6 +420,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5490EA202EF2AE9900EDE4AB /* XCRemoteSwiftPackageReference "InputBarAccessoryView" */;
 			productName = InputBarAccessoryView;
+		};
+		567819992F504621006623B6 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 567819972F504588006623B6 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+		569EDBD92F5833F80009284A /* MarkdownUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 569EDBD82F5833F80009284A /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
+			productName = MarkdownUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

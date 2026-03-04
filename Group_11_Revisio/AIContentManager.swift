@@ -6,7 +6,6 @@ class AIContentManager {
     
     private init() {}
     
-    // 1. Define the structure for the data we SEND
     struct AIRequest: Encodable {
         let topic: String
         let type: String
@@ -14,15 +13,28 @@ class AIContentManager {
         let difficulty: String
     }
     
-    // 2. Define the structure for the data we RECEIVE
     struct AIResponse: Decodable {
         let content: String
     }
     
     func generateContent(topic: String, type: String, count: Int, difficulty: String) async throws -> String {
+        let noteInstructions = "Format: Comprehensive Academic Notes. Use # for Title, ## for main topics, and bullet points. START IMMEDIATELY with \(topic)."
+        
+        let cheatsheetInstructions = "Format: Online Cheatsheet. Use ## for sections and a Markdown table for definitions. START IMMEDIATELY with \(topic)."
+        
+        let selectedInstructions = (type.lowercased() == "notes") ? noteInstructions : cheatsheetInstructions
+        
+        let trainedPrompt = """
+        ACTUAL TOPIC TO WRITE ABOUT: \(topic)
+        
+        INSTRUCTIONS:
+        \(selectedInstructions)
+        NEVER mention "Note Taker" or "AI instructions" in the output. 
+        Only output study material for \(topic).
+        """
         
         let requestBody = AIRequest(
-            topic: topic,
+            topic: trainedPrompt,
             type: type,
             count: count,
             difficulty: difficulty
@@ -40,15 +52,11 @@ class AIContentManager {
             return response.content
             
         } catch {
-            // 👇 THIS IS THE NEW PART: Decodes the hidden "59 byte" error
             if let functionsError = error as? FunctionsError {
                 switch functionsError {
                 case .httpError(let code, let data):
-                    // Convert the raw data into readable text
                     let secretMessage = String(data: data, encoding: .utf8) ?? "Could not decode error"
                     print("\n🔴 SERVER CRASH REASON (Code \(code)): \(secretMessage)\n")
-                    
-                    // Throw a readable error so the UI can show it
                     throw NSError(domain: "Supabase", code: code, userInfo: [NSLocalizedDescriptionKey: secretMessage])
                     
                 case .relayError:
