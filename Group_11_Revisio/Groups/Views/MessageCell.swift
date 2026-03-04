@@ -28,8 +28,9 @@ class MessageCell: UITableViewCell {
     }
 
     func configure(with message: Message) {
-        messageLabel.text = message.text
-        if message.isOutgoing {
+        messageLabel.text = message.content
+        let isOutgoing = false
+        if isOutgoing {
             // align to right
             bubbleLeadingConstraint.isActive = false
             bubbleTrailingConstraint.isActive = true

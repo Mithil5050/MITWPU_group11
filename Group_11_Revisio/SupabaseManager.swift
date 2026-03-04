@@ -65,6 +65,41 @@ class SupabaseManager {
             print("❌ Topic Backup Failed: \(error)")
         }
     }
+    
+    
+    // MARK: - 3. Fetch Messages for a Group
+    func fetchMessages(for groupId: String) async throws -> [Message] {
+        
+        let response: [Message] = try await client
+            .from("messages")
+            .select()
+            .eq("group_id", value: groupId)
+            .order("created_at", ascending: true)
+            .execute()
+            .value
+        
+        return response
+    }
+    
+    func sendMessage(
+        groupId: String,
+        senderId: String,
+        text: String
+    ) async throws {
+
+        let message = Message(
+            id: UUID().uuidString,
+            groupId: groupId,
+            senderId: senderId,
+            content: text,
+            createdAt: Date()
+        )
+
+        try await client
+            .from("messages")
+            .insert(message)
+            .execute()
+    }
 }
 
 // ✅ Global Supabase variable for easy access everywhere in the app

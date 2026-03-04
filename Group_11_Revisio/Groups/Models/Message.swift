@@ -7,8 +7,19 @@
 
 import Foundation
 
-struct Message {
-    let text: String
-    let isOutgoing: Bool
-    let date: Date
+struct Message: Codable {
+
+    let id: String
+    let groupId: String
+    let senderId: String
+    let content: String
+    let createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case groupId = "group_id"
+        case senderId = "sender_id"
+        case content
+        case createdAt = "created_at"
+    }
 }
