@@ -14,6 +14,8 @@ class DataManager {
     
     var savedMaterials: [String: [String: [StudyItem]]] = [:]
     
+    var groupMessages: [String: [Message]] = [:]
+    
     // ✅ 1. CREATE A SERIAL QUEUE: This stops saves from racing and overwriting each other.
     private let diskQueue = DispatchQueue(label: "com.app.datamanager.diskQueue", qos: .utility)
     
@@ -190,6 +192,21 @@ class DataManager {
     
     func createNewSubjectFolder(name: String) { addFolder(name: name) }
     func deleteSubjectFolder(name: String) { deleteFolder(name: name) }
+    
+    //MARK: - Group messages
+    func loadMessages(for groupId: String) async {
+        
+        do {
+            let messages = try await SupabaseManager.shared.fetchMessages(for: groupId)
+            
+            groupMessages[groupId] = messages
+            
+            print("✅ Messages loaded for group:", groupId)
+            
+        } catch {
+            print("❌ Failed to fetch messages:", error)
+        }
+    }
     
     // MARK: - ✅ 2. BULLETPROOF PERSISTENCE
     func saveToDisk() {
