@@ -1,14 +1,8 @@
-//
-//  SignupViewController.swift
-//  Group_11_Revisio
-//
-
 import UIKit
 import Supabase
 
-// ✅ 1. Define this neat Struct right here. This perfectly tells Supabase what data to expect.
+// ✅ 1. Optimized Struct: Removed 'id' from the body to ensure the update hits the columns correctly.
 struct ProfileUpdate: Encodable {
-    let id: String
     let username: String
     let institution: String
     let total_xp: Int
@@ -59,48 +53,42 @@ class SignupViewController: UIViewController {
         
         Task {
             do {
-                // 1. Create the Auth user
+                // 1. Create the Auth user in Supabase
                 let authResponse = try await supabase.auth.signUp(email: email, password: password)
                 let userId = authResponse.user.id
                 
-                // ✅ 2. Use the Struct instead of a dictionary!
-                // No more 'AnyEncodable' errors, Swift knows exactly what this is.
-                let newProfile = ProfileUpdate(
-                    id: userId.uuidString,
+                // 2. Prepare the update payload
+                // These keys match your Supabase column names exactly.
+                let updatedData = ProfileUpdate(
                     username: name,
                     institution: institution,
                     total_xp: 0,
                     current_level: 1
                 )
                 
-                // 3. UPSERT into the database
-                                try await supabase
-                                    .from("profiles")
-                                    .upsert(newProfile)
-                                    .execute()
-                                
-                                // ✅ CHANGED: Show verification alert instead of jumping to the Home screen!
-                                DispatchQueue.main.async {
-                                    let alert = UIAlertController(
-                                        title: "Check Your Email",
-                                        message: "We've sent a confirmation link to \(email). Please verify your account before logging in.",
-                                        preferredStyle: .alert
-                                    )
-                                    
-                                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
-                                        // This closes the Sign Up screen and drops them back onto the Login screen
-                                        self.dismiss(animated: true)
-                                    }))
-                                    
-                                    self.present(alert, animated: true)
-                                }
-                                
-                            } catch {
-                                // ... (Keep your existing catch block here)
+                // 3. Update the existing NULL row created by the Database Trigger
+                try await supabase
+                    .from("profiles")
+                    .update(updatedData)
+                    .eq("id", value: userId)
+                    .execute()
+                
+                // 4. Success! Transition to the main app
+                DispatchQueue.main.async {
+                    self.transitionToMainApp()
+                }
+                
+            } catch {
                 DispatchQueue.main.async {
                     self.saveButton.setTitle("Save", for: .normal)
                     self.saveButton.isEnabled = true
-                    self.showAlert(title: "Sign Up Failed", message: error.localizedDescription)
+                    
+                    // Specific check for that "11 seconds" rate limit error
+                    let errorMessage = error.localizedDescription.contains("security purposes")
+                        ? "Please wait a few seconds before trying again."
+                        : error.localizedDescription
+                    
+                    self.showAlert(title: "Sign Up Failed", message: errorMessage)
                 }
             }
         }
@@ -110,7 +98,11 @@ class SignupViewController: UIViewController {
     private func transitionToMainApp() {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         
-        let tabBarVC = storyboard.instantiateViewController(withIdentifier: "MainTabBarController")
+        // Ensure this Identifier matches your Storyboard ID exactly
+        guard let tabBarVC = storyboard.instantiateViewController(withIdentifier: "MainTabBarController") as? UITabBarController else {
+            print("❌ Could not find MainTabBarController in Storyboard")
+            return
+        }
         
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else { return }
@@ -178,4 +170,4 @@ class SignupViewController: UIViewController {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: false)
     }
-} 
+}
