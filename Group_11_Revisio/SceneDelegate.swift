@@ -29,9 +29,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     let tabBarVC = storyboard.instantiateViewController(withIdentifier: "MainTabBarController")
                     window.rootViewController = tabBarVC
                     UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil, completion: nil)
-                    
-                    // Run initial streak check after login/session restore
-                    ProgressDataManager.shared.updateDailyStreak()
+                
                 }
             } catch {
                 DispatchQueue.main.async {
@@ -48,7 +46,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     // ✅ AUTOMATIC STREAK CHECK
     func sceneWillEnterForeground(_ scene: UIScene) {
         print("📱 App entered foreground. Checking daily streak...")
-        ProgressDataManager.shared.updateDailyStreak()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {}

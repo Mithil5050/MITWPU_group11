@@ -521,36 +521,39 @@ class DailyChallengeViewController: UIViewController {
     }
     
     private func endGame(won: Bool) {
-        ProgressDataManager.shared.totalDailyChallengesSolved += 1
-        isGameOver = true
-        
-        // ✅ MARK GAME AS COMPLETED FOR TODAY
-        defaults.set(true, forKey: completedKey)
-        
-        if won {
-            let emitter = CAEmitterLayer()
-            emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: 0)
-            emitter.emitterShape = .line
-            emitter.emitterSize = CGSize(width: view.bounds.width, height: 1)
-            let cell = CAEmitterCell()
-            cell.birthRate = 5
-            cell.lifetime = 5.0
-            cell.velocity = 100
-            cell.scale = 0.1
-            cell.contents = UIImage(systemName: "circle.fill")?.cgImage
-            cell.color = UIColor.systemYellow.cgColor
-            emitter.emitterCells = [cell]
-            view.layer.addSublayer(emitter)
             
-            Task { await RevisioManager.shared.earnXP(amount: 15, reason: "Won Daily Wordle") }
+            isGameOver = true
+            
+            // ✅ MARK GAME AS COMPLETED FOR TODAY
+            defaults.set(true, forKey: completedKey)
+            
+            if won {
+                // ✅ NEW: Trigger the streak logic ONLY on a win
+                ProgressDataManager.shared.completeDailyChallenge()
+                
+                let emitter = CAEmitterLayer()
+                emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: 0)
+                emitter.emitterShape = .line
+                emitter.emitterSize = CGSize(width: view.bounds.width, height: 1)
+                let cell = CAEmitterCell()
+                cell.birthRate = 5
+                cell.lifetime = 5.0
+                cell.velocity = 100
+                cell.scale = 0.1
+                cell.contents = UIImage(systemName: "circle.fill")?.cgImage
+                cell.color = UIColor.systemYellow.cgColor
+                emitter.emitterCells = [cell]
+                view.layer.addSublayer(emitter)
+                
+                Task { await RevisioManager.shared.earnXP(amount: 15, reason: "Won Daily Wordle") }
+            }
+            
+            let sheet = LearnMoreViewController(
+                word: engine.revealedAnswer.uppercased(),
+                definition: wordDefinition
+            )
+            sheet.modalPresentationStyle = .overFullScreen
+            sheet.modalTransitionStyle = .crossDissolve
+            present(sheet, animated: true)
         }
-        
-        let sheet = LearnMoreViewController(
-            word: engine.revealedAnswer.uppercased(),
-            definition: wordDefinition
-        )
-        sheet.modalPresentationStyle = .overFullScreen
-        sheet.modalTransitionStyle = .crossDissolve
-        present(sheet, animated: true)
-    }
 }
