@@ -22,6 +22,8 @@ class ProgressViewContoller: UIViewController {
     @IBOutlet weak var streaksCard: UIView!
     @IBOutlet weak var streaksLabel: UILabel!
     @IBOutlet weak var streaksCountLabel: UILabel!
+
+    @IBOutlet weak var streaksDateLabel: UILabel!
     
     @IBOutlet weak var awardsCard: UIView!
     @IBOutlet weak var awardsLabel: UILabel!
@@ -31,13 +33,12 @@ class ProgressViewContoller: UIViewController {
     private let legendStackView = UIStackView()
         var studyModel = StudyChartModel()
         private var hostingController: UIHostingController<BarChartView>?
-                    
-    override func viewDidLoad() {
+                        
+        override func viewDidLoad() {
             super.viewDidLoad()
-        
+            
             setupUI()
             
-            // This will now find .xpDidUpdate because of the extension in the other file
             NotificationCenter.default.addObserver(self, selector: #selector(refreshScreenData), name: .xpDidUpdate, object: nil)
             
             DispatchQueue.main.async {
@@ -45,14 +46,14 @@ class ProgressViewContoller: UIViewController {
                 self.updateStreakDisplay()
             }
         }
-        
+            
         override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
-            // Checks today's date against last login
-            ProgressDataManager.shared.updateDailyStreak()
+            // ✅ FIXED: Removed the call to updateDailyStreak()
+            // We now only update the streak display based on Wordle completion
             updateStreakDisplay()
         }
-        
+            
         @objc func refreshScreenData() {
             DispatchQueue.main.async {
                 self.updateStreakDisplay()
@@ -60,39 +61,53 @@ class ProgressViewContoller: UIViewController {
             }
         }
 
-        private func updateStreakDisplay() {
+    private func updateStreakDisplay() {
             let streak = ProgressDataManager.shared.currentStreak
             let suffix = (streak == 1) ? "Day" : "Days"
             streaksCountLabel.text = "\(streak) \(suffix)"
+            
+            // ✅ NEW: Logic to make the date on the Streak card dynamic
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd/MM/yy" // Matches the "13/01/25" style in your screenshot
+            
+            // Assuming your date label under "0 Days" is called 'streaksDateLabel'
+            // If it has a different name in your @IBOutlet, change it here:
+            streaksDateLabel.text = formatter.string(from: Date())
+            
+            // ✅ ALSO: Keep your Awards card date updated
+            let displayFormatter = DateFormatter()
+            displayFormatter.dateFormat = "d MMM yyyy"
+            monthNameLabel.text = "Today: \(displayFormatter.string(from: Date()))"
+        }
+    
+        private func setupUI() {
+            scrollView.contentInsetAdjustmentBehavior = .never
+            view.backgroundColor = .black
+            
+            chartContainerView.backgroundColor = .systemGray6
+            chartContainerView.layer.cornerRadius = 20
+            chartContainerView.clipsToBounds = true
+            
+            hoursStudiedHeaderLabel.text = "Hours Studied"
+            hoursStudiedHeaderLabel.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
+            
+            achievementsHeaderLabel.text = "Achievements"
+            achievementsHeaderLabel.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
+            
+            streaksCard.backgroundColor = .systemGray6
+            streaksCard.layer.cornerRadius = 16
+            streaksLabel.text = "Streaks"
+            streaksLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+            
+            awardsCard.backgroundColor = .systemGray6
+            awardsCard.layer.cornerRadius = 16
+            awardsLabel.text = "Awards"
+            awardsLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+            
+            monthNameLabel.text = "March Challenge"
+            mainMonthBagdeImageView.image = UIImage(named: "awards_monthly_main")
         }
 
-    private func setupUI() {
-        scrollView.contentInsetAdjustmentBehavior = .never
-        view.backgroundColor = .black
-        
-        chartContainerView.backgroundColor = .systemGray6
-        chartContainerView.layer.cornerRadius = 20
-        chartContainerView.clipsToBounds = true
-        
-        hoursStudiedHeaderLabel.text = "Hours Studied"
-        hoursStudiedHeaderLabel.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
-        
-        achievementsHeaderLabel.text = "Achievements"
-        achievementsHeaderLabel.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
-        
-        streaksCard.backgroundColor = .systemGray6
-        streaksCard.layer.cornerRadius = 16
-        streaksLabel.text = "Streaks"
-        streaksLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
-        
-        awardsCard.backgroundColor = .systemGray6
-        awardsCard.layer.cornerRadius = 16
-        awardsLabel.text = "Awards"
-        awardsLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
-        
-        monthNameLabel.text = "March Challenge"
-        mainMonthBagdeImageView.image = UIImage(named: "awards_monthly_main")
-    }
         private func loadDataAndRefreshChart() {
             hostingController?.view.removeFromSuperview()
             hostingController?.removeFromParent()

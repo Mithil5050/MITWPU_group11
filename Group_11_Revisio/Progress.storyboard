@@ -92,8 +92,8 @@
                                                                                 <nil key="textColor"/>
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="13/01/25" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BGu-G9-1h7">
-                                                                                <rect key="frame" x="12" y="158.66666666666674" width="45" height="13.333333333333343"/>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BGu-G9-1h7">
+                                                                                <rect key="frame" x="12.000000000000002" y="158.66666666666674" width="28.666666666666671" height="13.333333333333343"/>
                                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
                                                                                 <color key="textColor" red="0.63257284110000001" green="0.63830078130000001" blue="0.59638181899999998" alpha="0.84705882349999995" colorSpace="custom" customColorSpace="displayP3"/>
                                                                                 <nil key="highlightedColor"/>
@@ -264,6 +264,7 @@
                         <outlet property="stackView" destination="IeX-RP-QwX" id="aN4-Nj-AWh"/>
                         <outlet property="streaksCard" destination="eru-Lt-hP1" id="TXx-Db-03X"/>
                         <outlet property="streaksCountLabel" destination="xo9-0e-UVe" id="ERA-c8-hog"/>
+                        <outlet property="streaksDateLabel" destination="BGu-G9-1h7" id="c32-dq-Kum"/>
                         <outlet property="streaksLabel" destination="dyt-Tg-q8U" id="QkO-Ji-G6m"/>
                     </connections>
                 </viewController>

@@ -24,87 +24,87 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet weak var monthlyBadgeContainerView: UIView!
     
-        weak var delegate: MonthlyBadgeCellDelegate?
-                        
-        override func awakeFromNib() {
-            super.awakeFromNib()
-            setupAppleLayout()
-            setupCardStyle()
-            setupImageTapGesture()
-        }
-                        
-        private func setupAppleLayout() {
-            levelLabel.font = .systemFont(ofSize: 22, weight: .semibold)
-            levelLabel.textColor = .white
-            
-            xpValueLabel.font = .systemFont(ofSize: 14, weight: .regular)
-            xpValueLabel.textColor = .systemGray
-            
-            xpProgressBar.layer.cornerRadius = 4
-            xpProgressBar.clipsToBounds = true
-            xpProgressBar.progressTintColor = .systemBlue
-            xpProgressBar.trackTintColor = UIColor.systemBlue.withAlphaComponent(0.2)
-        
-            if let progressSubView = xpProgressBar.subviews.last {
-                progressSubView.layer.cornerRadius = 4
-                progressSubView.clipsToBounds = true
-            }
-        }
+    weak var delegate: MonthlyBadgeCellDelegate?
 
-        // ✅ Your restored configure method!
-        func configure(with badge: Badging.Badge) {
-            let manager = ProgressDataManager.shared
-            let goalXP = manager.pointsPerLevel
-            let displayXP = manager.currentLevelXP
-            let currentLevel = manager.userLevel
-            
-            levelLabel.text = "Level \(currentLevel)"
-            xpValueLabel.text = "\(displayXP) / \(goalXP) XP"
+       override func awakeFromNib() {
+           super.awakeFromNib()
+           setupAppleLayout()
+           setupCardStyle()
+           setupImageTapGesture()
+       }
 
-            if let image = UIImage(named: "awards_monthly_main") {
-                monthlyBadgeImageView.image = image
-                monthlyBadgeImageView.alpha = 1.0
-                monthlyBadgeImageView.isHidden = false
-            } else {
-                monthlyBadgeImageView.image = UIImage(systemName: "lock.fill")
-                monthlyBadgeImageView.tintColor = .systemGray
-                monthlyBadgeImageView.alpha = 0.3
-            }
-            
-            self.contentView.bringSubviewToFront(monthlyBadgeImageView)
+       private func setupAppleLayout() {
+           levelLabel.font = .systemFont(ofSize: 22, weight: .semibold)
+           levelLabel.textColor = .white
 
-            let progress = Float(displayXP) / Float(goalXP)
-            
-            if displayXP == 0 {
-                xpProgressBar.setProgress(0, animated: false)
-            }
-            
-            UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
-                self.xpProgressBar.setProgress(progress, animated: true)
-            }
-        }
-                        
-        private func setupImageTapGesture() {
-            monthlyBadgeImageView.isUserInteractionEnabled = true
-            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
-            monthlyBadgeImageView.addGestureRecognizer(tapGesture)
-        }
-                        
-        @objc private func imageTapped() {
-            delegate?.didTapMonthlyBadgeCard()
-        }
+           xpValueLabel.font = .systemFont(ofSize: 14, weight: .regular)
+           xpValueLabel.textColor = .systemGray
 
-        private func setupCardStyle() {
-            self.backgroundColor = .clear
-            self.contentView.backgroundColor = .clear
-            
-            let blurEffect = UIBlurEffect(style: .systemThinMaterialDark)
-            let blurView = UIVisualEffectView(effect: blurEffect)
-            blurView.frame = self.bounds
-            blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            blurView.layer.cornerRadius = 16
-            blurView.clipsToBounds = true
-            
-            self.contentView.insertSubview(blurView, at: 0)
-        }
-    }
+           xpProgressBar.layer.cornerRadius = 4
+           xpProgressBar.clipsToBounds = true
+           xpProgressBar.progressTintColor = .systemBlue
+           xpProgressBar.trackTintColor = UIColor.systemBlue.withAlphaComponent(0.2)
+
+           if let progressSubView = xpProgressBar.subviews.last {
+               progressSubView.layer.cornerRadius = 4
+               progressSubView.clipsToBounds = true
+           }
+       }
+
+       func configure(with badge: Badging.Badge) {
+           let manager = ProgressDataManager.shared
+
+           let currentXP  = manager.currentLevelXP          // carry-over XP toward next level
+           let requiredXP = manager.requiredXPForCurrentLevel // XP needed to reach next level
+           let level      = manager.userLevel
+
+           // Labels
+           levelLabel.text  = "Level \(level)"
+           xpValueLabel.text = "\(currentXP) / \(requiredXP) XP"
+
+           // Badge image
+           if let image = UIImage(named: "awards_monthly_main") {
+               monthlyBadgeImageView.image  = image
+               monthlyBadgeImageView.alpha  = 1.0
+               monthlyBadgeImageView.isHidden = false
+           } else {
+               monthlyBadgeImageView.image    = UIImage(systemName: "lock.fill")
+               monthlyBadgeImageView.tintColor = .systemGray
+               monthlyBadgeImageView.alpha    = 0.3
+           }
+           contentView.bringSubviewToFront(monthlyBadgeImageView)
+
+           // Progress bar — uses the computed `progressToNextLevel` property (currentXP / requiredXP)
+           // Reset to 0 without animation first so the bar never jumps backward on reuse
+           xpProgressBar.setProgress(0, animated: false)
+
+           UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
+               self.xpProgressBar.setProgress(manager.progressToNextLevel, animated: true)
+           }
+       }
+
+       private func setupImageTapGesture() {
+           monthlyBadgeImageView.isUserInteractionEnabled = true
+           let tap = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
+           monthlyBadgeImageView.addGestureRecognizer(tap)
+       }
+
+       @objc private func imageTapped() {
+           delegate?.didTapMonthlyBadgeCard()
+       }
+
+       private func setupCardStyle() {
+           backgroundColor = .clear
+           contentView.backgroundColor = .clear
+
+           let blurEffect = UIBlurEffect(style: .systemThinMaterialDark)
+           let blurView   = UIVisualEffectView(effect: blurEffect)
+           blurView.frame = bounds
+           blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+           blurView.layer.cornerRadius = 16
+           blurView.clipsToBounds = true
+
+           contentView.insertSubview(blurView, at: 0)
+       }
+   }
+

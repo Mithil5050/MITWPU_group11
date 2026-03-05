@@ -229,10 +229,17 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
             if let img = self.userImage { cell.pfp.image = img }
             cell.didTapEdit = { [weak self] in self?.openEditProfile() }
             return cell
-        } else if indexPath.section == 1 {
+        }  else if indexPath.section == 1 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LevelCell", for: indexPath) as! LevelCell
-            let displayXP = ProgressDataManager.shared.totalXP % 100
-            cell.configure(level: ProgressDataManager.shared.userLevel, currentXP: displayXP, maxXP: 100)
+            
+            let manager = ProgressDataManager.shared
+            
+            
+            cell.configure(
+                level: manager.userLevel,
+                currentXP: manager.currentLevelXP,
+                maxXP: manager.pointsPerLevel
+            )
             return cell
         } else if indexPath.section == 2 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StatCardCell", for: indexPath) as! StatCardCell
