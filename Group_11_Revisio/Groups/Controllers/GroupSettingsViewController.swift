@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Supabase
 
 class GroupSettingsViewController: UIViewController {
 
@@ -15,29 +16,23 @@ class GroupSettingsViewController: UIViewController {
     @IBOutlet weak var docsView: UIView!
     @IBOutlet weak var mediaView: UIView!
     @IBOutlet weak var linksView: UIView!
-    
-    
+
     @IBOutlet weak var groupImageView: UIImageView!
     @IBOutlet weak var groupNameLabel: UILabel!
     @IBOutlet weak var membersCountLabel: UILabel!
-    
-    //Collecton View outlets
-    @IBOutlet weak var membersCollectionView: UICollectionView!
-    
-    @IBOutlet weak var docsCollectionView: UICollectionView!
 
+    @IBOutlet weak var membersCollectionView: UICollectionView!
+    @IBOutlet weak var docsCollectionView: UICollectionView!
     @IBOutlet weak var mediaCollectionView: UICollectionView!
-    
     @IBOutlet weak var linksTableView: UITableView!
-    
-    
+
     // Data
     var group: Group!
-    
+
     weak var delegate: LeaveGroupDelegate?
     weak var updateDelegate: GroupUpdateDelegate?
-    
-    //MARK: - Dummy Data
+
+    // MARK: - Dummy Data (UI only, not affecting backend)
     private let members: [(name: String, avatar: String)] = [
         ("You", "pfp_chirag"),
         ("Ashika", "pfp_ashika"),
@@ -49,22 +44,21 @@ class GroupSettingsViewController: UIViewController {
         ("Prachi", "pfp_ashika"),
         ("Smera", "pfp_ayaana")
     ]
-    
-    
+
     private let documents = [
         "flowchart.pdf",
         "probstatements.docx",
         "writeup.docx",
         "flowchart2.pdf"
     ]
-    
+
     private let links: [(title: String, url: String)] = [
         ("Apple Developer", "https://developer.apple.com"),
         ("Swift Documentation", "https://docs.swift.org"),
         ("UIKit Guide", "https://developer.apple.com/documentation/uikit"),
         ("Human Interface Guidelines", "https://developer.apple.com/design/human-interface-guidelines")
     ]
-    
+
     private let mediaImages: [UIImage] = [
         UIImage(named: "media1"),
         UIImage(named: "media2"),
@@ -74,27 +68,24 @@ class GroupSettingsViewController: UIViewController {
         UIImage(named: "media6")
     ].compactMap { $0 }
 
-    //MARK: - ViewDidLoad
+    // MARK: - ViewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
 
         guard let group = group else {
-               print("❌ Group is NIL in GroupSettingsViewController")
-               navigationController?.popViewController(animated: true)
-               return
-           }
+            print("❌ Group is NIL in GroupSettingsViewController")
+            navigationController?.popViewController(animated: true)
+            return
+        }
+
         segmentedControl.selectedSegmentIndex = 0
         showSegment(index: 0)
-        
-        // Header content
-        groupNameLabel.text = group.name
 
+        groupNameLabel.text = group.name
         membersCountLabel.text = "\(members.count) members"
-        
         groupImageView.image = UIImage(named: group.avatarName)
         groupImageView.tintColor = .white
-        
-        //Edit Button
+
         let editButton = UIBarButtonItem(
             title: "Edit",
             style: .plain,
@@ -102,8 +93,7 @@ class GroupSettingsViewController: UIViewController {
             action: #selector(editButtonTapped)
         )
         navigationItem.rightBarButtonItem = editButton
-        
-        
+
         docsCollectionView.dataSource = self
         docsCollectionView.delegate = self
         membersCollectionView.dataSource = self
@@ -112,65 +102,38 @@ class GroupSettingsViewController: UIViewController {
         linksTableView.delegate = self
         mediaCollectionView.dataSource = self
         mediaCollectionView.delegate = self
-        
-        //Spacing for Media
+
         if let layout = mediaCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
             layout.estimatedItemSize = .zero
         }
-        
-        //Spacing for Docs
+
         if let layout = docsCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
             layout.estimatedItemSize = .zero
         }
-
     }
-    
-    //MARK: - Edit button
-    @objc private func editButtonTapped() {
 
-        let renameAction = UIAlertAction(
-            title: "Change Group Name",
-            style: .default
-        ) { [weak self] _ in
+    // MARK: - Edit Button
+    @objc private func editButtonTapped() {
+        let renameAction = UIAlertAction(title: "Change Group Name", style: .default) { [weak self] _ in
             self?.presentRenameGroup()
         }
-
-        let avatarAction = UIAlertAction(
-            title: "Change Group Avatar",
-            style: .default
-        ) { _ in
-            // avatar later
-        }
-
+        let avatarAction = UIAlertAction(title: "Change Group Avatar", style: .default) { _ in }
         let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
 
-        let sheet = UIAlertController(
-            title: nil,
-            message: nil,
-            preferredStyle: .actionSheet
-        )
-
+        let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         sheet.addAction(renameAction)
         sheet.addAction(avatarAction)
         sheet.addAction(cancelAction)
-
         present(sheet, animated: true)
     }
+
     private func presentRenameGroup() {
-
-        let alert = UIAlertController(
-            title: "Edit Group Name",
-            message: nil,
-            preferredStyle: .alert
-        )
-
+        let alert = UIAlertController(title: "Edit Group Name", message: nil, preferredStyle: .alert)
         alert.addTextField {
             $0.placeholder = "Group name"
             $0.text = self.group.name
         }
-
         alert.addAction(UIAlertAction(title: "Cancel", style: .destructive))
-
         alert.addAction(UIAlertAction(title: "Done", style: .default) { [weak self] _ in
             guard
                 let self = self,
@@ -180,20 +143,24 @@ class GroupSettingsViewController: UIViewController {
 
             // Update local model
             self.group.name = newName
-
-            // Update UI
             self.groupNameLabel.text = newName
 
-            // Notify ChatVC
+            // Notify ChatVC and GroupsVC
             self.updateDelegate?.didUpdateGroup(self.group)
 
-            self.dismiss(animated: true)
+            // Sync to Supabase
+            Task {
+                do {
+                    try await SupabaseManager.shared.updateGroup(id: self.group.id, newName: newName)
+                } catch {
+                    print("❌ Failed to update group name: \(error)")
+                }
+            }
         })
-
         present(alert, animated: true)
     }
 
-    // MARK: - Segment control
+    // MARK: - Segment Control
     @IBAction func segmentChanged(_ sender: UISegmentedControl) {
         showSegment(index: sender.selectedSegmentIndex)
     }
@@ -208,25 +175,28 @@ class GroupSettingsViewController: UIViewController {
             if index == 1 {
                 self.docsCollectionView.reloadData()
                 self.docsCollectionView.collectionViewLayout.invalidateLayout()
-                }
-
-                if index == 2 {
-                    self.mediaCollectionView.reloadData()
-                    self.mediaCollectionView.collectionViewLayout.invalidateLayout()
-                }
+            }
+            if index == 2 {
+                self.mediaCollectionView.reloadData()
+                self.mediaCollectionView.collectionViewLayout.invalidateLayout()
+            }
         }
     }
 
-    //MARK: - Hide Alerts
+    // MARK: - Hide Alerts
     @IBOutlet weak var hideAlertsSwitch: UISwitch!
-    
-    // MARK: - Leave group
+
+    // MARK: - Leave Group
     @IBAction func leaveButtonTapped(_ sender: UIButton) {
-        let ac = UIAlertController(title: "Leave Group", message: "Are you sure you want to leave this group?", preferredStyle: .alert)
+        let ac = UIAlertController(
+            title: "Leave Group",
+            message: "Are you sure you want to leave this group?",
+            preferredStyle: .alert
+        )
         ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        ac.addAction(UIAlertAction(title: "Leave", style: .destructive, handler: { _ in
+        ac.addAction(UIAlertAction(title: "Leave", style: .destructive) { _ in
             self.performLeave()
-        }))
+        })
         present(ac, animated: true)
     }
 
@@ -235,27 +205,39 @@ class GroupSettingsViewController: UIViewController {
             navigationController?.popToRootViewController(animated: true)
             return
         }
+
+        // Remove from Supabase group_members
+        Task {
+            do {
+                guard let userId = SupabaseManager.shared.client.auth.currentUser?.id,
+                      let groupUUID = UUID(uuidString: group.id) else { return }
+
+                try await SupabaseManager.shared.client
+                    .from("group_members")
+                    .delete()
+                    .eq("user_id", value: userId)
+                    .eq("group_id", value: groupUUID)
+                    .execute()
+
+                print("✅ Left group successfully")
+            } catch {
+                print("❌ Failed to leave group: \(error)")
+            }
+        }
+
         delegate?.didLeaveGroup(group)
         navigationController?.popToRootViewController(animated: true)
     }
-
 }
 
-// MARK: - Documents, Members Collection View
-
+// MARK: - Collection View
 extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView,
                         numberOfItemsInSection section: Int) -> Int {
-
-        if collectionView == membersCollectionView {
-            return members.count + 1
-        } else if collectionView == docsCollectionView {
-            return documents.count
-        } else if collectionView == mediaCollectionView {
-            return mediaImages.count
-        }
-
+        if collectionView == membersCollectionView { return members.count + 1 }
+        if collectionView == docsCollectionView { return documents.count }
+        if collectionView == mediaCollectionView { return mediaImages.count }
         return 0
     }
 
@@ -264,17 +246,13 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
 
         if collectionView == membersCollectionView {
             let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: "MemberCellIdentifier",
-                for: indexPath
-            ) as! MemberCell
-
+                withReuseIdentifier: "MemberCellIdentifier", for: indexPath) as! MemberCell
             if indexPath.item == members.count {
                 cell.nameLabel.text = "Add"
                 cell.avatarImageView.image = UIImage(systemName: "plus.circle.fill")
                 cell.avatarImageView.tintColor = .systemGray4
                 return cell
             }
-
             let member = members[indexPath.item]
             cell.configure(name: member.name)
             cell.avatarImageView.image = UIImage(named: member.avatar)
@@ -283,192 +261,117 @@ extension GroupSettingsViewController: UICollectionViewDataSource, UICollectionV
 
         if collectionView == docsCollectionView {
             let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: "DocumentCellIdentifier",
-                for: indexPath
-            ) as! DocumentCell
-
+                withReuseIdentifier: "DocumentCellIdentifier", for: indexPath) as! DocumentCell
             cell.configure(filename: documents[indexPath.item])
             return cell
         }
 
         if collectionView == mediaCollectionView {
             let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: "MediaCell",
-                for: indexPath
-            ) as! MediaCell
-
+                withReuseIdentifier: "MediaCell", for: indexPath) as! MediaCell
             cell.configure(image: mediaImages[indexPath.item])
             return cell
         }
 
         return UICollectionViewCell()
     }
-    
-    
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
 
+    func collectionView(_ collectionView: UICollectionView,
+                        didSelectItemAt indexPath: IndexPath) {
         let feedback = UIImpactFeedbackGenerator(style: .light)
         feedback.impactOccurred()
 
-        // MARK:  Members (+ Add)
         if collectionView == membersCollectionView {
-
             if indexPath.item == members.count {
-
                 let storyboard = UIStoryboard(name: "Groups", bundle: nil)
-
                 guard let codeVC = storyboard.instantiateViewController(
-                    withIdentifier: "GroupCodeVC"
-                ) as? GroupCodeViewController else {
-                    return
-                }
-
-                codeVC.configure(
-                    withGroupName: group?.name ?? "Group",
-                    code: "ABC-123"
-                )
+                    withIdentifier: "GroupCodeVC") as? GroupCodeViewController else { return }
+                codeVC.configure(withGroupName: group?.name ?? "Group", code: "ABC-123")
                 codeVC.isFromCreateGroup = false
-
                 let nav = UINavigationController(rootViewController: codeVC)
                 nav.modalPresentationStyle = .pageSheet
                 present(nav, animated: true)
             }
-
             return
         }
 
-        // MARK:  Media Preview
         if collectionView == mediaCollectionView {
-
             let previewVC = MediaPreviewViewController()
             previewVC.image = mediaImages[indexPath.item]
-
             let nav = UINavigationController(rootViewController: previewVC)
             nav.modalPresentationStyle = .fullScreen
             present(nav, animated: true)
             return
         }
-        
-        // MARK:  Document Preview
+
         if collectionView == docsCollectionView {
-
             let filename = documents[indexPath.item]
-
             let parts = filename.split(separator: ".")
-            if parts.count != 2 {
-                print("Invalid filename:", filename)
-                return
-            }
-
-            guard let url = Bundle.main.url(
-                forResource: String(parts[0]),
-                withExtension: String(parts[1])
-            ) else {
+            guard parts.count == 2,
+                  let url = Bundle.main.url(
+                    forResource: String(parts[0]),
+                    withExtension: String(parts[1])) else {
                 print("File NOT in Copy Bundle Resources:", filename)
                 return
             }
-
             let previewVC = DocumentPreviewViewController()
             previewVC.documentURL = url
-
             let nav = UINavigationController(rootViewController: previewVC)
             nav.modalPresentationStyle = .fullScreen
             present(nav, animated: true)
         }
-        
-        
     }
-    
-    // MARK: Documents spacing
 
-    func collectionView(
-        _ collectionView: UICollectionView,
-        layout collectionViewLayout: UICollectionViewLayout,
-        minimumInteritemSpacingForSectionAt section: Int
-    ) -> CGFloat {
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return collectionView == docsCollectionView ? 6 : 0
+    }
 
-        if collectionView == docsCollectionView {
-            return 6
-        }
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        if collectionView == docsCollectionView { return 6 }
+        if collectionView == mediaCollectionView { return 8 }
         return 0
     }
 
-    func collectionView(
-        _ collectionView: UICollectionView,
-        layout collectionViewLayout: UICollectionViewLayout,
-        minimumLineSpacingForSectionAt section: Int
-    ) -> CGFloat {
-
-        if collectionView == docsCollectionView {
-            return 6
-        }
-
-        if collectionView == mediaCollectionView {
-            return 8   // 👈 THIS increases gap between rows
-        }
-
-        return 0
-    }
-    
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
-        
-        //Members
         if collectionView == membersCollectionView {
             let columns: CGFloat = 3
-            let spacing: CGFloat = 12
-            let totalSpacing = (columns - 1) * spacing + 24
+            let totalSpacing = (columns - 1) * 12 + 24
             let width = (collectionView.bounds.width - totalSpacing) / columns
             return CGSize(width: width, height: width + 12)
         }
-        
-        //Media
         if collectionView == mediaCollectionView {
-
             let columns: CGFloat = 3
-            let spacing: CGFloat = 8
-            let totalSpacing = (columns - 1) * spacing + 24
+            let totalSpacing = (columns - 1) * 8 + 24
             let width = (collectionView.bounds.width - totalSpacing) / columns
-
             return CGSize(width: width, height: width)
         }
-        
-        // Documents
         if collectionView == docsCollectionView {
-
             let columns: CGFloat = 3
-            let spacing: CGFloat = 6
-
-            let totalSpacing = (columns - 1) * spacing
-            let horizontalInsets: CGFloat = 12 * 2
-
-            let width = (collectionView.bounds.width - totalSpacing - horizontalInsets) / columns
-
+            let totalSpacing = (columns - 1) * 6 + 24
+            let width = (collectionView.bounds.width - totalSpacing) / columns
             return CGSize(width: width, height: width)
         }
-
-        return CGSize(width: 0, height: 0)
-        
+        return .zero
     }
-    
+
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {
-
-        if collectionView == mediaCollectionView {
-            return UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
-        }
-
         return UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
     }
-
 }
-//MARK: - Links View
+
+// MARK: - Links Table View
 extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegate {
 
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-
+    func tableView(_ tableView: UITableView,
+                   numberOfRowsInSection section: Int) -> Int {
         if links.isEmpty {
             let label = UILabel()
             label.text = "No links shared yet"
@@ -482,33 +385,21 @@ extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegat
             tableView.backgroundView = nil
             tableView.separatorStyle = .singleLine
         }
-
         return links.count
     }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 60
-    }
 
-    func tableView(
-        _ tableView: UITableView,
-        cellForRowAt indexPath: IndexPath
-    ) -> UITableViewCell {
+    func tableView(_ tableView: UITableView,
+                   heightForRowAt indexPath: IndexPath) -> CGFloat { return 60 }
 
-        let cell = tableView.dequeueReusableCell(
-            withIdentifier: "LinkCell",
-            for: indexPath
-        )
-
+    func tableView(_ tableView: UITableView,
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "LinkCell", for: indexPath)
         let item = links[indexPath.row]
-
         cell.textLabel?.text = item.title
         cell.textLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-
         cell.detailTextLabel?.text = item.url
         cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 13)
         cell.detailTextLabel?.textColor = .secondaryLabel
-
         cell.accessoryType = .disclosureIndicator
         cell.selectionStyle = .none
         cell.imageView?.image = UIImage(systemName: "link")
@@ -516,14 +407,12 @@ extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegat
         cell.imageView?.contentMode = .scaleAspectFit
         return cell
     }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
 
+    func tableView(_ tableView: UITableView,
+                   didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
         let item = links[indexPath.row]
         guard let url = URL(string: item.url) else { return }
-
         UIApplication.shared.open(url)
     }
 }
-

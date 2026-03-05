@@ -8,10 +8,9 @@
 import Foundation
 
 struct Message: Codable {
-
-    let id: String
-    let groupId: String
-    let senderId: String
+    let id: UUID
+    let groupId: UUID
+    let senderId: UUID
     let content: String
     let createdAt: Date
 

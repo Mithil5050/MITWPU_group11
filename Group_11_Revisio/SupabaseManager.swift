@@ -69,7 +69,6 @@ class SupabaseManager {
     
     // MARK: - 3. Fetch Messages for a Group
     func fetchMessages(for groupId: String) async throws -> [Message] {
-        
         let response: [Message] = try await client
             .from("messages")
             .select()
@@ -77,28 +76,170 @@ class SupabaseManager {
             .order("created_at", ascending: true)
             .execute()
             .value
-        
         return response
     }
-    
-    func sendMessage(
-        groupId: String,
-        senderId: String,
-        text: String
-    ) async throws {
 
-        let message = Message(
-            id: UUID().uuidString,
-            groupId: groupId,
-            senderId: senderId,
-            content: text,
-            createdAt: Date()
-        )
+    // MARK: - 4. Send Message
+    func sendMessage(groupId: String, senderId: String, text: String) async throws {
+        struct MessageInsert: Encodable {
+            let group_id: UUID
+            let sender_id: UUID
+            let content: String
+        }
+        guard let gid = UUID(uuidString: groupId),
+              let sid = UUID(uuidString: senderId) else { return }
 
         try await client
             .from("messages")
-            .insert(message)
+            .insert(MessageInsert(group_id: gid, sender_id: sid, content: text))
             .execute()
+    }
+
+    // MARK: - 5. Fetch Groups for current user
+    func fetchGroups() async throws -> [Group] {
+        guard let userId = client.auth.currentUser?.id else { return [] }
+
+        struct MemberRow: Decodable {
+            let group_id: UUID
+            let study_groups: GroupRow
+            struct GroupRow: Decodable {
+                let id: UUID
+                let name: String
+            }
+        }
+
+        let result: [MemberRow] = try await client
+            .from("group_members")
+            .select("group_id, study_groups(id, name)")
+            .eq("user_id", value: userId)
+            .execute()
+            .value
+
+        let avatars = ["gpfp1","gpfp2","gpfp3","gpfp4","gpfp5",
+                       "gpfp6","gpfp7","gpfp8","gpfp9","gpfp10"]
+
+        return result.enumerated().map { index, row in
+            Group(
+                id: row.study_groups.id.uuidString,
+                name: row.study_groups.name,
+                avatarName: avatars[index % avatars.count]
+            )
+        }
+    }
+
+    // MARK: - 6. Create Group
+    func createGroup(name: String, avatarName: String, inviteCode: String) async throws -> Group {
+        guard let userId = client.auth.currentUser?.id else {
+            throw NSError(domain: "Auth", code: 401)
+        }
+
+        struct GroupInsert: Encodable {
+            let name: String
+            let invite_code: String
+            let creator_id: UUID
+        }
+
+        struct GroupRow: Decodable {
+            let id: UUID
+            let name: String
+        }
+
+        let inserted: [GroupRow] = try await client
+            .from("study_groups")
+            .insert(GroupInsert(name: name, invite_code: inviteCode, creator_id: userId))
+            .select()
+            .execute()
+            .value
+
+        guard let row = inserted.first else {
+            throw NSError(domain: "Groups", code: 500)
+        }
+
+        struct MemberInsert: Encodable {
+            let group_id: UUID
+            let user_id: UUID
+        }
+        try await client
+            .from("group_members")
+            .insert(MemberInsert(group_id: row.id, user_id: userId))
+            .execute()
+
+        return Group(id: row.id.uuidString, name: row.name, avatarName: avatarName)
+    }
+
+    // MARK: - 7. Join Group by invite code
+    func joinGroup(code: String) async throws -> Group {
+        guard let userId = client.auth.currentUser?.id else {
+            throw NSError(domain: "Auth", code: 401)
+        }
+
+        struct GroupRow: Decodable {
+            let id: UUID
+            let name: String
+        }
+
+        let groups: [GroupRow] = try await client
+            .from("study_groups")
+            .select("id, name")
+            .eq("invite_code", value: code)
+            .limit(1)
+            .execute()
+            .value
+
+        guard let group = groups.first else {
+            throw NSError(domain: "Groups", code: 404,
+                          userInfo: [NSLocalizedDescriptionKey: "Invalid invite code"])
+        }
+
+        struct MemberInsert: Encodable {
+            let group_id: UUID
+            let user_id: UUID
+        }
+        try await client
+            .from("group_members")
+            .upsert(MemberInsert(group_id: group.id, user_id: userId))
+            .execute()
+
+        return Group(id: group.id.uuidString, name: group.name, avatarName: "gpfp1")
+    }
+
+    // MARK: - 8. Delete Group
+    func deleteGroup(id: String) async throws {
+        guard let uuid = UUID(uuidString: id) else { return }
+        try await client
+            .from("study_groups")
+            .delete()
+            .eq("id", value: uuid)
+            .execute()
+    }
+
+    // MARK: - 9. Update Group Name
+    func updateGroup(id: String, newName: String) async throws {
+        guard let uuid = UUID(uuidString: id) else { return }
+        struct NameUpdate: Encodable { let name: String }
+        try await client
+            .from("study_groups")
+            .update(NameUpdate(name: newName))
+            .eq("id", value: uuid)
+            .execute()
+    }
+
+    // MARK: - 10. Fetch Last Message for a Group
+    func fetchLastMessage(for groupId: String) async -> String {
+        guard let uuid = UUID(uuidString: groupId) else { return "No messages yet" }
+        do {
+            let result: [Message] = try await client
+                .from("messages")
+                .select()
+                .eq("group_id", value: uuid)
+                .order("created_at", ascending: false)
+                .limit(1)
+                .execute()
+                .value
+            return result.first?.content ?? "No messages yet"
+        } catch {
+            return "No messages yet"
+        }
     }
 }
 

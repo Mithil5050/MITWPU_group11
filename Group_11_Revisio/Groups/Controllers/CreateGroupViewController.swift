@@ -18,34 +18,30 @@ class CreateGroupViewController: UIViewController {
     }
 
     @IBAction func generateButtonTapped(_ sender: UIButton) {
-        // 1. Read group name
         let nameText = groupNameTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let groupName = nameText.isEmpty ? "New Group" : nameText
-
-        // 2. Create invite code
         let code = CreateGroupViewController.generateInviteCode()
 
-        // 3. Load GroupCodeViewController from storyboard
         let storyboard = UIStoryboard(name: "Groups", bundle: nil)
-        guard let codeVC = storyboard.instantiateViewController(withIdentifier: "GroupCodeVC") as? GroupCodeViewController else {
-                print("ERROR: Could not find GroupCodeVC in storyboard.")
-                return
+        guard let codeVC = storyboard.instantiateViewController(withIdentifier: "GroupCodeVC") as? GroupCodeViewController else { return }
+        codeVC.configure(withGroupName: groupName, code: code)
+
+        Task {
+            do {
+                let newGroup = try await SupabaseManager.shared.createGroup(
+                    name: groupName,
+                    avatarName: "gpfp10",
+                    inviteCode: code
+                )
+                delegate?.didCreateGroup(newGroup)
+            } catch {
+                print("❌ Failed to create group: \(error)")
+            }
         }
 
-        // 4. Pass data to the next screen
-            codeVC.configure(withGroupName: groupName, code: code)
-        
-        // Create new group and send to delegate
-        let newGroup = Group(name: groupName, avatarName: "gpfp10")
-        delegate?.didCreateGroup(newGroup)
-        
-        // 5. PUSH inside navigation controller (this is the whole fix!)
         if let nav = self.navigationController {
-                nav.pushViewController(codeVC, animated: true)
-        } else {
-                print("ERROR: CreateGroupViewController is not inside a navigation controller.")
+            nav.pushViewController(codeVC, animated: true)
         }
-
     }
 
     @IBAction func closeButtonTapped(_ sender: UIButton) {
