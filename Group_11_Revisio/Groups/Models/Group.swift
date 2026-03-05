@@ -7,7 +7,14 @@
 
 import Foundation
 
-struct Group {
+struct Group: Codable {
+    var id: String
     var name: String
     var avatarName: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case avatarName = "avatar_name"
+    }
 }
