@@ -14,6 +14,9 @@ class ProgressDataManager {
 
     // MARK: - Level UI Helpers
 
+    /// Count of fully earned badges — used by the Profile Badges card.
+    var earnedBadgeCount: Int { return earnedBadgeIDs.count }
+
     /// Whether the user has done anything yet (used by AwardsViewController)
     var hasEarnedAnyXP: Bool {
         return totalXP > 0 || userLevel > 1
@@ -95,7 +98,7 @@ class ProgressDataManager {
     /// Example — user is Level 1 (costs 250 XP), currently has 200 XP, earns 100:
     ///   200 + 100 = 300. 300 >= 250 → level up to 2, carry 50.
     ///   50 < 400 (Level 2 cost) → stop. totalXP = 50, userLevel = 2.
-    func addXP(amount: Int) {
+    func addXP(amount: Int, reason: String = "XP Earned") {
         var carryXP = totalXP + amount
         var workingLevel = userLevel
         let startingLevel = workingLevel
@@ -104,6 +107,9 @@ class ProgressDataManager {
             carryXP -= required   // pay this level's cost
             workingLevel += 1     // advance
         }
+
+        // Log the event in XP history before persisting
+        recordXPEvent(reason, amount: amount)
 
         // Persist carry-over XP (fires .xpDidUpdate + Supabase sync via the setter)
         self.totalXP = carryXP
@@ -231,7 +237,7 @@ class ProgressDataManager {
             // XP already awarded today — skip
         } else {
             lastStreakXPDate = today
-            addXP(amount: 100)
+            addXP(amount: 100, reason: "Streak Maintained")
         }
 
         totalDailyChallengesSolved += 1
@@ -328,6 +334,41 @@ class ProgressDataManager {
                 object: nil,
                 userInfo: ["badge": badge, "type": type]
             )
+        }
+    }
+
+    // MARK: - XP History
+
+    /// In-memory XP event log, newest first.
+    /// Persisted as a JSON array in UserDefaults (capped at 50 entries).
+    private(set) var xpHistory: [XPEvent] = {
+        guard let data = UserDefaults.standard.data(forKey: "xp_history_v1"),
+              let raw  = try? JSONDecoder().decode([[String: String]].self, from: data)
+        else { return [] }
+
+        let fmt = ISO8601DateFormatter()
+        return raw.compactMap { dict -> XPEvent? in
+            guard let desc   = dict["desc"],
+                  let amtStr = dict["amt"],  let amt = Int(amtStr),
+                  let dtStr  = dict["date"], let dt  = fmt.date(from: dtStr)
+            else { return nil }
+            return XPEvent(description: desc, amount: amt, date: dt)
+        }
+    }()
+
+    /// Call this whenever XP is awarded so the event appears in XPDetailsViewController.
+    func recordXPEvent(_ description: String, amount: Int) {
+        let event = XPEvent(description: description, amount: amount, date: Date())
+        xpHistory.insert(event, at: 0)
+        if xpHistory.count > 50 { xpHistory = Array(xpHistory.prefix(50)) }
+        persistXPHistory()
+    }
+
+    private func persistXPHistory() {
+        let fmt = ISO8601DateFormatter()
+        let raw = xpHistory.map { ["desc": $0.description, "amt": "\($0.amount)", "date": fmt.string(from: $0.date)] }
+        if let data = try? JSONEncoder().encode(raw) {
+            UserDefaults.standard.set(data, forKey: "xp_history_v1")
         }
     }
 
