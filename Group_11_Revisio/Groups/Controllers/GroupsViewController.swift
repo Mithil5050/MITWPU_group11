@@ -2,24 +2,17 @@
 //  GroupsViewController.swift
 //  Group_11_Revisio
 //
-//  Created by Chirag Poojari on 26/11/25.
-//
 
 import UIKit
 
-class GroupsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, JoinGroupDelegate, GroupUpdateDelegate, UISearchResultsUpdating {
+class GroupsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate,
+                             JoinGroupDelegate, GroupUpdateDelegate, UISearchResultsUpdating {
 
     @IBOutlet weak var groupsTableView: UITableView!
 
     var myGroups: [Group] = []
     private var lastMessages: [String: String] = [:]
 
-    private let groupAvatars = [
-        "gpfp1","gpfp2","gpfp3","gpfp4","gpfp5",
-        "gpfp6","gpfp7","gpfp8","gpfp9","gpfp10"
-    ]
-
-    // Search
     private let searchController = UISearchController(searchResultsController: nil)
     private var filteredGroups: [Group] = []
     private var isSearching: Bool = false
@@ -31,7 +24,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         navigationController?.navigationBar.prefersLargeTitles = true
 
         groupsTableView.dataSource = self
-        groupsTableView.delegate = self
+        groupsTableView.delegate   = self
         groupsTableView.tableFooterView = UIView()
 
         searchController.searchResultsUpdater = self
@@ -41,12 +34,10 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         navigationItem.hidesSearchBarWhenScrolling = false
         definesPresentationContext = true
 
-        Task {
-            await loadGroups()
-        }
+        Task { await loadGroups() }
     }
 
-    // MARK: - Load Groups then Last Messages
+    // MARK: - Load
     private func loadGroups() async {
         do {
             let groups = try await SupabaseManager.shared.fetchGroups()
@@ -72,16 +63,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
                 lastMessages[groupId] = msg
             }
         }
-        await MainActor.run {
-            groupsTableView.reloadData()
-        }
-    }
-
-    // MARK: - Deterministic avatar from group id
-    private func avatarName(for group: Group) -> String {
-        // Use the first character of the UUID to pick a consistent avatar
-        let index = abs(group.id.hashValue) % groupAvatars.count
-        return groupAvatars[index]
+        await MainActor.run { groupsTableView.reloadData() }
     }
 
     func didUpdateGroup(_ group: Group) {
@@ -91,48 +73,41 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         }
     }
 
-    // MARK: - TableView DataSource
+    // MARK: - TableView
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return isSearching ? filteredGroups.count : myGroups.count
     }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView,
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(
             withIdentifier: "GroupCellIdentifier", for: indexPath) as? GroupCell else {
             return UITableViewCell()
         }
-
         let group = isSearching ? filteredGroups[indexPath.row] : myGroups[indexPath.row]
 
         cell.groupNameLabel.text = group.name
         cell.groupNameLabel.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-
-        // Real last message from Supabase
         cell.lastMessageLabel.text = lastMessages[group.id] ?? "Loading..."
         cell.lastMessageLabel.textColor = .secondaryLabel
         cell.lastMessageLabel.font = UIFont.systemFont(ofSize: 14)
 
-        // Deterministic avatar
-        cell.configureAvatar(avatarName(for: group))
-        cell.avatarImageView.layer.cornerRadius = 22
-        cell.avatarImageView.clipsToBounds = true
-
+        // Pass URL string (or nil) — GroupCell handles default icon
+        cell.configureAvatar(group.avatarUrl)
         return cell
     }
 
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 64.0
-    }
+    func tableView(_ tableView: UITableView,
+                   heightForRowAt indexPath: IndexPath) -> CGFloat { return 64 }
 
-    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
+    func tableView(_ tableView: UITableView,
+                   canEditRowAt indexPath: IndexPath) -> Bool { return true }
 
     func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, completion) in
             guard let self = self else { completion(false); return }
-            self.confirmDelete(at: indexPath) { didDelete in completion(didDelete) }
+            self.confirmDelete(at: indexPath) { completion($0) }
         }
         let config = UISwipeActionsConfiguration(actions: [deleteAction])
         config.performsFirstActionWithFullSwipe = true
@@ -141,11 +116,9 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-
         let storyboard = UIStoryboard(name: "Groups", bundle: nil)
         guard let chatVC = storyboard.instantiateViewController(
             withIdentifier: "ChatVC") as? ChatViewController else { return }
-
         let selectedGroup = isSearching ? filteredGroups[indexPath.row] : myGroups[indexPath.row]
         chatVC.group = selectedGroup
         navigationController?.pushViewController(chatVC, animated: true)
@@ -154,11 +127,9 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
     // MARK: - Delete
     private func confirmDelete(at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {
         let group = myGroups[indexPath.row]
-        let alert = UIAlertController(
-            title: "Delete Group",
-            message: "Are you sure you want to delete \"\(group.name)\"?",
-            preferredStyle: .alert
-        )
+        let alert = UIAlertController(title: "Delete Group",
+                                      message: "Are you sure you want to delete \"\(group.name)\"?",
+                                      preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in completion(false) })
         alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
             guard let self = self else { completion(false); return }
@@ -170,11 +141,8 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
             self.groupsTableView.endUpdates()
             completion(true)
             Task {
-                do {
-                    try await SupabaseManager.shared.deleteGroup(id: groupToDelete.id)
-                } catch {
-                    print("❌ Failed to delete group: \(error)")
-                }
+                do { try await SupabaseManager.shared.deleteGroup(id: groupToDelete.id) }
+                catch { print("❌ Failed to delete group: \(error)") }
             }
         })
         present(alert, animated: true)
@@ -186,15 +154,15 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         guard let joinVC = storyboard.instantiateViewController(
             withIdentifier: "JoinGroupVC") as? JoinGroupViewController else { return }
         joinVC.delegate = self
-        let nav = UINavigationController(rootViewController: joinVC)
-        present(nav, animated: true)
+        present(UINavigationController(rootViewController: joinVC), animated: true)
     }
 
     @IBAction func createGroupButtonTapped(_ sender: UIButton) {
         let storyboard = UIStoryboard(name: "Groups", bundle: nil)
         guard let createNav = storyboard.instantiateViewController(
             withIdentifier: "CreateNavVC") as? UINavigationController else { return }
-        if let createVC = createNav.viewControllers.first(where: { $0 is CreateGroupViewController }) as? CreateGroupViewController {
+        if let createVC = createNav.viewControllers.first(
+            where: { $0 is CreateGroupViewController }) as? CreateGroupViewController {
             createVC.delegate = self
         }
         createNav.modalPresentationStyle = .pageSheet
@@ -206,8 +174,6 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         groupsTableView.beginUpdates()
         groupsTableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
         groupsTableView.endUpdates()
-
-        // Fetch last message for newly joined group
         Task {
             let msg = await SupabaseManager.shared.fetchLastMessage(for: group.id)
             await MainActor.run {
@@ -215,7 +181,6 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
                 groupsTableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
             }
         }
-
         let storyboard = UIStoryboard(name: "Groups", bundle: nil)
         guard let chatVC = storyboard.instantiateViewController(
             withIdentifier: "ChatVC") as? ChatViewController else { return }
