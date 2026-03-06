@@ -1,8 +1,3 @@
-//
-//  SubjectViewController.swift
-//  Group_11_Revisio
-//
-//  Created by SDC-USER on 26/11/25.
 import UIKit
 import UniformTypeIdentifiers
 import SafariServices
@@ -10,13 +5,11 @@ import QuickLook
 
 class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    // MARK: - Outlets
     @IBOutlet var materialsSegmentedControl: UISegmentedControl!
     @IBOutlet var topicsTableView: UITableView!
     @IBOutlet var filterButton: UIBarButtonItem!
     @IBOutlet var optionsButton: UIBarButtonItem!
     
-    // MARK: - Properties
     var selectedSubject: String?
     var currentContent: [Any] = []
     var currentFilterType: String = "All"
@@ -35,24 +28,20 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         return materialsSegmentedControl.titleForSegment(at: materialsSegmentedControl.selectedSegmentIndex) ?? "Materials"
     }
     
-    // MARK: - Lifecycle (App Start)
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.toolbarItems = []
         let buttonColor: UIColor = .label
         
-        // 1. Configure Large Titles
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.largeTitleDisplayMode = .automatic
         
-        // 2. Configure Navigation Bar Appearance
         let appearance = UINavigationBarAppearance()
         appearance.configureWithDefaultBackground()
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         
-        // 3. Initialize Selection Mode Buttons
         doneSelectionButton = UIBarButtonItem(
             image: UIImage(systemName: "checkmark"),
             primaryAction: UIAction { [weak self] _ in
@@ -69,7 +58,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         )
         cancelSelectionButton.tintColor = buttonColor
         
-        // 4. Subject-Specific Setup
         if let selectedSubject {
             title = selectedSubject
             setupTableView()
@@ -80,7 +68,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             self.originalRightBarButtonItems = self.navigationItem.rightBarButtonItems
         }
         
-        // 5. Background Styling
         topicsTableView.backgroundColor = .systemBackground
         view.backgroundColor = .systemBackground
     }
@@ -110,7 +97,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // MARK: - Data Logic (Loading & Filtering)
     func loadContentForSubject(_ subject: String, segmentIndex: Int) {
         let key = segmentKey(forIndex: segmentIndex)
         
@@ -177,7 +163,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    // MARK: - UI Setup (Menus & Table Configuration)
     func setupTableView() {
         topicsTableView.delegate = self
         topicsTableView.dataSource = self
@@ -215,13 +200,10 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func setupOptionsMenu() -> UIMenu {
         let isSelectModeActive = topicsTableView.isEditing
-        // 0 = Materials, 1 = Sources
         let currentSegment = materialsSegmentedControl.selectedSegmentIndex
         
-        // --- 1. THE SUBMENU (Restored & Corrected) ---
         var addSubmenu: UIMenu?
         
-        // ✅ This ensures the menu ONLY appears when on the Sources tab
         if currentSegment == 1 && !isSelectModeActive {
             addSubmenu = UIMenu(title: "Add Source", image: UIImage(systemName: "plus.circle"), children: [
                 UIAction(title: "Document", image: UIImage(systemName: "text.document")) { [weak self] _ in
@@ -240,7 +222,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             ])
         }
 
-        // --- 2. RESTORED DISPLAY & SORT OPTIONS ---
         let displayMenu = UIMenu(title: "Display Options", options: .displayInline, children: [
             UIMenu(title: "View as", children: [
                 UIAction(title: "List", state: isGridView ? .off : .on) { [weak self] _ in
@@ -273,10 +254,8 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             ])
         ])
 
-        // --- 3. ASSEMBLE ALL ELEMENTS ---
         var menuElements: [UIMenuElement] = []
         
-        // Select Action
         menuElements.append(UIAction(title: isSelectModeActive ? "Done" : "Select",
                                     image: UIImage(systemName: "checkmark.circle")) { [weak self] _ in
             guard let self = self else { return }
@@ -292,37 +271,30 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             self.optionsButton.menu = self.setupOptionsMenu()
         })
 
-        // ✅ Re-insert the "Add Source" submenu here
         if let addSubmenu = addSubmenu {
             menuElements.append(addSubmenu)
         }
         
-        // Rename Subject
         menuElements.append(UIAction(title: "Rename Subject", image: UIImage(systemName: "pencil")) { [weak self] _ in
             self?.renameCurrentSubject()
         })
         
-        // Management Section
         menuElements.append(UIMenu(title: "Management", children: [
             UIAction(title: "Move All Content", image: UIImage(systemName: "arrow.turn.forward")) { [weak self] _ in self?.moveAllContent() },
             UIAction(title: "Delete All Content", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in self?.deleteAllContent() }
         ]))
         
-        // Display Section
         menuElements.append(displayMenu)
         
         return UIMenu(title: "", children: menuElements)
     }
-    // MARK: - File & Media Handling
     func presentDocumentPicker() {
-        // ✅ Use .init(forImportingContentTypes:) for better stability in demos
         let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.pdf, .plainText, .text])
         picker.delegate = self
         picker.allowsMultipleSelection = false
         present(picker, animated: true)
     }
     func presentImagePicker() {
-        // Standard Image Picker for Photos/Media
         let picker = UIImagePickerController()
         picker.delegate = self
         picker.sourceType = .photoLibrary
@@ -340,14 +312,12 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                   let urlString = alert.textFields?[1].text, !urlString.isEmpty,
                   let subject = self?.selectedSubject else { return }
             
-            // Create the Source object
             let linkSource = Source(
                 name: name,         // The title to show in the list
                 fileType: "LINK",   // For the Indigo link icon
                 size: urlString     // Store the actual URL here
             )
             
-            // Save and Refresh
             DataManager.shared.addSource(to: subject, source: linkSource)
             self?.handleDataUpdate()
         }
@@ -365,14 +335,12 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             guard let name = alert.textFields?[0].text, !name.isEmpty,
                   let subject = self?.selectedSubject else { return }
             
-            // Create the Source object
             let textSource = Source(
                 name: name,
                 fileType: "TXT",   // For the Indigo text icon
                 size: "Manual Note"
             )
             
-            // Save and Refresh
             DataManager.shared.addSource(to: subject, source: textSource)
             self?.handleDataUpdate()
         }
@@ -383,14 +351,12 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     private func getTitle(for item: Any) -> String {
-        // Check if it's wrapped in the enum
         if let studyItem = item as? StudyItem {
             switch studyItem {
             case .topic(let t): return t.name
             case .source(let s): return s.name
             }
         }
-        // Check if it's the raw object directly
         else if let topic = item as? Topic { return topic.name }
         else if let source = item as? Source { return source.name }
         
@@ -424,12 +390,10 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         
         let formatter = DateFormatter()
-        // Standardize the format to match your data
         formatter.dateFormat = "MMM d, yyyy"
         return formatter.date(from: dateString) ?? Date.distantPast
     }
     
-    // MARK: - TableView Methods (Data Display)
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredContent.count
     }
@@ -453,44 +417,35 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // 1. Selection Mode Check
         if tableView.isEditing {
             updateToolbarForSelection()
             return
         }
         
-        // 2. Deselect row
         tableView.deselectRow(at: indexPath, animated: true)
         
-        // 3. Extract Item
         guard let studyItem = filteredContent[indexPath.row] as? StudyItem else { return }
         
-        // 4. Routing Logic
         switch studyItem {
         case .topic(let topic):
-            // Calls the helper for AI Generated content
             handleTopicSelection(topic)
             
         case .source(let source):
             let type = source.fileType.uppercased()
             
             if type == "LINK" || type == "URL" {
-                // Opens the link in the built-in Safari browser
                 if let url = URL(string: source.size) {
                     let safariVC = SFSafariViewController(url: url)
                     present(safariVC, animated: true)
                 }
             } else if type == "PDF" || type == "PNG" || type == "JPG" || type == "JPEG" {
-                // ✅ Opens the full document viewer
                 openFileWithQuickLook(fileName: source.name)
             } else {
-                // For manual "TEXT" notes (TXT/TEXT)
                 showSourcePreview(title: source.name, message: source.size)
             }
         }
     }
     private func handleTopicSelection(_ topic: Topic) {
-        // Fetch latest version from DataManager to ensure we have the newest data
         let latestTopic = DataManager.shared.getTopic(
             subjectName: self.selectedSubject ?? "",
             topicName: topic.name,
@@ -507,7 +462,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         case "Flashcards":
             performSegue(withIdentifier: "openFlashcards", sender: latestTopic)
         default:
-            // Handles "Notes" and "Cheatsheet"
             performSegue(withIdentifier: "ShowMaterialDetail", sender: latestTopic)
         }
     }
@@ -527,7 +481,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         if fileManager.fileExists(atPath: fileURL.path) {
             let previewController = QLPreviewController()
             previewController.dataSource = self
-            // We store the URL temporarily to provide it to the DataSource
             self.currentPreviewURL = fileURL
             present(previewController, animated: true)
         } else {
@@ -535,10 +488,8 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
 
-    // You will need this property at the top of your class:
     var currentPreviewURL: URL?
     
-    // MARK: - Selection & Toolbar Logic
     func updateToolbarForSelection() {
         let selectedCount = topicsTableView.indexPathsForSelectedRows?.count ?? 0
         let isSelectionActive = selectedCount > 0
@@ -594,7 +545,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         topicsTableView.reloadData()
     }
     
-    // MARK: - Actions (Delete, Move, Rename)
     @objc func deleteSelectionAction() {
         guard let selectedPaths = topicsTableView.indexPathsForSelectedRows, !selectedPaths.isEmpty else { return }
         let selectedRawItems = getRawItems(from: selectedPaths)
@@ -719,7 +669,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         return item
     }
     
-    // MARK: - Global Folder Actions
     @objc func renameCurrentSubject() {
         guard let oldName = selectedSubject else { return }
         presentRenameAlert(for: oldName) { [weak self] newName in
@@ -779,7 +728,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         present(moveAlert, animated: true)
     }
     
-    // MARK: - Helpers & Segues
     @IBAction func segmentControlTapped(_ sender: UISegmentedControl) {
         if let subject = selectedSubject {
             loadContentForSubject(subject, segmentIndex: sender.selectedSegmentIndex)
@@ -836,13 +784,10 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         present(activityViewController, animated: true)
     }
     
-    // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         var finalTopic: Topic?
         
-        // 1. Extract Topic from Sender
         if let studyItem = sender as? StudyItem, case .topic(let topic) = studyItem {
-            // Re-fetch using manual loop to support Name+Type matching
             var foundTopic = topic
             if let subject = self.selectedSubject,
                let materials = DataManager.shared.savedMaterials[subject]?[DataManager.materialsKey] {
@@ -858,7 +803,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             finalTopic = topic
         }
         
-        // 2. Perform Segue Configuration
         if segue.identifier == "ShowQuizHistory" {
             if let historyVC = segue.destination as? QuizHistoryViewController,
                let topic = finalTopic {
@@ -877,8 +821,14 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             case .topic(let topic):
                 infoVC.materialName = topic.name
                 infoVC.materialType = topic.materialType
-                infoVC.dateCreated = topic.lastAccessed
-                infoVC.sourceName = "Attached Document"
+                
+                print("DEBUG - Topic Name: \(topic.name)")
+                print("DEBUG - Topic sourceName: \(topic.sourceName ?? "NIL")")
+                print("DEBUG - Topic createdDate: \(topic.createdDate ?? "NIL")")
+                print("DEBUG - Topic lastAccessed: \(topic.lastAccessed)")
+                
+                infoVC.dateCreated = topic.createdDate ?? topic.lastAccessed ?? "Just now"
+                infoVC.sourceName = topic.sourceName ?? "Attached Document"
                 
                 switch topic.materialType {
                 case "Quiz":
@@ -922,8 +872,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             detailVC.materialName = topic.name
             detailVC.contentData = topic
             detailVC.parentSubjectName = selectedSubject
-            
-            // ✅ CRITICAL FIX: Pass the type so DetailVC knows whether to show Notes or Cheatsheet
             detailVC.materialType = topic.materialType
         }
         else if segue.identifier == "ShowNotes",
@@ -939,7 +887,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             dest.parentSubjectName = self.selectedSubject
         }
         else if segue.identifier == "ShowInstructionScreen",
-                let instructionVC = segue.destination as? QuizStartViewController, // Correct Class Name
+                let instructionVC = segue.destination as? QuizStartViewController,
                 let topic = finalTopic {
             instructionVC.currentTopic = topic
             instructionVC.parentSubject = selectedSubject
@@ -991,23 +939,18 @@ extension SubjectViewController: UISearchResultsUpdating {
         }
     }
 }
-// MARK: - Document Picker Delegate
 extension SubjectViewController: UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first, let subject = selectedSubject else { return }
         
-        // Start accessing the security-scoped resource
         if url.startAccessingSecurityScopedResource() {
             defer { url.stopAccessingSecurityScopedResource() }
             
-            // 1. Save the file to DataManager
             DataManager.shared.importFile(url: url, subject: subject)
             
-            // 2. Refresh the UI so the new file appears in the list
             self.handleDataUpdate()
             
-            // 3. Success Feedback
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             print("✅ Document successfully imported to \(subject)")
         }
@@ -1016,7 +959,6 @@ extension SubjectViewController: UIDocumentPickerDelegate, UIImagePickerControll
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true)
         print("✅ Finished picking image")
-        // Logic to save the image info
     }
 }
 extension SubjectViewController: QLPreviewControllerDataSource {

@@ -40,11 +40,12 @@ class DataManager {
                             subject: String,
                             type: String,
                             notes: String? = nil,
-                            questions: [QuizQuestion]? = nil) -> Topic {
+                            questions: [QuizQuestion]? = nil,
+                            sourceName: String? = nil,
+                            createdDate: String? = nil) -> Topic {
         
         let folder = subject.isEmpty ? "General Study" : subject
         
-        // Prepare Storage Fields
         var finalLargeBody: String = ""
         var finalNotes: String? = nil
         var finalCheatsheet: String? = nil
@@ -65,6 +66,8 @@ class DataManager {
             finalNotes = notes
         }
         
+        let cleanSourceName = (sourceName ?? name).replacingOccurrences(of: ".txt", with: "").replacingOccurrences(of: "Link_", with: "")
+        
         let newTopic = Topic(
             name: name,
             lastAccessed: "Just now",
@@ -73,7 +76,9 @@ class DataManager {
             quizQuestions: questions,
             largeContentBody: finalLargeBody,
             notesContent: finalNotes,
-            cheatsheetContent: finalCheatsheet
+            cheatsheetContent: finalCheatsheet,
+            sourceName: cleanSourceName,
+            createdDate: createdDate ?? "Just now"
         )
         
         addTopic(to: folder, topic: newTopic)
