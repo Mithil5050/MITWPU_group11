@@ -83,8 +83,6 @@ class ProgressViewContoller: UIViewController {
         // MARK: - UI Setup
 
         private func setupUI() {
-            scrollView.contentInsetAdjustmentBehavior = .never
-            view.backgroundColor = .black
 
             chartContainerView.backgroundColor = .systemGray6
             chartContainerView.layer.cornerRadius = 20
