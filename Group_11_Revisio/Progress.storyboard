@@ -406,38 +406,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WfP-ho-Vrv">
-                                <rect key="frame" x="16" y="172" width="361" height="58"/>
-                                <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="731-Se-SdV">
-                                        <rect key="frame" x="8" y="4" width="345" height="50"/>
-                                        <subviews>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="flame" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="aAA-aU-vfq">
-                                                <rect key="frame" x="0.0" y="-0.33333333333333215" width="50" height="49.666666666666657"/>
-                                                <color key="tintColor" systemColor="systemOrangeColor"/>
-                                                <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.80000000000000004"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="50" id="08e-yp-uir"/>
-                                                    <constraint firstAttribute="width" constant="50" id="46P-RY-NyU"/>
-                                                </constraints>
-                                            </imageView>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="The current streak measures your consecutive days of study. Don't let the fire go out -one quick task secures your progress!" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zuO-FG-wEe">
-                                                <rect key="frame" x="58" y="0.0" width="287" height="50"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                        </subviews>
-                                    </stackView>
-                                </subviews>
-                                <color key="backgroundColor" systemColor="systemGray6Color"/>
-                                <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="731-Se-SdV" secondAttribute="trailing" constant="8" id="4Ia-Uo-2kI"/>
-                                    <constraint firstAttribute="bottom" secondItem="731-Se-SdV" secondAttribute="bottom" constant="4" id="Ia5-g8-5xC"/>
-                                    <constraint firstItem="731-Se-SdV" firstAttribute="leading" secondItem="WfP-ho-Vrv" secondAttribute="leading" constant="8" id="aMd-Qd-IY7"/>
-                                    <constraint firstItem="731-Se-SdV" firstAttribute="top" secondItem="WfP-ho-Vrv" secondAttribute="top" constant="4" id="nOs-ni-6u7"/>
-                                </constraints>
-                            </view>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Oe-mx-mtH">
                                 <rect key="frame" x="16" y="260" width="361" height="592"/>
                                 <subviews>
@@ -445,13 +413,13 @@
                                         <rect key="frame" x="0.0" y="0.0" width="361" height="592"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JhD-wU-30d" customClass="CalendarContainerView">
-                                                <rect key="frame" x="0.0" y="0.0" width="361" height="592"/>
+                                                <rect key="frame" x="0.0" y="-87" width="361" height="679"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                             </view>
                                         </subviews>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
-                                            <constraint firstItem="JhD-wU-30d" firstAttribute="top" secondItem="rus-wB-hsc" secondAttribute="top" id="R9h-fs-wnc"/>
+                                            <constraint firstItem="JhD-wU-30d" firstAttribute="top" secondItem="rus-wB-hsc" secondAttribute="top" constant="-87" id="R9h-fs-wnc"/>
                                             <constraint firstItem="JhD-wU-30d" firstAttribute="leading" secondItem="rus-wB-hsc" secondAttribute="leading" id="hCp-50-XJi"/>
                                             <constraint firstAttribute="bottom" secondItem="JhD-wU-30d" secondAttribute="bottom" id="nTr-kY-aLO"/>
                                             <constraint firstAttribute="trailing" secondItem="JhD-wU-30d" secondAttribute="trailing" id="z2x-Uq-6ng"/>
@@ -473,21 +441,13 @@
                         <viewLayoutGuide key="safeArea" id="C7G-Hs-ft6"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="6Oe-mx-mtH" firstAttribute="trailing" secondItem="WfP-ho-Vrv" secondAttribute="trailing" id="F8L-rC-HPx"/>
-                            <constraint firstItem="6Oe-mx-mtH" firstAttribute="leading" secondItem="WfP-ho-Vrv" secondAttribute="leading" id="T02-mg-ZoQ"/>
-                            <constraint firstItem="WfP-ho-Vrv" firstAttribute="leading" secondItem="ZOf-eq-FYp" secondAttribute="leadingMargin" id="T0O-ss-PHL"/>
+                            <constraint firstItem="6Oe-mx-mtH" firstAttribute="leading" secondItem="ZOf-eq-FYp" secondAttribute="leadingMargin" id="EZI-Ve-ZBW"/>
+                            <constraint firstItem="6Oe-mx-mtH" firstAttribute="trailing" secondItem="ZOf-eq-FYp" secondAttribute="trailingMargin" id="qnH-ds-Xhe"/>
                             <constraint firstItem="6Oe-mx-mtH" firstAttribute="top" secondItem="C7G-Hs-ft6" secondAttribute="top" constant="88" id="rZh-Rd-k1t"/>
-                            <constraint firstItem="WfP-ho-Vrv" firstAttribute="trailing" secondItem="ZOf-eq-FYp" secondAttribute="trailingMargin" id="sxH-Zn-hv5"/>
                             <constraint firstAttribute="bottom" secondItem="6Oe-mx-mtH" secondAttribute="bottom" id="uR8-nI-VYh"/>
-                            <constraint firstItem="WfP-ho-Vrv" firstAttribute="top" secondItem="C7G-Hs-ft6" secondAttribute="top" id="z0S-mM-DUX"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Streaks" largeTitleDisplayMode="never" id="D7X-Js-LBC"/>
-                    <connections>
-                        <outlet property="calendarContainerView" destination="JhD-wU-30d" id="d7t-ng-6it"/>
-                        <outlet property="scrollView" destination="6Oe-mx-mtH" id="ZK6-tQ-pkx"/>
-                        <outlet property="streakInfoCardView" destination="WfP-ho-Vrv" id="Vpi-SX-wI4"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4u2-Ri-ieQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -531,17 +491,16 @@
         <image name="chart.line.uptrend.xyaxis" catalog="system" width="128" height="102"/>
         <image name="chevron.forward.circle.fill" catalog="system" width="128" height="123"/>
         <image name="chevron.right.circle.fill" catalog="system" width="128" height="123"/>
-        <image name="flame" catalog="system" width="106" height="128"/>
         <image name="flame.circle" catalog="system" width="128" height="123"/>
         <image name="xmark" catalog="system" width="128" height="113"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemGray6Color">
-            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemOrangeColor">
-            <color red="1" green="0.55294117647058827" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
