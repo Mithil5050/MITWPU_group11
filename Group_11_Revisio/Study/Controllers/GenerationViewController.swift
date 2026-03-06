@@ -557,14 +557,14 @@ class GenerationViewController: UIViewController {
         if self.currentGenerationType == .quiz {
             let questions = self.parseQuizJSON(generatedContent)
             if questions.isEmpty { self.showError("AI generated invalid quiz data."); return }
-            savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: "Quiz", questions: questions)
+            savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: "Quiz", questions: questions, sourceName: topicName, createdDate: "Just now")
             
         } else if self.currentGenerationType == .flashcards {
             let parsedCards = self.parseFlashcardsJSON(generatedContent)
             if parsedCards.isEmpty { self.showError("AI generated invalid flashcard data."); return }
             
             let serialized = parsedCards.map { "\($0.safeFront)|\($0.safeBack)" }.joined(separator: "\n")
-            savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: "Flashcards", notes: serialized)
+            savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: "Flashcards", notes: serialized, sourceName: topicName, createdDate: "Just now")
             
         } else {
             // Note & Cheatsheet - Strip backticks just in case AI includes them
@@ -574,7 +574,7 @@ class GenerationViewController: UIViewController {
                 finalText = finalText.replacingOccurrences(of: "```", with: "")
             }
             
-            savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: self.currentGenerationType.description, notes: finalText)
+            savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: self.currentGenerationType.description, notes: finalText, sourceName: topicName, createdDate: "Just now")
         }
         
         // 3. Navigate
@@ -616,6 +616,8 @@ class GenerationViewController: UIViewController {
             if let dest = segue.destination as? InstructionViewController {
                 dest.quizTopic = data.topic
                 dest.sourceNameForQuiz = data.sourceName
+                dest.quizTimeLimit = self.selectedTime
+                dest.quizQuestionCount = self.selectedCount
                 dest.parentSubjectName = self.parentSubjectName
             }
         } else if segue.identifier == "ShowMaterial" {

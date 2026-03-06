@@ -1,11 +1,9 @@
 import UIKit
 
-// MARK: - 1. Definitions
 struct StudyContent {
     var filename: String
 }
 
-// ✅ RENAMED STRUCT to avoid "Invalid Redeclaration" conflicts with GenerationViewController
 struct HomeParsedAIFlashcard: Codable {
     let front: String?
     let back: String?
@@ -20,7 +18,6 @@ struct HomeParsedAIFlashcard: Codable {
     }
 }
 
-// MARK: - Custom Card View
 @IBDesignable
 class TappableCardView: UIControl {
     
@@ -120,10 +117,8 @@ class TappableCardView: UIControl {
     }
 }
 
-// MARK: - View Controller
 class GenerateHomeViewController: UIViewController {
 
-    // ✅ RATE LIMIT PROTECTION
     static var lastGenerationTime: Date?
     let requiredCooldown: TimeInterval = 8.0
 
@@ -146,12 +141,10 @@ class GenerateHomeViewController: UIViewController {
     @IBOutlet weak var notesCardView: TappableCardView!
     @IBOutlet weak var cheatsheetCardView: TappableCardView!
 
-    // Empty containers in Storyboard
     @IBOutlet weak var quizConfigurationView: UIView!
     @IBOutlet weak var flashcardConfigurationView: UIView!
     @IBOutlet weak var defaultConfigurationPlaceholder: UIView!
     
-    // ✅ PROGRAMMATIC UI ELEMENTS
     private let flashcardCountStepper = UIStepper()
     private let flashcardCountLabel = UILabel()
     
@@ -174,7 +167,6 @@ class GenerateHomeViewController: UIViewController {
         
         startCreationButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         
-        // Default to Quiz
         handleCardSelection(selectedCard: quizCardView, type: .quiz)
         updateDifficultyUI()
         setupLoadingIndicator()
@@ -226,7 +218,6 @@ class GenerateHomeViewController: UIViewController {
         startCreationButton.layer.cornerRadius = 14
     }
     
-    // MARK: - PROGRAMMATIC UI INJECTION
     private func setupProgrammaticUI() {
         guard let quizConfigView = quizConfigurationView,
               let flashcardConfigView = flashcardConfigurationView else { return }
@@ -234,7 +225,6 @@ class GenerateHomeViewController: UIViewController {
         quizConfigView.subviews.forEach { $0.removeFromSuperview() }
         flashcardConfigView.subviews.forEach { $0.removeFromSuperview() }
         
-        // --- 1. QUIZ SETTINGS (No Difficulty) ---
         quizCountStepper.minimumValue = 5
         quizCountStepper.maximumValue = 30
         quizCountStepper.stepValue = 5
@@ -265,7 +255,6 @@ class GenerateHomeViewController: UIViewController {
             quizStack.topAnchor.constraint(equalTo: quizConfigView.topAnchor, constant: 8)
         ])
         
-        // --- 2. FLASHCARD SETTINGS (With Difficulty) ---
         flashcardCountStepper.minimumValue = 5
         flashcardCountStepper.maximumValue = 30
         flashcardCountStepper.stepValue = 5
@@ -410,9 +399,7 @@ class GenerateHomeViewController: UIViewController {
         }
     }
     
-    // MARK: - AI Creation Action
     @IBAction func startCreationButtonTapped(_ sender: UIButton) {
-        // ✅ 1. CHECK RATE LIMIT COOLDOWN
         if let lastTime = Self.lastGenerationTime {
             let timeSinceLast = Date().timeIntervalSince(lastTime)
             if timeSinceLast < requiredCooldown {
@@ -451,83 +438,16 @@ class GenerateHomeViewController: UIViewController {
         Task {
             let extractedText = await ContentExtractor.shared.extractContent(from: sourceItem)
             
-            // ✅ STRICT FORMATTING PROMPTS
             var instruction = ""
             switch selectedMaterialType {
             case .flashcards:
-                instruction = """
-                Generate exactly \(selectedCount) flashcards covering the most important concepts.
-                The difficulty should be \(difficultyString).
-                STRICTLY use this EXACT JSON format:
-                {
-                  "flashcards": [
-                    {
-                      "front": "Term or concept here",
-                      "back": "Definition or explanation here"
-                    }
-                  ]
-                }
-                """
+                instruction = "Generate exactly \(selectedCount) flashcards covering the most important concepts. The difficulty should be \(difficultyString). STRICTLY use this EXACT JSON format: { \"flashcards\": [ { \"front\": \"Term or concept here\", \"back\": \"Definition or explanation here\" } ] }"
             case .cheatsheet:
-                instruction = """
-                You are an expert tutor creating a beautifully formatted Cheatsheet.
-                DO NOT output JSON. Output ONLY plain text.
-                You MUST use double line breaks (hit enter twice) to separate sections.
-                You MUST use bullet points for lists.
-                
-                Structure the output EXACTLY like this visual template:
-                
-                ### CHEATSHEET: \(topicName)
-                
-                ### KEY CONCEPTS:
-                • Concept 1: Definition goes here.
-                • Concept 2: Definition goes here.
-                
-                ### FORMULAS & FACTS:
-                • Fact or Formula 1
-                • Fact or Formula 2
-                
-                ### QUICK SUMMARY:
-                A short, readable summary goes here.
-                """
+                instruction = "You are an expert tutor creating a beautifully formatted Cheatsheet. DO NOT output JSON. Output ONLY plain text. You MUST use double line breaks to separate sections. You MUST use bullet points for lists."
             case .notes:
-                instruction = """
-                You are an expert tutor creating detailed Study Notes.
-                DO NOT output JSON. Output ONLY plain text.
-                You MUST use double line breaks (hit enter twice) to separate paragraphs and sections.
-                You MUST use bullet points for lists.
-                
-                Structure the output EXACTLY like this visual template:
-                
-                ### STUDY NOTES: \(topicName)
-                
-                ### INTRODUCTION:
-                Brief introduction goes here.
-                
-                ### MAIN TOPICS:
-                • Topic 1: Detailed explanation here.
-                • Topic 2: Detailed explanation here.
-                
-                ### EXAMPLES:
-                • Example 1
-                • Example 2
-                """
+                instruction = "You are an expert tutor creating detailed Study Notes. DO NOT output JSON. Output ONLY plain text. You MUST use double line breaks to separate paragraphs and sections. You MUST use bullet points for lists."
             case .quiz:
-                instruction = """
-                Generate exactly \(selectedCount) quiz questions in JSON format.
-                The test is designed to be solved within a \(selectedTime) minute limit.
-                STRICTLY use this EXACT JSON format:
-                {
-                  "questions": [
-                    {
-                      "question": "Question text here?",
-                      "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-                      "answer": "Option 1",
-                      "hint": "Explanation here"
-                    }
-                  ]
-                }
-                """
+                instruction = "Generate exactly \(selectedCount) quiz questions in JSON format. The test is designed to be solved within a \(selectedTime) minute limit. STRICTLY use this EXACT JSON format: { \"questions\": [ { \"question\": \"Question text here?\", \"options\": [\"Option 1\", \"Option 2\", \"Option 3\", \"Option 4\"], \"answer\": \"Option 1\", \"hint\": \"Explanation here\" } ] }"
             default: break
             }
             
@@ -569,13 +489,10 @@ class GenerateHomeViewController: UIViewController {
             )
         } catch {
             let errorString = error.localizedDescription.lowercased()
-            print("⚠️ AI Attempt \(attempt) Failed: \(error.localizedDescription)")
-            
             let isQuotaError = errorString.contains("quota") || errorString.contains("limit") || errorString.contains("429") || errorString.contains("500") || errorString.contains("exceeded")
             
             if attempt < 3 {
                 if isQuotaError {
-                    print("🚨 QUOTA HIT. Waiting 70s...")
                     for i in (1...70).reversed() {
                         await MainActor.run {
                             self.startCreationButton.setTitle("Limit Hit. Retrying in \(i)s...", for: .normal)
@@ -583,7 +500,6 @@ class GenerateHomeViewController: UIViewController {
                         try? await Task.sleep(nanoseconds: 1_000_000_000)
                     }
                 } else {
-                    print("🔄 Normal Retry (3s)...")
                     try? await Task.sleep(nanoseconds: 3 * 1_000_000_000)
                 }
                 return try await generateContentWithSmartWait(topic: topic, type: type, count: count, difficulty: difficulty, attempt: attempt + 1)
@@ -593,47 +509,16 @@ class GenerateHomeViewController: UIViewController {
         }
     }
     
-//    private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
-//        self.resetUI(sender)
-//        
-//        let subjectName = self.contextSubjectTitle ?? "General Study"
-//        
-//        // Save the Original Source Files to the Folder
-//        if let items = self.inputSourceData {
-//            for item in items {
-//                if let url = item as? URL {
-//                    DataManager.shared.importFile(url: url, subject: subjectName)
-//                } else if let str = item as? String {
-//                    if str.hasPrefix("/") || str.hasPrefix("file://") {
-//                        let url = URL(fileURLWithPath: str)
-//                        DataManager.shared.importFile(url: url, subject: subjectName)
-//                    } else if str.lowercased().hasPrefix("http://") || str.lowercased().hasPrefix("https://") {
-//                        let linkSource = Source(name: str, fileType: "LINK", size: "Web Link")
-//                        DataManager.shared.saveContent(subject: subjectName, content: linkSource)
-//                    }
-//                }
-//            }
-//        }
-    
     private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
         self.resetUI(sender)
-        
         let subjectName = self.contextSubjectTitle ?? "General Study"
         
-        // --- ✅ NEW: BADGE COUNTER LOGIC ---
-        
-        // Increment stats based on what was actually generated
         if self.selectedMaterialType == .notes {
-            // Progresses Scribe, Scholar, and Chronicler badges
             ProgressDataManager.shared.totalNotesGenerated += 1
         } else if self.selectedMaterialType == .cheatsheet {
-            // Progresses Minimalist, Optimizer, and Strategist badges
             ProgressDataManager.shared.totalCheatsheetsGenerated += 1
         }
         
-        // ----------------------------------
-        
-        // Save the Original Source Files to the Folder
         if let items = self.inputSourceData {
             for item in items {
                 if let url = item as? URL {
@@ -651,15 +536,13 @@ class GenerateHomeViewController: UIViewController {
         }
         
         var newTopic: Topic?
-        
         if self.selectedMaterialType == .quiz {
             let parsedQuestions = self.parseQuizJSON(generatedContent)
             if parsedQuestions.isEmpty {
                 self.showError("AI generated an empty quiz. Please try again.")
                 return
             }
-            newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: "Quiz", questions: parsedQuestions)
-            
+            newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: "Quiz", questions: parsedQuestions, sourceName: topicName, createdDate: "Just now")
         } else if self.selectedMaterialType == .flashcards {
             let parsedFlashcards = self.parseFlashcardsJSON(generatedContent)
             if parsedFlashcards.isEmpty {
@@ -667,17 +550,13 @@ class GenerateHomeViewController: UIViewController {
                 return
             }
             let serializedCards = parsedFlashcards.map { "\($0.safeFront)|\($0.safeBack)" }.joined(separator: "\n")
-            newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: "Flashcards", notes: serializedCards)
-            
+            newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: "Flashcards", notes: serializedCards, sourceName: topicName, createdDate: "Just now")
         } else {
-            // Note & Cheatsheet - Strip backticks just in case AI includes them
             var finalText = generatedContent.trimmingCharacters(in: .whitespacesAndNewlines)
             if finalText.hasPrefix("```markdown") {
-                finalText = finalText.replacingOccurrences(of: "```markdown", with: "")
-                finalText = finalText.replacingOccurrences(of: "```", with: "")
+                finalText = finalText.replacingOccurrences(of: "```markdown", with: "").replacingOccurrences(of: "```", with: "")
             }
-            
-            newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: self.selectedMaterialType.description, notes: finalText)
+            newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: self.selectedMaterialType.description, notes: finalText, sourceName: topicName, createdDate: "Just now")
         }
         
         if let savedTopic = newTopic {
@@ -702,14 +581,6 @@ class GenerateHomeViewController: UIViewController {
         self.present(alert, animated: true)
     }
 
-    private func extractName(from item: Any) -> String {
-        if let content = item as? StudyContent { return content.filename }
-        if let topic = item as? Topic { return topic.name }
-        if let str = item as? String { return str }
-        if let url = item as? URL { return url.lastPathComponent }
-        return "General Knowledge"
-    }
-    
     private func navigateToResult(type: GenerationType, topic: Topic, sourceName: String) {
         if type == .quiz {
             let payload = (topic: topic, sourceName: sourceName)
@@ -730,29 +601,27 @@ class GenerateHomeViewController: UIViewController {
                 dest.currentTopic = data.topic
                 dest.quizSourceName = data.sourceName
                 dest.parentSubject = self.parentSubjectName()
+                dest.quizTimeLimit = self.selectedTime
+                dest.quizQuestionCount = self.selectedCount
             }
         }
         else if segue.identifier == "HomeToFlashcardView" {
-            if let dest = segue.destination as? FlashcardViewController,
-               let topic = sender as? Topic {
+            if let dest = segue.destination as? FlashcardViewController, let topic = sender as? Topic {
                 dest.currentTopic = topic
                 dest.parentSubjectName = self.parentSubjectName()
-            } else if let dest = segue.destination as? FlashcardsViewController,
-               let topic = sender as? Topic {
+            } else if let dest = segue.destination as? FlashcardsViewController, let topic = sender as? Topic {
                 dest.currentTopic = topic
                 dest.parentSubjectName = self.parentSubjectName()
             }
         }
         else if segue.identifier == "HomeToNotesView" {
-            if let dest = segue.destination as? NotesViewController,
-               let topic = sender as? Topic {
+            if let dest = segue.destination as? NotesViewController, let topic = sender as? Topic {
                 dest.currentTopic = topic
                 dest.parentSubjectName = self.parentSubjectName()
             }
         }
         else if segue.identifier == "HomeToCheatsheetView" {
-            if let dest = segue.destination as? CheatsheetViewController,
-               let topic = sender as? Topic {
+            if let dest = segue.destination as? CheatsheetViewController, let topic = sender as? Topic {
                 dest.currentTopic = topic
                 dest.parentSubjectName = self.parentSubjectName()
             }
@@ -764,20 +633,7 @@ class GenerateHomeViewController: UIViewController {
     }
 }
 
-// MARK: - Bulletproof JSON Parsing Extensions
 extension GenerateHomeViewController {
-    
-    func convertJsonToMarkdown(json: String, type: String) -> String {
-        let stripped = json
-            .replacingOccurrences(of: "{", with: "")
-            .replacingOccurrences(of: "}", with: "")
-            .replacingOccurrences(of: "[", with: "")
-            .replacingOccurrences(of: "]", with: "")
-            .replacingOccurrences(of: "\"", with: "")
-            .replacingOccurrences(of: ",", with: "\n")
-        
-        return "# Generated \(type) (Fallback)\n\n" + stripped
-    }
     
     func parseQuizJSON(_ jsonString: String) -> [QuizQuestion] {
         let cleanString = cleanJSONText(jsonString)
@@ -821,12 +677,9 @@ extension GenerateHomeViewController {
         if let wrapper = try? decoder.decode(AIWrapper.self, from: data) {
             return wrapper.flashcards
         }
-        
-        print("⚠️ Failed to parse flashcards JSON. Raw Data: \(cleanString)")
         return []
     }
     
-    // ✅ Ensures NO conversational text breaks the parser
     private func cleanJSONText(_ json: String) -> String {
         var clean = json
         if clean.contains("```json") { clean = clean.replacingOccurrences(of: "```json", with: "") }

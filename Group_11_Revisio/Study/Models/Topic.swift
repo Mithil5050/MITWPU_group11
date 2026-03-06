@@ -7,27 +7,35 @@ struct Topic: Codable, Identifiable {
     var materialType: String
     var parentSubjectName: String
     
-    // ✅ ADDED: Dedicated storage for Quiz Questions
     var quizQuestions: [QuizQuestion]?
     
-    // ✅ PRESERVED: Your original variable names
     var largeContentBody: String?
     var notesContent: String?
     var cheatsheetContent: String?
     var attempts: [QuizAttempt]?
+    
+    var sourceName: String?
+    var createdDate: String?
 
     var safeAttempts: [QuizAttempt] {
         return attempts ?? []
     }
     
-    // Coding Keys
     private enum CodingKeys: String, CodingKey {
-        case id, name, lastAccessed, materialType, parentSubjectName
-        case quizQuestions // ✅ Added key
-        case largeContentBody, notesContent, cheatsheetContent, attempts
+        case id
+        case name
+        case lastAccessed
+        case materialType
+        case parentSubjectName
+        case quizQuestions
+        case largeContentBody
+        case notesContent
+        case cheatsheetContent
+        case attempts
+        case sourceName
+        case createdDate
     }
     
-    // Decoder Init
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
@@ -36,25 +44,27 @@ struct Topic: Codable, Identifiable {
         self.materialType = try container.decode(String.self, forKey: .materialType)
         self.parentSubjectName = try container.decode(String.self, forKey: .parentSubjectName)
         
-        // Optional properties
         self.quizQuestions = try container.decodeIfPresent([QuizQuestion].self, forKey: .quizQuestions)
         self.largeContentBody = try container.decodeIfPresent(String.self, forKey: .largeContentBody)
         self.notesContent = try container.decodeIfPresent(String.self, forKey: .notesContent)
         self.cheatsheetContent = try container.decodeIfPresent(String.self, forKey: .cheatsheetContent)
         self.attempts = try container.decodeIfPresent([QuizAttempt].self, forKey: .attempts)
+        self.sourceName = try container.decodeIfPresent(String.self, forKey: .sourceName)
+        self.createdDate = try container.decodeIfPresent(String.self, forKey: .createdDate)
     }
     
-    // Memberwise Init
     init(id: UUID = UUID(),
          name: String,
          lastAccessed: String = "Just now",
          materialType: String,
          parentSubjectName: String,
-         quizQuestions: [QuizQuestion]? = nil, // ✅ Added parameter
+         quizQuestions: [QuizQuestion]? = nil,
          largeContentBody: String? = nil,
          notesContent: String? = nil,
          cheatsheetContent: String? = nil,
-         attempts: [QuizAttempt]? = nil) {
+         attempts: [QuizAttempt]? = nil,
+         sourceName: String? = nil,
+         createdDate: String? = nil) {
         
         self.id = id
         self.name = name
@@ -66,10 +76,11 @@ struct Topic: Codable, Identifiable {
         self.notesContent = notesContent
         self.cheatsheetContent = cheatsheetContent
         self.attempts = attempts
+        self.sourceName = sourceName
+        self.createdDate = createdDate
     }
 }
 
-// Keep QuizAttempt exactly as it was
 struct QuizAttempt: Codable {
     let id: UUID
     let date: Date
