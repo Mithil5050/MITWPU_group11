@@ -259,7 +259,7 @@ class ProgressDataManager {
         guard newValue > 0 else { return }
 
         // Get this category's badges sorted Bronze (1) → Silver (2) → Gold (3)
-        let badgesInCategory = BadgeData.allMilestones
+        let badgesInCategory = Badging.allMilestones
             .filter { $0.category == category }
             .sorted { $0.tier.rawValue < $1.tier.rawValue }
 
