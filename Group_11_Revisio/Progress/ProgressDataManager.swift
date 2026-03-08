@@ -243,24 +243,6 @@ class ProgressDataManager {
         totalDailyChallengesSolved += 1
     }
 
-    // MARK: - Badge Tracking
-    //
-    // TWO DISTINCT STATES per badge:
-    //
-    // ── "BadgeUnlocked" (in progress) ──────────────────────────────────────────
-    //    Fires the very FIRST time a user attempts a task in a category.
-    //    Trigger: newValue == 1  (i.e. they just did the activity for the first time)
-    //    Meaning: "This badge is now visible and in progress."
-    //    Persisted in: `unlockedBadgeIDs`  (so it only fires once, ever)
-    //
-    // ── "BadgeEarned" (completed) ──────────────────────────────────────────────
-    //    Fires when newValue exactly reaches a badge's goalValue for the first time.
-    //    Trigger: newValue == badge.goalValue
-    //    Meaning: "You completed the requirement — badge fully earned!"
-    //    Persisted in: `earnedBadgeIDs`  (so it only fires once per badge)
-    //
-    // Neither event ever fires twice for the same badge.
-
     /// IDs of badges that have been unlocked (put in progress). Stored in UserDefaults.
     private var unlockedBadgeIDs: Set<String> {
         get { Set(UserDefaults.standard.stringArray(forKey: "unlocked_badge_ids") ?? []) }
@@ -362,6 +344,8 @@ class ProgressDataManager {
         xpHistory.insert(event, at: 0)
         if xpHistory.count > 50 { xpHistory = Array(xpHistory.prefix(50)) }
         persistXPHistory()
+        // Sync this event to Supabase xp_log table
+        Task { await SupabaseManager.shared.syncXPEvent(reason: description, amount: amount) }
     }
 
     private func persistXPHistory() {
