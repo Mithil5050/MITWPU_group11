@@ -80,7 +80,7 @@ class BadgeCollectionViewCell: UICollectionViewCell {
             badgeTitleLabel.font = .systemFont(ofSize: 14, weight: .bold)
             badgeTitleLabel.textAlignment = section == .allMilestones ? .center : .left
             
-            if let imageName = BadgeData.imageName(for: badge) {
+            if let imageName = Badging.imageName(for: badge) {
                 badgeImageView.image = UIImage(named: imageName)
                 badgeImageView.alpha = badge.isEarned ? 1.0 : 0.3
             } else {

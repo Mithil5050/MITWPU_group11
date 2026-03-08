@@ -1,10 +1,10 @@
+
 //
 //  EarnedBadgesViewController.swift
 //  Group_11_Revisio
 //
 //  Created by Ashika Yadav on 06/03/26.
 //
-
 
 import UIKit
 
@@ -38,7 +38,7 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
     // MARK: - Data
 
     private func loadData() {
-        earnedBadges = Array(BadgeData.allMilestones.filter { $0.isEarned }.reversed())
+        earnedBadges = Array(Badging.allMilestones.filter { $0.isEarned }.reversed())
     }
 
     // MARK: - Layout
@@ -46,12 +46,12 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
     private func setupCollectionView() {
         let layout = createLayout()
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
-        collectionView.autoresizingMask  = [.flexibleWidth, .flexibleHeight]
-        collectionView.backgroundColor   = .black
-        collectionView.dataSource        = self
-        collectionView.delegate          = self
-        collectionView.register(UINib(nibName: "AllBadgesCollectionViewCell", bundle: nil),
-                                forCellWithReuseIdentifier: "AllBadgesCell")
+        collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        collectionView.backgroundColor  = .black
+        collectionView.dataSource       = self
+        collectionView.delegate         = self
+        collectionView.register(UINib(nibName: "BadgeCollectionViewCell", bundle: nil),
+                                forCellWithReuseIdentifier: "BadgeCell")
         view.addSubview(collectionView)
     }
 
@@ -71,20 +71,45 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
     }
 
     private func setupEmptyState() {
-        emptyLabel.text          = "No badges earned yet.\nKeep studying to unlock them! 🏆"
-        emptyLabel.font          = .systemFont(ofSize: 16, weight: .regular)
-        emptyLabel.textColor     = .secondaryLabel
+        // 1. Configure the text label (removing the emoji from the string)
+        emptyLabel.text = "No badges earned yet.\nKeep studying to unlock them!"
+        emptyLabel.font = .systemFont(ofSize: 16, weight: .regular)
+        emptyLabel.textColor = .secondaryLabel
         emptyLabel.textAlignment = .center
         emptyLabel.numberOfLines = 0
         emptyLabel.translatesAutoresizingMaskIntoConstraints = false
-        emptyLabel.isHidden      = !earnedBadges.isEmpty
+        
+        // 2. Create the Badge Image View (SF Symbol)
+        let badgeImageView = UIImageView()
+        let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .regular)
+        badgeImageView.image = UIImage(systemName: "trophy", withConfiguration: config)
+        badgeImageView.tintColor = .secondaryLabel
+        badgeImageView.contentMode = .scaleAspectFit
+        badgeImageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // 3. Add subviews
         view.addSubview(emptyLabel)
+        view.addSubview(badgeImageView)
+        
+        // 4. Setup Constraints (Positioning the image view below the text)
         NSLayoutConstraint.activate([
+            // Center the label in the view
             emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -20),
             emptyLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
-            emptyLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32)
+            emptyLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
+            
+            // Position the Trophy Icon directly below the text
+            badgeImageView.topAnchor.constraint(equalTo: emptyLabel.bottomAnchor, constant: 12),
+            badgeImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            badgeImageView.widthAnchor.constraint(equalToConstant: 40),
+            badgeImageView.heightAnchor.constraint(equalToConstant: 40)
         ])
+        
+        // Logic from your screenshot to handle visibility
+        let noBadges = earnedBadges.isEmpty
+        emptyLabel.isHidden = !noBadges
+        badgeImageView.isHidden = !noBadges
     }
 
     // MARK: - UICollectionViewDataSource
@@ -96,9 +121,9 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
 
     func collectionView(_ collectionView: UICollectionView,
                         cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AllBadgesCell",
-                                                      for: indexPath) as! AllBadgesCollectionViewCell
-        cell.configure(with: earnedBadges[indexPath.row])
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BadgeCell",
+                                                      for: indexPath) as! BadgeCollectionViewCell
+        cell.configure(with: earnedBadges[indexPath.row], forSection: .allMilestones)
         return cell
     }
 }

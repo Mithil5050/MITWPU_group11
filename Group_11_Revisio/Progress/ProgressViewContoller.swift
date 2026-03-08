@@ -130,8 +130,10 @@ class ProgressViewContoller: UIViewController {
         }
 
         @objc private func awardsCardTapped() {
-            let vc = AwardsViewController(nibName: "AwardsViewController", bundle: nil)
+            let sb = UIStoryboard(name: "Progress", bundle: nil)
+            let vc = sb.instantiateViewController(withIdentifier: "AwardsViewController")
             navigationController?.pushViewController(vc, animated: true)
+            
         }
 
         // MARK: - Chart

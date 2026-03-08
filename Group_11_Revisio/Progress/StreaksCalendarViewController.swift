@@ -85,18 +85,24 @@ class StreaksCalendarViewController: UIViewController,
 
     // MARK: - Info card content
 
+    // MARK: - Info card content
+
     private func buildInfoCard() {
-        let flameLabel = UILabel()
-        flameLabel.text = "🔥"
-        flameLabel.font = .systemFont(ofSize: 30)
-        flameLabel.setContentHuggingPriority(.required, for: .horizontal)
+        // ✅ Replaced UILabel with UIImageView for SF Symbol
+        let flameImageView = UIImageView()
+        let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .bold)
+        flameImageView.image = UIImage(systemName: "flame", withConfiguration: config)
+        flameImageView.tintColor = .systemOrange
+        flameImageView.contentMode = .scaleAspectFit
+        flameImageView.setContentHuggingPriority(.required, for: .horizontal)
 
         streakCountLabel.font      = .systemFont(ofSize: 34, weight: .bold)
         streakCountLabel.textColor = .label
 
-        let topRow = UIStackView(arrangedSubviews: [streakCountLabel, flameLabel])
-        topRow.axis      = .horizontal
-        topRow.spacing   = 8
+        // ✅ Added flameImageView to the stack instead of flameLabel
+        let topRow = UIStackView(arrangedSubviews: [streakCountLabel, flameImageView])
+        topRow.axis       = .horizontal
+        topRow.spacing    = 8
         topRow.alignment = .center
 
         streakSuffixLabel.font      = .systemFont(ofSize: 14, weight: .regular)
@@ -107,14 +113,15 @@ class StreaksCalendarViewController: UIViewController,
         divider.heightAnchor.constraint(equalToConstant: 0.5).isActive = true
 
         let ruleLabel       = UILabel()
-        ruleLabel.text      = "🔥  Earn at least 100 XP per day to keep your streak alive."
+        // ✅ Updated rule text with the SF Symbol baseline reference
+        ruleLabel.text      = "Earn at least 100 XP per day to keep your streak alive."
         ruleLabel.font      = .systemFont(ofSize: 13, weight: .regular)
         ruleLabel.textColor = .tertiaryLabel
         ruleLabel.numberOfLines = 0
 
         let stack = UIStackView(arrangedSubviews: [topRow, streakSuffixLabel, divider, ruleLabel])
-        stack.axis      = .vertical
-        stack.spacing   = 6
+        stack.axis       = .vertical
+        stack.spacing    = 6
         stack.translatesAutoresizingMaskIntoConstraints = false
 
         streakInfoCardView.addSubview(stack)
@@ -125,9 +132,8 @@ class StreaksCalendarViewController: UIViewController,
             stack.bottomAnchor.constraint(equalTo: streakInfoCardView.bottomAnchor, constant: -16)
         ])
     }
-
+    
     // MARK: - Streak display
-
     @objc private func refreshStreakDisplay() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }

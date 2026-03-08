@@ -264,7 +264,7 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
             } else {
                 let earned = ProgressDataManager.shared.earnedBadgeCount
                 cell.configure(title: "Badges", value: "\(earned) Earned",
-                               icon: "trophy.fill", color: .systemYellow)
+                               icon: "trophy.fill", color: .systemIndigo)
             }
             return cell
 
