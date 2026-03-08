@@ -2,275 +2,320 @@
 //  ChatViewController.swift
 //  Group_11_Revisio
 //
+
 import UIKit
 import MessageKit
 import InputBarAccessoryView
 import Supabase
+import UniformTypeIdentifiers
 
 class ChatViewController: MessagesViewController, GroupUpdateDelegate {
 
+    // MARK: - Public
     weak var updateDelegate: GroupUpdateDelegate?
     var group: Group?
     var groupName: String = ""
 
-    // MARK: - Senders
-    var currentUser: ChatSender = ChatSender(senderId: "unknown", displayName: "Me")
-
-    // MARK: - MessageKit data
+    // MARK: - Private
+    var currentUser = ChatSender(senderId: "unknown", displayName: "Me")
     private var chatMessages: [ChatMessage] = []
     private var senderNameCache: [String: String] = [:]
     private var realtimeChannel: RealtimeChannelV2?
 
-    // Mic symbol before send button
     private lazy var micButton: InputBarButtonItem = {
         let item = InputBarButtonItem()
-        item.image = UIImage(systemName: "mic.fill")
+        item.image    = UIImage(systemName: "mic.fill")
         item.tintColor = .systemGray
         item.setSize(CGSize(width: 36, height: 36), animated: false)
         return item
     }()
 
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Set current user from Supabase auth
         if let user = SupabaseManager.shared.client.auth.currentUser {
-            currentUser = ChatSender(
-                senderId: user.id.uuidString,
-                displayName: user.email ?? "Me"
-            )
+            currentUser = ChatSender(senderId: user.id.uuidString,
+                                     displayName: user.email ?? "Me")
         }
 
-        messagesCollectionView.messagesDataSource    = self
-        messagesCollectionView.messagesLayoutDelegate = self
+        messagesCollectionView.messagesDataSource      = self
+        messagesCollectionView.messagesLayoutDelegate  = self
         messagesCollectionView.messagesDisplayDelegate = self
         messageInputBar.delegate = self
 
-        // MARK: - Message Input Bar
-        messageInputBar.backgroundView.backgroundColor = .systemBackground
-        messageInputBar.backgroundView.layer.borderWidth = 0
-        messageInputBar.separatorLine.isHidden = true
-
-        let textView = messageInputBar.inputTextView
-        textView.placeholder = "Message"
-        textView.font = UIFont.systemFont(ofSize: 17)
-        textView.backgroundColor = UIColor.secondarySystemBackground
-        textView.layer.cornerRadius = 20
-        textView.layer.masksToBounds = true
-        textView.textContainerInset = UIEdgeInsets(top: 10, left: 14, bottom: 10, right: 14)
-
-        messageInputBar.padding.top    = 8
-        messageInputBar.padding.bottom = 8
-        messageInputBar.padding.left   = 12
-        messageInputBar.padding.right  = 12
-        messageInputBar.middleContentViewPadding.right = 8
-
-        let sendButton = messageInputBar.sendButton
-        sendButton.setTitle(nil, for: .normal)
-        sendButton.setImage(UIImage(systemName: "arrow.up.circle.fill"), for: .normal)
-        sendButton.tintColor = .systemBlue
-
-        let attachButton = InputBarButtonItem()
-        attachButton.image = UIImage(systemName: "plus")
-        attachButton.tintColor = .systemBlue
-        attachButton.setSize(CGSize(width: 32, height: 32), animated: false)
-        attachButton.onTouchUpInside { [weak self] _ in self?.openAttachmentPicker() }
-
-        messageInputBar.leftStackView.arrangedSubviews.forEach {
-            messageInputBar.leftStackView.removeArrangedSubview($0)
-            $0.removeFromSuperview()
-        }
-        messageInputBar.leftStackView.addArrangedSubview(attachButton)
-        messageInputBar.leftStackView.alignment = .center
-        messageInputBar.leftStackView.distribution = .equalCentering
-        messageInputBar.setLeftStackViewWidthConstant(to: 40, animated: false)
-
-        messageInputBar.setStackViewItems([micButton], forStack: .right, animated: false)
-        messageInputBar.setRightStackViewWidthConstant(to: 40, animated: false)
-
-        Task {
-            await loadMessages()
-            await subscribeToMessages()
-        }
-
-        view.layoutIfNeeded()
-        navigationItem.title = groupName
-        navigationItem.largeTitleDisplayMode = .never
-
-        let titleButton = UIButton(type: .system)
-        let chevron = UIImage(systemName: "chevron.right")
-        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 13, weight: .medium)
-
-        var buttonConfig = UIButton.Configuration.plain()
-        buttonConfig.title = group?.name ?? groupName
-        buttonConfig.image = chevron?.withConfiguration(symbolConfig)
-        buttonConfig.imagePlacement = .trailing
-        buttonConfig.imagePadding = 6
-
-        titleButton.configuration = buttonConfig
-        titleButton.tintColor = .systemBlue
-        titleButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        titleButton.addTarget(self, action: #selector(groupTitleTapped), for: .touchUpInside)
-        navigationItem.titleView = titleButton
+        setupInputBar()
+        setupNavigationTitle()
 
         messagesCollectionView.scrollsToTop = false
         messagesCollectionView.contentInsetAdjustmentBehavior = .always
+
+        Task { await loadMessages(); await subscribeToMessages() }
+    }
+
+    // MARK: - Input Bar
+
+    private func setupInputBar() {
+        messageInputBar.backgroundView.backgroundColor = .systemBackground
+        messageInputBar.separatorLine.isHidden = true
+
+        let tv = messageInputBar.inputTextView
+        tv.placeholder              = "Message"
+        tv.font                     = UIFont.systemFont(ofSize: 17)
+        tv.backgroundColor          = UIColor.secondarySystemBackground
+        tv.layer.cornerRadius       = 20
+        tv.layer.masksToBounds      = true
+        tv.textContainerInset       = UIEdgeInsets(top: 10, left: 14, bottom: 10, right: 14)
+
+        messageInputBar.padding    = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+        messageInputBar.middleContentViewPadding.right = 8
+
+        let send = messageInputBar.sendButton
+        send.setTitle(nil, for: .normal)
+        send.setImage(UIImage(systemName: "arrow.up.circle.fill"), for: .normal)
+        send.tintColor = .systemBlue
+
+        // ── Attach button (left)
+        let attachButton = InputBarButtonItem()
+        attachButton.image     = UIImage(systemName: "plus")
+        attachButton.tintColor = .systemBlue
+        attachButton.setSize(CGSize(width: 32, height: 32), animated: false)
+        attachButton.onTouchUpInside { [weak self] _ in self?.showAttachmentSheet() }
+
+        messageInputBar.leftStackView.arrangedSubviews.forEach {
+            messageInputBar.leftStackView.removeArrangedSubview($0); $0.removeFromSuperview()
+        }
+        messageInputBar.leftStackView.addArrangedSubview(attachButton)
+        messageInputBar.leftStackView.alignment = .center
+        messageInputBar.setLeftStackViewWidthConstant(to: 40, animated: false)
+        messageInputBar.setStackViewItems([micButton], forStack: .right, animated: false)
+        messageInputBar.setRightStackViewWidthConstant(to: 40, animated: false)
+    }
+
+    private func setupNavigationTitle() {
+        view.layoutIfNeeded()
+        navigationItem.largeTitleDisplayMode = .never
+
+        let btn = UIButton(type: .system)
+        var cfg = UIButton.Configuration.plain()
+        cfg.title          = group?.name ?? groupName
+        cfg.image          = UIImage(systemName: "chevron.right")?
+            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 13, weight: .medium))
+        cfg.imagePlacement = .trailing
+        cfg.imagePadding   = 6
+        btn.configuration  = cfg
+        btn.tintColor      = .systemBlue
+        btn.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        btn.addTarget(self, action: #selector(groupTitleTapped), for: .touchUpInside)
+        navigationItem.titleView = btn
+    }
+
+    // MARK: - Attachment Sheet
+
+    private func showAttachmentSheet() {
+        let sheet = UIAlertController(title: "Send Attachment",
+                                      message: nil,
+                                      preferredStyle: .actionSheet)
+        sheet.addAction(UIAlertAction(title: "📚  Study Material",
+                                      style: .default) { [weak self] _ in
+            self?.openStudyMaterialPicker()
+        })
+        sheet.addAction(UIAlertAction(title: "🖼  Photo Library",
+                                      style: .default) { [weak self] _ in
+            self?.openPhotoLibrary()
+        })
+        sheet.addAction(UIAlertAction(title: "📄  Files",
+                                      style: .default) { [weak self] _ in
+            self?.openDocumentPicker()
+        })
+        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(sheet, animated: true)
+    }
+
+    private func openStudyMaterialPicker() {
+        let folderVC = AttachmentFolderViewController()
+        folderVC.sendDelegate = self
+        let nav = UINavigationController(rootViewController: folderVC)
+        nav.modalPresentationStyle = .pageSheet
+        present(nav, animated: true)
+    }
+
+    private func openPhotoLibrary() {
+        let picker = UIImagePickerController()
+        picker.sourceType = .photoLibrary
+        picker.delegate   = self
+        present(picker, animated: true)
+    }
+
+    private func openDocumentPicker() {
+        let types: [UTType] = [.pdf, .plainText, .data,
+                               .spreadsheet, .presentation, .image]
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: types)
+        picker.delegate = self
+        picker.allowsMultipleSelection = false
+        present(picker, animated: true)
     }
 
     // MARK: - Load Messages
+
     private func loadMessages() async {
         guard let groupId = group?.id else { return }
         await DataManager.shared.loadMessages(for: groupId)
         let raw = DataManager.shared.groupMessages[groupId] ?? []
 
-        chatMessages = await withTaskGroup(of: ChatMessage.self) { group in
-            var result: [ChatMessage] = []
-            for msg in raw {
-                group.addTask {
-                    let name: String
-                    if msg.senderId.uuidString == self.currentUser.senderId {
-                        name = self.currentUser.displayName
-                    } else {
-                        name = await self.fetchDisplayName(for: msg.senderId.uuidString)
-                    }
-                    let sender = ChatSender(senderId: msg.senderId.uuidString, displayName: name)
-
-                    // Render URLs as tappable attributed text
-                    if let urlString = msg.fileUrl,
-                       msg.fileType == "link",
-                       let url = URL(string: urlString) {
-                        let attributed = NSMutableAttributedString(string: msg.content)
-                        let range = NSRange(msg.content.startIndex..., in: msg.content)
-                        let isOutgoing = msg.senderId.uuidString == self.currentUser.senderId
-                        let linkColor: UIColor = isOutgoing ? .white : .systemBlue
-                        attributed.addAttribute(.link, value: url, range: range)
-                        attributed.addAttribute(.foregroundColor, value: linkColor, range: range)
-                        attributed.addAttribute(.underlineColor, value: linkColor, range: range)
-                        attributed.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: range)
-                        return ChatMessage(
-                            sender: sender,
-                            messageId: msg.id.uuidString,
-                            sentDate: msg.createdAt,
-                            kind: .attributedText(attributed)
-                        )
-                    }
-
-                    return ChatMessage(
-                        sender: sender,
-                        messageId: msg.id.uuidString,
-                        sentDate: msg.createdAt,
-                        kind: .text(msg.content)
-                    )
-                }
-                for await msg in group { result.append(msg) }
+        var built: [ChatMessage] = []
+        for msg in raw {
+            let name: String
+            if msg.senderId.uuidString == currentUser.senderId {
+                name = currentUser.displayName
+            } else {
+                name = await fetchDisplayName(for: msg.senderId.uuidString)
             }
-            return result.sorted { $0.sentDate < $1.sentDate }
+            let sender = ChatSender(senderId: msg.senderId.uuidString, displayName: name)
+            built.append(makeChatMessage(from: msg, sender: sender))
         }
+        built.sort { $0.sentDate < $1.sentDate }
 
         await MainActor.run {
+            chatMessages = built
             messagesCollectionView.reloadData()
             messagesCollectionView.scrollToLastItem(animated: false)
         }
     }
 
+    // MARK: - Build ChatMessage from DB row
+
+    private func makeChatMessage(from msg: Message, sender: ChatSender) -> ChatMessage {
+        let isOutgoing = msg.senderId.uuidString == currentUser.senderId
+
+        // Link bubble
+        if let urlStr = msg.fileUrl, msg.fileType == "link",
+           let url = URL(string: urlStr) {
+            return ChatMessage(sender: sender, messageId: msg.id.uuidString,
+                               sentDate: msg.createdAt,
+                               kind: .attributedText(
+                                   linkAttr(text: msg.content, url: url, isOutgoing: isOutgoing)
+                               ))
+        }
+
+        // Document / study material bubble
+        if msg.fileType == "document", let fn = msg.fileName, !fn.isEmpty {
+            return ChatMessage(sender: sender, messageId: msg.id.uuidString,
+                               sentDate: msg.createdAt,
+                               kind: .attributedText(
+                                   docAttr(fileName: fn, isOutgoing: isOutgoing)
+                               ))
+        }
+
+        // Plain text
+        return ChatMessage(sender: sender, messageId: msg.id.uuidString,
+                           sentDate: msg.createdAt, kind: .text(msg.content))
+    }
+
+    // MARK: - Attributed String Helpers
+
+    private func linkAttr(text: String, url: URL, isOutgoing: Bool) -> NSAttributedString {
+        let c = isOutgoing ? UIColor.white : UIColor.systemBlue
+        let a = NSMutableAttributedString(string: text)
+        let r = NSRange(text.startIndex..., in: text)
+        a.addAttributes([.link: url, .foregroundColor: c,
+                         .underlineColor: c,
+                         .underlineStyle: NSUnderlineStyle.single.rawValue], range: r)
+        return a
+    }
+
+    private func docAttr(fileName: String, isOutgoing: Bool) -> NSAttributedString {
+        let cfg  = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
+        let tint = isOutgoing ? UIColor.white : UIColor.systemBlue
+        let att  = NSTextAttachment()
+        att.image  = UIImage(systemName: "doc.fill", withConfiguration: cfg)?
+            .withTintColor(tint, renderingMode: .alwaysOriginal)
+        att.bounds = CGRect(x: 0, y: -2, width: 16, height: 18)
+
+        let result = NSMutableAttributedString(attachment: att)
+        result.append(NSAttributedString(string: " \(fileName)", attributes: [
+            .foregroundColor: isOutgoing ? UIColor.white : UIColor.label,
+            .font: UIFont.systemFont(ofSize: 15, weight: .medium)
+        ]))
+        return result
+    }
+
     // MARK: - Fetch Display Name
+
     private func fetchDisplayName(for senderId: String) async -> String {
         if let cached = senderNameCache[senderId] { return cached }
         do {
             struct Profile: Decodable { let username: String? }
             let result: [Profile] = try await SupabaseManager.shared.client
-                .from("profiles")
-                .select("username")
-                .eq("id", value: senderId)
-                .limit(1)
-                .execute()
-                .value
+                .from("profiles").select("username")
+                .eq("id", value: senderId).limit(1).execute().value
             let name = result.first?.username ?? "User"
             senderNameCache[senderId] = name
             return name
         } catch { return "User" }
     }
 
-    // MARK: - Realtime Subscription
+    // MARK: - Realtime
+
     private func subscribeToMessages() async {
         guard let groupId = group?.id else { return }
-
         let channel = await SupabaseManager.shared.client.realtimeV2
             .channel("messages:\(groupId)")
-
         let changes = await channel.postgresChange(
-            InsertAction.self,
-            schema: "public",
-            table: "messages",
+            InsertAction.self, schema: "public", table: "messages",
             filter: "group_id=eq.\(groupId)"
         )
-
         await channel.subscribe()
         realtimeChannel = channel
 
         for await change in changes {
             let row = change.record
             guard
-                let id          = row["id"]?.stringValue,
-                let senderId    = row["sender_id"]?.stringValue,
-                let content     = row["content"]?.stringValue,
+                let id           = row["id"]?.stringValue,
+                let senderId     = row["sender_id"]?.stringValue,
+                let content      = row["content"]?.stringValue,
                 let createdAtStr = row["created_at"]?.stringValue
             else { continue }
 
             if senderId == currentUser.senderId { continue }
 
-            let date = ISO8601DateFormatter().date(from: createdAtStr) ?? Date()
-            let name = await fetchDisplayName(for: senderId)
-            let sender = ChatSender(senderId: senderId, displayName: name)
-
+            let date     = ISO8601DateFormatter().date(from: createdAtStr) ?? Date()
+            let name     = await fetchDisplayName(for: senderId)
+            let sender   = ChatSender(senderId: senderId, displayName: name)
             let fileUrl  = row["file_url"]?.stringValue
             let fileType = row["file_type"]?.stringValue
+            let fileName = row["file_name"]?.stringValue
 
             let kind: MessageKind
-            if let urlString = fileUrl, fileType == "link", let url = URL(string: urlString) {
-                let attributed = NSMutableAttributedString(string: content)
-                let range = NSRange(content.startIndex..., in: content)
-                // Realtime only fires for OTHER users (we skip our own senderId above)
-                // so this is always incoming → blue
-                attributed.addAttribute(.link, value: url, range: range)
-                attributed.addAttribute(.foregroundColor, value: UIColor.systemBlue, range: range)
-                attributed.addAttribute(.underlineColor, value: UIColor.systemBlue, range: range)
-                attributed.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: range)
-                kind = .attributedText(attributed)
+            if let u = fileUrl, fileType == "link", let url = URL(string: u) {
+                kind = .attributedText(linkAttr(text: content, url: url, isOutgoing: false))
+            } else if fileType == "document", let fn = fileName, !fn.isEmpty {
+                kind = .attributedText(docAttr(fileName: fn, isOutgoing: false))
             } else {
                 kind = .text(content)
             }
 
-            let newMsg = ChatMessage(sender: sender, messageId: id, sentDate: date, kind: kind)
-
+            let msg = ChatMessage(sender: sender, messageId: id, sentDate: date, kind: kind)
             await MainActor.run {
-                chatMessages.append(newMsg)
+                chatMessages.append(msg)
                 messagesCollectionView.reloadData()
                 messagesCollectionView.scrollToLastItem(animated: true)
             }
         }
     }
 
-    // MARK: - Attachment Picker
-    private func openAttachmentPicker() {
-        let folderVC = AttachmentFolderViewController()
-        let nav = UINavigationController(rootViewController: folderVC)
-        nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true)
-    }
+    // MARK: - Navigation
 
     @objc private func groupTitleTapped() {
-        let storyboard = UIStoryboard(name: "Groups", bundle: nil)
-        guard let settingsVC = storyboard.instantiateViewController(
-            withIdentifier: "GroupSettingsVC") as? GroupSettingsViewController else {
-            print("ERROR: GroupSettingsVC not found")
-            return
-        }
-        settingsVC.group = group
-        settingsVC.updateDelegate = self
-        navigationController?.pushViewController(settingsVC, animated: true)
-        settingsVC.delegate = navigationController?.viewControllers
-            .first(where: { $0 is GroupsViewController }) as? LeaveGroupDelegate
+        let sb = UIStoryboard(name: "Groups", bundle: nil)
+        guard let vc = sb.instantiateViewController(
+            withIdentifier: "GroupSettingsVC") as? GroupSettingsViewController else { return }
+        vc.group          = group
+        vc.updateDelegate = self
+        vc.delegate       = navigationController?.viewControllers
+            .first { $0 is GroupsViewController } as? LeaveGroupDelegate
+        navigationController?.pushViewController(vc, animated: true)
     }
 
     deinit {
@@ -279,94 +324,225 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
     }
 }
 
+// MARK: - AttachmentSendDelegate
+
+extension ChatViewController: AttachmentSendDelegate {
+
+    func didSendAttachments(_ items: [SentAttachment]) {
+        guard let groupId = group?.id else { return }
+
+        for att in items {
+            // Show bubble immediately (optimistic UI)
+            let kind = MessageKind.attributedText(docAttr(fileName: att.displayName, isOutgoing: true))
+            chatMessages.append(ChatMessage(sender: currentUser,
+                                            messageId: UUID().uuidString,
+                                            sentDate: Date(),
+                                            kind: kind))
+            // Push to Supabase
+            Task {
+                do {
+                    try await SupabaseManager.shared.sendAttachment(
+                        groupId: groupId,
+                        senderId: currentUser.senderId,
+                        attachment: att)
+                } catch { print("❌ sendAttachment error: \(error)") }
+            }
+        }
+
+        messagesCollectionView.reloadData()
+        messagesCollectionView.scrollToLastItem(animated: true)
+    }
+}
+
+// MARK: - UIImagePickerControllerDelegate
+
+extension ChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+
+    func imagePickerController(
+        _ picker: UIImagePickerController,
+        didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+    ) {
+        picker.dismiss(animated: true)
+        guard let image   = info[.originalImage] as? UIImage,
+              let groupId = group?.id,
+              let imgData = image.jpegData(compressionQuality: 0.7) else { return }
+
+        // Optimistic bubble
+        let kind = MessageKind.photo(ImageMediaItem(image: image))
+        chatMessages.append(ChatMessage(sender: currentUser,
+                                        messageId: UUID().uuidString,
+                                        sentDate: Date(),
+                                        kind: kind))
+        messagesCollectionView.reloadData()
+        messagesCollectionView.scrollToLastItem(animated: true)
+
+        Task {
+            do {
+                let path      = "\(groupId)/\(UUID().uuidString).jpg"
+                let publicUrl = try await SupabaseManager.shared.uploadFile(
+                    bucket: "group-media", path: path,
+                    data: imgData, contentType: "image/jpeg")
+
+                struct ImageInsert: Encodable {
+                    let group_id: UUID; let sender_id: UUID; let content: String
+                    let file_url: String; let file_name: String; let file_type: String
+                }
+                guard let gid = UUID(uuidString: groupId),
+                      let sid = UUID(uuidString: currentUser.senderId) else { return }
+                try await SupabaseManager.shared.client.from("messages")
+                    .insert(ImageInsert(group_id: gid, sender_id: sid,
+                                        content: "📷 Image",
+                                        file_url: publicUrl,
+                                        file_name: "Image",
+                                        file_type: "image"))
+                    .execute()
+            } catch { print("❌ image upload error: \(error)") }
+        }
+    }
+
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true)
+    }
+}
+
+// MARK: - UIDocumentPickerDelegate
+
+extension ChatViewController: UIDocumentPickerDelegate {
+
+    func documentPicker(_ controller: UIDocumentPickerViewController,
+                        didPickDocumentsAt urls: [URL]) {
+        guard let url     = urls.first,
+              let groupId = group?.id else { return }
+        let fileName = url.lastPathComponent
+
+        // Optimistic bubble
+        let kind = MessageKind.attributedText(docAttr(fileName: fileName, isOutgoing: true))
+        chatMessages.append(ChatMessage(sender: currentUser,
+                                        messageId: UUID().uuidString,
+                                        sentDate: Date(),
+                                        kind: kind))
+        messagesCollectionView.reloadData()
+        messagesCollectionView.scrollToLastItem(animated: true)
+
+        Task {
+            do {
+                let data      = try Data(contentsOf: url)
+                let path      = "\(groupId)/\(UUID().uuidString)_\(fileName)"
+                let publicUrl = try await SupabaseManager.shared.uploadFile(
+                    bucket: "group-media", path: path,
+                    data: data, contentType: "application/octet-stream")
+
+                struct DocInsert: Encodable {
+                    let group_id: UUID; let sender_id: UUID; let content: String
+                    let file_url: String; let file_name: String; let file_type: String
+                }
+                guard let gid = UUID(uuidString: groupId),
+                      let sid = UUID(uuidString: currentUser.senderId) else { return }
+                try await SupabaseManager.shared.client.from("messages")
+                    .insert(DocInsert(group_id: gid, sender_id: sid,
+                                      content: fileName,
+                                      file_url: publicUrl,
+                                      file_name: fileName,
+                                      file_type: "document"))
+                    .execute()
+            } catch { print("❌ document upload error: \(error)") }
+        }
+    }
+}
+
 // MARK: - MessagesDataSource
+
 extension ChatViewController: MessagesDataSource {
 
-    var currentSender: SenderType { return currentUser }
+    var currentSender: SenderType { currentUser }
 
     func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
-        return chatMessages.count
+        chatMessages.count
     }
 
     func messageForItem(at indexPath: IndexPath,
                         in messagesCollectionView: MessagesCollectionView) -> MessageType {
-        return chatMessages[indexPath.section]
+        chatMessages[indexPath.section]
     }
 }
 
 extension ChatViewController {
     func isPreviousMessageSameSender(at indexPath: IndexPath) -> Bool {
-        guard indexPath.section - 1 >= 0 else { return false }
+        guard indexPath.section > 0 else { return false }
         return chatMessages[indexPath.section].sender.senderId ==
                chatMessages[indexPath.section - 1].sender.senderId
     }
 }
 
 // MARK: - MessagesLayoutDelegate
+
 extension ChatViewController: MessagesLayoutDelegate {
 
-    func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath,
+    func messageTopLabelHeight(for message: MessageType,
+                                at indexPath: IndexPath,
                                 in messagesCollectionView: MessagesCollectionView) -> CGFloat {
         if message.sender.senderId == currentUser.senderId { return 0 }
-        if indexPath.section == 0 || !isPreviousMessageSameSender(at: indexPath) { return 16 }
-        return 0
+        return (indexPath.section == 0 || !isPreviousMessageSameSender(at: indexPath)) ? 16 : 0
     }
 
-    func messageTopLabelAlignment(for message: MessageType, at indexPath: IndexPath,
+    func messageTopLabelAlignment(for message: MessageType,
+                                   at indexPath: IndexPath,
                                    in messagesCollectionView: MessagesCollectionView) -> LabelAlignment? {
         guard message.sender.senderId != currentUser.senderId else { return nil }
-        if indexPath.section == 0 || !isPreviousMessageSameSender(at: indexPath) {
-            return LabelAlignment(textAlignment: .left,
-                                  textInsets: UIEdgeInsets(top: 0, left: 48, bottom: 4, right: 0))
-        }
-        return nil
+        guard indexPath.section == 0 || !isPreviousMessageSameSender(at: indexPath) else { return nil }
+        return LabelAlignment(textAlignment: .left,
+                              textInsets: UIEdgeInsets(top: 0, left: 48, bottom: 4, right: 0))
     }
 }
 
 // MARK: - MessagesDisplayDelegate
+
 extension ChatViewController: MessagesDisplayDelegate {
 
-    func backgroundColor(for message: MessageType, at indexPath: IndexPath,
+    func backgroundColor(for message: MessageType,
+                          at indexPath: IndexPath,
                           in messagesCollectionView: MessagesCollectionView) -> UIColor {
-        return message.sender.senderId == currentUser.senderId ? .systemBlue : .systemGray5
+        message.sender.senderId == currentUser.senderId ? .systemBlue : .systemGray5
     }
 
-    func textColor(for message: MessageType, at indexPath: IndexPath,
+    func textColor(for message: MessageType,
+                   at indexPath: IndexPath,
                    in messagesCollectionView: MessagesCollectionView) -> UIColor {
-        return message.sender.senderId == currentUser.senderId ? .white : .label
+        message.sender.senderId == currentUser.senderId ? .white : .label
     }
 
-    // iOS UITextView renders link color from tintColor — override per bubble here
+    // Controls link/tint color inside message label — key fix for blue-on-blue links
     func configureMessageLabel(_ messageLabel: MessageLabel,
                                for message: MessageType,
                                at indexPath: IndexPath,
                                in messagesCollectionView: MessagesCollectionView) {
-        let isOutgoing = message.sender.senderId == currentUser.senderId
-        messageLabel.tintColor = isOutgoing ? .white : .systemBlue
+        messageLabel.tintColor = message.sender.senderId == currentUser.senderId
+            ? .white : .systemBlue
     }
 
     func messageTopLabelAttributedText(for message: MessageType,
                                         at indexPath: IndexPath) -> NSAttributedString? {
         if message.sender.senderId == currentUser.senderId { return nil }
         if isPreviousMessageSameSender(at: indexPath) { return nil }
-        return NSAttributedString(
-            string: message.sender.displayName,
-            attributes: [
-                .font: UIFont.systemFont(ofSize: 11, weight: .medium),
-                .foregroundColor: UIColor.secondaryLabel
-            ]
-        )
+        return NSAttributedString(string: message.sender.displayName, attributes: [
+            .font: UIFont.systemFont(ofSize: 11, weight: .medium),
+            .foregroundColor: UIColor.secondaryLabel
+        ])
     }
 
-    func configureAvatarView(_ avatarView: AvatarView, for message: MessageType,
+    func configureAvatarView(_ avatarView: AvatarView,
+                              for message: MessageType,
                               at indexPath: IndexPath,
                               in messagesCollectionView: MessagesCollectionView) {
         avatarView.isHidden = false
         if message.sender.senderId == currentUser.senderId {
-            avatarView.image = UIImage(named: "pfp_default") ?? UIImage(systemName: "person.circle.fill")
+            avatarView.image = UIImage(named: "pfp_default")
+                ?? UIImage(systemName: "person.circle.fill")
         } else {
-            let initials = String(message.sender.displayName.prefix(1)).uppercased()
-            avatarView.set(avatar: Avatar(image: nil, initials: initials))
+            avatarView.set(avatar: Avatar(
+                image: nil,
+                initials: String(message.sender.displayName.prefix(1)).uppercased()
+            ))
         }
         avatarView.layer.cornerRadius = 14
         avatarView.clipsToBounds = true
@@ -374,39 +550,33 @@ extension ChatViewController: MessagesDisplayDelegate {
 }
 
 // MARK: - InputBarAccessoryViewDelegate
+
 extension ChatViewController: InputBarAccessoryViewDelegate {
 
-    func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
+    func inputBar(_ inputBar: InputBarAccessoryView,
+                  didPressSendButtonWith text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
-        // Detect URL for optimistic UI
-        let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
-        let range = NSRange(trimmed.startIndex..., in: trimmed)
-        let isLink = !(detector?.matches(in: trimmed, options: [], range: range) ?? []).isEmpty
+        // Detect link for optimistic UI
+        let detector = try? NSDataDetector(
+            types: NSTextCheckingResult.CheckingType.link.rawValue)
+        let r     = NSRange(trimmed.startIndex..., in: trimmed)
+        let isLink = !(detector?.matches(in: trimmed, options: [], range: r) ?? []).isEmpty
 
         let kind: MessageKind
         if isLink {
-            let urlString = trimmed.hasPrefix("http") ? trimmed : "https://\(trimmed)"
-            if let url = URL(string: urlString) {
-                let attributed = NSMutableAttributedString(string: trimmed)
-                let r = NSRange(trimmed.startIndex..., in: trimmed)
-                // Outgoing bubble is blue so link must be white
-                attributed.addAttribute(.link, value: url, range: r)
-                attributed.addAttribute(.foregroundColor, value: UIColor.white, range: r)
-                attributed.addAttribute(.underlineColor, value: UIColor.white, range: r)
-                attributed.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: r)
-                kind = .attributedText(attributed)
-            } else {
-                kind = .text(trimmed)
-            }
+            let urlStr = trimmed.hasPrefix("http") ? trimmed : "https://\(trimmed)"
+            if let url = URL(string: urlStr) {
+                kind = .attributedText(linkAttr(text: trimmed, url: url, isOutgoing: true))
+            } else { kind = .text(trimmed) }
         } else {
             kind = .text(trimmed)
         }
 
-        let msg = ChatMessage(sender: currentUser, messageId: UUID().uuidString,
-                              sentDate: Date(), kind: kind)
-        chatMessages.append(msg)
+        chatMessages.append(ChatMessage(sender: currentUser,
+                                        messageId: UUID().uuidString,
+                                        sentDate: Date(), kind: kind))
         messagesCollectionView.reloadData()
         messagesCollectionView.scrollToLastItem(animated: true)
         inputBar.inputTextView.text = ""
@@ -417,20 +587,21 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
             do {
                 try await SupabaseManager.shared.sendMessage(
                     groupId: groupId, senderId: currentUser.senderId, text: trimmed)
-            } catch { print("❌ Failed to send message: \(error)") }
+            } catch { print("❌ sendMessage error: \(error)") }
         }
     }
 
-    func inputBar(_ inputBar: InputBarAccessoryView, textViewTextDidChangeTo text: String) {
-        if text.isEmpty {
-            inputBar.setStackViewItems([micButton], forStack: .right, animated: true)
-        } else {
-            inputBar.setStackViewItems([inputBar.sendButton], forStack: .right, animated: true)
-        }
+    func inputBar(_ inputBar: InputBarAccessoryView,
+                  textViewTextDidChangeTo text: String) {
+        inputBar.setStackViewItems(
+            text.isEmpty ? [micButton] : [inputBar.sendButton],
+            forStack: .right, animated: true
+        )
     }
 }
 
 // MARK: - LeaveGroupDelegate
+
 extension ChatViewController: LeaveGroupDelegate {
 
     func didLeaveGroup(_ group: Group) {
@@ -439,11 +610,21 @@ extension ChatViewController: LeaveGroupDelegate {
 
     func didUpdateGroup(_ group: Group) {
         self.group = group
-        if let titleButton = navigationItem.titleView as? UIButton {
-            var config = titleButton.configuration
-            config?.title = group.name
-            titleButton.configuration = config
+        if let btn = navigationItem.titleView as? UIButton {
+            var cfg = btn.configuration
+            cfg?.title = group.name
+            btn.configuration = cfg
         }
         updateDelegate?.didUpdateGroup(group)
     }
+}
+
+// MARK: - ImageMediaItem helper
+
+private struct ImageMediaItem: MediaItem {
+    var url: URL? { nil }
+    var image: UIImage?
+    var placeholderImage: UIImage { UIImage(systemName: "photo") ?? UIImage() }
+    var size: CGSize { CGSize(width: 200, height: 150) }
+    init(image: UIImage) { self.image = image }
 }
