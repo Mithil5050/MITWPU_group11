@@ -1,14 +1,6 @@
 import UIKit
 import Supabase
 
-// ✅ 1. Optimized Struct: Removed 'id' from the body to ensure the update hits the columns correctly.
-struct ProfileUpdate: Encodable {
-    let username: String
-    let institution: String
-    let total_xp: Int
-    let current_level: Int
-}
-
 class SignupViewController: UIViewController {
 
     @IBOutlet weak var nameTextField: UITextField!
@@ -53,29 +45,31 @@ class SignupViewController: UIViewController {
         
         Task {
             do {
-                // 1. Create the Auth user in Supabase
-                let authResponse = try await supabase.auth.signUp(email: email, password: password)
-                let userId = authResponse.user.id
-                
-                // 2. Prepare the update payload
-                // These keys match your Supabase column names exactly.
-                let updatedData = ProfileUpdate(
-                    username: name,
-                    institution: institution,
-                    total_xp: 0,
-                    current_level: 1
+                // ✅ Pack the dictionary and send it in ONE call!
+                // Using .string() satisfies Supabase's AnyJSON requirement.
+                // The SQL trigger will automatically catch this and build the Profile.
+                let _ = try await supabase.auth.signUp(
+                    email: email,
+                    password: password,
+                    data: [
+                        "username": .string(name),
+                        "institution": .string(institution)
+                    ]
                 )
                 
-                // 3. Update the existing NULL row created by the Database Trigger
-                try await supabase
-                    .from("profiles")
-                    .update(updatedData)
-                    .eq("id", value: userId)
-                    .execute()
-                
-                // 4. Success! Transition to the main app
+                // ✅ Show the Verification Pop-up and send them back to Login
                 DispatchQueue.main.async {
-                    self.transitionToMainApp()
+                    let alert = UIAlertController(
+                        title: "Check Your Email",
+                        message: "We've sent a confirmation link to \(email). Please verify your account before logging in.",
+                        preferredStyle: .alert
+                    )
+                    
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                        self.dismiss(animated: true) // Closes the signup screen
+                    }))
+                    
+                    self.present(alert, animated: true)
                 }
                 
             } catch {
@@ -83,7 +77,6 @@ class SignupViewController: UIViewController {
                     self.saveButton.setTitle("Save", for: .normal)
                     self.saveButton.isEnabled = true
                     
-                    // Specific check for that "11 seconds" rate limit error
                     let errorMessage = error.localizedDescription.contains("security purposes")
                         ? "Please wait a few seconds before trying again."
                         : error.localizedDescription
@@ -92,23 +85,6 @@ class SignupViewController: UIViewController {
                 }
             }
         }
-    }
-    
-    // MARK: - Navigation
-    private func transitionToMainApp() {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        
-        // Ensure this Identifier matches your Storyboard ID exactly
-        guard let tabBarVC = storyboard.instantiateViewController(withIdentifier: "MainTabBarController") as? UITabBarController else {
-            print("❌ Could not find MainTabBarController in Storyboard")
-            return
-        }
-        
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = windowScene.windows.first else { return }
-        
-        window.rootViewController = tabBarVC
-        UIView.transition(with: window, duration: 0.4, options: .transitionCrossDissolve, animations: nil, completion: nil)
     }
 
     private func showAlert(title: String, message: String) {
