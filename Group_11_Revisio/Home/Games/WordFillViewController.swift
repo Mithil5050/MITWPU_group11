@@ -1,6 +1,15 @@
 import UIKit
 
-// MARK: - Data Model
+// MARK: - AI Models
+struct AIWordFillResponse: Codable {
+    struct AIWordFillQuestion: Codable {
+        let text: String
+        let options: [String]
+        let correctAnswer: String
+    }
+    let questions: [AIWordFillQuestion]
+}
+
 struct Question {
     let text: String
     let options: [String]
@@ -20,47 +29,36 @@ class WordFillViewController: UIViewController {
     @IBOutlet var Gamecard: UIView!
 
     // MARK: - Properties
+    var currentTopic: Topic? // ✅ Passed from Launch Screen
+    
     private var questions: [Question] = []
     private var currentQuestionIndex = 0
     private var timer: Timer?
     private var secondsRemaining = 60
     private var isProcessingAnswer = false
-    
     private var userAnswers: [String?] = []
+    
+    // Loading UI
+    private let loadingOverlay = UIView()
+    private let loadingIndicator = UIActivityIndicatorView(style: .large)
+    private let loadingLabel = UILabel()
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupQuestions()
         setupUI()
-        loadQuestion()
-        startTimer()
+        setupLoadingOverlay()
+        generateWordFill() // ✅ Calls AI before starting timer
     }
 
     // MARK: - Setup
-    private func setupQuestions() {
-        questions = [
-            Question(text: "A column, or set of columns, that uniquely identifies every tuple in a relation is formally known as a ________",
-                     options: ["Candidate Key", "Super Key", "Primary Key", "Foreign Key"],
-                     correctAnswer: "Super Key"),
-            Question(text: "The ACID property that guarantees committed changes remain permanently recorded is called ________",
-                     options: ["Atomicity", "Consistency", "Isolation", "Durability"],
-                     correctAnswer: "Durability"),
-            Question(text: "In a relational database, a ________ is a column that creates a link between data in two tables.",
-                     options: ["Primary Key", "Composite Key", "Foreign Key", "Unique Key"],
-                     correctAnswer: "Foreign Key"),
-            Question(text: "The process of organizing data to minimize redundancy is known as Data ________",
-                     options: ["Normalization", "Indexing", "Abstraction", "Encapsulation"],
-                     correctAnswer: "Normalization"),
-            Question(text: "Which SQL command is used to remove all records from a table without deleting the table structure?",
-                     options: ["DELETE", "DROP", "REMOVE", "TRUNCATE"],
-                     correctAnswer: "TRUNCATE")
-        ]
-        
-        userAnswers = Array(repeating: nil, count: questions.count)
-    }
-
     private func setupUI() {
+        if let topicName = currentTopic?.name {
+            self.title = "Word Fill: \(topicName)"
+        } else {
+            self.title = "Word Fill"
+        }
+        
         // MARK: Card Style
         Gamecard.layer.cornerRadius = 24
         Gamecard.layer.cornerCurve = .continuous
@@ -76,8 +74,143 @@ class WordFillViewController: UIViewController {
             button.titleLabel?.textAlignment = .center
         }
     }
+    
+    private func setupLoadingOverlay() {
+        loadingOverlay.backgroundColor = .systemBackground
+        loadingOverlay.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(loadingOverlay)
+        
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.color = .systemBlue
+        loadingIndicator.startAnimating()
+        loadingOverlay.addSubview(loadingIndicator)
+        
+        loadingLabel.text = "Crafting your Word Fill from \(currentTopic?.name ?? "General Knowledge")..."
+        loadingLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        loadingLabel.textColor = .secondaryLabel
+        loadingLabel.textAlignment = .center
+        loadingLabel.numberOfLines = 0
+        loadingLabel.translatesAutoresizingMaskIntoConstraints = false
+        loadingOverlay.addSubview(loadingLabel)
+        
+        NSLayoutConstraint.activate([
+            loadingOverlay.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            loadingOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            loadingOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            loadingOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            loadingIndicator.centerXAnchor.constraint(equalTo: loadingOverlay.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: loadingOverlay.centerYAnchor, constant: -20),
+            
+            loadingLabel.topAnchor.constraint(equalTo: loadingIndicator.bottomAnchor, constant: 16),
+            loadingLabel.leadingAnchor.constraint(equalTo: loadingOverlay.leadingAnchor, constant: 32),
+            loadingLabel.trailingAnchor.constraint(equalTo: loadingOverlay.trailingAnchor, constant: -32)
+        ])
+    }
+
+    // MARK: - ✅ AI GENERATION LOGIC
+    private func generateWordFill() {
+        Task {
+            let topicName = currentTopic?.name ?? "General Knowledge"
+            let contentBody = currentTopic?.largeContentBody ?? currentTopic?.notesContent ?? currentTopic?.cheatsheetContent ?? ""
+            let safeContent = String(contentBody.prefix(15000))
+            
+            let prompt = """
+            Create a "Word Fill" (fill-in-the-blank) game based on the following study material.
+            Generate EXACTLY 5 fill-in-the-blank questions.
+            Each question MUST have a sentence with a "________" (blank) where the missing word goes.
+            Provide exactly 4 multiple choice options, with one being the exact correct answer.
+            
+            STRICTLY use this EXACT JSON format (do not add conversational text or markdown):
+            {
+              "questions": [
+                {
+                  "text": "The process of ________ is used by plants to make food.",
+                  "options": ["Photosynthesis", "Respiration", "Digestion", "Osmosis"],
+                  "correctAnswer": "Photosynthesis"
+                }
+              ]
+            }
+            
+            STUDY MATERIAL:
+            \(safeContent.isEmpty ? "General educational facts and trivia." : safeContent)
+            """
+            
+            do {
+                let jsonResponse = try await AIContentManager.shared.generateContent(
+                    topic: prompt,
+                    type: "Word Fill",
+                    count: 5,
+                    difficulty: "Medium"
+                )
+                
+                let cleanJSON = cleanJSONText(jsonResponse)
+                guard let data = cleanJSON.data(using: .utf8) else { throw URLError(.cannotDecodeContentData) }
+                
+                let decoder = JSONDecoder()
+                let result = try decoder.decode(AIWordFillResponse.self, from: data)
+                
+                self.questions = result.questions.map {
+                    Question(text: $0.text, options: $0.options, correctAnswer: $0.correctAnswer)
+                }
+                self.userAnswers = Array(repeating: nil, count: self.questions.count)
+                
+                DispatchQueue.main.async {
+                    self.hideLoadingAndStartGame()
+                }
+                
+            } catch {
+                print("⚠️ AI Word Fill Failed: \(error.localizedDescription). Using fallback.")
+                DispatchQueue.main.async {
+                    self.loadFallbackQuestions()
+                    self.hideLoadingAndStartGame()
+                }
+            }
+        }
+    }
+    
+    private func cleanJSONText(_ json: String) -> String {
+        var clean = json
+        if clean.contains("```json") { clean = clean.replacingOccurrences(of: "```json", with: "") }
+        clean = clean.replacingOccurrences(of: "```", with: "")
+        if let startIndex = clean.firstIndex(of: "{") { clean = String(clean[startIndex...]) }
+        if let endIndex = clean.lastIndex(of: "}") { clean = String(clean[...endIndex]) }
+        return clean.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    private func loadFallbackQuestions() {
+        questions = [
+            Question(text: "A column that uniquely identifies every tuple in a relation is known as a ________",
+                     options: ["Candidate Key", "Super Key", "Primary Key", "Foreign Key"],
+                     correctAnswer: "Super Key"),
+            Question(text: "The ACID property that guarantees committed changes remain permanently recorded is called ________",
+                     options: ["Atomicity", "Consistency", "Isolation", "Durability"],
+                     correctAnswer: "Durability"),
+            Question(text: "In a database, a ________ is a column that creates a link between data in two tables.",
+                     options: ["Primary Key", "Composite Key", "Foreign Key", "Unique Key"],
+                     correctAnswer: "Foreign Key"),
+            Question(text: "The process of organizing data to minimize redundancy is known as Data ________",
+                     options: ["Normalization", "Indexing", "Abstraction", "Encapsulation"],
+                     correctAnswer: "Normalization"),
+            Question(text: "Which SQL command is used to remove all records from a table without deleting the structure?",
+                     options: ["DELETE", "DROP", "REMOVE", "TRUNCATE"],
+                     correctAnswer: "TRUNCATE")
+        ]
+        userAnswers = Array(repeating: nil, count: questions.count)
+    }
+
+    private func hideLoadingAndStartGame() {
+        UIView.animate(withDuration: 0.3, animations: {
+            self.loadingOverlay.alpha = 0
+        }) { _ in
+            self.loadingOverlay.removeFromSuperview()
+            self.loadQuestion()
+            self.startTimer()
+        }
+    }
 
     private func loadQuestion() {
+        guard !questions.isEmpty else { return }
         isProcessingAnswer = false
         let currentQuestion = questions[currentQuestionIndex]
         
@@ -154,13 +287,15 @@ class WordFillViewController: UIViewController {
     }
 
     private func showFinalResults() {
+        
+        ProgressDataManager.shared.totalWordFillsDone += 1
         timer?.invalidate()
         
-        // 1. Calculate Results & Prepare Summary Data
         let (result, summaryItems) = processQuizData()
         
-        // 2. Perform Segue to the existing Result Sheet
-        // Pass both the result object and the summary array
+        // Award XP
+        Task { await RevisioManager.shared.earnXP(amount: 15, reason: "Played Word Fill") }
+        
         performSegue(withIdentifier: "NavigateToResults", sender: (result, summaryItems))
     }
     
@@ -199,12 +334,11 @@ class WordFillViewController: UIViewController {
         }
         
         let elapsed = TimeInterval(60 - secondsRemaining)
-        
         let finalResult = FinalQuizResult(
             finalScore: score,
             totalQuestions: questions.count,
             timeElapsed: elapsed,
-            sourceName: "Word Fill Game",
+            sourceName: currentTopic?.name ?? "Word Fill Game",
             details: details
         )
         
@@ -235,7 +369,6 @@ class WordFillViewController: UIViewController {
                 
                 destVC.finalResult = result
                 destVC.summaryData = summaryItems
-                
                 destVC.parentFolder = "Games"
                 destVC.topicToSave = nil
             }

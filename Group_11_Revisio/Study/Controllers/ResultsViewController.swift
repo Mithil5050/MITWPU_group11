@@ -82,15 +82,23 @@ class ResultsViewController: UIViewController {
         
         retakeButton.layer.cornerRadius = 14
         saveButton.layer.cornerRadius = 14
+
+       
+        Task {
+            
+            let totalEarned = 20 + (result.finalScore * 5)
+            
+           
+            await RevisioManager.shared.earnXP(amount: totalEarned, reason: "Study Quiz")
+        }
     }
     
     // MARK: - Actions
     @IBAction func retakeButtonTapped(_ sender: Any) {
-        // Find your Study Tab's QuizViewController in the navigation stack
+     
         if let nav = navigationController,
            let quizVC = nav.viewControllers.first(where: { $0 is QuizViewController }) as? QuizViewController {
             
-            // Reset question states
             quizVC.currentQuestionIndex = 0
             quizVC.score = 0
             for i in 0..<quizVC.allQuestions.count {
@@ -103,22 +111,31 @@ class ResultsViewController: UIViewController {
         }
     }
     
+
+    
     @IBAction func saveButtonTapped(_ sender: Any) {
-        // 1. Validate required data exists
+       
         guard let result = finalResult, var topic = topicToSave, let folder = parentFolder else {
             print("DEBUG: Missing data in ResultsViewController. Result: \(finalResult != nil), Topic: \(topicToSave != nil), Folder: \(parentFolder != nil)")
             return
         }
+      
+        ProgressDataManager.shared.totalQuizzesDone += 1
         
-        // 2. Pack the summary data into a 5-part string per line
-        // Format: Question | Options | CorrectIndex | Explanation | UserAnswerIndex
+        
+        let percentage = Double(result.finalScore) / Double(result.totalQuestions)
+        if percentage >= 0.9 {
+           
+            ProgressDataManager.shared.totalHighLevelQuizzes += 1
+        }
+     
         let packedData = summaryData.map { item in
             let answers = item.allOptions.joined(separator: "|")
-            let userIdx = item.userAnswerIndex ?? -1 // Use -1 if user didn't answer
+            let userIdx = item.userAnswerIndex ?? -1
             return "\(item.questionText)|\(answers)|\(item.correctAnswerIndex)|\(item.explanation)|\(userIdx)"
         }.joined(separator: "\n")
         
-        // 3. Create a new History Attempt object
+        
         let newAttempt = QuizAttempt(
             id: UUID(),
             date: Date(),
@@ -127,24 +144,23 @@ class ResultsViewController: UIViewController {
             summaryData: packedData
         )
         
-        // 4. Update the topic's attempts array
+       
         if topic.attempts == nil {
             topic.attempts = []
         }
         topic.attempts?.append(newAttempt)
         
-        // 5. Update metadata so the "History" list reflects the latest run
+     
         topic.lastAccessed = "Score: \(result.finalScore)/\(result.totalQuestions)"
         topic.largeContentBody = packedData
         
-        // 6. Save to Disk via DataManager
         DataManager.shared.updateTopic(subjectName: folder, topic: topic)
         
-        // 7. Show Success Alert and Navigate Back
+       
         let alert = UIAlertController(title: "Saved!", message: "Quiz result archived.", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
             if let nav = self.navigationController {
-                // Find SubjectViewController in stack so "Gatekeeper" logic refreshes
+                
                 for vc in nav.viewControllers {
                     if vc is SubjectViewController {
                         nav.popToViewController(vc, animated: true)
@@ -162,7 +178,7 @@ class ResultsViewController: UIViewController {
         if segue.identifier == "ShowReviewDetail",
            let destVC = segue.destination as? ReviewDetailViewController {
             
-            // Recalculate isCorrect here to be 100% sure the labels match
+           
             for i in 0..<summaryData.count {
                 summaryData[i].isCorrect = (summaryData[i].userAnswerIndex == summaryData[i].correctAnswerIndex)
             }

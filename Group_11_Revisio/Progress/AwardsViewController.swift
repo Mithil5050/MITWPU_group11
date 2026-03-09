@@ -7,153 +7,304 @@
 
 import UIKit
 
-class AwardsViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, MonthlyBadgeCellDelegate {
+// 1. Define the 4 Sections
+enum AwardsSection: Int, CaseIterable {
+    case feature = 0          // Large Monthly Badge
+    case activeChallenges = 1 // Horizontal Scroll (closest to completion)
+    case recentWins = 2       // Horizontal Scroll (recently earned)
+    case allMilestones = 3    // Vertical Grid (all categories)
+}
+
+class AwardsViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
-    @IBOutlet weak var featuredCollectionView: UICollectionView!
-    @IBOutlet weak var gridCollectionView: UICollectionView!
-    
-    var badges: [Badge] = BadgeData.allBadges
-    
-    // sidePadding is now only used for the bottom grid calculation
-        private let sidePadding: CGFloat = 20.0
-        private let horizontalSpacing: CGFloat = 16.0
-        private let verticalSpacing: CGFloat = 20.0
-        private let numberOfColumns: CGFloat = 2.0
-        private let cardHeightToWidthRatio: CGFloat = 1.1
-        private let featuredCardHeight: CGFloat = 125.0
+    @IBOutlet weak var collectionView: UICollectionView!
         
-        override func viewDidLoad() {
-            super.viewDidLoad()
-            setupCollectionViews()
-            registerCells()
-            setupLayouts()
-            navigationItem.title = "Awards"
-        }
-        
-        private func setupCollectionViews() {
-            featuredCollectionView.dataSource = self
-            featuredCollectionView.delegate = self
-            gridCollectionView.dataSource = self
-            gridCollectionView.delegate = self
-            
-            // Allows shadows to show outside the cell bounds
-            featuredCollectionView.clipsToBounds = false
-        }
-        
-        func registerCells() {
-            featuredCollectionView.register(UINib(nibName: "MonthlyBadgeCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "MonthlyFeatureCell")
-            gridCollectionView.register(UINib(nibName: "BadgeCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "BadgeGridCell")
-            
-            gridCollectionView.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
-        }
-        
-        func setupLayouts() {
-            // Grid Layout (Bottom)
-            if let gridLayout = gridCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
-                gridLayout.minimumInteritemSpacing = horizontalSpacing
-                gridLayout.minimumLineSpacing = verticalSpacing
-                gridLayout.sectionInset = UIEdgeInsets(top: 0, left: sidePadding, bottom: verticalSpacing, right: sidePadding)
-            }
-            
-            // Featured Layout (Top) - Removed all programmatic insets
-            if let featuredLayout = featuredCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
-                featuredLayout.sectionInset = .zero
-                featuredLayout.minimumLineSpacing = 0
-                featuredLayout.minimumInteritemSpacing = 0
-            }
-        }
-        
-        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            return collectionView == featuredCollectionView ? 1 : badges.count - 1
-        }
-        
-        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            if collectionView == featuredCollectionView {
-                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MonthlyFeatureCell", for: indexPath) as? MonthlyBadgeCollectionViewCell else { fatalError() }
-                cell.delegate = self
-                cell.configure(with: badges[0])
-                return cell
-            } else {
-                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BadgeGridCell", for: indexPath) as? BadgeCollectionViewCell else { fatalError() }
-                let badge = badges[indexPath.item + 1]
-                cell.configure(with: badge)
-                return cell
-            }
-        }
-        
-        func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-            if kind == UICollectionView.elementKindSectionHeader && collectionView == gridCollectionView {
-                let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as! SectionHeaderView
-                return header
-            }
-            return UICollectionReusableView()
-        }
-        
-        func didTapMonthlyBadgeCard() {
-            let detailVC = MonthlyChallengeDetailViewController(nibName: "MonthlyChallengeDetailViewController", bundle: nil)
-            self.navigationController?.pushViewController(detailVC, animated: true)
-        }
-        
-        func didTapShowAllButton() {
-            self.performSegue(withIdentifier: "ShowAllBadges", sender: self)
-        }
-    }
 
-    extension AwardsViewController: UICollectionViewDelegateFlowLayout {
-        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-            
-            if collectionView == featuredCollectionView {
-                // REMOVED CALCULATIONS: Cell now simply takes the width of the CollectionView.
-                // Your Storyboard trailing/leading constraints on the FeaturedCollectionView now control the width.
-                return CGSize(width: collectionView.frame.width, height: featuredCardHeight)
-            } else {
-                // Grid width remains programmatic to handle 2-column spacing
-                let totalSpacing = (sidePadding * 2) + horizontalSpacing
-                let width = floor((collectionView.bounds.width - totalSpacing) / 2)
-                return CGSize(width: width, height: width * cardHeightToWidthRatio)
-            }
-        }
+    var milestones: [Badging.Badge] = []
 
-        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-            if collectionView == gridCollectionView {
-                return CGSize(width: collectionView.frame.width, height: 70)
-            }
-            return .zero
-        }
-    }
+      // The 4 upcoming next-tier badges, ranked by how close the current tier is to completion.
+      // Example: Adventurer (bronze) at 1/10 → show Warrior (silver) in the preview.
+      private let milestonePreviewCount = 4
+      var previewMilestones: [Badging.Badge] {
+          var result: [(badge: Badging.Badge, progress: Float)] = []
 
-    class SectionHeaderView: UICollectionReusableView {
-        let titleLabel = UILabel()
-        let subtitleLabel = UILabel()
+          for category in Badging.BadgeCategory.allCases {
+              let sorted = milestones
+                  .filter { $0.category == category }
+                  .sorted { $0.tier.rawValue < $1.tier.rawValue }
 
-        override init(frame: CGRect) {
-            super.init(frame: frame)
-            setupHeader()
-        }
+              guard let activeIndex = sorted.firstIndex(where: { !$0.isEarned && $0.currentValue > 0 })
+              else { continue }
 
-        required init?(coder: NSCoder) {
-            super.init(coder: coder)
-            setupHeader()
-        }
+              let activeBadge = sorted[activeIndex]
+              let nextIndex = activeIndex + 1
 
-        private func setupHeader() {
-            titleLabel.text = "In Progress"
-            titleLabel.textColor = .white
-            titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
-            
-            subtitleLabel.text = "Awards you're close to earning"
-            subtitleLabel.textColor = .secondaryLabel
-            subtitleLabel.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-            
-            let stackView = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
-            stackView.axis = .vertical
-            stackView.spacing = 2
-            addSubview(stackView)
-            
-            stackView.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
-                stackView.centerYAnchor.constraint(equalTo: centerYAnchor)
-            ])
-        }
-    }
+              if nextIndex < sorted.count {
+                  // Show the NEXT tier, ranked by the active tier's progress
+                  result.append((sorted[nextIndex], activeBadge.progress))
+              } else if activeBadge.progress >= 0.5 {
+                  // Already last tier and halfway there — show it
+                  result.append((activeBadge, activeBadge.progress))
+              }
+          }
+
+          return Array(result
+              .sorted { $0.progress > $1.progress }
+              .map { $0.badge }
+              .prefix(milestonePreviewCount))
+      }
+
+      var activeBadges: [Badging.Badge] {
+          var nextBadgesInLine: [Badging.Badge] = []
+          for category in Badging.BadgeCategory.allCases {
+              let badgesInCategory = milestones.filter { $0.category == category }
+              let sortedBadges = badgesInCategory.sorted { $0.tier.rawValue < $1.tier.rawValue }
+              if let nextUnearned = sortedBadges.first(where: { !$0.isEarned }) {
+                  nextBadgesInLine.append(nextUnearned)
+              }
+          }
+          return nextBadgesInLine.filter { $0.currentValue > 0 }
+      }
+
+      var earnedBadges: [Badging.Badge] {
+          return Array(milestones.filter { $0.isEarned }.reversed())
+      }
+
+      override func viewDidLoad() {
+          super.viewDidLoad()
+          setupData()
+          setupCollectionView()
+          navigationItem.title = "Awards"
+          NotificationCenter.default.addObserver(self, selector: #selector(refreshAwardsData),
+                                                 name: .xpDidUpdate, object: nil)
+      }
+
+      @objc private func refreshAwardsData() {
+          DispatchQueue.main.async { self.collectionView.reloadData() }
+      }
+
+      private func setupData() {
+          self.milestones = Badging.allMilestones
+      }
+
+      private func setupCollectionView() {
+          collectionView.dataSource = self
+          collectionView.delegate = self
+          collectionView.collectionViewLayout = createLayout()
+
+          collectionView.register(UINib(nibName: "MonthlyBadgeCollectionViewCell", bundle: nil),
+                                  forCellWithReuseIdentifier: "MonthlyFeatureCell")
+          collectionView.register(UINib(nibName: "BadgeCollectionViewCell", bundle: nil),
+                                  forCellWithReuseIdentifier: "BadgeCell")
+          collectionView.register(SectionHeaderView.self,
+                                  forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+                                  withReuseIdentifier: "HeaderView")
+          collectionView.backgroundColor = .black
+      }
+
+      private func createLayout() -> UICollectionViewLayout {
+          return UICollectionViewCompositionalLayout { [weak self] (sectionIndex, env) -> NSCollectionLayoutSection? in
+              guard let self = self,
+                    let sectionType = AwardsSection(rawValue: sectionIndex) else { return nil }
+              let hasActivity = ProgressDataManager.shared.hasEarnedAnyXP
+
+              let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                      heightDimension: .absolute(44))
+              let header = NSCollectionLayoutBoundarySupplementaryItem(
+                  layoutSize: headerSize,
+                  elementKind: UICollectionView.elementKindSectionHeader,
+                  alignment: .top)
+
+              switch sectionType {
+              case .feature:
+                  let item = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(1.0),
+                                                                      heightDimension: .fractionalHeight(1.0)))
+                  let group = NSCollectionLayoutGroup.horizontal(
+                      layoutSize: .init(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(110)),
+                      subitems: [item])
+                  let section = NSCollectionLayoutSection(group: group)
+                  section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16)
+                  return section
+
+              case .allMilestones:
+                  let item = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(0.5),
+                                                                      heightDimension: .absolute(160)))
+                  item.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 6, bottom: 6, trailing: 6)
+                  let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                         heightDimension: .absolute(160))
+                  let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+                  let section = NSCollectionLayoutSection(group: group)
+                  section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 10, bottom: 20, trailing: 10)
+                  section.boundarySupplementaryItems = [header]
+                  section.supplementariesFollowContentInsets = false
+                  return section
+
+              default:
+                  var isEmpty = false
+                  if sectionType == .activeChallenges {
+                      isEmpty = !hasActivity || self.activeBadges.isEmpty
+                  } else if sectionType == .recentWins {
+                      isEmpty = !hasActivity || self.earnedBadges.isEmpty
+                  }
+
+                  let item = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(1.0),
+                                                                      heightDimension: .fractionalHeight(1.0)))
+                  let currentWidth: NSCollectionLayoutDimension = isEmpty ? .fractionalWidth(1.0) : .fractionalWidth(0.42)
+                  let groupSize = NSCollectionLayoutSize(widthDimension: currentWidth, heightDimension: .absolute(145))
+                  let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+                  let section = NSCollectionLayoutSection(group: group)
+                  section.orthogonalScrollingBehavior = isEmpty ? .none : .continuous
+                  section.interGroupSpacing = 16
+                  section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 16, bottom: 16, trailing: 16)
+                  section.boundarySupplementaryItems = [header]
+                  section.supplementariesFollowContentInsets = false
+                  return section
+              }
+          }
+      }
+
+      // MARK: - DataSource
+
+      func numberOfSections(in collectionView: UICollectionView) -> Int {
+          return AwardsSection.allCases.count
+      }
+
+      func collectionView(_ collectionView: UICollectionView,
+                          numberOfItemsInSection section: Int) -> Int {
+          let type = AwardsSection(rawValue: section)!
+          let hasActivity = ProgressDataManager.shared.hasEarnedAnyXP
+
+          switch type {
+          case .feature:          return 1
+          case .activeChallenges: return (!hasActivity || activeBadges.isEmpty) ? 1 : activeBadges.count
+          case .recentWins:       return (!hasActivity || earnedBadges.isEmpty) ? 1 : earnedBadges.count
+          case .allMilestones:    return previewMilestones.isEmpty ? 1 : previewMilestones.count
+          }
+      }
+
+      func collectionView(_ collectionView: UICollectionView,
+                          cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+          let sectionType = AwardsSection(rawValue: indexPath.section)!
+          let hasActivity = ProgressDataManager.shared.hasEarnedAnyXP
+
+          switch sectionType {
+          case .feature:
+              let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MonthlyFeatureCell",
+                                                            for: indexPath) as! MonthlyBadgeCollectionViewCell
+              cell.configure(with: milestones[0])
+              cell.delegate = self
+              return cell
+
+          case .activeChallenges:
+              let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BadgeCell",
+                                                            for: indexPath) as! BadgeCollectionViewCell
+              if !hasActivity || activeBadges.isEmpty {
+                  cell.showEmptyState(section: .activeChallenges)
+              } else {
+                  cell.badgeCardView.isHidden = false
+                  cell.configure(with: activeBadges[indexPath.row], forSection: .activeChallenges)
+              }
+              return cell
+
+          case .recentWins:
+              let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BadgeCell",
+                                                            for: indexPath) as! BadgeCollectionViewCell
+              if !hasActivity || earnedBadges.isEmpty {
+                  cell.showEmptyState(section: .recentWins)
+              } else {
+                  cell.badgeCardView.isHidden = false
+                  cell.configure(with: earnedBadges[indexPath.row], forSection: .recentWins)
+              }
+              return cell
+
+          case .allMilestones:
+              let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BadgeCell",
+                                                            for: indexPath) as! BadgeCollectionViewCell
+              if previewMilestones.isEmpty {
+                  cell.showEmptyState(section: .recentWins)
+              } else {
+                  cell.badgeCardView.isHidden = false
+                  cell.configure(with: previewMilestones[indexPath.row], forSection: .allMilestones)
+              }
+              return cell
+          }
+      }
+
+      func collectionView(_ collectionView: UICollectionView,
+                          viewForSupplementaryElementOfKind kind: String,
+                          at indexPath: IndexPath) -> UICollectionReusableView {
+          let header = collectionView.dequeueReusableSupplementaryView(
+              ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as! SectionHeaderView
+
+          let titles = ["", "Focus Challenges", "Recent Achievements", "All Milestones"]
+          header.titleLabel.text = titles[indexPath.section]
+
+          // Wire "Show All" only on the milestones header
+          if indexPath.section == AwardsSection.allMilestones.rawValue {
+              header.showAllHandler = { [weak self] in
+                  self?.openAllMilestones()
+              }
+          } else {
+              header.showAllHandler = nil
+          }
+
+          return header
+      }
+
+      // MARK: - Navigation
+
+      private func openAllMilestones() {
+          let vc = AllLockedBadgesViewController()
+          navigationController?.pushViewController(vc, animated: true)
+      }
+  }
+
+  // MARK: - MonthlyBadgeCellDelegate
+
+  extension AwardsViewController: MonthlyBadgeCellDelegate {
+
+      func didTapMonthlyBadgeCard() {
+          let vc = MonthlyChallengeDetailViewController(nibName: "MonthlyChallengeDetailViewController", bundle: nil)
+          navigationController?.pushViewController(vc, animated: true)
+      }
+
+      func didTapShowAllButton() { }
+
+      func didTapXPInfo() {
+          let vc = XPDetailsViewController(nibName: "XPDetailsViewController", bundle: nil)
+          navigationController?.pushViewController(vc, animated: true)
+      }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

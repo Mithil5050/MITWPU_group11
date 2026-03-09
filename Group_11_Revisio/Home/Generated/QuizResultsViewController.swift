@@ -1,10 +1,3 @@
-//
-//  QuizResultsViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Mithil on 18/01/26.
-//
-
 import UIKit
 
 class QuizResultsViewController: UIViewController {
@@ -14,7 +7,6 @@ class QuizResultsViewController: UIViewController {
     var topicToSave: Topic?
     var parentFolder: String?
     
-    // This array receives data from the Session and passes it to Summary
     var summaryData: [QuizSummaryItem] = []
     
     // MARK: - Outlets
@@ -29,17 +21,33 @@ class QuizResultsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        
+        // ✅ Disable swipe-to-go-back so they can't bypass the warning
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = false
+        
+        // ✅ Override the default back button with our custom warning
+        let backAction = UIAction { [weak self] _ in
+            self?.showExitWarning()
+        }
+        let backButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), primaryAction: backAction)
+        navigationItem.leftBarButtonItem = backButton
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // ✅ Re-enable swipe-to-go-back for the rest of the app
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
     }
     
     func setupUI() {
+        // 1. Safety check for the result data
         guard let result = finalResult else { return }
         
-        // 1. Set Score Text
+        // 2. Update Score Text
         scoreLabel.text = "You Scored \(result.finalScore) out of \(result.totalQuestions)."
         
-        // 2. Handle Text & Image based on Score
+        // 3. Determine performance (Percentage) and update Header/Image
         let percentage = Double(result.finalScore) / Double(result.totalQuestions)
-        
         if percentage < 0.5 {
             headerLabel.text = "Better luck next time!"
             resultImageView.image = UIImage(named: "BadMarks")
@@ -48,23 +56,58 @@ class QuizResultsViewController: UIViewController {
             resultImageView.image = UIImage(named: "GoodMarks")
         }
         
-        // 3. Configure TableView
+        // 4. Configure TableView for Time Taken and Summary
         tableView.delegate = self
         tableView.dataSource = self
         tableView.tableFooterView = UIView()
         tableView.backgroundColor = .clear
         
-        // 4. Style Buttons
+        // 5. Style the Action Buttons
         retakeButton.layer.cornerRadius = 14
         homeButton.layer.cornerRadius = 14
         
-        // 5. Game Mode Check (Hide Retake for Games/WordFill)
+        // 6. Handle Navigation Logic (Hide Retake if it's a quick quiz without a saved topic)
         if topicToSave == nil {
             retakeButton.isHidden = true
             homeButton.setTitle("Back to Home", for: .normal)
         } else {
             retakeButton.isHidden = false
         }
+
+        // 7. ✅ INTEGRATE XP SYSTEM
+        Task {
+            let baseXP = 20
+            let performanceXP = result.finalScore * 5
+            let totalEarned = baseXP + performanceXP
+            
+            // This triggers the sliding banner, haptic feedback, and cloud sync automatically
+            await RevisioManager.shared.earnXP(amount: totalEarned, reason: "Quiz Mastery")
+        }
+    }
+    
+    // ✅ Exit Warning Pop-up
+    private func showExitWarning() {
+        let alert = UIAlertController(
+            title: "Quit Quiz?",
+            message: "Your progress for this attempt will be lost. Are you sure you want to Quit?",
+            preferredStyle: .alert
+        )
+        
+        let resumeAction = UIAlertAction(title: "Resume", style: .cancel, handler: nil)
+        
+        let quitAction = UIAlertAction(title: "Quit", style: .destructive) { [weak self] _ in
+            // Navigate to Home
+            if let nav = self?.navigationController {
+                nav.popToRootViewController(animated: true)
+            } else {
+                self?.dismiss(animated: true, completion: nil)
+            }
+        }
+        
+        alert.addAction(resumeAction)
+        alert.addAction(quitAction)
+        
+        present(alert, animated: true, completion: nil)
     }
 
     // MARK: - Actions
@@ -84,36 +127,11 @@ class QuizResultsViewController: UIViewController {
     }
     
     @IBAction func homeButtonTapped(_ sender: UIButton) {
-        if let topic = topicToSave, let subject = parentFolder {
-            // Save logic for normal quizzes
-            let updatedTopic = Topic(name: topic.name, lastAccessed: "Just now", materialType: "Quiz", largeContentBody: topic.largeContentBody, parentSubjectName: subject, notesContent: topic.notesContent, cheatsheetContent: topic.cheatsheetContent)
-            DataManager.shared.addTopic(to: subject, topic: updatedTopic)
-            
-            let alert = UIAlertController(title: "Saved!", message: "Quiz saved to '\(parentFolder ?? "Study")'.", preferredStyle: .alert)
-            
-            // ✅ MODIFIED: Navigate to Home Screen upon tapping OK
-            let okAction = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
-                guard let self = self else { return }
-                
-                // Check if we are in a navigation stack
-                if let nav = self.navigationController {
-                    // Pop to the root view controller (Home Screen)
-                    nav.popToRootViewController(animated: true)
-                } else {
-                    // If presented modally, dismiss it
-                    self.dismiss(animated: true, completion: nil)
-                }
-            }
-            alert.addAction(okAction)
-            present(alert, animated: true)
-            
+        // Just Navigate Home
+        if let nav = self.navigationController {
+            nav.popToRootViewController(animated: true)
         } else {
-            // Direct exit for Games (Word Fill) - already behaves correctly but ensuring consistency
-            if let nav = self.navigationController {
-                nav.popToRootViewController(animated: true)
-            } else {
-                self.dismiss(animated: true, completion: nil)
-            }
+            self.dismiss(animated: true, completion: nil)
         }
     }
     

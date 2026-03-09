@@ -89,7 +89,7 @@ struct BarChartView: View {
             // 4. Centered Legend
             HStack(spacing: 0) {
                 Spacer()
-                legendItem(label: "Study", color: colors.study)
+                legendItem(label: "Learning", color: colors.study)
                 Spacer()
                 legendItem(label: "Games", color: colors.games)
                 Spacer()

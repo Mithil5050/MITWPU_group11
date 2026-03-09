@@ -1,11 +1,5 @@
-//
-//  NotesViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Mithil on 13/01/26.
-//
-
 import UIKit
+
 
 class NotesViewController: UIViewController {
     
@@ -19,39 +13,113 @@ class NotesViewController: UIViewController {
     var parentSubjectName: String?
     
     private var isEditingMode: Bool = false
+    private var studyTimer: Timer?
+    private let studyThreshold: TimeInterval = 60.0
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         contentView.isEditable = false
         contentView.delegate = self
-        
         setupNavigationButtons()
         displayContent()
+        
     }
-    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // 1. Force clear any existing timer
+        studyTimer?.invalidate()
+        
+        print("⏳ Focus Timer Started: 60 Seconds")
+        
+        // 2. Create the timer
+        let timer = Timer(timeInterval: studyThreshold, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            
+            Task { @MainActor in
+                await RevisioManager.shared.earnXP(amount: 10, reason: "Deep Study Focus")
+                print("✅ Success: 1 Minute Focus Reward Given")
+                self.studyTimer = nil
+            }
+        }
+        
+        // 3. CRITICAL: Add to .common mode so scrolling doesn't stop the clock
+        RunLoop.current.add(timer, forMode: .common)
+        self.studyTimer = timer
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // 4. Kill the timer if they leave before 60s
+        studyTimer?.invalidate()
+        studyTimer = nil
+    }
     // MARK: - Content Loading & Management
     func displayContent() {
-        guard let topic = currentTopic,
-              let subject = parentSubjectName else {
-            contentView.text = "Note or Parent Subject not found."
-            return
-        }
-        
+        guard let topic = currentTopic else { return }
         title = topic.name
         
-        let savedContent = DataManager.shared.getDetailedContent(for: subject, topicName: topic.name)
-        
-        if savedContent.isEmpty {
-            contentView.text = "Start typing your notes here..."
-            contentView.textColor = .secondaryLabel
-        } else {
-            contentView.text = savedContent
-            contentView.textColor = .label
+        var textToDisplay = ""
+        if let directContent = topic.notesContent, !directContent.isEmpty {
+            textToDisplay = directContent
+        } else if let subject = parentSubjectName {
+            textToDisplay = DataManager.shared.getDetailedContent(for: subject, topicName: topic.name)
         }
-        
-        updateUIForState()
+
+        if !textToDisplay.isEmpty {
+            let fullAttributedString = NSMutableAttributedString(string: textToDisplay)
+            let range = NSRange(location: 0, length: textToDisplay.utf16.count)
+            
+            // Base monospaced font for clean alignment
+            fullAttributedString.addAttribute(.font, value: UIFont.monospacedSystemFont(ofSize: 15, weight: .regular), range: range)
+            fullAttributedString.addAttribute(.foregroundColor, value: UIColor.label, range: range)
+
+            let lines = textToDisplay.components(separatedBy: "\n")
+            var currentOffset = 0
+            
+            for line in lines {
+                // Checks for both ## and ### to ensure all header levels are colored
+                if line.hasPrefix("##") || line.hasPrefix("###") {
+                    let lineRange = NSRange(location: currentOffset, length: line.utf16.count)
+                    fullAttributedString.addAttribute(.font, value: UIFont.monospacedSystemFont(ofSize: 18, weight: .bold), range: lineRange)
+                    fullAttributedString.addAttribute(.foregroundColor, value: UIColor.systemIndigo, range: lineRange)
+                }
+                currentOffset += line.utf16.count + 1
+            }
+            
+            contentView.attributedText = fullAttributedString
+        } else {
+            showPlaceholder()
+        }
+    }
+    
+    // ✅ NEW: Helper to convert ** and ## into Bold and Headings
+    private func renderMarkdown(text: String) -> NSAttributedString {
+        do {
+            var options = AttributedString.MarkdownParsingOptions()
+            options.interpretedSyntax = .full // Allow all markdown features
+            
+            var attributedString = try AttributedString(markdown: text, options: options)
+            
+            // Set Base Font (so it's not tiny)
+            attributedString.font = .systemFont(ofSize: 17)
+            attributedString.foregroundColor = .label // Adapts to Dark/Light mode
+            
+            return NSAttributedString(attributedString)
+        } catch {
+            // Fallback if parsing fails
+            return NSAttributedString(string: text, attributes: [
+                .font: UIFont.systemFont(ofSize: 17),
+                .foregroundColor: UIColor.label
+            ])
+        }
+    }
+    
+    private func showPlaceholder() {
+        contentView.text = "Start typing your notes here..."
+        contentView.textColor = .secondaryLabel
+        contentView.font = .systemFont(ofSize: 17)
     }
     
     func saveChanges() {
@@ -59,7 +127,6 @@ class NotesViewController: UIViewController {
               let subject = parentSubjectName,
               let updatedText = contentView.text else { return }
         
-        // Avoid saving the placeholder text
         if updatedText == "Start typing your notes here..." { return }
         
         DataManager.shared.updateTopicContent(subject: subject, topicName: topic.name, newText: updatedText)
@@ -79,23 +146,15 @@ class NotesViewController: UIViewController {
         optionsButton.menu = buildOptionsMenu()
       
         navigationItem.rightBarButtonItems = [editButton, optionsButton]
-        
         updateUIForState()
     }
     
     func buildOptionsMenu() -> UIMenu {
-        
         let shareAction = UIAction(title: "Share Note", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
             self?.shareContent(self!.editDoneBarButton)
         }
-        
-        let pinAction = UIAction(title: "Pin Note", image: UIImage(systemName: "pin.fill")) { _ in
-            print("Action: Pin Toggled")
-        }
-        
-        let deleteAction = UIAction(title: "Delete Note", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-            print("Action: Delete Note")
-        }
+        let pinAction = UIAction(title: "Pin Note", image: UIImage(systemName: "pin.fill")) { _ in print("Action: Pin Toggled") }
+        let deleteAction = UIAction(title: "Delete Note", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in print("Action: Delete Note") }
         
         return UIMenu(title: "", children: [
             UIMenu(title: "Actions", options: .displayInline, children: [shareAction, pinAction]),
@@ -111,60 +170,38 @@ class NotesViewController: UIViewController {
     }
  
     @objc func editButtonTapped() {
-        if isEditingMode {
-            saveChanges()
-        }
-        
+        if isEditingMode { saveChanges() }
         isEditingMode.toggle()
         updateUIForState()
     }
     
-    // MARK: - Bottom Save Button Action
     @IBAction func saveButtonTapped(_ sender: Any) {
         saveChanges()
-        
-        // Disable editing state visually before showing alert
         if isEditingMode {
             isEditingMode = false
             updateUIForState()
         }
         view.endEditing(true)
-        
-        // Show confirmation and then navigate home
         showSaveConfirmation()
     }
     
-    // Alert Function
     func showSaveConfirmation() {
         let folderName = parentSubjectName ?? "Files"
-        
-        let alert = UIAlertController(
-            title: "Saved!",
-            message: "Note has been successfully saved to '\(folderName)' in Study tab.",
-            preferredStyle: .alert
-        )
-        
-        // ✅ MODIFIED: Navigate to Home Screen upon tapping OK
+        let alert = UIAlertController(title: "Saved!", message: "Note has been successfully saved to '\(folderName)' in Study tab.", preferredStyle: .alert)
         let okAction = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
             guard let self = self else { return }
-            
-            // Check if we are in a navigation stack
             if let nav = self.navigationController {
-                // Pop to the root view controller (Home Screen)
                 nav.popToRootViewController(animated: true)
             } else {
-                // If presented modally, dismiss it
                 self.dismiss(animated: true, completion: nil)
             }
         }
         alert.addAction(okAction)
-        
         present(alert, animated: true, completion: nil)
     }
 
     func updateUIForState() {
-        guard let editButton = editDoneBarButton,
-              let optionsButton = optionsBarButton else { return }
+        guard let editButton = editDoneBarButton, let optionsButton = optionsBarButton else { return }
 
         if isEditingMode {
             editButton.image = UIImage(systemName: "checkmark")
@@ -172,11 +209,12 @@ class NotesViewController: UIViewController {
             contentView.isEditable = true
             contentView.becomeFirstResponder()
             
+            // When editing, remove placeholder if present
             if contentView.text == "Start typing your notes here..." {
                 contentView.text = ""
                 contentView.textColor = .label
+                contentView.font = .systemFont(ofSize: 17)
             }
-            
         } else {
             editButton.image = nil
             editButton.title = "Edit"
@@ -184,18 +222,14 @@ class NotesViewController: UIViewController {
             contentView.resignFirstResponder()
             
             if contentView.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                contentView.text = "Start typing your notes here..."
-                contentView.textColor = .secondaryLabel
+                showPlaceholder()
             }
         }
-        
         optionsButton.menu = buildOptionsMenu()
     }
 }
 
-// MARK: - UITextViewDelegate
 extension NotesViewController: UITextViewDelegate {
-    
     func textViewDidEndEditing(_ textView: UITextView) {
         saveChanges()
     }

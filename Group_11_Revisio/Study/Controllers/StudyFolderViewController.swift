@@ -11,7 +11,19 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
     private let studyTableView = UITableView(frame: .zero, style: .plain)
     private var subjectNames: [String] = []
     
-    // Tokens for modern closure-based notification observers
+   
+    private let emptyLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Add folder"
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 18, weight: .medium)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        return label
+    }()
+    
+   
     private var materialUpdateToken: NSObjectProtocol?
     private var folderUpdateToken: NSObjectProtocol?
 
@@ -31,7 +43,7 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        // Memory Management: Explicitly removing observers to prevent retain cycles
+        
         if let materialToken = materialUpdateToken { NotificationCenter.default.removeObserver(materialToken) }
         if let folderToken = folderUpdateToken { NotificationCenter.default.removeObserver(folderToken) }
     }
@@ -40,6 +52,7 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
     private func setupUI() {
         view.backgroundColor = .systemBackground
         view.addSubview(studyTableView)
+        view.addSubview(emptyLabel)
         
         studyTableView.translatesAutoresizingMaskIntoConstraints = false
         studyTableView.layer.cornerRadius = 12.0
@@ -61,12 +74,16 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
             studyTableView.topAnchor.constraint(equalTo: safeArea.topAnchor),
             studyTableView.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor),
             studyTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            studyTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            studyTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
+           
+            emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
 
     private func setupNotificationObservers() {
-        // Modern Swift Observer Pattern: Uses closures and [weak self] for thread safety
+       
         materialUpdateToken = NotificationCenter.default.addObserver(forName: .didUpdateStudyMaterials, object: nil, queue: .main) { [weak self] _ in
             self?.fetchFolderNames()
         }
@@ -78,25 +95,40 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
 
     // MARK: - Data Management
     private func fetchFolderNames() {
-        // Fetching sorted keys from the DataManager to populate the folder list
+        
         self.subjectNames = Array(DataManager.shared.savedMaterials.keys).sorted()
+        
+      
+        if subjectNames.isEmpty {
+            studyTableView.isHidden = true
+            emptyLabel.isHidden = false
+        } else {
+            studyTableView.isHidden = false
+            emptyLabel.isHidden = true
+        }
+        
         studyTableView.reloadData()
     }
 
     private func executeDeletion(at indexPath: IndexPath) {
         let subjectToDelete = self.subjectNames[indexPath.row]
         
-        // 1. Synchronize storage: Delete from JSON via DataManager
+      
         DataManager.shared.deleteSubjectFolder(name: subjectToDelete)
         
-        // 2. Synchronize UI: Update local array and animate the row removal
+       
         self.subjectNames.remove(at: indexPath.row)
         self.studyTableView.deleteRows(at: [indexPath], with: .fade)
+        
+       
+        if subjectNames.isEmpty {
+            fetchFolderNames()
+        }
     }
 
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Safe data transfer between ViewControllers via Segue identifiers
+      
         if segue.identifier == "ShowSubjectDetailProgrammatic",
            let detailVC = segue.destination as? SubjectViewController,
            let selectedSubject = sender as? String {

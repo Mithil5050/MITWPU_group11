@@ -1,6 +1,132 @@
 {
   "logs": [
     {
+      "id": "feb13_1",
+      "amount": "2h 0m",
+      "hours": 2.0,
+      "date": "2026-02-13T10:00:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "feb13_2",
+      "amount": "1h 30m",
+      "hours": 1.5,
+      "date": "2026-02-13T16:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "feb12_1",
+      "amount": "3h 0m",
+      "hours": 3.0,
+      "date": "2026-02-12T09:00:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "feb12_2",
+      "amount": "1h 0m",
+      "hours": 1.0,
+      "date": "2026-02-12T14:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "feb11_1",
+      "amount": "2h 30m",
+      "hours": 2.5,
+      "date": "2026-02-11T10:00:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "feb11_2",
+      "amount": "1h 30m",
+      "hours": 1.5,
+      "date": "2026-02-11T16:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "feb10_1",
+      "amount": "4h 0m",
+      "hours": 4.0,
+      "date": "2026-02-10T09:30:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "feb10_2",
+      "amount": "0h 30m",
+      "hours": 0.5,
+      "date": "2026-02-10T18:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "feb9_1",
+      "amount": "3h 30m",
+      "hours": 3.5,
+      "date": "2026-02-09T11:00:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "feb9_2",
+      "amount": "1h 0m",
+      "hours": 1.0,
+      "date": "2026-02-09T20:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "feb8_1",
+      "amount": "2h 0m",
+      "hours": 2.0,
+      "date": "2026-02-08T10:00:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "feb8_2",
+      "amount": "3h 0m",
+      "hours": 3.0,
+      "date": "2026-02-08T15:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "feb6_1",
+      "amount": "2h 15m",
+      "hours": 2.25,
+      "date": "2026-02-06T11:00:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "feb6_2",
+      "amount": "1h 0m",
+      "hours": 1.0,
+      "date": "2026-02-06T20:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "feb5_1",
+      "amount": "3h 0m",
+      "hours": 3.0,
+      "date": "2026-02-05T18:00:00Z",
+      "category": "Games"
+    },
+    {
+      "id": "feb4_1",
+      "amount": "4h 0m",
+      "hours": 4.0,
+      "date": "2026-02-04T09:30:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "feb3_1",
+      "amount": "1h 30m",
+      "hours": 1.5,
+      "date": "2026-02-03T10:00:00Z",
+      "category": "Study"
+    },
+    {
+      "id": "feb3_2",
+      "amount": "2h 0m",
+      "hours": 2.0,
+      "date": "2026-02-03T15:00:00Z",
+      "category": "Games"
+    },
+    {
       "id": "feb2_1",
       "amount": "2h 30m",
       "hours": 2.5,

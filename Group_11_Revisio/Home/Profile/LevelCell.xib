@@ -19,46 +19,51 @@
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bgView">
                         <rect key="frame" x="0.0" y="0.0" width="343" height="80"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="medal.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="icon">
-                                <rect key="frame" x="16" y="15.666666666666668" width="28" height="28.000000000000004"/>
-                                <color key="tintColor" systemColor="systemYellowColor"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="jzo-t4-jh4">
+                                <rect key="frame" x="16" y="9.3333333333333321" width="254" height="61.333333333333343"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="751" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lvlLabel">
+                                        <rect key="frame" x="0.0" y="0.0" width="52" height="26.333333333333332"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="prog">
+                                        <rect key="frame" x="0.0" y="30.333333333333329" width="254" height="8"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="8" id="h8"/>
+                                        </constraints>
+                                        <color key="progressTintColor" systemColor="systemBlueColor"/>
+                                        <color key="trackTintColor" red="0.26051741839999998" green="0.2605243921" blue="0.260520637" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    </progressView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xpLabel">
+                                        <rect key="frame" x="0.0" y="42.333333333333329" width="35.333333333333336" height="19"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="highlightedColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </label>
+                                </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="27.333333333333325" id="HhH"/>
-                                    <constraint firstAttribute="width" constant="28" id="WwW"/>
+                                    <constraint firstAttribute="trailing" secondItem="prog" secondAttribute="trailing" id="R3l-sK-ehR"/>
                                 </constraints>
-                            </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Level 2" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lvlLabel">
-                                <rect key="frame" x="47.999999999999993" y="14.999999999999998" width="67.333333333333314" height="26.333333333333329"/>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="15/70 XP" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xpLabel">
-                                <rect key="frame" x="269.66666666666669" y="19.666666666666668" width="57.333333333333314" height="17.000000000000004"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="highlightedColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </label>
-                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="prog">
-                                <rect key="frame" x="16" y="50" width="311" height="8"/>
+                            </stackView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1MU-jv-TIv">
+                                <rect key="frame" x="278" y="15" width="50" height="50"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="8" id="h8"/>
+                                    <constraint firstAttribute="height" constant="50" id="6Sb-Y4-P2M"/>
+                                    <constraint firstAttribute="width" constant="50" id="Tou-Eq-DBv"/>
                                 </constraints>
-                                <color key="progressTintColor" systemColor="systemYellowColor"/>
-                                <color key="trackTintColor" red="0.26051741839999998" green="0.2605243921" blue="0.260520637" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                            </progressView>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="0.10000000000000001" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="icon" firstAttribute="leading" secondItem="bgView" secondAttribute="leading" constant="16" id="1"/>
-                            <constraint firstItem="icon" firstAttribute="top" secondItem="bgView" secondAttribute="top" constant="16" id="2"/>
-                            <constraint firstItem="lvlLabel" firstAttribute="leading" secondItem="icon" secondAttribute="trailing" constant="4" id="3"/>
-                            <constraint firstItem="lvlLabel" firstAttribute="centerY" secondItem="icon" secondAttribute="centerY" constant="-1.4999999999999645" id="4"/>
-                            <constraint firstAttribute="trailing" secondItem="xpLabel" secondAttribute="trailing" constant="16" id="5"/>
-                            <constraint firstItem="xpLabel" firstAttribute="centerY" secondItem="icon" secondAttribute="centerY" constant="-1.4999999999999645" id="6"/>
-                            <constraint firstItem="prog" firstAttribute="leading" secondItem="bgView" secondAttribute="leading" constant="16" id="7"/>
-                            <constraint firstAttribute="trailing" secondItem="prog" secondAttribute="trailing" constant="16" id="8"/>
-                            <constraint firstAttribute="bottom" secondItem="prog" secondAttribute="bottom" constant="22" id="9"/>
+                            <constraint firstAttribute="trailing" secondItem="1MU-jv-TIv" secondAttribute="trailing" constant="15" id="KZe-zI-V41"/>
+                            <constraint firstItem="jzo-t4-jh4" firstAttribute="centerY" secondItem="bgView" secondAttribute="centerY" id="RKC-wj-lHD"/>
+                            <constraint firstItem="1MU-jv-TIv" firstAttribute="centerY" secondItem="bgView" secondAttribute="centerY" id="Thn-8S-9wc"/>
+                            <constraint firstItem="jzo-t4-jh4" firstAttribute="top" secondItem="bgView" secondAttribute="top" constant="9.3333333333333357" id="gZn-2P-fNh"/>
+                            <constraint firstItem="1MU-jv-TIv" firstAttribute="leading" secondItem="jzo-t4-jh4" secondAttribute="trailing" constant="8" id="p1V-Fj-SVc"/>
+                            <constraint firstItem="jzo-t4-jh4" firstAttribute="leading" secondItem="bgView" secondAttribute="leading" constant="16" id="yO4-5e-0ak"/>
                         </constraints>
                     </view>
                 </subviews>
@@ -72,17 +77,20 @@
             <size key="customSize" width="343" height="80"/>
             <connections>
                 <outlet property="bgView" destination="bgView" id="out1"/>
+                <outlet property="levelBadgeContainer" destination="1MU-jv-TIv" id="UmH-k0-oqf"/>
                 <outlet property="levelLabel" destination="lvlLabel" id="out2"/>
                 <outlet property="progressBar" destination="prog" id="out3"/>
                 <outlet property="xpLabel" destination="xpLabel" id="out4"/>
             </connections>
-            <point key="canvasLocation" x="136.64122137404578" y="118.30985915492958"/>
+            <point key="canvasLocation" x="127.48091603053435" y="100.70422535211269"/>
         </collectionViewCell>
     </objects>
     <resources>
-        <image name="medal.fill" catalog="system" width="121" height="128"/>
-        <systemColor name="systemYellowColor">
-            <color red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemBlueColor">
+            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

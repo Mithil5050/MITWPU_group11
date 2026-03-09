@@ -26,13 +26,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     private var backgroundCard1: UIView!
     private var backgroundCard2: UIView!
     
-    private var flashcards: [Flashcard] = [
-        Flashcard(term: "UIKit", definition: "Apple's framework for building graphical user interfaces for iOS."),
-        Flashcard(term: "Auto Layout", definition: "A constraint-based layout system."),
-        Flashcard(term: "View Controller", definition: "Manages a set of views and app structure."),
-        Flashcard(term: "Delegate Pattern", definition: "A design pattern used to pass data or events between objects.")
-    ]
-    
+    private var flashcards: [Flashcard] = []
     private var isTermDisplayed = true
     private var currentCardIndex = 0
 
@@ -42,6 +36,13 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         
         if let topicName = currentTopic?.name {
             self.title = topicName
+        }
+        
+        // ✅ LOAD DATA: Check largeContentBody first, fallback to notesContent for backwards compatibility
+        if let content = currentTopic?.largeContentBody, !content.isEmpty {
+            unpackFlashcards(from: content)
+        } else if let fallbackContent = currentTopic?.notesContent, !fallbackContent.isEmpty {
+            unpackFlashcards(from: fallbackContent)
         }
         
         // 1. Setup Main Card (Color is set here)
@@ -54,48 +55,50 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         updateUI(animated: false)
     }
     
+    // ✅ EXTRACT SAVED DATA
+    private func unpackFlashcards(from content: String) {
+        let lines = content.components(separatedBy: "\n")
+        var loaded: [Flashcard] = []
+        for line in lines where !line.isEmpty {
+            let parts = line.components(separatedBy: "|")
+            if parts.count >= 2 {
+                loaded.append(Flashcard(term: parts[0], definition: parts[1]))
+            }
+        }
+        if !loaded.isEmpty {
+            self.flashcards = loaded
+        }
+    }
+    
     // MARK: - UI Setup
     private func setupCardView() {
-        // MARK: CUSTOM COLOR APPLIED HERE
         cardView.backgroundColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0)
-        
         styleCard(cardView)
-        // Ensure main card stays on top
         cardView.layer.zPosition = 100
     }
     
     private func setupStackVisuals() {
-        // Remove old views to prevent duplicates
         backgroundCard1?.removeFromSuperview()
         backgroundCard2?.removeFromSuperview()
         
         backgroundCard1 = createBackgroundCard()
         backgroundCard2 = createBackgroundCard()
         
-        // Add to the cardView's PARENT to handle nesting correctly
         guard let parentView = cardView.superview else { return }
-        
-        // Disable clipping so the stack can hang below the card
         parentView.clipsToBounds = false
         
-        // Insert BELOW the main card
         parentView.insertSubview(backgroundCard1, belowSubview: cardView)
         parentView.insertSubview(backgroundCard2, belowSubview: backgroundCard1)
         
-        // Align them exactly behind the main card
         alignBackgroundCard(backgroundCard1)
         alignBackgroundCard(backgroundCard2)
         
-        // Fan them out
         resetStackTransforms()
     }
     
     private func createBackgroundCard() -> UIView {
         let v = UIView()
-        
-        // Copy the exact color from the main card
         v.backgroundColor = cardView.backgroundColor
-        
         styleCard(v)
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
@@ -103,13 +106,9 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     
     private func styleCard(_ view: UIView) {
         view.layer.cornerRadius = 16
-        
-        // Border is crucial for seeing the separation between same-colored cards
         view.layer.borderWidth = 1.0
-        // Using a dark border with low opacity blends better with the blue than gray
         view.layer.borderColor = UIColor.black.withAlphaComponent(0.1).cgColor
         
-        // Drop Shadow
         view.layer.shadowColor = UIColor.black.cgColor
         view.layer.shadowOpacity = 0.15
         view.layer.shadowOffset = CGSize(width: 0, height: 4)
@@ -127,15 +126,12 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     }
     
     private func resetStackTransforms() {
-        // Main Card
         cardView.transform = .identity
         cardView.alpha = 1.0
         
-        // Middle Card: Scale 0.96, Move Down 24
         backgroundCard1.transform = CGAffineTransform(scaleX: 0.96, y: 0.96).translatedBy(x: 0, y: 24)
         backgroundCard1.alpha = 1.0
         
-        // Bottom Card: Scale 0.92, Move Down 48
         backgroundCard2.transform = CGAffineTransform(scaleX: 0.92, y: 0.92).translatedBy(x: 0, y: 48)
         backgroundCard2.alpha = 1.0
         
@@ -144,7 +140,6 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     
     private func updateStackVisibility() {
         let cardsRemaining = flashcards.count - (currentCardIndex + 1)
-        
         UIView.animate(withDuration: 0.2) {
             self.backgroundCard1.isHidden = cardsRemaining < 1
             self.backgroundCard2.isHidden = cardsRemaining < 2
@@ -158,6 +153,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     
     // MARK: - Actions
     @objc func handleCardTap() {
+        guard !flashcards.isEmpty else { return }
         isTermDisplayed.toggle()
         updateUI(animated: true)
     }
@@ -180,15 +176,12 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     }
     
     // MARK: - Animations
-    
     private func animateNextCard() {
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseIn, animations: {
-            // Swipe Main Card Left
             let translation = CGAffineTransform(translationX: -self.view.bounds.width, y: 0)
             let rotation = CGAffineTransform(rotationAngle: -0.15)
             self.cardView.transform = translation.concatenating(rotation)
             
-            // Move Stack Up
             self.backgroundCard1.transform = .identity
             self.backgroundCard2.transform = CGAffineTransform(scaleX: 0.96, y: 0.96).translatedBy(x: 0, y: 24)
             
@@ -197,7 +190,6 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
             self.isTermDisplayed = true
             self.updateUI(animated: false)
             
-            // Reset Main Card (It "becomes" the card that was behind it)
             self.cardView.transform = .identity
             self.resetStackTransforms()
         }
@@ -208,18 +200,13 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         self.isTermDisplayed = true
         self.updateUI(animated: false)
         
-        // Prepare Offscreen Right
         let offScreen = CGAffineTransform(translationX: self.view.bounds.width, y: 0).rotated(by: 0.15)
         self.cardView.transform = offScreen
         
         UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.75, initialSpringVelocity: 0.5, options: .curveEaseOut, animations: {
-            // Snap back to center
             self.cardView.transform = .identity
-            
-            // Push Stack Down
             self.backgroundCard1.transform = CGAffineTransform(scaleX: 0.96, y: 0.96).translatedBy(x: 0, y: 24)
             self.backgroundCard2.transform = CGAffineTransform(scaleX: 0.92, y: 0.92).translatedBy(x: 0, y: 48)
-            
         }) { _ in
             self.resetStackTransforms()
         }
@@ -227,7 +214,15 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
 
     // MARK: - UI Updates
     func updateUI(animated: Bool = false) {
-        guard !flashcards.isEmpty else { return }
+        // ✅ Safely handle 0 cards state
+        guard !flashcards.isEmpty else {
+            cardLabel.text = "No flashcards available.\nTap '+' to add one."
+            countLabel.text = "0 / 0"
+            previousButton.isEnabled = false
+            nextButton.isEnabled = false
+            updateStackVisibility()
+            return
+        }
         
         let card = flashcards[currentCardIndex]
         let text = isTermDisplayed ? card.term : card.definition
@@ -250,53 +245,42 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
             nextButton.setTitle("Next", for: .normal)
             nextButton.tintColor = .systemBlue
         }
+        nextButton.isEnabled = true
         
         updateStackVisibility()
     }
     
     private func handleSave() {
-            let folderName = parentSubjectName ?? "Study"
-            
-            // 1. Create the Alert
-            let alert = UIAlertController(
-                title: "Session Complete",
-                message: "These cards will be permanently added to your '\(folderName)' folder.",
-                preferredStyle: .alert
-            )
-            
-            // 2. "Save" Action (Navigate Home)
-            let saveAction = UIAlertAction(title: "Yes, Save", style: .default) { [weak self] _ in
-                guard let self = self else { return }
-                
-                // Show a quick confirmation that it was saved
-                let confirmAlert = UIAlertController(title: "Saved!", message: "Your progress has been recorded.", preferredStyle: .alert)
-                
-                let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    // ✅ Navigate to Home Screen
-                    if let nav = self.navigationController {
-                        nav.popToRootViewController(animated: true)
-                    } else {
-                        self.dismiss(animated: true, completion: nil)
-                    }
+        let folderName = parentSubjectName ?? "Study"
+        
+        let alert = UIAlertController(
+            title: "Session Complete",
+            message: "These cards will be permanently added to your '\(folderName)' folder.",
+            preferredStyle: .alert
+        )
+        
+        let saveAction = UIAlertAction(title: "Yes, Save", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            let confirmAlert = UIAlertController(title: "Saved!", message: "Your progress has been recorded.", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+                if let nav = self.navigationController {
+                    nav.popToRootViewController(animated: true)
+                } else {
+                    self.dismiss(animated: true, completion: nil)
                 }
-                
-                confirmAlert.addAction(okAction)
-                self.present(confirmAlert, animated: true)
             }
-            
-            // 3. "Don't Save" Action (Red/Destructive)
-            let cancelAction = UIAlertAction(title: "Cancel", style: .destructive) { _ in
-                // Just reset the stack without saving
-                self.resetStackTransforms()
-            }
-            
-            // 4. Add buttons to the alert
-            alert.addAction(saveAction)
-            alert.addAction(cancelAction)
-            
-            // 5. Present it
-            present(alert, animated: true)
+            confirmAlert.addAction(okAction)
+            self.present(confirmAlert, animated: true)
         }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive) { _ in
+            self.resetStackTransforms()
+        }
+        
+        alert.addAction(saveAction)
+        alert.addAction(cancelAction)
+        present(alert, animated: true)
+    }
     
     // MARK: - Navigation / Delegate
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -312,8 +296,18 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
     }
     
     func didCreateNewFlashcard(card: Flashcard) {
+        ProgressDataManager.shared.totalFlashcardsViewed += 1
         flashcards.append(card)
-        updateUI()
+        let updatedText = flashcards.map { "\($0.term)|\($0.definition)" }.joined(separator: "\n")
+        currentTopic?.largeContentBody = updatedText
+        
+        if let subject = parentSubjectName, let topicName = currentTopic?.name {
+            DataManager.shared.updateTopicContent(subject: subject, topicName: topicName, newText: updatedText, type: "Flashcards")
+        }
+        
+        currentCardIndex = flashcards.count - 1
+        isTermDisplayed = true
+        updateUI(animated: true)
         resetStackTransforms()
     }
 }

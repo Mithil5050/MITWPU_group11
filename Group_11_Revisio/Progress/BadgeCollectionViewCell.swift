@@ -15,55 +15,86 @@ class BadgeCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var badgeProgressBar: UIProgressView!
     @IBOutlet weak var badgeDetailLabel: UILabel!
     
-    
     override func awakeFromNib() {
             super.awakeFromNib()
             setupUI()
-            setupCardStyle()
         }
         
-       private func setupUI() {
+        private func setupUI() {
+            badgeCardView.layer.cornerRadius = 12
+            badgeCardView.clipsToBounds = true
             
-            badgeTitleLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
-            badgeTitleLabel.textColor = .label
+            // Setup labels for multi-line centering
+            badgeTitleLabel.numberOfLines = 0
+            badgeDetailLabel.numberOfLines = 0
+        }
+
+        /// Renders the specific centered text for empty states
+        func showEmptyState(section: AwardsSection) {
+            // Keep container visible but clear background so text is on black
+            badgeCardView.isHidden = false
+            badgeCardView.backgroundColor = .clear
+            
+            // Hide graphical elements
+            badgeProgressBar.isHidden = true
+            badgeImageView.isHidden = true
+            
+            // Set your recommended final text
+            if section == .activeChallenges {
+                badgeTitleLabel.text = "No challenges yet"
+                badgeDetailLabel.text = "Generate to start earning XP."
+            } else if section == .recentWins {
+                badgeTitleLabel.text = "No achievements yet"
+                badgeDetailLabel.text = "Your badges will appear here as you learn."
+            }
+            
+            // Force text styling and centering
+            badgeTitleLabel.isHidden = false
+            badgeTitleLabel.textColor = .white
+            badgeTitleLabel.font = .systemFont(ofSize: 14, weight: .bold)
             badgeTitleLabel.textAlignment = .center
             
-            badgeDetailLabel.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-            badgeDetailLabel.textColor = .secondaryLabel
+            badgeDetailLabel.isHidden = false
+            badgeDetailLabel.textColor = .systemGray
+            badgeDetailLabel.font = .systemFont(ofSize: 12, weight: .medium)
             badgeDetailLabel.textAlignment = .center
             
-            badgeProgressBar.progressTintColor = .systemBlue
-            badgeProgressBar.trackTintColor = .systemGray4
+            // Adjust the StackView to center children
+            if let stackView = badgeTitleLabel.superview as? UIStackView {
+                stackView.alignment = .center
+                stackView.axis = .vertical
+                stackView.distribution = .fill
+                stackView.spacing = 4
+            }
         }
-            
-        func configure(with badge: Badge) {
+
+        func configure(with badge: Badging.Badge, forSection section: AwardsSection) {
+            // Reset to standard badge look
+            badgeCardView.isHidden = false
+            badgeCardView.backgroundColor = UIColor(white: 1.0, alpha: 0.08)
+            badgeImageView.isHidden = false
+            badgeTitleLabel.isHidden = false
+            badgeDetailLabel.isHidden = false
             
             badgeTitleLabel.text = badge.title
-            badgeDetailLabel.text = badge.detail
-            badgeImageView.image = UIImage(named: badge.imageAssetName)
+            badgeTitleLabel.font = .systemFont(ofSize: 14, weight: .bold)
+            badgeTitleLabel.textAlignment = section == .allMilestones ? .center : .left
             
-            badgeProgressBar?.setProgress(0.6, animated: false)
-        }
-        
-        private func setupCardStyle() {
-            let radius: CGFloat = 12
+            if let imageName = Badging.imageName(for: badge) {
+                badgeImageView.image = UIImage(named: imageName)
+                badgeImageView.alpha = badge.isEarned ? 1.0 : 0.3
+            } else {
+                badgeImageView.image = UIImage(systemName: "lock.fill")
+                badgeImageView.tintColor = .systemGray
+            }
             
-            badgeCardView.backgroundColor = .secondarySystemBackground
-            badgeCardView.layer.cornerRadius = radius
-            badgeCardView.layer.masksToBounds = true
-            
-            self.layer.shadowColor = UIColor.black.cgColor
-            self.layer.shadowOpacity = 0.1
-            self.layer.shadowOffset = CGSize(width: 0, height: 1)
-            self.layer.shadowRadius = 3
-            self.layer.masksToBounds = false
-            self.layer.shouldRasterize = true
-            self.layer.rasterizationScale = UIScreen.main.scale
-            
-        }
-        
-        override func layoutSubviews() {
-            super.layoutSubviews()
-            self.layer.shadowPath = UIBezierPath(roundedRect: self.bounds, cornerRadius: 12).cgPath
+            if section == .activeChallenges {
+                badgeProgressBar.isHidden = false
+                badgeProgressBar.setProgress(badge.progress, animated: true)
+                badgeDetailLabel.text = "\(badge.currentValue) / \(badge.goalValue)"
+            } else {
+                badgeProgressBar.isHidden = true
+                badgeDetailLabel.text = badge.isEarned ? "Earned!" : "Locked"
+            }
         }
     }

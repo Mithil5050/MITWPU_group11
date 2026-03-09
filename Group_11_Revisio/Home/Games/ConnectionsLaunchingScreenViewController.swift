@@ -1,32 +1,53 @@
-//
-//  ConnectionsLaunchingScreenViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Mithil on 15/12/25.
-//
-
 import UIKit
 
 class ConnectionsLaunchingScreenViewController: UIViewController {
 
-   
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
     }
     
-    @IBAction func StartButton(_ sender: Any) {
-        performSegue(withIdentifier: "StartGameConnection", sender: nil)
+    @IBAction func StartButton(_ sender: UIButton) {
+        let topics = DataManager.shared.getAllRecentTopics()
+        
+        // Create an Action Sheet to let the user choose a topic
+        let alert = UIAlertController(
+            title: "Choose a Topic",
+            message: "Select study material to generate your Connections game from:",
+            preferredStyle: .actionSheet
+        )
+        
+        // Add up to 10 recent topics to the list
+        for topic in topics.prefix(10) {
+            alert.addAction(UIAlertAction(title: topic.name, style: .default) { [weak self] _ in
+                self?.performSegue(withIdentifier: "StartGameConnection", sender: topic)
+            })
+        }
+        
+        // Fallback option for random general knowledge
+        alert.addAction(UIAlertAction(title: "General Knowledge (Random)", style: .default) { [weak self] _ in
+            self?.performSegue(withIdentifier: "StartGameConnection", sender: nil)
+        })
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        
+        // iPad support to prevent crashing
+        if let popover = alert.popoverPresentationController {
+            popover.sourceView = sender
+            popover.sourceRect = sender.bounds
+        }
+        
+        present(alert, animated: true)
     }
-    /*
+
     // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+        if segue.identifier == "StartGameConnection",
+           let destVC = segue.destination as? ConnectionsViewController {
+            
+            // Pass the chosen topic!
+            if let topic = sender as? Topic {
+                destVC.currentTopic = topic
+            }
+        }
     }
-    */
-
 }

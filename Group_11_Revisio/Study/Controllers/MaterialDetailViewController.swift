@@ -22,6 +22,8 @@ class MaterialDetailViewController: UIViewController {
     var parentSubjectName: String?
     
     private var isEditingMode: Bool = false
+    private var studyTimer: Timer?
+    private let studyThreshold: TimeInterval = 60.0
     
     // MARK: - Lifecycle
     
@@ -35,7 +37,36 @@ class MaterialDetailViewController: UIViewController {
         
         displayContent()
     }
-    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        
+        studyTimer?.invalidate()
+        
+        print(" Focus Timer Started: 60 Seconds")
+        
+        
+        let timer = Timer(timeInterval: studyThreshold, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            
+            Task { @MainActor in
+                await RevisioManager.shared.earnXP(amount: 10, reason: "Deep Study Focus")
+                print(" Success: 1 Minute Focus Reward Given")
+                self.studyTimer = nil
+            }
+        }
+        
+       
+        RunLoop.current.add(timer, forMode: .common)
+        self.studyTimer = timer
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+      
+        studyTimer?.invalidate()
+        studyTimer = nil
+    }
     // MARK: - Content Loading & Management
     
     func displayContent() {

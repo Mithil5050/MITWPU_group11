@@ -1,15 +1,35 @@
 import UIKit
 
+// MARK: - AI Models
+struct AIConnectionsResponse: Codable {
+    struct AICategory: Codable {
+        let title: String
+        let words: [String]
+    }
+    let categories: [AICategory]
+}
+
 class ConnectionsViewController: UIViewController {
 
     @IBOutlet weak var collectionView: UICollectionView!
     
-    private var words: [WordModel] = WordModel.generateInitialWords()
+    // MARK: - Properties
+    var currentTopic: Topic? // Passed from Launch Screen
+    
+    private var categories: [CategoryModel] = []
+    private var words: [WordModel] = []
+    
     private var didWin: Bool = false
     private var mistakesRemaining: Int = 4 {
         didSet { updateMistakesLabel() }
     }
     
+    // Loading UI
+    private let loadingOverlay = UIView()
+    private let loadingIndicator = UIActivityIndicatorView(style: .large)
+    private let loadingLabel = UILabel()
+    
+    // MARK: - UI Elements
     private let mistakesLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .semibold)
@@ -32,45 +52,173 @@ class ConnectionsViewController: UIViewController {
     private lazy var shuffleButton: UIButton = {
         var config = UIButton.Configuration.plain()
         config.title = "Shuffle"
-        
-        let action = UIAction { [weak self] _ in
-            self?.handleShuffle()
-        }
+        let action = UIAction { [weak self] _ in self?.handleShuffle() }
         return UIButton(configuration: config, primaryAction: action)
     }()
     
     private lazy var deselectButton: UIButton = {
         var config = UIButton.Configuration.plain()
         config.title = "Deselect All"
-        
-        let action = UIAction { [weak self] _ in
-            self?.handleDeselect()
-        }
+        let action = UIAction { [weak self] _ in self?.handleDeselect() }
         return UIButton(configuration: config, primaryAction: action)
     }()
     
     private lazy var submitButton: UIButton = {
         var config = UIButton.Configuration.filled()
         config.title = "Submit"
-        
-        let action = UIAction { [weak self] _ in
-            self?.handleSubmit()
-        }
+        let action = UIAction { [weak self] _ in self?.handleSubmit() }
         return UIButton(configuration: config, primaryAction: action)
     }()
 
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Connections"
+        
+        if let topicName = currentTopic?.name {
+            self.title = "Connections: \(topicName)"
+        } else {
+            self.title = "Connections"
+        }
+        
         view.backgroundColor = .systemBackground
         
         setupCollectionView()
         setupLayout()
+        setupLoadingOverlay()
         
         updateMistakesLabel()
         updateSubmitButtonState()
+        
+        // Start generating!
+        generateConnectionsGame()
     }
 
+    // MARK: - AI GENERATION
+    private func setupLoadingOverlay() {
+        loadingOverlay.backgroundColor = .systemBackground
+        loadingOverlay.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(loadingOverlay)
+        
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.color = .systemBlue
+        loadingIndicator.startAnimating()
+        loadingOverlay.addSubview(loadingIndicator)
+        
+        loadingLabel.text = "Crafting your Connections from \(currentTopic?.name ?? "General Knowledge")..."
+        loadingLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        loadingLabel.textColor = .secondaryLabel
+        loadingLabel.textAlignment = .center
+        loadingLabel.numberOfLines = 0
+        loadingLabel.translatesAutoresizingMaskIntoConstraints = false
+        loadingOverlay.addSubview(loadingLabel)
+        
+        NSLayoutConstraint.activate([
+            loadingOverlay.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            loadingOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            loadingOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            loadingOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            loadingIndicator.centerXAnchor.constraint(equalTo: loadingOverlay.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: loadingOverlay.centerYAnchor, constant: -20),
+            
+            loadingLabel.topAnchor.constraint(equalTo: loadingIndicator.bottomAnchor, constant: 16),
+            loadingLabel.leadingAnchor.constraint(equalTo: loadingOverlay.leadingAnchor, constant: 32),
+            loadingLabel.trailingAnchor.constraint(equalTo: loadingOverlay.trailingAnchor, constant: -32)
+        ])
+    }
+    
+    private func generateConnectionsGame() {
+        Task {
+            let topicName = currentTopic?.name ?? "General Knowledge"
+            let contentBody = currentTopic?.largeContentBody ?? currentTopic?.notesContent ?? currentTopic?.cheatsheetContent ?? ""
+            let safeContent = String(contentBody.prefix(15000))
+            
+            let prompt = """
+            Create a "Connections" word puzzle game based on the following study material.
+            You must create EXACTLY 4 categories.
+            Each category MUST have a short, descriptive title.
+            Each category MUST contain EXACTLY 4 words that belong to that category.
+            The words should be single words or very short phrases (max 2 words).
+            
+            STRICTLY use this EXACT JSON format:
+            {
+              "categories": [
+                {
+                  "title": "DATA STRUCTURES",
+                  "words": ["Stack", "Queue", "Tree", "Array"]
+                }
+              ]
+            }
+            Make sure there are exactly 4 categories in the array!
+            
+            STUDY MATERIAL:
+            \(safeContent.isEmpty ? "General educational facts and trivia." : safeContent)
+            """
+            
+            do {
+                let jsonResponse = try await AIContentManager.shared.generateContent(
+                    topic: prompt,
+                    type: "Connections",
+                    count: 1, // Doesn't matter, prompt dictates 4
+                    difficulty: "Medium"
+                )
+                
+                let cleanJSON = cleanJSONText(jsonResponse)
+                guard let data = cleanJSON.data(using: .utf8) else { throw URLError(.cannotDecodeContentData) }
+                
+                let decoder = JSONDecoder()
+                let result = try decoder.decode(AIConnectionsResponse.self, from: data)
+                
+                // Colors to assign
+                let colors: [UIColor] = [.systemPurple, .systemGreen, .systemYellow, .systemBlue]
+                
+                var newCategories: [CategoryModel] = []
+                for (index, aiCat) in result.categories.prefix(4).enumerated() {
+                    let cat = CategoryModel(
+                        id: index,
+                        title: aiCat.title.uppercased(),
+                        words: Array(aiCat.words.prefix(4)),
+                        color: colors[index % colors.count]
+                    )
+                    newCategories.append(cat)
+                }
+                
+                DispatchQueue.main.async {
+                    self.categories = newCategories
+                    self.words = WordModel.generateWords(from: self.categories)
+                    self.hideLoadingAndStartGame()
+                }
+                
+            } catch {
+                print("⚠️ AI Connections Failed: \(error.localizedDescription). Using fallback.")
+                DispatchQueue.main.async {
+                    self.categories = CategoryModel.fallbackCategories
+                    self.words = WordModel.generateWords(from: self.categories)
+                    self.hideLoadingAndStartGame()
+                }
+            }
+        }
+    }
+    
+    private func cleanJSONText(_ json: String) -> String {
+        var clean = json
+        if clean.contains("```json") { clean = clean.replacingOccurrences(of: "```json", with: "") }
+        clean = clean.replacingOccurrences(of: "```", with: "")
+        if let startIndex = clean.firstIndex(of: "{") { clean = String(clean[startIndex...]) }
+        if let endIndex = clean.lastIndex(of: "}") { clean = String(clean[...endIndex]) }
+        return clean.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    private func hideLoadingAndStartGame() {
+        UIView.animate(withDuration: 0.3, animations: {
+            self.loadingOverlay.alpha = 0
+        }) { _ in
+            self.loadingOverlay.removeFromSuperview()
+            self.collectionView.reloadData()
+        }
+    }
+
+    // MARK: - UI Setup
     private func setupCollectionView() {
         collectionView.delegate = self
         collectionView.dataSource = self
@@ -122,6 +270,7 @@ class ConnectionsViewController: UIViewController {
         return UICollectionViewCompositionalLayout(section: section)
     }
 
+    // MARK: - Actions
     private func handleShuffle() {
         words.shuffle()
         collectionView.reloadData()
@@ -141,7 +290,6 @@ class ConnectionsViewController: UIViewController {
         let firstCategoryID = selectedWords.first?.categoryID
         let isCorrect = selectedWords.allSatisfy { $0.categoryID == firstCategoryID }
 
-        // Unwrapping safely and ensuring ID is treated as Int
         if isCorrect, let categoryID = firstCategoryID {
             handleSuccess(for: categoryID)
         } else {
@@ -151,9 +299,8 @@ class ConnectionsViewController: UIViewController {
         updateSubmitButtonState()
     }
     
-    // Updated to accept Int
     private func handleSuccess(for categoryID: Int) {
-        guard let category = CategoryModel.allCategories.first(where: { $0.id == categoryID }) else { return }
+        guard let category = self.categories.first(where: { $0.id == categoryID }) else { return }
         
         for i in words.indices where words[i].isSelected {
             words[i].isGuessed = true
@@ -191,8 +338,19 @@ class ConnectionsViewController: UIViewController {
     }
     
     private func finishGame(won: Bool) {
+      
         didWin = won
         collectionView.isUserInteractionEnabled = false
+        
+        if won {
+                // ✅ 1. Update Badge Stat
+                ProgressDataManager.shared.totalConnectionsWon += 1
+                
+                // ✅ 2. Award XP and trigger UI refresh
+                Task {
+                    await RevisioManager.shared.earnXP(amount: 20, reason: "Beat Connections")
+                }
+            }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.performSegue(withIdentifier: "ShowConnectionsResults", sender: nil)
@@ -207,7 +365,9 @@ class ConnectionsViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ShowConnectionsResults",
            let destVC = segue.destination as? ConnectionsResultsViewController {
-            destVC.categories = CategoryModel.allCategories
+            
+            // ✅ We pass the dynamic AI categories to the results screen
+            destVC.categories = self.categories
             destVC.resultTitle = didWin ? "Great Job!" : "Better luck next time!"
         }
     }
@@ -219,6 +379,7 @@ class ConnectionsViewController: UIViewController {
     }
 }
 
+// MARK: - Collection View Methods
 extension ConnectionsViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return words.count

@@ -26,7 +26,6 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
     }
 
     func createHeaderView() -> UIView {
-        // 1. Create container without a fixed height initially
         let headerView = UIView()
         
         let container = UIView()
@@ -45,18 +44,16 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
         
         let titleLabel = UILabel()
         titleLabel.text = materialName
-        titleLabel.font = .systemFont(ofSize: 22, weight: .bold) // Slightly smaller font for long names
+        titleLabel.font = .systemFont(ofSize: 22, weight: .bold)
         titleLabel.textColor = .label
         titleLabel.textAlignment = .center
         
-        // ✅ KEY CHANGE: Set to 0 for unlimited lines (word wrap)
         titleLabel.numberOfLines = 0
         titleLabel.lineBreakMode = .byWordWrapping
         
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(titleLabel)
         
-        // Constraints
         NSLayoutConstraint.activate([
             container.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 20),
             container.centerXAnchor.constraint(equalTo: headerView.centerXAnchor),
@@ -70,11 +67,9 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
             titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 20),
             titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -20),
             
-            // ✅ KEY CHANGE: Pin bottom of label to bottom of headerView
             titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -20)
         ])
         
-        // 2. Calculate the required height for the dynamic text
         let targetSize = CGSize(width: view.frame.width, height: UIView.layoutFittingCompressedSize.height)
         let estimatedSize = headerView.systemLayoutSizeFitting(targetSize,
                                                               withHorizontalFittingPriority: .required,

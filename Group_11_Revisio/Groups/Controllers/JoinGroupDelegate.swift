@@ -8,5 +8,5 @@
 import Foundation
 
 protocol JoinGroupDelegate: AnyObject {
-    func didJoinGroup(groupName: String)
+    func didJoinGroup(_ group: Group)
 }

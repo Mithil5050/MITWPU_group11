@@ -33,60 +33,66 @@ class MaterialViewCell: UITableViewCell {
     
     
     func configure(with item: StudyItem) {
-            let symbolname: String
-            let iconColor: UIColor
+        let symbolname: String
+        let iconColor: UIColor
+        
+        switch item {
+        case .topic(let topic):
+            titleLabel.text = topic.name
+            subtitleLabel.text = "\(topic.materialType) • \(topic.lastAccessed)"
             
-            switch item {
-            case .topic(let topic):
-                titleLabel.text = topic.name
-                subtitleLabel.text = "\(topic.materialType) • \(topic.lastAccessed)"
-                
-                switch topic.materialType {
-                case "Quiz":
-                    symbolname = "timer"
-                    iconColor = UIColor(red: 0.45, green: 0.85, blue: 0.61, alpha: 1.0)
-                case "Notes":
-                    symbolname = "book.pages"
-                    iconColor = UIColor(hex: "FFC445", alpha: 0.75)
-                case "Flashcards":
-                    symbolname = "rectangle.on.rectangle.angled"
-                    iconColor = UIColor(hex: "91C1EF")
-                case "Cheatsheet":
-                    symbolname = "list.clipboard"
-                    iconColor = UIColor(hex: "8A38F5", alpha: 0.50)
-                default:
-                    symbolname = "doc.text.fill"
-                    iconColor = .systemGray
-                }
-                
-            case .source(let source):
-                titleLabel.text = source.name
-                subtitleLabel.text = "\(source.fileType) • \(source.size)"
-                
-                let type = source.fileType.uppercased()
-                
-                // Categorize into your 4 specific types
-                if type == "IMAGE" || type == "JPG" || type == "PNG" || type == "JPEG" {
-                    symbolname = "photo.fill"
-                    iconColor = .systemIndigo
-                } else if type == "DOC" || type == "PDF" {
-                    symbolname = "text.document" // Or "doc.richtext.fill"
-                    iconColor = .systemIndigo
-                } else if type == "TEXT" || type == "TXT" {
-                    symbolname = "doc.text.fill"
-                    iconColor = .systemIndigo
-                } else {
-                    // Includes VIDEO, MP4, and standard Links per your requirement
-                    symbolname = "link"
-                    iconColor = .systemIndigo
-                }
+            switch topic.materialType {
+            case "Quiz":
+                symbolname = "timer"
+                iconColor = UIColor(red: 0.45, green: 0.85, blue: 0.61, alpha: 1.0)
+            case "Notes":
+                symbolname = "book.pages"
+                iconColor = UIColor(hex: "FFC445", alpha: 0.75)
+            case "Flashcards":
+                symbolname = "rectangle.on.rectangle.angled"
+                iconColor = UIColor(hex: "91C1EF")
+            case "Cheatsheet":
+                symbolname = "list.clipboard"
+                iconColor = UIColor(hex: "8A38F5", alpha: 0.50)
+            default:
+                symbolname = "doc.text.fill"
+                iconColor = .systemGray
             }
             
-            iconImageView.image = UIImage(systemName: symbolname)
-            iconImageView.tintColor = iconColor
-            iconContainerView.backgroundColor = iconColor.withAlphaComponent(0.15)
-            iconContainerView.layer.cornerRadius = 8
+        case .source(let source):
+            titleLabel.text = source.name
+            
+            
+            iconColor = .systemIndigo
+            
+            let type = source.fileType.uppercased()
+            
+           
+            if type == "LINK" || type == "URL" {
+                symbolname = "link"
+                subtitleLabel.text = "Web Link"
+            } else if type == "IMAGE" || type == "JPG" || type == "PNG" || type == "JPEG" {
+                symbolname = "photo.fill"
+                subtitleLabel.text = "\(type) • \(source.size)"
+            } else if type == "DOC" || type == "PDF" {
+                symbolname = "doc.richtext.fill"
+                subtitleLabel.text = "\(type) • \(source.size)"
+            } else if type == "TEXT" || type == "TXT" {
+                symbolname = "textformat"
+                subtitleLabel.text = "\(type) • \(source.size)"
+            } else {
+                
+                symbolname = "link"
+                subtitleLabel.text = "\(type) • \(source.size)"
+            }
         }
+        
+       
+        iconImageView.image = UIImage(systemName: symbolname)
+        iconImageView.tintColor = iconColor
+        iconContainerView.backgroundColor = iconColor.withAlphaComponent(0.15)
+        iconContainerView.layer.cornerRadius = 8
+    }
     override func layoutSubviews() {
         super.layoutSubviews()
         
