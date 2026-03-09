@@ -181,6 +181,29 @@ import UIKit
         func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
             return 52
         }
+
+        func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+            return UIView()
+        }
+
+        func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+            return 0
+        }
+
+        func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+            cell.contentView.layer.masksToBounds = true
+            let verticalPadding: CGFloat = 6
+            let maskLayer = CALayer()
+            maskLayer.cornerRadius = 8
+            maskLayer.backgroundColor = UIColor.black.cgColor
+            maskLayer.frame = CGRect(
+                x: cell.bounds.origin.x,
+                y: cell.bounds.origin.y + verticalPadding / 2,
+                width: cell.bounds.width,
+                height: cell.bounds.height - verticalPadding
+            )
+            cell.layer.mask = maskLayer
+        }
     }
 
 // XPHistoryCell
