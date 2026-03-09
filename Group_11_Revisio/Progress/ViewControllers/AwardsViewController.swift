@@ -7,12 +7,11 @@
 
 import UIKit
 
-// 1. Define the 4 Sections
 enum AwardsSection: Int, CaseIterable {
     case feature = 0          // Large Monthly Badge
     case activeChallenges = 1 // Horizontal Scroll (closest to completion)
     case recentWins = 2       // Horizontal Scroll (recently earned)
-    case allMilestones = 3    // Vertical Grid (all categories)
+    case allMilestones = 3    // "Show all" to AllLockedBadgesViewController (locked Badges)
 }
 
 class AwardsViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
@@ -22,8 +21,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
 
     var milestones: [Badging.Badge] = []
 
-      // The 4 upcoming next-tier badges, ranked by how close the current tier is to completion.
-      // Example: Adventurer (bronze) at 1/10 → show Warrior (silver) in the preview.
+    // The 4 upcoming next-tier badges, ranked by how close the current tier is to completion.
       private let milestonePreviewCount = 4
       var previewMilestones: [Badging.Badge] {
           var result: [(badge: Badging.Badge, progress: Float)] = []
@@ -163,8 +161,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
           }
       }
 
-      // MARK: - DataSource
-
+//  DataSource
       func numberOfSections(in collectionView: UICollectionView) -> Int {
           return AwardsSection.allCases.count
       }
@@ -251,16 +248,14 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
           return header
       }
 
-      // MARK: - Navigation
-
+//  Navigation to AllLockedBadgesViewController
       private func openAllMilestones() {
           let vc = AllLockedBadgesViewController()
           navigationController?.pushViewController(vc, animated: true)
       }
   }
 
-  // MARK: - MonthlyBadgeCellDelegate
-
+//  MonthlyBadgeCellDelegate
   extension AwardsViewController: MonthlyBadgeCellDelegate {
 
       func didTapMonthlyBadgeCard() {

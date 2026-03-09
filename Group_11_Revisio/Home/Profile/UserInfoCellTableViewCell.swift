@@ -1,4 +1,5 @@
 import UIKit
+
 class UserInfoCell: UICollectionViewCell { // Changed from UITableViewCell
     @IBOutlet weak var pfp: UIImageView!
     @IBOutlet weak var nameLabel: UILabel!

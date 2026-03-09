@@ -24,22 +24,19 @@ class BadgeCollectionViewCell: UICollectionViewCell {
             badgeCardView.layer.cornerRadius = 12
             badgeCardView.clipsToBounds = true
             
-            // Setup labels for multi-line centering
             badgeTitleLabel.numberOfLines = 0
             badgeDetailLabel.numberOfLines = 0
         }
 
-        /// Renders the specific centered text for empty states
+     
         func showEmptyState(section: AwardsSection) {
-            // Keep container visible but clear background so text is on black
+          
             badgeCardView.isHidden = false
             badgeCardView.backgroundColor = .clear
             
-            // Hide graphical elements
             badgeProgressBar.isHidden = true
             badgeImageView.isHidden = true
             
-            // Set your recommended final text
             if section == .activeChallenges {
                 badgeTitleLabel.text = "No challenges yet"
                 badgeDetailLabel.text = "Generate to start earning XP."
@@ -48,7 +45,7 @@ class BadgeCollectionViewCell: UICollectionViewCell {
                 badgeDetailLabel.text = "Your badges will appear here as you learn."
             }
             
-            // Force text styling and centering
+          
             badgeTitleLabel.isHidden = false
             badgeTitleLabel.textColor = .white
             badgeTitleLabel.font = .systemFont(ofSize: 14, weight: .bold)
@@ -59,7 +56,7 @@ class BadgeCollectionViewCell: UICollectionViewCell {
             badgeDetailLabel.font = .systemFont(ofSize: 12, weight: .medium)
             badgeDetailLabel.textAlignment = .center
             
-            // Adjust the StackView to center children
+        // Adjust the StackView
             if let stackView = badgeTitleLabel.superview as? UIStackView {
                 stackView.alignment = .center
                 stackView.axis = .vertical
@@ -69,7 +66,7 @@ class BadgeCollectionViewCell: UICollectionViewCell {
         }
 
         func configure(with badge: Badging.Badge, forSection section: AwardsSection) {
-            // Reset to standard badge look
+            
             badgeCardView.isHidden = false
             badgeCardView.backgroundColor = UIColor(white: 1.0, alpha: 0.08)
             badgeImageView.isHidden = false
