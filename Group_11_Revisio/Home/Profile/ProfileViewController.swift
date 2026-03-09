@@ -253,11 +253,11 @@ import Supabase
                     if indexPath.item == 0 {
                         let streak = ProgressDataManager.shared.currentStreak
                         cell.configure(title: "Streak", value: "\(streak) Days",
-                                       icon: "flame.fill", color: .systemOrange)
+                                       icon: "flame", color: .systemOrange)
                     } else {
                         let earned = ProgressDataManager.shared.earnedBadgeCount
                         cell.configure(title: "Badges", value: "\(earned) Earned",
-                                       icon: "trophy.fill", color: .systemIndigo)
+                                       icon: "trophy", color: .systemIndigo)
                     }
                     return cell
 
