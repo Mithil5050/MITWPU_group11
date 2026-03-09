@@ -12,7 +12,7 @@ class MessageCell: UITableViewCell {
     @IBOutlet weak var bubbleView: UIView!
     @IBOutlet weak var messageLabel: UILabel!
 
-    // These are created by adding the two constraints in storyboard and connecting them
+    // leading/trailing constraints wired from storyboard for bubble alignment
     @IBOutlet weak var bubbleLeadingConstraint: NSLayoutConstraint!
     @IBOutlet weak var bubbleTrailingConstraint: NSLayoutConstraint!
 
@@ -21,8 +21,6 @@ class MessageCell: UITableViewCell {
         messageLabel.numberOfLines = 0
         bubbleView.layer.cornerRadius = 16
         bubbleView.clipsToBounds = true
-        
-        // default styling
         bubbleView.backgroundColor = UIColor(white: 0.95, alpha: 1)
         messageLabel.textColor = .black
     }
@@ -31,18 +29,15 @@ class MessageCell: UITableViewCell {
         messageLabel.text = message.content
         let isOutgoing = false
         if isOutgoing {
-            // align to right
             bubbleLeadingConstraint.isActive = false
             bubbleTrailingConstraint.isActive = true
-            bubbleView.backgroundColor = UIColor(red: 0.0/255, green: 122/255, blue: 255/255, alpha: 1) // iMessage blue
+            bubbleView.backgroundColor = UIColor(red: 0.0/255, green: 122/255, blue: 255/255, alpha: 1)
             messageLabel.textColor = .white
         } else {
-            // align to left
             bubbleLeadingConstraint.isActive = true
             bubbleTrailingConstraint.isActive = false
             bubbleView.backgroundColor = UIColor(white: 0.95, alpha: 1)
             messageLabel.textColor = .black
         }
     }
-
 }

@@ -9,7 +9,6 @@ import UIKit
 
 class MediaCell: UICollectionViewCell {
 
-    // MARK: - UI
     let imageView: UIImageView = {
         let iv = UIImageView()
         iv.translatesAutoresizingMaskIntoConstraints = false
@@ -20,7 +19,6 @@ class MediaCell: UICollectionViewCell {
         return iv
     }()
 
-    // MARK: - Init
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -31,7 +29,6 @@ class MediaCell: UICollectionViewCell {
         setupUI()
     }
 
-    // MARK: - Setup
     private func setupUI() {
         contentView.addSubview(imageView)
 
@@ -43,7 +40,6 @@ class MediaCell: UICollectionViewCell {
         ])
     }
 
-    // MARK: - Configure
     func configure(image: UIImage?) {
         imageView.image = image
     }

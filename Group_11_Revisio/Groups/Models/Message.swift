@@ -13,7 +13,7 @@ struct Message: Codable {
     let createdAt: Date
     let fileUrl: String?
     let fileName: String?
-    let fileType: String?   // image, document, link
+    let fileType: String?  // "image" | "document" | "link"
 
     enum CodingKeys: String, CodingKey {
         case id
