@@ -17,7 +17,7 @@ class CreateFolderViewController: UIViewController {
         setupFieldStyling(folderNameTextField, placeholder: "Enter Folder Name...")
     }
     private func setupFieldStyling(_ textField: UITextField, placeholder: String) {
-            // Match Flashcard Box Styling
+          
             textField.backgroundColor = .secondarySystemGroupedBackground
             textField.textColor = .label
             textField.borderStyle = .none
@@ -29,12 +29,12 @@ class CreateFolderViewController: UIViewController {
                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.placeholderText]
             )
             
-            // Exact Padding Match (16pt)
+           
             let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
             textField.leftView = paddingView
             textField.leftViewMode = .always
             
-            // Exact Height Match (54pt)
+           
             textField.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
                 textField.heightAnchor.constraint(equalToConstant: 54)
