@@ -11,12 +11,10 @@ import UniformTypeIdentifiers
 
 class ChatViewController: MessagesViewController, GroupUpdateDelegate {
 
-    // MARK: - Public
     weak var updateDelegate: GroupUpdateDelegate?
     var group: Group?
     var groupName: String = ""
 
-    // MARK: - Private
     var currentUser = ChatSender(senderId: "unknown", displayName: "Me")
     private var chatMessages: [ChatMessage] = []
     private var senderNameCache: [String: String] = [:]
@@ -24,13 +22,11 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
 
     private lazy var micButton: InputBarButtonItem = {
         let item = InputBarButtonItem()
-        item.image    = UIImage(systemName: "mic.fill")
+        item.image     = UIImage(systemName: "mic.fill")
         item.tintColor = .systemGray
         item.setSize(CGSize(width: 36, height: 36), animated: false)
         return item
     }()
-
-    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,8 +50,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         Task { await loadMessages(); await subscribeToMessages() }
     }
 
-    // MARK: - Input Bar
-
+    // input bar layout + attach/mic buttons
     private func setupInputBar() {
         messageInputBar.backgroundView.backgroundColor = .systemBackground
         messageInputBar.separatorLine.isHidden = true
@@ -76,7 +71,6 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         send.setImage(UIImage(systemName: "arrow.up.circle.fill"), for: .normal)
         send.tintColor = .systemBlue
 
-        // ── Attach button (left)
         let attachButton = InputBarButtonItem()
         attachButton.image     = UIImage(systemName: "plus")
         attachButton.tintColor = .systemBlue
@@ -93,6 +87,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         messageInputBar.setRightStackViewWidthConstant(to: 40, animated: false)
     }
 
+    // tappable group name in nav bar → opens group settings
     private func setupNavigationTitle() {
         view.layoutIfNeeded()
         navigationItem.largeTitleDisplayMode = .never
@@ -111,21 +106,20 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         navigationItem.titleView = btn
     }
 
-    // MARK: - Attachment Sheet
-
+    // shows study material / photo / file options
     private func showAttachmentSheet() {
         let sheet = UIAlertController(title: "Send Attachment",
                                       message: nil,
                                       preferredStyle: .actionSheet)
-        sheet.addAction(UIAlertAction(title: "📚  Study Material",
+        sheet.addAction(UIAlertAction(title: "Study Material",
                                       style: .default) { [weak self] _ in
             self?.openStudyMaterialPicker()
         })
-        sheet.addAction(UIAlertAction(title: "🖼  Photo Library",
+        sheet.addAction(UIAlertAction(title: "Photo Library",
                                       style: .default) { [weak self] _ in
             self?.openPhotoLibrary()
         })
-        sheet.addAction(UIAlertAction(title: "📄  Files",
+        sheet.addAction(UIAlertAction(title: "Files",
                                       style: .default) { [weak self] _ in
             self?.openDocumentPicker()
         })
@@ -157,8 +151,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         present(picker, animated: true)
     }
 
-    // MARK: - Load Messages
-
+    // fetch history from DB and build bubble list
     private func loadMessages() async {
         guard let groupId = group?.id else { return }
         await DataManager.shared.loadMessages(for: groupId)
@@ -184,12 +177,10 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         }
     }
 
-    // MARK: - Build ChatMessage from DB row
-
+    // routes a DB row to the right MessageKind (link / doc / plain text)
     private func makeChatMessage(from msg: Message, sender: ChatSender) -> ChatMessage {
         let isOutgoing = msg.senderId.uuidString == currentUser.senderId
 
-        // Link bubble
         if let urlStr = msg.fileUrl, msg.fileType == "link",
            let url = URL(string: urlStr) {
             return ChatMessage(sender: sender, messageId: msg.id.uuidString,
@@ -199,7 +190,6 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
                                ))
         }
 
-        // Document / study material bubble
         if msg.fileType == "document", let fn = msg.fileName, !fn.isEmpty {
             return ChatMessage(sender: sender, messageId: msg.id.uuidString,
                                sentDate: msg.createdAt,
@@ -208,13 +198,11 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
                                ))
         }
 
-        // Plain text
         return ChatMessage(sender: sender, messageId: msg.id.uuidString,
                            sentDate: msg.createdAt, kind: .text(msg.content))
     }
 
-    // MARK: - Attributed String Helpers
-
+    // coloured underlined link, white on outgoing / blue on incoming
     private func linkAttr(text: String, url: URL, isOutgoing: Bool) -> NSAttributedString {
         let c = isOutgoing ? UIColor.white : UIColor.systemBlue
         let a = NSMutableAttributedString(string: text)
@@ -225,6 +213,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         return a
     }
 
+    // doc.fill icon + filename label
     private func docAttr(fileName: String, isOutgoing: Bool) -> NSAttributedString {
         let cfg  = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
         let tint = isOutgoing ? UIColor.white : UIColor.systemBlue
@@ -241,8 +230,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         return result
     }
 
-    // MARK: - Fetch Display Name
-
+    // username lookup with local cache
     private func fetchDisplayName(for senderId: String) async -> String {
         if let cached = senderNameCache[senderId] { return cached }
         do {
@@ -256,8 +244,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         } catch { return "User" }
     }
 
-    // MARK: - Realtime
-
+    // live incoming messages via Supabase realtime
     private func subscribeToMessages() async {
         guard let groupId = group?.id else { return }
         let channel = await SupabaseManager.shared.client.realtimeV2
@@ -305,8 +292,6 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         }
     }
 
-    // MARK: - Navigation
-
     @objc private func groupTitleTapped() {
         let sb = UIStoryboard(name: "Groups", bundle: nil)
         guard let vc = sb.instantiateViewController(
@@ -332,20 +317,19 @@ extension ChatViewController: AttachmentSendDelegate {
         guard let groupId = group?.id else { return }
 
         for att in items {
-            // Show bubble immediately (optimistic UI)
+            // optimistic bubble before server confirms
             let kind = MessageKind.attributedText(docAttr(fileName: att.displayName, isOutgoing: true))
             chatMessages.append(ChatMessage(sender: currentUser,
                                             messageId: UUID().uuidString,
                                             sentDate: Date(),
                                             kind: kind))
-            // Push to Supabase
             Task {
                 do {
                     try await SupabaseManager.shared.sendAttachment(
                         groupId: groupId,
                         senderId: currentUser.senderId,
                         attachment: att)
-                } catch { print("❌ sendAttachment error: \(error)") }
+                } catch { print("sendAttachment error: \(error)") }
             }
         }
 
@@ -367,7 +351,7 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
               let groupId = group?.id,
               let imgData = image.jpegData(compressionQuality: 0.7) else { return }
 
-        // Optimistic bubble
+        // optimistic photo bubble
         let kind = MessageKind.photo(ImageMediaItem(image: image))
         chatMessages.append(ChatMessage(sender: currentUser,
                                         messageId: UUID().uuidString,
@@ -391,12 +375,12 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
                       let sid = UUID(uuidString: currentUser.senderId) else { return }
                 try await SupabaseManager.shared.client.from("messages")
                     .insert(ImageInsert(group_id: gid, sender_id: sid,
-                                        content: "📷 Image",
+                                        content: "Image",
                                         file_url: publicUrl,
                                         file_name: "Image",
                                         file_type: "image"))
                     .execute()
-            } catch { print("❌ image upload error: \(error)") }
+            } catch { print("image upload error: \(error)") }
         }
     }
 
@@ -415,7 +399,7 @@ extension ChatViewController: UIDocumentPickerDelegate {
               let groupId = group?.id else { return }
         let fileName = url.lastPathComponent
 
-        // Optimistic bubble
+        // optimistic doc bubble
         let kind = MessageKind.attributedText(docAttr(fileName: fileName, isOutgoing: true))
         chatMessages.append(ChatMessage(sender: currentUser,
                                         messageId: UUID().uuidString,
@@ -445,7 +429,7 @@ extension ChatViewController: UIDocumentPickerDelegate {
                                       file_name: fileName,
                                       file_type: "document"))
                     .execute()
-            } catch { print("❌ document upload error: \(error)") }
+            } catch { print("document upload error: \(error)") }
         }
     }
 }
@@ -511,7 +495,7 @@ extension ChatViewController: MessagesDisplayDelegate {
         message.sender.senderId == currentUser.senderId ? .white : .label
     }
 
-    // Controls link/tint color inside message label — key fix for blue-on-blue links
+    // tintColor drives link tap color inside message labels
     func configureMessageLabel(_ messageLabel: MessageLabel,
                                for message: MessageType,
                                at indexPath: IndexPath,
@@ -558,10 +542,9 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
-        // Detect link for optimistic UI
         let detector = try? NSDataDetector(
             types: NSTextCheckingResult.CheckingType.link.rawValue)
-        let r     = NSRange(trimmed.startIndex..., in: trimmed)
+        let r      = NSRange(trimmed.startIndex..., in: trimmed)
         let isLink = !(detector?.matches(in: trimmed, options: [], range: r) ?? []).isEmpty
 
         let kind: MessageKind
@@ -587,7 +570,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
             do {
                 try await SupabaseManager.shared.sendMessage(
                     groupId: groupId, senderId: currentUser.senderId, text: trimmed)
-            } catch { print("❌ sendMessage error: \(error)") }
+            } catch { print("sendMessage error: \(error)") }
         }
     }
 
@@ -619,7 +602,7 @@ extension ChatViewController: LeaveGroupDelegate {
     }
 }
 
-// MARK: - ImageMediaItem helper
+// MARK: - ImageMediaItem
 
 private struct ImageMediaItem: MediaItem {
     var url: URL? { nil }

@@ -37,7 +37,6 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         Task { await loadGroups() }
     }
 
-    // MARK: - Load
     private func loadGroups() async {
         do {
             let groups = try await SupabaseManager.shared.fetchGroups()
@@ -47,7 +46,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
             }
             await loadLastMessages()
         } catch {
-            print("❌ Failed to fetch groups: \(error)")
+            print("Failed to fetch groups: \(error)")
         }
     }
 
@@ -73,7 +72,6 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         }
     }
 
-    // MARK: - TableView
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return isSearching ? filteredGroups.count : myGroups.count
     }
@@ -92,7 +90,6 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         cell.lastMessageLabel.textColor = .secondaryLabel
         cell.lastMessageLabel.font = UIFont.systemFont(ofSize: 14)
 
-        // Pass URL string (or nil) — GroupCell handles default icon
         cell.configureAvatar(group.avatarUrl)
         return cell
     }
@@ -124,7 +121,6 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         navigationController?.pushViewController(chatVC, animated: true)
     }
 
-    // MARK: - Delete
     private func confirmDelete(at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {
         let group = myGroups[indexPath.row]
         let alert = UIAlertController(title: "Delete Group",
@@ -142,13 +138,12 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
             completion(true)
             Task {
                 do { try await SupabaseManager.shared.deleteGroup(id: groupToDelete.id) }
-                catch { print("❌ Failed to delete group: \(error)") }
+                catch { print("Failed to delete group: \(error)") }
             }
         })
         present(alert, animated: true)
     }
 
-    // MARK: - Join / Create
     @IBAction func joinGroupButtonTapped(_ sender: UIButton) {
         let storyboard = UIStoryboard(name: "Groups", bundle: nil)
         guard let joinVC = storyboard.instantiateViewController(
@@ -203,6 +198,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
 }
 
 // MARK: - CreateGroupDelegate
+
 extension GroupsViewController: CreateGroupDelegate {
     func didCreateGroup(_ group: Group) {
         myGroups.insert(group, at: 0)
@@ -215,6 +211,7 @@ extension GroupsViewController: CreateGroupDelegate {
 }
 
 // MARK: - LeaveGroupDelegate
+
 extension GroupsViewController: LeaveGroupDelegate {
     func didLeaveGroup(_ group: Group) {
         if let idx = myGroups.firstIndex(where: { $0.id == group.id }) {
