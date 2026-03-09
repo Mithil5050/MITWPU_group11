@@ -11,13 +11,9 @@ class AllLockedBadgesViewController: UIViewController,
                                     UICollectionViewDataSource,
                                     UICollectionViewDelegate {
 
-    // MARK: - Data
+
     private var badges: [Badging.Badge] = Badging.allMilestones
-
-    // MARK: - UI
     private var collectionView: UICollectionView!
-
-    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,15 +33,13 @@ class AllLockedBadgesViewController: UIViewController,
 
     deinit { NotificationCenter.default.removeObserver(self) }
 
-    // MARK: - Data refresh
-
+//  Data refresh
     @objc private func refresh() {
         badges = Badging.allMilestones
         collectionView?.reloadData()
     }
 
-    // MARK: - Collection view setup
-
+//  Collection view setup
     private func setupCollectionView() {
         collectionView = UICollectionView(frame: view.bounds,
                                           collectionViewLayout: createLayout())
@@ -65,8 +59,8 @@ class AllLockedBadgesViewController: UIViewController,
         view.addSubview(collectionView)
     }
 
+    
     private func createLayout() -> UICollectionViewLayout {
-        // 2-column grid, grouped by BadgeCategory
         let itemSize  = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5),
                                                heightDimension: .absolute(160))
         let item      = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -89,7 +83,7 @@ class AllLockedBadgesViewController: UIViewController,
         return UICollectionViewCompositionalLayout(section: section)
     }
 
-    // MARK: - Sections = one per BadgeCategory
+// Sections = one per BadgeCategory
 
     private var categories: [Badging.BadgeCategory] {
         // Preserve the order defined in BadgeCategory
@@ -105,8 +99,8 @@ class AllLockedBadgesViewController: UIViewController,
             .sorted { $0.tier.rawValue < $1.tier.rawValue }   // bronze → silver → gold
     }
 
-    // MARK: - UICollectionViewDataSource
-
+//UICollectionViewDataSource
+        
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return categories.count
     }

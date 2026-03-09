@@ -25,12 +25,12 @@ class MonthlyChallengeDetailViewController: UIViewController {
             largeBadgeImageView.image = UIImage(named: "awards_monthly_main")
             largeBadgeImageView.contentMode = .scaleAspectFit
             
-            challengeTitleLabel.text = "January"
+            challengeTitleLabel.text = "March"
             challengeTitleLabel.font = UIFont.systemFont(ofSize: 22, weight: .bold)
             challengeTitleLabel.textColor = .label
             challengeTitleLabel.textAlignment = .center
             
-            challengeDescriptionLabel.text = "Earn 10 badges this month to unlock the January Challenge. You've completed this challenge once before."
+            challengeDescriptionLabel.text = "Earn 10 badges this month to earn the March Challenge Bagde. You've completed this challenge once before."
             challengeDescriptionLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
             challengeDescriptionLabel.textColor = .secondaryLabel
             challengeDescriptionLabel.textAlignment = .center

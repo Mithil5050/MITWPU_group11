@@ -17,7 +17,7 @@ class StatCardCell: UICollectionViewCell {
            super.awakeFromNib()
            bgView.layer.cornerRadius = 16
            bgView.backgroundColor = UIColor(white: 0.11, alpha: 1.0)
-           // Let taps pass through bgView to the cell's selection handler
+         
            bgView.isUserInteractionEnabled = false
        }
 
@@ -27,15 +27,14 @@ class StatCardCell: UICollectionViewCell {
            iconView.image     = UIImage(systemName: icon)
            iconView.tintColor = color
 
-           // Subtle tinted background per card type
+           
            bgView.backgroundColor = color.withAlphaComponent(0.07)
                .mixed(with: UIColor(white: 0.11, alpha: 1.0), ratio: 0.35)
        }
    }
 
-   // MARK: - UIColor blend helper
+   // UIColor blend helper
    private extension UIColor {
-       /// Blends self with `color` at the given `ratio` (0 = all self, 1 = all color).
        func mixed(with color: UIColor, ratio: CGFloat) -> UIColor {
            var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
            var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0

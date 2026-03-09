@@ -21,7 +21,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		546963D02ED6CB32001C03B8 /* Exceptions for "Group_11_Revisio" folder in "Group_11_Revisio" target */ = {
+		FA41A9762F5EB3150025909F /* Exceptions for "Group_11_Revisio" folder in "Group_11_Revisio" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -34,7 +34,7 @@
 		546963C02ED6CB31001C03B8 /* Group_11_Revisio */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				546963D02ED6CB32001C03B8 /* Exceptions for "Group_11_Revisio" folder in "Group_11_Revisio" target */,
+				FA41A9762F5EB3150025909F /* Exceptions for "Group_11_Revisio" folder in "Group_11_Revisio" target */,
 			);
 			path = Group_11_Revisio;
 			sourceTree = "<group>";
@@ -176,9 +176,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 32C5NG7QRW;
+				DEVELOPMENT_TEAM = M64BV29JX8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Group_11_Revisio/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -191,8 +192,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = Mithil;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ashika.group11revisio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -208,9 +210,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 32C5NG7QRW;
+				DEVELOPMENT_TEAM = M64BV29JX8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Group_11_Revisio/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -223,8 +226,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = Mithil;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ashika.group11revisio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;

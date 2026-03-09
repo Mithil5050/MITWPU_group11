@@ -27,7 +27,7 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
     
     weak var delegate: MonthlyBadgeCellDelegate?
 
-       // Tag guards the ⓘ button from being added twice on cell reuse
+    // Tag guards the ⓘ button from being added twice on cell reuse
        private let infoButtonTag = 8_002
 
        override func awakeFromNib() {
@@ -37,8 +37,6 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
            setupImageTapGesture()
            setupInfoButton()
        }
-
-       // MARK: - Layout
 
        private func setupAppleLayout() {
            levelLabel.font      = .systemFont(ofSize: 22, weight: .semibold)
@@ -57,8 +55,6 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
                sub.clipsToBounds = true
            }
        }
-
-       // MARK: - Configure
 
        func configure(with badge: Badging.Badge) {
            let manager    = ProgressDataManager.shared
@@ -86,8 +82,7 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
            }
        }
 
-       // MARK: - ⓘ Button
-
+    // ⓘ Button
        private func setupInfoButton() {
            guard contentView.viewWithTag(infoButtonTag) == nil else { return }
 
@@ -111,8 +106,7 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
            delegate?.didTapXPInfo()
        }
 
-       // MARK: - Badge image tap
-
+    // Badge image tap
        private func setupImageTapGesture() {
            monthlyBadgeImageView.isUserInteractionEnabled = true
            let tap = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
@@ -123,7 +117,6 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
            delegate?.didTapMonthlyBadgeCard()
        }
 
-       // MARK: - Card style
 
        private func setupCardStyle() {
            backgroundColor              = .clear
