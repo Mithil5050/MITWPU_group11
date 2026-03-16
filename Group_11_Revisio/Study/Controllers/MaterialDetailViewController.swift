@@ -40,30 +40,30 @@ class MaterialDetailViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        // 1. Force clear any existing timer
+        
         studyTimer?.invalidate()
         
-        print("⏳ Focus Timer Started: 60 Seconds")
+        print(" Focus Timer Started: 60 Seconds")
         
-        // 2. Create the timer
+        
         let timer = Timer(timeInterval: studyThreshold, repeats: false) { [weak self] _ in
             guard let self = self else { return }
             
             Task { @MainActor in
                 await RevisioManager.shared.earnXP(amount: 10, reason: "Deep Study Focus")
-                print("✅ Success: 1 Minute Focus Reward Given")
+                print(" Success: 1 Minute Focus Reward Given")
                 self.studyTimer = nil
             }
         }
         
-        // 3. CRITICAL: Add to .common mode so scrolling doesn't stop the clock
+       
         RunLoop.current.add(timer, forMode: .common)
         self.studyTimer = timer
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        // 4. Kill the timer if they leave before 60s
+      
         studyTimer?.invalidate()
         studyTimer = nil
     }

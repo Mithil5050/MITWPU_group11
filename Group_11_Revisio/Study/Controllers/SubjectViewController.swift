@@ -313,9 +313,9 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                   let subject = self?.selectedSubject else { return }
             
             let linkSource = Source(
-                name: name,         // The title to show in the list
-                fileType: "LINK",   // For the Indigo link icon
-                size: urlString     // Store the actual URL here
+                name: name,
+                fileType: "LINK",
+                size: urlString
             )
             
             DataManager.shared.addSource(to: subject, source: linkSource)
@@ -337,7 +337,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             let textSource = Source(
                 name: name,
-                fileType: "TXT",   // For the Indigo text icon
+                fileType: "TXT",   
                 size: "Manual Note"
             )
             

@@ -21,7 +21,7 @@ extension GenerationType: CustomStringConvertible {
     }
 }
 
-// ✅ RENAMED STRUCT to avoid "Invalid Redeclaration" conflicts with other files
+
 struct ParsedAIFlashcard: Codable {
     let front: String?
     let back: String?
@@ -86,16 +86,16 @@ class MaterialSelectionCard: UIControl {
 // MARK: - 3. View Controller
 class GenerationViewController: UIViewController {
     
-    // ✅ RATE LIMIT PROTECTION
+    
     static var lastGenerationTime: Date?
     let requiredCooldown: TimeInterval = 8.0
     
-    // PROPERTIES
+   
     var currentGenerationType: GenerationType = .quiz
     var sourceItems: [Any]? // Contains URLs passed from SelectMaterialVC
     var parentSubjectName: String?
     
-    // SETTINGS STATE
+    
     var selectedCount: Int = 10
     var selectedTime: Int = 15
     var currentDifficulty: DifficultyLevel = .easy
@@ -104,7 +104,7 @@ class GenerationViewController: UIViewController {
         case easy, medium, hard
     }
     
-    // LOADING UI
+   
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
     
     // MARK: - IBOutlets
@@ -118,7 +118,7 @@ class GenerationViewController: UIViewController {
     @IBOutlet weak var emptySettingsPlaceholder: UIView!
     @IBOutlet weak var generateButton: UIButton!
     
-    // ✅ PROGRAMMATIC UI ELEMENTS
+    
     private let fcCountStepper = UIStepper()
     private let fcCountLabel = UILabel()
     
@@ -133,15 +133,15 @@ class GenerationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        setupProgrammaticUI() // Injects Settings Layout dynamically
+        setupProgrammaticUI()
         setupLoadingIndicator()
         
-        // Default selection
+       
         updateUISelection(selected: quizCard, type: .quiz)
     }
     
     private func setupUI() {
-            // ✅ Updated Colors for Quiz and Flashcards
+            
             quizCard.configure(iconName: "timer", title: "Quiz", iconColor: UIColor(hex: "88D769"))
             flashCard.configure(iconName: "rectangle.on.rectangle.angled", title: "Flashcards", iconColor: UIColor(hex: "5AC8FA"))
             
@@ -162,11 +162,11 @@ class GenerationViewController: UIViewController {
         guard let quizConfigView = QuizSettingsView,
               let flashcardConfigView = FlashcardSettingsView else { return }
         
-        // Clear any old storyboard elements
+        
         quizConfigView.subviews.forEach { $0.removeFromSuperview() }
         flashcardConfigView.subviews.forEach { $0.removeFromSuperview() }
         
-        // --- 1. QUIZ SETTINGS (No Difficulty) ---
+        
         qCountStepper.minimumValue = 5; qCountStepper.maximumValue = 30; qCountStepper.stepValue = 5; qCountStepper.value = 10
         qCountLabel.text = "10"
         qCountStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
@@ -191,7 +191,7 @@ class GenerationViewController: UIViewController {
             quizStack.topAnchor.constraint(equalTo: quizConfigView.topAnchor, constant: 8)
         ])
         
-        // --- 2. FLASHCARD SETTINGS (With Difficulty) ---
+      
         fcCountStepper.minimumValue = 5; fcCountStepper.maximumValue = 30; fcCountStepper.stepValue = 5; fcCountStepper.value = 10
         fcCountLabel.text = "10"
         fcCountStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
@@ -353,7 +353,7 @@ class GenerationViewController: UIViewController {
 
     // MARK: - CORE AI LOGIC
     @IBAction func generateButtonTapped(_ sender: UIButton) {
-        // ✅ 1. CHECK RATE LIMIT COOLDOWN
+       
         if let lastTime = Self.lastGenerationTime {
             let timeSinceLast = Date().timeIntervalSince(lastTime)
             if timeSinceLast < requiredCooldown {
@@ -392,7 +392,7 @@ class GenerationViewController: UIViewController {
         Task {
             let extractedText = await ContentExtractor.shared.extractContent(from: sourceItem)
             
-            // ✅ ENHANCED STRICT FORMATTING PROMPTS
+          
             var instruction = ""
             switch currentGenerationType {
             case .flashcards:
@@ -529,14 +529,14 @@ class GenerationViewController: UIViewController {
         }
     }
     
-    // ✅ PROPERLY SAVE SOURCES AND PARSE DATA
+   
     private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
         self.stopLoading(sender)
         
         let folder = self.parentSubjectName ?? "General Study"
         var savedTopic: Topic?
         
-        // 1. Save Original Source Files
+       
         if let items = self.sourceItems {
             for item in items {
                 if let url = item as? URL {
@@ -553,7 +553,7 @@ class GenerationViewController: UIViewController {
             }
         }
         
-        // 2. Parse and Save Generated Content
+        
         if self.currentGenerationType == .quiz {
             let questions = self.parseQuizJSON(generatedContent)
             if questions.isEmpty { self.showError("AI generated invalid quiz data."); return }
@@ -567,7 +567,7 @@ class GenerationViewController: UIViewController {
             savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: "Flashcards", notes: serialized, sourceName: topicName, createdDate: "Just now")
             
         } else {
-            // Note & Cheatsheet - Strip backticks just in case AI includes them
+           
             var finalText = generatedContent.trimmingCharacters(in: .whitespacesAndNewlines)
             if finalText.hasPrefix("```markdown") {
                 finalText = finalText.replacingOccurrences(of: "```markdown", with: "")
@@ -577,7 +577,7 @@ class GenerationViewController: UIViewController {
             savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: self.currentGenerationType.description, notes: finalText, sourceName: topicName, createdDate: "Just now")
         }
         
-        // 3. Navigate
+       
         if let finalTopic = savedTopic {
             let payload = (topic: finalTopic, sourceName: topicName)
             self.performNavigation(type: self.currentGenerationType, payload: payload)
@@ -586,7 +586,7 @@ class GenerationViewController: UIViewController {
         }
     }
     
-    // Navigation Helper
+    
     func performNavigation(type: GenerationType, payload: (topic: Topic, sourceName: String)) {
         switch type {
         case .quiz: performSegue(withIdentifier: "ShowQuizInstructionsFromGen", sender: payload)
