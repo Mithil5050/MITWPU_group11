@@ -1,12 +1,7 @@
-//
-//  ProfileViewController.swift
-//  Group_11_Revisio
-//
-
 import UIKit
 import Supabase
 
-// ✅ Structure to decode Supabase data
+
 struct UserProfile: Decodable {
     let username: String
     let avatar_url: String?
@@ -14,15 +9,15 @@ struct UserProfile: Decodable {
 
 class ProfileViewController: UIViewController {
 
-    // MARK: - UI Components
+   
     var collectionView: UICollectionView!
     
-    // MARK: - User Data (Placeholders)
+ 
     var userName: String = "Loading..."
     var userEmail: String = "Loading..."
     var userImage: UIImage? = UIImage(named: "profile_placeholder")
 
-    // MARK: - Settings Data
+    // Settings Data
     struct SettingItem { let title: String; let icon: String; let color: UIColor; let isSwitch: Bool }
     let settingsData = [
         SettingItem(title: "Study Reminder", icon: "book", color: .systemBlue, isSwitch: true),
@@ -31,7 +26,7 @@ class ProfileViewController: UIViewController {
         SettingItem(title: "Help & Support", icon: "questionmark.circle", color: .systemGray, isSwitch: false)
     ]
 
-    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
