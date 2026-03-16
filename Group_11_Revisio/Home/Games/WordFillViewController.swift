@@ -295,6 +295,8 @@ class WordFillViewController: UIViewController {
         
         // Award XP
         Task { await RevisioManager.shared.earnXP(amount: 15, reason: "Played Word Fill") }
+        let elapsed = Double(60 - secondsRemaining) / 60.0
+        ProgressDataManager.shared.logSession(minutes: max(elapsed, 1.0), category: "Games")
         
         performSegue(withIdentifier: "NavigateToResults", sender: (result, summaryItems))
     }

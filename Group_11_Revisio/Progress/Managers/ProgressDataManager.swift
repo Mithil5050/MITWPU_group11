@@ -348,6 +348,33 @@ class ProgressDataManager {
         Task { await SupabaseManager.shared.syncXPEvent(reason: description, amount: amount) }
     }
 
+    // MARK: - Session Logging for Progress Chart
+    func logSession(minutes: Double, category: String) {
+        let entry = LogHistoryItem(
+            id: UUID().uuidString,
+            amount: "\(Int(minutes))m",
+            hours: minutes / 60.0,
+            time: nil,
+            date: Date(),
+            category: category
+        )
+        history.append(entry)
+        persistSessionHistory()
+        NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
+    }
+
+    private func persistSessionHistory() {
+        if let data = try? JSONEncoder().encode(history) {
+            UserDefaults.standard.set(data, forKey: "session_history_v1")
+        }
+    }
+
+    private func loadSessionHistory() {
+        guard let data = UserDefaults.standard.data(forKey: "session_history_v1"),
+              let loaded = try? JSONDecoder().decode([LogHistoryItem].self, from: data) else { return }
+        history = loaded
+    }
+
     private func persistXPHistory() {
         let fmt = ISO8601DateFormatter()
         let raw = xpHistory.map { ["desc": $0.description, "amt": "\($0.amount)", "date": fmt.string(from: $0.date)] }
@@ -356,7 +383,7 @@ class ProgressDataManager {
         }
     }
 
-    private init() { }
+    private init() { loadSessionHistory() }
 }
 
 extension Notification.Name {

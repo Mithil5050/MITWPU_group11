@@ -261,6 +261,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate {
         
         let saveAction = UIAlertAction(title: "Yes, Save", style: .default) { [weak self] _ in
             guard let self = self else { return }
+            ProgressDataManager.shared.logSession(minutes: Double(self.flashcards.count) * 0.5, category: "Study")
             let confirmAlert = UIAlertController(title: "Saved!", message: "Your progress has been recorded.", preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default) { _ in
                 if let nav = self.navigationController {

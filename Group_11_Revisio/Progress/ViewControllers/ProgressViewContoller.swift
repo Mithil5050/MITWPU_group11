@@ -30,148 +30,124 @@ class ProgressViewContoller: UIViewController {
     @IBOutlet weak var monthNameLabel: UILabel!
     @IBOutlet weak var mainMonthBagdeImageView: UIImageView!
     
+            private let legendStackView = UIStackView()
+            var studyModel = StudyChartModel()
+            private var hostingController: UIHostingController<BarChartView>?
 
-        private let legendStackView = UIStackView()
-        var studyModel = StudyChartModel()
-        private var hostingController: UIHostingController<BarChartView>?
+            override func viewDidLoad() {
+                super.viewDidLoad()
+                setupUI()
+                setupTapGestures()
 
-        override func viewDidLoad() {
-            super.viewDidLoad()
-            setupUI()
-            setupTapGestures()
-
-            NotificationCenter.default.addObserver(self, selector: #selector(refreshScreenData),
-                                                   name: .xpDidUpdate, object: nil)
-            DispatchQueue.main.async {
-                self.loadDataAndRefreshChart()
-                self.updateStreakDisplay()
+                NotificationCenter.default.addObserver(self, selector: #selector(refreshScreenData),
+                                                       name: .xpDidUpdate, object: nil)
+                DispatchQueue.main.async {
+                    self.loadDataAndRefreshChart()
+                    self.updateStreakDisplay()
+                }
             }
-        }
 
-        override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            updateStreakDisplay()
-        }
-
-    //  Data refresh
-        @objc func refreshScreenData() {
-            DispatchQueue.main.async {
-                self.updateStreakDisplay()
-                self.studyModel.updateChart(with: ProgressDataManager.shared.history)
+            override func viewWillAppear(_ animated: Bool) {
+                super.viewWillAppear(animated)
+                updateStreakDisplay()
+                // Reload chart from persisted history every time screen appears
+                studyModel.updateChart(with: ProgressDataManager.shared.history)
             }
-        }
 
-        private func updateStreakDisplay() {
-            let streak = ProgressDataManager.shared.currentStreak
-            let suffix = (streak == 1) ? "Day" : "Days"
-            streaksCountLabel.text = "\(streak) \(suffix)"
+        //  Data refresh
+            @objc func refreshScreenData() {
+                DispatchQueue.main.async {
+                    self.updateStreakDisplay()
+                    self.studyModel.updateChart(with: ProgressDataManager.shared.history)
+                }
+            }
 
-            let formatter = DateFormatter()
-            formatter.dateFormat = "dd/MM/yy"
-            streaksDateLabel.text = formatter.string(from: Date())
+            private func updateStreakDisplay() {
+                let streak = ProgressDataManager.shared.currentStreak
+                let suffix = (streak == 1) ? "Day" : "Days"
+                streaksCountLabel.text = "\(streak) \(suffix)"
 
-            let displayFormatter = DateFormatter()
-            displayFormatter.dateFormat = "d MMM yyyy"
-            monthNameLabel.text = "Today: \(displayFormatter.string(from: Date()))"
-        }
+                let formatter = DateFormatter()
+                formatter.dateFormat = "dd/MM/yy"
+                streaksDateLabel.text = formatter.string(from: Date())
 
-        private func setupUI() {
+                let displayFormatter = DateFormatter()
+                displayFormatter.dateFormat = "d MMM yyyy"
+                monthNameLabel.text = "Today: \(displayFormatter.string(from: Date()))"
+            }
 
-            chartContainerView.backgroundColor = .systemGray6
-            chartContainerView.layer.cornerRadius = 20
-            chartContainerView.clipsToBounds = true
+            private func setupUI() {
 
-            hoursStudiedHeaderLabel.text = "Hours Studied"
-            hoursStudiedHeaderLabel.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
+                chartContainerView.backgroundColor = .systemGray6
+                chartContainerView.layer.cornerRadius = 20
+                chartContainerView.clipsToBounds = true
 
-            achievementsHeaderLabel.text = "Achievements"
-            achievementsHeaderLabel.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
+                hoursStudiedHeaderLabel.text = "Hours Studied"
+                hoursStudiedHeaderLabel.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
 
-            streaksCard.backgroundColor = .systemGray6
-            streaksCard.layer.cornerRadius = 16
-            streaksLabel.text = "Streaks"
-            streaksLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+                achievementsHeaderLabel.text = "Achievements"
+                achievementsHeaderLabel.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
 
-            awardsCard.backgroundColor = .systemGray6
-            awardsCard.layer.cornerRadius = 16
-            awardsLabel.text = "Awards"
-            awardsLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+                streaksCard.backgroundColor = .systemGray6
+                streaksCard.layer.cornerRadius = 16
+                streaksLabel.text = "Streaks"
+                streaksLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
 
-            monthNameLabel.text = "March Challenge"
-            mainMonthBagdeImageView.image = UIImage(named: "awards_monthly_main")
-        }
+                awardsCard.backgroundColor = .systemGray6
+                awardsCard.layer.cornerRadius = 16
+                awardsLabel.text = "Awards"
+                awardsLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
 
-    // Tap Gestures
+                monthNameLabel.text = "March Challenge"
+                mainMonthBagdeImageView.image = UIImage(named: "awards_monthly_main")
+            }
 
-        private func setupTapGestures() {
-            streaksCard.isUserInteractionEnabled = true
-            awardsCard.isUserInteractionEnabled  = true
+        // Tap Gestures
 
-            streaksCard.addGestureRecognizer(
-                UITapGestureRecognizer(target: self, action: #selector(streaksCardTapped))
-            )
-            awardsCard.addGestureRecognizer(
-                UITapGestureRecognizer(target: self, action: #selector(awardsCardTapped))
-            )
-        }
+            private func setupTapGestures() {
+                streaksCard.isUserInteractionEnabled = true
+                awardsCard.isUserInteractionEnabled  = true
 
-        @objc private func streaksCardTapped() {
-            let vc = StreaksCalendarViewController()
+                streaksCard.addGestureRecognizer(
+                    UITapGestureRecognizer(target: self, action: #selector(streaksCardTapped))
+                )
+                awardsCard.addGestureRecognizer(
+                    UITapGestureRecognizer(target: self, action: #selector(awardsCardTapped))
+                )
+            }
+
+            @objc private func streaksCardTapped() {
+                let vc = StreaksCalendarViewController()
+                navigationController?.pushViewController(vc, animated: true)
+            }
+
+        @objc private func awardsCardTapped() {
+            let storyboard = UIStoryboard(name: "Progress", bundle: nil)
+            let vc = storyboard.instantiateViewController(withIdentifier: "AwardsViewController")
             navigationController?.pushViewController(vc, animated: true)
         }
 
-    @objc private func awardsCardTapped() {
-        let storyboard = UIStoryboard(name: "Progress", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "AwardsViewController")
-        navigationController?.pushViewController(vc, animated: true)
-    }
+        // Chart
+            private func loadDataAndRefreshChart() {
+                hostingController?.view.removeFromSuperview()
+                hostingController?.removeFromParent()
 
-    // Chart
-        private func loadDataAndRefreshChart() {
-            hostingController?.view.removeFromSuperview()
-            hostingController?.removeFromParent()
+                let chartView = BarChartView(model: studyModel)
+                let hostingVC = UIHostingController(rootView: chartView)
+                hostingVC.view.backgroundColor = .clear
 
-            let chartView = BarChartView(model: studyModel)
-            let hostingVC = UIHostingController(rootView: chartView)
-            hostingVC.view.backgroundColor = .clear
+                addChild(hostingVC)
+                chartContainerView.addSubview(hostingVC.view)
+                hostingVC.view.translatesAutoresizingMaskIntoConstraints = false
 
-            addChild(hostingVC)
-            chartContainerView.addSubview(hostingVC.view)
-            hostingVC.view.translatesAutoresizingMaskIntoConstraints = false
+                NSLayoutConstraint.activate([
+                    hostingVC.view.topAnchor.constraint(equalTo: chartContainerView.topAnchor),
+                    hostingVC.view.leadingAnchor.constraint(equalTo: chartContainerView.leadingAnchor),
+                    hostingVC.view.trailingAnchor.constraint(equalTo: chartContainerView.trailingAnchor),
+                    hostingVC.view.bottomAnchor.constraint(equalTo: chartContainerView.bottomAnchor)
+                ])
 
-            NSLayoutConstraint.activate([
-                hostingVC.view.topAnchor.constraint(equalTo: chartContainerView.topAnchor),
-                hostingVC.view.leadingAnchor.constraint(equalTo: chartContainerView.leadingAnchor),
-                hostingVC.view.trailingAnchor.constraint(equalTo: chartContainerView.trailingAnchor),
-                hostingVC.view.bottomAnchor.constraint(equalTo: chartContainerView.bottomAnchor)
-            ])
-
-            hostingVC.didMove(toParent: self)
-            self.hostingController = hostingVC
+                hostingVC.didMove(toParent: self)
+                self.hostingController = hostingVC
+            }
         }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
