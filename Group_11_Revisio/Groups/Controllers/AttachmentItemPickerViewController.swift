@@ -13,14 +13,12 @@ protocol AttachmentSendDelegate: AnyObject {
     func didSendAttachments(_ items: [SentAttachment])
 }
 
-/// Lightweight struct that carries everything ChatViewController needs
-/// to show an optimistic bubble and insert a row into Supabase.
 struct SentAttachment {
-    let displayName: String   // shown as bubble label + file_name in DB
-    let content: String       // packed text body (quiz lines, flashcard lines, notes text…)
+    let displayName: String   // bubble label and file_name in DB
+    let content: String       // full text body stored in messages.content
     let fileType: String      // "document" | "image" | "link"
-    let topic: Topic?         // non-nil for generated materials
-    let source: Source?       // non-nil for Source files
+    let topic: Topic?
+    let source: Source?
 }
 
 // MARK: - ViewController
@@ -37,8 +35,6 @@ class AttachmentItemPickerViewController: UIViewController {
 
     private let segmentedControl  = UISegmentedControl(items: ["Materials", "Sources"])
 
-    // MARK: - Lifecycle
-
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemGroupedBackground
@@ -54,8 +50,6 @@ class AttachmentItemPickerViewController: UIViewController {
         )
         navigationItem.rightBarButtonItem?.isEnabled = false
     }
-
-    // MARK: - Setup
 
     private func setupSegment() {
         segmentedControl.selectedSegmentIndex = 0
@@ -86,8 +80,6 @@ class AttachmentItemPickerViewController: UIViewController {
         sourceItems    = data[DataManager.sourcesKey]   ?? []
         tableView.reloadData()
     }
-
-    // MARK: - Actions
 
     @objc private func segmentChanged() {
         selectedPaths.removeAll()
@@ -136,13 +128,11 @@ class AttachmentItemPickerViewController: UIViewController {
         }
 
         sendDelegate?.didSendAttachments(attachments)
-        // Dismiss the whole nav stack (FolderVC + this VC)
+        // dismiss both FolderVC and this VC together
         presentingViewController?.dismiss(animated: true)
     }
 
-    // MARK: - Content Packing
-
-    /// Returns the full text body of a Topic to store in messages.content
+    // extracts the text body of a topic for storage in messages.content
     private func packedContent(for topic: Topic) -> String {
         switch topic.materialType {
         case "Notes":      return topic.notesContent      ?? topic.largeContentBody ?? topic.name
@@ -175,7 +165,6 @@ extension AttachmentItemPickerViewController: UITableViewDataSource, UITableView
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        // Use subtitle style for material type sub-label
         if cell.detailTextLabel == nil {
             cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
         }

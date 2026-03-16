@@ -30,14 +30,10 @@ class ProgressViewContoller: UIViewController {
     @IBOutlet weak var monthNameLabel: UILabel!
     @IBOutlet weak var mainMonthBagdeImageView: UIImageView!
     
-    // MARK: - Private state
 
         private let legendStackView = UIStackView()
         var studyModel = StudyChartModel()
         private var hostingController: UIHostingController<BarChartView>?
-
-
-        // MARK: - Lifecycle
 
         override func viewDidLoad() {
             super.viewDidLoad()
@@ -57,8 +53,7 @@ class ProgressViewContoller: UIViewController {
             updateStreakDisplay()
         }
 
-        // MARK: - Data refresh
-
+    //  Data refresh
         @objc func refreshScreenData() {
             DispatchQueue.main.async {
                 self.updateStreakDisplay()
@@ -80,8 +75,6 @@ class ProgressViewContoller: UIViewController {
             monthNameLabel.text = "Today: \(displayFormatter.string(from: Date()))"
         }
 
-        // MARK: - UI Setup
-
         private func setupUI() {
 
             chartContainerView.backgroundColor = .systemGray6
@@ -94,13 +87,11 @@ class ProgressViewContoller: UIViewController {
             achievementsHeaderLabel.text = "Achievements"
             achievementsHeaderLabel.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
 
-            // Streaks card
             streaksCard.backgroundColor = .systemGray6
             streaksCard.layer.cornerRadius = 16
             streaksLabel.text = "Streaks"
             streaksLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
 
-            // Awards card
             awardsCard.backgroundColor = .systemGray6
             awardsCard.layer.cornerRadius = 16
             awardsLabel.text = "Awards"
@@ -110,7 +101,7 @@ class ProgressViewContoller: UIViewController {
             mainMonthBagdeImageView.image = UIImage(named: "awards_monthly_main")
         }
 
-        // MARK: - Tap Gestures
+    // Tap Gestures
 
         private func setupTapGestures() {
             streaksCard.isUserInteractionEnabled = true
@@ -129,15 +120,13 @@ class ProgressViewContoller: UIViewController {
             navigationController?.pushViewController(vc, animated: true)
         }
 
-        @objc private func awardsCardTapped() {
-            let sb = UIStoryboard(name: "Progress", bundle: nil)
-            let vc = sb.instantiateViewController(withIdentifier: "AwardsViewController")
-            navigationController?.pushViewController(vc, animated: true)
-            
-        }
+    @objc private func awardsCardTapped() {
+        let storyboard = UIStoryboard(name: "Progress", bundle: nil)
+        let vc = storyboard.instantiateViewController(withIdentifier: "AwardsViewController")
+        navigationController?.pushViewController(vc, animated: true)
+    }
 
-        // MARK: - Chart
-
+    // Chart
         private func loadDataAndRefreshChart() {
             hostingController?.view.removeFromSuperview()
             hostingController?.removeFromParent()

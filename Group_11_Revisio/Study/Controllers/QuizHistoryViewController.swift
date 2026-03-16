@@ -69,7 +69,7 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         card.addSubview(scoreLabel)
         
         let subtitleLabel = UILabel()
-        subtitleLabel.text = summaryData.isEmpty ? "NO PREVIOUS ATTEMPT" : "LATEST SCORE"
+        subtitleLabel.text = summaryData.isEmpty ? "No Previous Attempt" :"Latest Score"
         
         
         let subtitleFont = UIFont.systemFont(ofSize: 12, weight: .heavy)
@@ -139,7 +139,7 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         if indexPath.section == 0 {
             cell.textLabel?.text = "Review Latest Summary"
-            cell.textLabel?.textColor = .systemBlue
+            cell.textLabel?.textColor = .label
             let hasHistory = !summaryData.isEmpty
             cell.alpha = hasHistory ? 1.0 : 0.5
             cell.isUserInteractionEnabled = hasHistory
@@ -154,9 +154,9 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         if section == 2 && !(quizTopic?.safeAttempts.isEmpty ?? true) {
             let headerView = UIView()
             let label = UILabel()
-            label.text = "PAST ATTEMPTS"
+            label.text = "Past Attempts"
             
-            let headerFont = UIFont.systemFont(ofSize: 13, weight: .heavy)
+            let headerFont = UIFont.systemFont(ofSize: 13, weight: .bold)
             label.font = UIFontMetrics(forTextStyle: .footnote).scaledFont(for: headerFont)
             label.adjustsFontForContentSizeCategory = true
             

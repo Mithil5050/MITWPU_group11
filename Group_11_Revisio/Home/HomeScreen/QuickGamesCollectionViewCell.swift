@@ -32,35 +32,35 @@ class QuickGamesCollectionViewCell: UICollectionViewCell {
         gameImage2.image = nil
     }
     
-    // MARK: - UI Setup
-    // MARK: - UI Setup
-        private func configureStyle() {
-            // Card Shape
-            [gameCard, gameCard2].forEach { card in
-                card?.layer.cornerRadius = 24 // Updated to match the smooth 24pt radius in the image
-                card?.layer.cornerCurve = .continuous
-                card?.isUserInteractionEnabled = true
+    private func configureStyle() {
+                [gameCard, gameCard2].forEach { card in
+                    card?.layer.cornerRadius = 24
+                    card?.layer.cornerCurve = .continuous
+                    card?.isUserInteractionEnabled = true
+                }
+                
+                let wordFillTheme = UIColor { trait in
+                    trait.userInterfaceStyle == .dark
+                    ? UIColor(red: 15/255, green: 23/255, blue: 36/255, alpha: 1.0)
+                    : UIColor(red: 230/255, green: 242/255, blue: 255/255, alpha: 1.0)
+                }
+                
+                let connectionsTheme = UIColor { trait in
+                    trait.userInterfaceStyle == .dark
+                    ? UIColor(red: 21/255, green: 18/255, blue: 33/255, alpha: 1.0)
+                    : UIColor(red: 245/255, green: 235/255, blue: 255/255, alpha: 1.0)
+                }
+                
+                // Apply the dynamic theme colors
+                gameCard.backgroundColor = wordFillTheme
+                gameCard2.backgroundColor = connectionsTheme
+                
+                gameTitle1.textColor = .label
+                gameTitle2.textColor = .label
+                
+                gameImage1.contentMode = .scaleAspectFit
+                gameImage2.contentMode = .scaleAspectFit
             }
-            
-            // MARK: - 🎨 DARK MODE THEME COLORS
-            // These colors match the deep background tones of the 3D assets provided.
-            
-            // WordFill: "Deep Azure" (#0F1724)
-            // RGB: 15, 23, 36
-            let wordFillTheme = UIColor(red: 15/255, green: 23/255, blue: 36/255, alpha: 1.0)
-            
-            // Connections: "Midnight Violet" (#151221)
-            // RGB: 21, 18, 33
-            let connectionsTheme = UIColor(red: 21/255, green: 18/255, blue: 33/255, alpha: 1.0)
-            
-            // Apply the solid theme colors
-            gameCard.backgroundColor = wordFillTheme
-            gameCard2.backgroundColor = connectionsTheme
-            
-            // Content Mode
-            gameImage1.contentMode = .scaleAspectFit
-            gameImage2.contentMode = .scaleAspectFit
-        }
     
     private func setupGestureRecognizers() {
         let wordFillTap = UITapGestureRecognizer(target: self, action: #selector(handleWordFillTap))

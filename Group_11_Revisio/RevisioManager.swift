@@ -18,11 +18,10 @@ class RevisioManager: ObservableObject {
         validateStreakContinuity()
     }
 
-    // MARK: - XP & Streak
+    //  XP & Streak
 
     func earnXP(amount: Int, reason: String) async {
         // addXP already calls recordXPEvent → syncXPEvent → xp_log insert internally.
-        // Do NOT insert into xp_log again here.
         progressStore.addXP(amount: amount, reason: reason)
 
         progressStore.todayXP += amount
@@ -40,10 +39,7 @@ class RevisioManager: ObservableObject {
         await syncProfileToCloud()
     }
 
-    // MARK: - Cloud Sync
-
-    /// Updates profiles.total_xp and profiles.current_streak only.
-    /// xp_log inserts are handled by ProgressDataManager.recordXPEvent → SupabaseManager.syncXPEvent
+    //  Cloud Sync
     private func syncProfileToCloud() async {
         guard let userID = supabase.auth.currentUser?.id else { return }
 
@@ -65,7 +61,7 @@ class RevisioManager: ObservableObject {
         }
     }
 
-    // MARK: - Streak Validation
+    // Streak Validation
 
     private func updateStreakStatus() {
         let calendar = Calendar.current
@@ -75,6 +71,13 @@ class RevisioManager: ObservableObject {
         if progressStore.todayXP >= 100 && !calendar.isDate(lastStreakUpdate, inSameDayAs: today) {
             progressStore.currentStreak += 1
             UserDefaults.standard.set(today, forKey: "last_streak_increment_date")
+            // Persist this date so the calendar can show an orange dot
+            var streakDates = UserDefaults.standard.stringArray(forKey: "streak_dot_dates") ?? []
+            let key = ISO8601DateFormatter().string(from: today)
+            if !streakDates.contains(key) {
+                streakDates.append(key)
+                UserDefaults.standard.set(streakDates, forKey: "streak_dot_dates")
+            }
         }
     }
 

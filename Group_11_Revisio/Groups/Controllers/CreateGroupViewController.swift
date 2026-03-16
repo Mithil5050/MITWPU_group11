@@ -36,7 +36,7 @@ class CreateGroupViewController: UIViewController {
                     delegate?.didCreateGroup(newGroup)
                 }
             } catch {
-                print("❌ Failed to create group: \(error)")
+                print("Failed to create group: \(error)")
             }
         }
 

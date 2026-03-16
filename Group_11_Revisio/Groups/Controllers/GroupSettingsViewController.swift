@@ -8,7 +8,6 @@ import Supabase
 
 class GroupSettingsViewController: UIViewController {
 
-    // MARK: - IBOutlets
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     @IBOutlet weak var infoView:  UIView!
     @IBOutlet weak var docsView:  UIView!
@@ -25,7 +24,6 @@ class GroupSettingsViewController: UIViewController {
     @IBOutlet weak var linksTableView:        UITableView!
     @IBOutlet weak var hideAlertsSwitch:      UISwitch!
 
-    // MARK: - Data
     var group: Group!
     weak var delegate:       LeaveGroupDelegate?
     weak var updateDelegate: GroupUpdateDelegate?
@@ -37,7 +35,6 @@ class GroupSettingsViewController: UIViewController {
     private var linkFiles:  [SupabaseManager.GroupFile] = []
     private var imageCache: [String: UIImage] = [:]
 
-    // MARK: - ViewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -46,30 +43,25 @@ class GroupSettingsViewController: UIViewController {
             return
         }
 
-        // ── Labels
         groupNameLabel.text    = group.name
         membersCountLabel.text = "Loading..."
 
-        // ── Segment
         segmentedControl.selectedSegmentIndex = 0
         showSegment(index: 0)
 
-        // ── Avatar styling
         groupImageView.contentMode   = .scaleAspectFill
         groupImageView.clipsToBounds = true
-        // Corner radius set in viewDidAppear once layout is stable
+        // corner radius set in viewDidAppear after layout finishes
         groupImageView.isUserInteractionEnabled = true
         groupImageView.addGestureRecognizer(
             UITapGestureRecognizer(target: self, action: #selector(avatarTapped))
         )
 
-        // ── Nav bar
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Edit", style: .plain,
             target: self, action: #selector(editButtonTapped)
         )
 
-        // ── Delegates
         membersCollectionView.dataSource = self
         membersCollectionView.delegate   = self
         docsCollectionView.dataSource    = self
@@ -89,15 +81,14 @@ class GroupSettingsViewController: UIViewController {
         Task { await loadAllData() }
     }
 
-    // Set corner radius once, AFTER auto-layout has run
+    // safe to set corner radius here — layout is stable
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         groupImageView.layer.cornerRadius = groupImageView.bounds.width / 2
         refreshAvatarImage()
     }
 
-    // MARK: - Avatar Image Loading
-
+    // loads from URL or falls back to the default icon
     private func refreshAvatarImage() {
         if let urlString = group.avatarUrl, !urlString.isEmpty,
            let url = URL(string: urlString) {
@@ -116,12 +107,11 @@ class GroupSettingsViewController: UIViewController {
         }
     }
 
-    // MARK: - Avatar Tap (from image tap gesture)
     @objc private func avatarTapped() {
         presentAvatarOptions()
     }
 
-    // Called from both tap gesture AND editButtonTapped → "Change Group Avatar"
+    // shared by avatar tap and the Edit button's "Change Group Avatar" option
     private func presentAvatarOptions() {
         let sheet = UIAlertController(title: "Group Photo",
                                       message: nil,
@@ -155,11 +145,11 @@ class GroupSettingsViewController: UIViewController {
         updateDelegate?.didUpdateGroup(group)
         Task {
             do { try await SupabaseManager.shared.updateGroupAvatar(id: group.id, avatarUrl: nil) }
-            catch { print("❌ removeAvatar: \(error)") }
+            catch { print("removeAvatar: \(error)") }
         }
     }
 
-    // MARK: - Edit Button → shows both name + avatar options
+    // Edit button shows rename + avatar options
     @objc private func editButtonTapped() {
         let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         sheet.addAction(UIAlertAction(title: "Change Group Name",
@@ -189,13 +179,13 @@ class GroupSettingsViewController: UIViewController {
             Task {
                 do { try await SupabaseManager.shared.updateGroup(id: self.group.id,
                                                                    newName: name) }
-                catch { print("❌ rename: \(error)") }
+                catch { print("rename: \(error)") }
             }
         })
         present(alert, animated: true)
     }
 
-    // MARK: - Load All Data
+    // runs members, invite code, and file fetches in parallel
     private func loadAllData() async {
         await withTaskGroup(of: Void.self) { group in
             group.addTask { await self.loadMembers() }
@@ -213,14 +203,14 @@ class GroupSettingsViewController: UIViewController {
                     "\(fetched.count) member\(fetched.count == 1 ? "" : "s")"
                 membersCollectionView.reloadData()
             }
-        } catch { print("❌ loadMembers: \(error)") }
+        } catch { print("loadMembers: \(error)") }
     }
 
     private func loadInviteCode() async {
         do {
             let code = try await SupabaseManager.shared.fetchInviteCode(for: group.id)
             await MainActor.run { inviteCode = code }
-        } catch { print("❌ loadInviteCode: \(error)") }
+        } catch { print("loadInviteCode: \(error)") }
     }
 
     private func loadFiles() async {
@@ -238,7 +228,7 @@ class GroupSettingsViewController: UIViewController {
                 applyEmptyState(mediaCollectionView, isEmpty: mediaFiles.isEmpty,
                                 message: "No media shared yet")
             }
-        } catch { print("❌ loadFiles: \(error)") }
+        } catch { print("loadFiles: \(error)") }
     }
 
     private func applyEmptyState(_ cv: UICollectionView,
@@ -256,7 +246,7 @@ class GroupSettingsViewController: UIViewController {
         }
     }
 
-    // MARK: - Image Cache Helpers
+    // remote image with in-memory cache
     private func loadRemoteImage(from urlString: String, into iv: UIImageView) {
         if let cached = imageCache[urlString] { iv.image = cached; return }
         guard let url = URL(string: urlString) else { return }
@@ -266,6 +256,7 @@ class GroupSettingsViewController: UIViewController {
         }.resume()
     }
 
+    // draws a circle with an initial letter for members without avatars
     private func initialsImage(_ initial: String) -> UIImage {
         let sz = CGSize(width: 44, height: 44)
         UIGraphicsBeginImageContextWithOptions(sz, false, 0)
@@ -285,7 +276,6 @@ class GroupSettingsViewController: UIViewController {
         return img
     }
 
-    // MARK: - Segment
     @IBAction func segmentChanged(_ sender: UISegmentedControl) {
         showSegment(index: sender.selectedSegmentIndex)
     }
@@ -301,7 +291,6 @@ class GroupSettingsViewController: UIViewController {
         if index == 2 { mediaCollectionView.collectionViewLayout.invalidateLayout() }
     }
 
-    // MARK: - Leave
     @IBAction func leaveButtonTapped(_ sender: UIButton) {
         let ac = UIAlertController(title: "Leave Group",
                                    message: "Are you sure?", preferredStyle: .alert)
@@ -321,7 +310,7 @@ class GroupSettingsViewController: UIViewController {
                     .eq("user_id",  value: uid)
                     .eq("group_id", value: gid)
                     .execute()
-            } catch { print("❌ leave: \(error)") }
+            } catch { print("leave: \(error)") }
         }
         delegate?.didLeaveGroup(group)
         navigationController?.popToRootViewController(animated: true)
@@ -342,7 +331,6 @@ extension GroupSettingsViewController:
                       ?? info[.originalImage] as? UIImage,
               let data = img.jpegData(compressionQuality: 0.7) else { return }
 
-        // Show immediately
         groupImageView.image    = img
         groupImageView.tintColor = nil
 
@@ -354,7 +342,7 @@ extension GroupSettingsViewController:
                 try await SupabaseManager.shared.updateGroupAvatar(
                     id: group.id, avatarUrl: url)
                 updateDelegate?.didUpdateGroup(group)
-            } catch { print("❌ uploadGroupAvatar: \(error)") }
+            } catch { print("uploadGroupAvatar: \(error)") }
         }
     }
 
@@ -379,12 +367,11 @@ extension GroupSettingsViewController:
     func collectionView(_ cv: UICollectionView,
                         cellForItemAt ip: IndexPath) -> UICollectionViewCell {
 
-        // ── Members
         if cv == membersCollectionView {
             let cell = cv.dequeueReusableCell(
                 withReuseIdentifier: "MemberCellIdentifier", for: ip) as! MemberCell
             if ip.item == members.count {
-                cell.nameLabel.text     = "Add"
+                cell.nameLabel.text        = "Add"
                 cell.avatarImageView.image  = UIImage(systemName: "plus.circle.fill")
                 cell.avatarImageView.tintColor = .systemGray4
                 return cell
@@ -402,7 +389,6 @@ extension GroupSettingsViewController:
             return cell
         }
 
-        // ── Documents
         if cv == docsCollectionView {
             let cell = cv.dequeueReusableCell(
                 withReuseIdentifier: "DocumentCellIdentifier", for: ip) as! DocumentCell
@@ -410,7 +396,6 @@ extension GroupSettingsViewController:
             return cell
         }
 
-        // ── Media
         if cv == mediaCollectionView {
             let cell = cv.dequeueReusableCell(
                 withReuseIdentifier: "MediaCell", for: ip) as! MediaCell
@@ -432,7 +417,7 @@ extension GroupSettingsViewController:
     func collectionView(_ cv: UICollectionView, didSelectItemAt ip: IndexPath) {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
-        // Add member
+        // add member cell → show invite code sheet
         if cv == membersCollectionView, ip.item == members.count {
             let sb = UIStoryboard(name: "Groups", bundle: nil)
             guard let codeVC = sb.instantiateViewController(
@@ -445,7 +430,6 @@ extension GroupSettingsViewController:
             return
         }
 
-        // Media preview
         if cv == mediaCollectionView {
             let file = mediaFiles[ip.item]
             guard let url = URL(string: file.fileUrl) else { return }
@@ -462,7 +446,6 @@ extension GroupSettingsViewController:
             return
         }
 
-        // Doc preview
         if cv == docsCollectionView {
             let file = documents[ip.item]
             guard let url = URL(string: file.fileUrl) else { return }
@@ -474,7 +457,6 @@ extension GroupSettingsViewController:
         }
     }
 
-    // Layout
     func collectionView(_ cv: UICollectionView,
                         layout _: UICollectionViewLayout,
                         sizeForItemAt ip: IndexPath) -> CGSize {

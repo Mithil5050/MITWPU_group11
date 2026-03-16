@@ -30,16 +30,23 @@ class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource,
     }
     
     func setupUI() {
-        containerView.layer.cornerRadius = 16
-        containerView.backgroundColor = UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0)
-        
-        inputTextField.delegate = self
-        inputTextField.attributedPlaceholder = NSAttributedString(
-            string: "Add a focus task...",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]
-        )
-        inputTextField.textColor = .white
-    }
+            containerView.layer.cornerRadius = 16
+            
+            // ✅ Adaptive Background Color
+            containerView.backgroundColor = UIColor { trait in
+                return trait.userInterfaceStyle == .dark
+                ? UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0) // Original Dark
+                : UIColor.secondarySystemGroupedBackground // Clean Light Mode Card
+            }
+            
+            // ✅ Adaptive Text Field
+            inputTextField.delegate = self
+            inputTextField.textColor = .label
+            inputTextField.attributedPlaceholder = NSAttributedString(
+                string: "Add a focus task...",
+                attributes: [NSAttributedString.Key.foregroundColor: UIColor.placeholderText]
+            )
+        }
     
     func setupTable() {
         tableView.dataSource = self

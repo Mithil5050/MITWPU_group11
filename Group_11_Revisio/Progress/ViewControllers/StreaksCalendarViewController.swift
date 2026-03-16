@@ -12,8 +12,6 @@ class StreaksCalendarViewController: UIViewController,
                                      UICalendarSelectionSingleDateDelegate,
                                      UICalendarViewDelegate {
 
-    // MARK: - UI (all programmatic)
-
     private let scrollView             = UIScrollView()
     private let contentStack           = UIStackView()
     private let streakInfoCardView     = UIView()
@@ -21,8 +19,6 @@ class StreaksCalendarViewController: UIViewController,
     private let streakCountLabel       = UILabel()
     private let streakSuffixLabel      = UILabel()
     private var calendarView: UICalendarView!
-
-    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,10 +42,7 @@ class StreaksCalendarViewController: UIViewController,
 
     deinit { NotificationCenter.default.removeObserver(self) }
 
-    // MARK: - Layout
-
     private func setupLayout() {
-        // ScrollView
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
         NSLayoutConstraint.activate([
@@ -59,7 +52,6 @@ class StreaksCalendarViewController: UIViewController,
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 
-        // Content stack
         contentStack.axis    = .vertical
         contentStack.spacing = 20
         contentStack.translatesAutoresizingMaskIntoConstraints = false
@@ -72,23 +64,18 @@ class StreaksCalendarViewController: UIViewController,
             contentStack.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -32)
         ])
 
-        // Streak info card
         streakInfoCardView.backgroundColor   = UIColor.systemOrange.withAlphaComponent(0.1)
         streakInfoCardView.layer.cornerRadius = 16
         streakInfoCardView.clipsToBounds      = true
         contentStack.addArrangedSubview(streakInfoCardView)
 
-        // Calendar container — height driven by UICalendarView intrinsic size
         calendarContainerView.backgroundColor = .clear
         contentStack.addArrangedSubview(calendarContainerView)
     }
 
-    // MARK: - Info card content
-
-    // MARK: - Info card content
 
     private func buildInfoCard() {
-        // ✅ Replaced UILabel with UIImageView for SF Symbol
+
         let flameImageView = UIImageView()
         let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .bold)
         flameImageView.image = UIImage(systemName: "flame", withConfiguration: config)
@@ -99,7 +86,6 @@ class StreaksCalendarViewController: UIViewController,
         streakCountLabel.font      = .systemFont(ofSize: 34, weight: .bold)
         streakCountLabel.textColor = .label
 
-        // ✅ Added flameImageView to the stack instead of flameLabel
         let topRow = UIStackView(arrangedSubviews: [streakCountLabel, flameImageView])
         topRow.axis       = .horizontal
         topRow.spacing    = 8
@@ -113,7 +99,6 @@ class StreaksCalendarViewController: UIViewController,
         divider.heightAnchor.constraint(equalToConstant: 0.5).isActive = true
 
         let ruleLabel       = UILabel()
-        // ✅ Updated rule text with the SF Symbol baseline reference
         ruleLabel.text      = "Earn at least 100 XP per day to keep your streak alive."
         ruleLabel.font      = .systemFont(ofSize: 13, weight: .regular)
         ruleLabel.textColor = .tertiaryLabel
@@ -133,7 +118,7 @@ class StreaksCalendarViewController: UIViewController,
         ])
     }
     
-    // MARK: - Streak display
+//  Streak display
     @objc private func refreshStreakDisplay() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
@@ -142,8 +127,6 @@ class StreaksCalendarViewController: UIViewController,
             self.streakSuffixLabel.text = streak == 1 ? "Day Streak" : "Days Streak"
         }
     }
-
-    // MARK: - Calendar
 
     private func setupCalendar() {
         calendarView = UICalendarView()
@@ -166,16 +149,18 @@ class StreaksCalendarViewController: UIViewController,
         calendarView.delegate = self
     }
 
-    // MARK: - Calendar delegate
+//Calendar delegate
 
     func calendarView(_ calendarView: UICalendarView,
                       decorationFor dateComponents: DateComponents) -> UICalendarView.Decoration? {
-        let calendar = Calendar.current
+        let calendar  = Calendar.current
         guard let date = calendar.date(from: dateComponents) else { return nil }
-        let hasStudied = ProgressDataManager.shared.history.contains {
-            calendar.isDate($0.date, inSameDayAs: date)
+        let formatter  = ISO8601DateFormatter()
+        let streakDates = UserDefaults.standard.stringArray(forKey: "streak_dot_dates") ?? []
+        let hasStreak  = streakDates.compactMap { formatter.date(from: $0) }.contains {
+            calendar.isDate($0, inSameDayAs: date)
         }
-        return hasStudied ? .default(color: .systemOrange, size: .medium) : nil
+        return hasStreak ? .default(color: .systemOrange, size: .medium) : nil
     }
 
     func dateSelection(_ selection: UICalendarSelectionSingleDate,

@@ -12,7 +12,7 @@ class AttachmentFolderViewController: UIViewController {
     private let tableView = UITableView()
     private var subjectNames: [String] = []
 
-    /// Set by ChatViewController before presenting so the delegate chain works
+    // passed in by ChatViewController so the delegate chain reaches back
     weak var sendDelegate: AttachmentSendDelegate?
 
     override func viewDidLoad() {
@@ -71,7 +71,7 @@ extension AttachmentFolderViewController: UITableViewDataSource, UITableViewDele
         tableView.deselectRow(at: indexPath, animated: true)
         let pickerVC             = AttachmentItemPickerViewController()
         pickerVC.selectedSubject = subjectNames[indexPath.row]
-        pickerVC.sendDelegate    = sendDelegate      // ← pass delegate forward
+        pickerVC.sendDelegate    = sendDelegate
         navigationController?.pushViewController(pickerVC, animated: true)
     }
 }

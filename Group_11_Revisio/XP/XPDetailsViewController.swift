@@ -7,251 +7,258 @@
 
 import UIKit
 
-// MARK: - XP History Model
+// XP History Model
 
-/// A single entry in the XP history log.
-/// Call ProgressDataManager.shared.recordXPEvent(_:amount:) to add entries.
-struct XPEvent {
-    let description: String   // e.g. "Quiz Completed"
-    let amount: Int           // e.g. 50
-    let date: Date
-}
-
-// MARK: - ViewController
-
-class XPDetailsViewController: UIViewController {
-
-    // MARK: Outlets / programmatic views
-    private let scrollView    = UIScrollView()
-    private let contentStack  = UIStackView()
-
-    // Level header card
-    private let levelCard     = UIView()
-    private let levelLabel    = UILabel()
-    private let xpValueLabel  = UILabel()
-    private let progressBar   = UIProgressView(progressViewStyle: .default)
-    private let nextLevelLabel = UILabel()
-
-    // History table
-    private let historyTableView = UITableView(frame: .zero, style: .insetGrouped)
-    private var historyTableHeightConstraint: NSLayoutConstraint?
-
-    // MARK: - Lifecycle
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .systemBackground
-        navigationItem.title = "XP Details"
-        setupLayout()
-        refreshData()
-        NotificationCenter.default.addObserver(self, selector: #selector(refreshData),
-                                               name: .xpDidUpdate, object: nil)
+    struct XPEvent {
+        let description: String   // e.g. "Quiz Completed"
+        let amount: Int           // e.g. 50
+        let date: Date
     }
 
-    deinit { NotificationCenter.default.removeObserver(self) }
+    class XPDetailsViewController: UIViewController {
 
-    // MARK: - Layout
+        private let scrollView    = UIScrollView()
+        private let contentStack  = UIStackView()
 
-    private func setupLayout() {
-        // ScrollView
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(scrollView)
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+        private let levelCard     = UIView()
+        private let levelLabel    = UILabel()
+        private let xpValueLabel  = UILabel()
+        private let progressBar   = UIProgressView(progressViewStyle: .default)
+        private let nextLevelLabel = UILabel()
 
-        contentStack.axis    = .vertical
-        contentStack.spacing = 20
-        contentStack.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(contentStack)
-        NSLayoutConstraint.activate([
-            contentStack.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 24),
-            contentStack.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 16),
-            contentStack.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -16),
-            contentStack.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: -32),
-            contentStack.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -32)
-        ])
+        private let historyTableView = UITableView(frame: .zero, style: .plain)
+        private var historyTableHeightConstraint: NSLayoutConstraint?
 
-        // ── Level card ───────────────────────────────────────────────────────
-        levelCard.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
-        levelCard.layer.cornerRadius = 16
+        override func viewDidLoad() {
+            super.viewDidLoad()
+            view.backgroundColor = .systemBackground
+            navigationItem.title = "XP Details"
+            setupLayout()
+            refreshData()
+            NotificationCenter.default.addObserver(self, selector: #selector(refreshData),
+                                                   name: .xpDidUpdate, object: nil)
+        }
 
-        let cardStack = UIStackView()
-        cardStack.axis    = .vertical
-        cardStack.spacing = 10
-        cardStack.translatesAutoresizingMaskIntoConstraints = false
-        levelCard.addSubview(cardStack)
-        NSLayoutConstraint.activate([
-            cardStack.topAnchor.constraint(equalTo: levelCard.topAnchor, constant: 18),
-            cardStack.leadingAnchor.constraint(equalTo: levelCard.leadingAnchor, constant: 18),
-            cardStack.trailingAnchor.constraint(equalTo: levelCard.trailingAnchor, constant: -18),
-            cardStack.bottomAnchor.constraint(equalTo: levelCard.bottomAnchor, constant: -18)
-        ])
+        deinit { NotificationCenter.default.removeObserver(self) }
 
-        levelLabel.font      = .systemFont(ofSize: 28, weight: .bold)
-        levelLabel.textColor = .systemBlue
-        xpValueLabel.font    = .systemFont(ofSize: 14, weight: .regular)
-        xpValueLabel.textColor = .secondaryLabel
 
-        progressBar.progressTintColor = .systemBlue
-        progressBar.trackTintColor    = UIColor.systemBlue.withAlphaComponent(0.15)
-        progressBar.layer.cornerRadius = 4
-        progressBar.clipsToBounds = true
+        private func setupLayout() {
+            scrollView.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(scrollView)
+            NSLayoutConstraint.activate([
+                scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
 
-        nextLevelLabel.font      = .systemFont(ofSize: 13, weight: .regular)
-        nextLevelLabel.textColor = .tertiaryLabel
-        nextLevelLabel.textAlignment = .right
+            contentStack.axis    = .vertical
+            contentStack.spacing = 20
+            contentStack.translatesAutoresizingMaskIntoConstraints = false
+            scrollView.addSubview(contentStack)
+            NSLayoutConstraint.activate([
+                contentStack.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 24),
+                contentStack.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 16),
+                contentStack.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -16),
+                contentStack.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: -32),
+                contentStack.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -32)
+            ])
 
-        cardStack.addArrangedSubview(levelLabel)
-        cardStack.addArrangedSubview(xpValueLabel)
-        cardStack.addArrangedSubview(progressBar)
-        cardStack.addArrangedSubview(nextLevelLabel)
+            // Level card
+            levelCard.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
+            levelCard.layer.cornerRadius = 16
 
-        contentStack.addArrangedSubview(levelCard)
+            let cardStack = UIStackView()
+            cardStack.axis    = .vertical
+            cardStack.spacing = 10
+            cardStack.translatesAutoresizingMaskIntoConstraints = false
+            levelCard.addSubview(cardStack)
+            NSLayoutConstraint.activate([
+                cardStack.topAnchor.constraint(equalTo: levelCard.topAnchor, constant: 18),
+                cardStack.leadingAnchor.constraint(equalTo: levelCard.leadingAnchor, constant: 18),
+                cardStack.trailingAnchor.constraint(equalTo: levelCard.trailingAnchor, constant: -18),
+                cardStack.bottomAnchor.constraint(equalTo: levelCard.bottomAnchor, constant: -18)
+            ])
 
-        // ── Section header ───────────────────────────────────────────────────
-        let historyHeader = makeSectionHeader("Recent XP Activity")
-        contentStack.addArrangedSubview(historyHeader)
+            levelLabel.font      = .systemFont(ofSize: 28, weight: .bold)
+            levelLabel.textColor = .systemBlue
+            xpValueLabel.font    = .systemFont(ofSize: 14, weight: .regular)
+            xpValueLabel.textColor = .secondaryLabel
 
-        // ── History table ────────────────────────────────────────────────────
-        historyTableView.dataSource = self
-        historyTableView.delegate   = self
-        historyTableView.register(XPHistoryCell.self, forCellReuseIdentifier: "XPHistoryCell")
-        historyTableView.isScrollEnabled = false  // outer scroll view handles scrolling
-        historyTableView.backgroundColor = .clear
-        historyTableView.layer.cornerRadius = 12
-        historyTableView.translatesAutoresizingMaskIntoConstraints = false
+            progressBar.progressTintColor = .systemBlue
+            progressBar.trackTintColor    = UIColor.systemBlue.withAlphaComponent(0.15)
+            progressBar.layer.cornerRadius = 4
+            progressBar.clipsToBounds = true
 
-        // Height will be set dynamically after reloadData
-        historyTableHeightConstraint = historyTableView.heightAnchor.constraint(equalToConstant: 0)
-        historyTableHeightConstraint?.isActive = true
+            nextLevelLabel.font      = .systemFont(ofSize: 13, weight: .regular)
+            nextLevelLabel.textColor = .tertiaryLabel
+            nextLevelLabel.textAlignment = .right
 
-        contentStack.addArrangedSubview(historyTableView)
-    }
+            cardStack.addArrangedSubview(levelLabel)
+            cardStack.addArrangedSubview(xpValueLabel)
+            cardStack.addArrangedSubview(progressBar)
+            cardStack.addArrangedSubview(nextLevelLabel)
 
-    // MARK: - Data
+            contentStack.addArrangedSubview(levelCard)
 
-    @objc private func refreshData() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            let manager = ProgressDataManager.shared
+            // Section header
+            let historyHeader = makeSectionHeader("Recent XP Activity")
+            contentStack.addArrangedSubview(historyHeader)
 
-            self.levelLabel.text    = "Level \(manager.userLevel)"
-            self.xpValueLabel.text  = "\(manager.currentLevelXP) / \(manager.requiredXPForCurrentLevel) XP"
-            self.progressBar.setProgress(manager.progressToNextLevel, animated: true)
+            // History table
+            historyTableView.dataSource = self
+            historyTableView.delegate   = self
+            historyTableView.register(XPHistoryCell.self, forCellReuseIdentifier: "XPHistoryCell")
+            historyTableView.isScrollEnabled = false
+            historyTableView.backgroundColor = .clear
+            historyTableView.separatorStyle = .none
+            historyTableView.translatesAutoresizingMaskIntoConstraints = false
 
-            let remaining = max(0, manager.requiredXPForCurrentLevel - manager.currentLevelXP)
-            self.nextLevelLabel.text = "\(remaining) XP to Level \(manager.userLevel + 1)"
+            historyTableHeightConstraint = historyTableView.heightAnchor.constraint(equalToConstant: 0)
+            historyTableHeightConstraint?.isActive = true
 
-            self.historyTableView.reloadData()
-            self.view.layoutIfNeeded()
+            contentStack.addArrangedSubview(historyTableView)
+        }
 
-            // Size the embedded table to fit all rows so it doesn't scroll independently
-            self.historyTableHeightConstraint?.constant = self.historyTableView.contentSize.height
+        @objc private func refreshData() {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                let manager = ProgressDataManager.shared
+
+                self.levelLabel.text    = "Level \(manager.userLevel)"
+                self.xpValueLabel.text  = "\(manager.currentLevelXP) / \(manager.requiredXPForCurrentLevel) XP"
+                self.progressBar.setProgress(manager.progressToNextLevel, animated: true)
+
+                let remaining = max(0, manager.requiredXPForCurrentLevel - manager.currentLevelXP)
+                self.nextLevelLabel.text = "\(remaining) XP to Level \(manager.userLevel + 1)"
+
+                self.historyTableView.reloadData()
+                self.view.layoutIfNeeded()
+
+                self.historyTableHeightConstraint?.constant = self.historyTableView.contentSize.height
+            }
+        }
+
+    // Helpers
+        private func makeSectionHeader(_ title: String) -> UILabel {
+            let label = UILabel()
+            label.text = title
+            label.font = .systemFont(ofSize: 17, weight: .semibold)
+            label.textColor = .label
+            return label
         }
     }
 
-    // MARK: - Helpers
+    // UITableViewDataSource / Delegate
+    extension XPDetailsViewController: UITableViewDataSource, UITableViewDelegate {
 
-    private func makeSectionHeader(_ title: String) -> UILabel {
-        let label = UILabel()
-        label.text = title
-        label.font = .systemFont(ofSize: 17, weight: .semibold)
-        label.textColor = .label
-        return label
-    }
-}
+        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+            let events = ProgressDataManager.shared.xpHistory
+            return events.isEmpty ? 1 : events.count
+        }
 
-// MARK: - UITableViewDataSource / Delegate
+        func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+            let events = ProgressDataManager.shared.xpHistory
 
-extension XPDetailsViewController: UITableViewDataSource, UITableViewDelegate {
+            if events.isEmpty {
+                let cell = UITableViewCell()
+                cell.textLabel?.text = "No XP activity yet. Start learning!"
+                cell.textLabel?.textColor = .secondaryLabel
+                cell.textLabel?.font = .systemFont(ofSize: 14)
+                cell.textLabel?.textAlignment = .center
+                cell.backgroundColor = UIColor(white: 0.12, alpha: 1.0)
+                cell.layer.cornerRadius = 8
+                cell.selectionStyle = .none
+                return cell
+            }
 
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let events = ProgressDataManager.shared.xpHistory
-        return events.isEmpty ? 1 : events.count
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let events = ProgressDataManager.shared.xpHistory
-
-        if events.isEmpty {
-            let cell = UITableViewCell()
-            cell.textLabel?.text = "No XP activity yet. Start learning!"
-            cell.textLabel?.textColor = .secondaryLabel
-            cell.textLabel?.font = .systemFont(ofSize: 14)
-            cell.textLabel?.textAlignment = .center
-            cell.backgroundColor = .secondarySystemGroupedBackground
-            cell.selectionStyle = .none
+            let cell = tableView.dequeueReusableCell(withIdentifier: "XPHistoryCell",
+                                                      for: indexPath) as! XPHistoryCell
+            cell.configure(with: events[indexPath.row])
             return cell
         }
 
-        let cell = tableView.dequeueReusableCell(withIdentifier: "XPHistoryCell",
-                                                  for: indexPath) as! XPHistoryCell
-        cell.configure(with: events[indexPath.row])
-        return cell
+        func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+            return 52
+        }
+
+        func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+            return UIView()
+        }
+
+        func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+            return 0
+        }
+
+        func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+            cell.contentView.layer.masksToBounds = true
+            let verticalPadding: CGFloat = 6
+            let maskLayer = CALayer()
+            maskLayer.cornerRadius = 8
+            maskLayer.backgroundColor = UIColor.black.cgColor
+            maskLayer.frame = CGRect(
+                x: cell.bounds.origin.x,
+                y: cell.bounds.origin.y + verticalPadding / 2,
+                width: cell.bounds.width,
+                height: cell.bounds.height - verticalPadding
+            )
+            cell.layer.mask = maskLayer
+        }
     }
 
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 52
+// XPHistoryCell
+    final class XPHistoryCell: UITableViewCell {
+
+        private let amountLabel = UILabel()
+        private let descLabel   = UILabel()
+        private let dateLabel   = UILabel()
+
+        override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+            super.init(style: style, reuseIdentifier: reuseIdentifier)
+            selectionStyle = .none
+            backgroundColor = UIColor(white: 0.12, alpha: 1.0)
+            layer.cornerRadius = 8
+            setupCell()
+        }
+        required init?(coder: NSCoder) { fatalError() }
+
+        private func setupCell() {
+            amountLabel.font      = .systemFont(ofSize: 15, weight: .semibold)
+            amountLabel.textColor = .systemGreen
+            amountLabel.setContentHuggingPriority(.required, for: .horizontal)
+
+            descLabel.font      = .systemFont(ofSize: 15, weight: .regular)
+            descLabel.textColor = .label
+
+            dateLabel.font      = .systemFont(ofSize: 12, weight: .regular)
+            dateLabel.textColor = .tertiaryLabel
+            dateLabel.textAlignment = .right
+            dateLabel.setContentHuggingPriority(.required, for: .horizontal)
+
+            let leftStack = UIStackView(arrangedSubviews: [amountLabel, descLabel])
+            leftStack.axis    = .horizontal
+            leftStack.spacing = 10
+            leftStack.alignment = .center
+
+            let row = UIStackView(arrangedSubviews: [leftStack, dateLabel])
+            row.axis         = .horizontal
+            row.distribution = .fill
+            row.alignment    = .center
+            row.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview(row)
+            NSLayoutConstraint.activate([
+                row.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+                row.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+                row.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+            ])
+        }
+
+        func configure(with event: XPEvent) {
+            amountLabel.text = "+\(event.amount) XP"
+            descLabel.text   = event.description
+
+            let formatter = DateFormatter()
+            formatter.dateFormat = "d MMM"
+            dateLabel.text = formatter.string(from: event.date)
+        }
     }
-}
-
-// MARK: - XPHistoryCell
-
-final class XPHistoryCell: UITableViewCell {
-
-    private let amountLabel = UILabel()
-    private let descLabel   = UILabel()
-    private let dateLabel   = UILabel()
-
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        selectionStyle = .none
-        backgroundColor = .secondarySystemGroupedBackground
-        setupCell()
-    }
-    required init?(coder: NSCoder) { fatalError() }
-
-    private func setupCell() {
-        amountLabel.font      = .systemFont(ofSize: 15, weight: .semibold)
-        amountLabel.textColor = .systemGreen
-        amountLabel.setContentHuggingPriority(.required, for: .horizontal)
-
-        descLabel.font      = .systemFont(ofSize: 15, weight: .regular)
-        descLabel.textColor = .label
-
-        dateLabel.font      = .systemFont(ofSize: 12, weight: .regular)
-        dateLabel.textColor = .tertiaryLabel
-        dateLabel.textAlignment = .right
-        dateLabel.setContentHuggingPriority(.required, for: .horizontal)
-
-        let leftStack = UIStackView(arrangedSubviews: [amountLabel, descLabel])
-        leftStack.axis    = .horizontal
-        leftStack.spacing = 10
-        leftStack.alignment = .center
-
-        let row = UIStackView(arrangedSubviews: [leftStack, dateLabel])
-        row.axis         = .horizontal
-        row.distribution = .fill
-        row.alignment    = .center
-        row.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(row)
-        NSLayoutConstraint.activate([
-            row.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            row.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            row.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
-        ])
-    }
-
-    func configure(with event: XPEvent) {
-        amountLabel.text = "+\(event.amount) XP"
-        descLabel.text   = event.description
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMM"
-        dateLabel.text = formatter.string(from: event.date)
-    }
-}
