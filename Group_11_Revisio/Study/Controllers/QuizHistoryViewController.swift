@@ -59,8 +59,8 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let scoreLabel = UILabel()
         scoreLabel.text = latestScore
         
-        // Native Dynamic Type for large score
-        let scoreFont = UIFont.systemFont(ofSize: 54, weight: .black)
+       
+        let scoreFont = UIFont.systemFont(ofSize: 54, weight: .bold)
         scoreLabel.font = UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: scoreFont)
         scoreLabel.adjustsFontForContentSizeCategory = true
         
@@ -70,10 +70,10 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         card.addSubview(scoreLabel)
         
         let subtitleLabel = UILabel()
-        subtitleLabel.text = summaryData.isEmpty ? "NO PREVIOUS ATTEMPT" : "LATEST SCORE"
+        subtitleLabel.text = summaryData.isEmpty ? "No Previous Attempt" :"Latest Score"
         
         // Native caption style
-        let subtitleFont = UIFont.systemFont(ofSize: 12, weight: .heavy)
+        let subtitleFont = UIFont.systemFont(ofSize: 12, weight: .bold)
         subtitleLabel.font = UIFontMetrics(forTextStyle: .caption1).scaledFont(for: subtitleFont)
         subtitleLabel.adjustsFontForContentSizeCategory = true
         
@@ -140,7 +140,7 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         
         if indexPath.section == 0 {
             cell.textLabel?.text = "Review Latest Summary"
-            cell.textLabel?.textColor = .systemBlue
+            cell.textLabel?.textColor = .label
             let hasHistory = !summaryData.isEmpty
             cell.alpha = hasHistory ? 1.0 : 0.5
             cell.isUserInteractionEnabled = hasHistory
@@ -155,9 +155,9 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         if section == 2 && !(quizTopic?.safeAttempts.isEmpty ?? true) {
             let headerView = UIView()
             let label = UILabel()
-            label.text = "PAST ATTEMPTS"
+            label.text = "Past Attempts"
             
-            let headerFont = UIFont.systemFont(ofSize: 13, weight: .heavy)
+            let headerFont = UIFont.systemFont(ofSize: 13, weight: .bold)
             label.font = UIFontMetrics(forTextStyle: .footnote).scaledFont(for: headerFont)
             label.adjustsFontForContentSizeCategory = true
             
