@@ -82,6 +82,8 @@ class QuizResultsViewController: UIViewController {
             
             // This triggers the sliding banner, haptic feedback, and cloud sync automatically
             await RevisioManager.shared.earnXP(amount: totalEarned, reason: "Quiz Mastery")
+            let quizMinutes = Double(result.timeElapsed) / 60.0
+            ProgressDataManager.shared.logSession(minutes: max(quizMinutes, 1.0), category: "Study")
         }
     }
     

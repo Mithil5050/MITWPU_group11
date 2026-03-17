@@ -546,6 +546,7 @@ class DailyChallengeViewController: UIViewController {
                 view.layer.addSublayer(emitter)
                 
                 Task { await RevisioManager.shared.earnXP(amount: 15, reason: "Won Daily Wordle") }
+                ProgressDataManager.shared.logSession(minutes: 2.0, category: "Games")
             }
             
             let sheet = LearnMoreViewController(

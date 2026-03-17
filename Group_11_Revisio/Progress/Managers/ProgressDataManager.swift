@@ -12,44 +12,36 @@ class ProgressDataManager {
 
     var history: [LogHistoryItem] = []
 
-    // MARK: - Level UI Helpers
 
-    /// Count of fully earned badges — used by the Profile Badges card.
+    // Count of fully earned badges — used by the Profile Badges card.
     var earnedBadgeCount: Int { return earnedBadgeIDs.count }
 
-    /// Whether the user has done anything yet (used by AwardsViewController)
+    // Whether the user has done anything yet (used by AwardsViewController)
     var hasEarnedAnyXP: Bool {
         return totalXP > 0 || userLevel > 1
     }
-
-    /// XP the user currently holds toward the next level (the carry-over amount)
+    // XP the user currently holds toward the next level (the carry-over amount)
     var currentLevelXP: Int { return totalXP }
 
-    /// Convenience alias so existing call-sites that read `currentLevel` still compile
+    // Convenience alias so existing call-sites that read `currentLevel` still compile
     var currentLevel: Int { return userLevel }
 
-    /// The XP cost required to complete the user's current level and advance
+    // The XP cost required to complete the user's current level and advance
     var requiredXPForCurrentLevel: Int {
         return levelRequirements[userLevel] ?? 5000
     }
-
-    /// Progress bar value in [0.0 … 1.0]
-    ///
-    /// Usage:
-    ///   xpProgressBar.setProgress(ProgressDataManager.shared.progressToNextLevel, animated: true)
+    
     var progressToNextLevel: Float {
         let required = requiredXPForCurrentLevel
         guard required > 0 else { return 1.0 }
         return min(Float(totalXP) / Float(required), 1.0)
     }
 
-    /// Legacy alias — new code should prefer `requiredXPForCurrentLevel`
     var pointsPerLevel: Int { return requiredXPForCurrentLevel }
+    
 
-    // MARK: - Core Storage
-
-    /// Carry-over XP toward the next level. Setting this persists to UserDefaults,
-    /// posts .xpDidUpdate for UI refresh, and syncs to Supabase.
+    // Carry-over XP toward the next level.
+    // posts .xpDidUpdate for UI refresh, and syncs to Supabase.
     var totalXP: Int {
         get { UserDefaults.standard.integer(forKey: "user_total_xp") }
         set {
@@ -83,21 +75,13 @@ class ProgressDataManager {
         }
     }
 
-    // MARK: - Level Requirements Table
 
     private let levelRequirements: [Int: Int] = [
         1: 250, 2: 400, 3: 600,  4: 850,  5: 1200,
         6: 1700, 7: 2300, 8: 3000, 9: 3800, 10: 4700
     ]
 
-    // MARK: - XP & Leveling
-
-    /// Adds `amount` XP to the user's carry-over total, then resolves every
-    /// level-up threshold in order, carrying the remainder forward.
-    ///
-    /// Example — user is Level 1 (costs 250 XP), currently has 200 XP, earns 100:
-    ///   200 + 100 = 300. 300 >= 250 → level up to 2, carry 50.
-    ///   50 < 400 (Level 2 cost) → stop. totalXP = 50, userLevel = 2.
+   
     func addXP(amount: Int, reason: String = "XP Earned") {
         var carryXP = totalXP + amount
         var workingLevel = userLevel
@@ -108,7 +92,7 @@ class ProgressDataManager {
             workingLevel += 1     // advance
         }
 
-        // Log the event in XP history before persisting
+        // Log the event in XP history
         recordXPEvent(reason, amount: amount)
 
         // Persist carry-over XP (fires .xpDidUpdate + Supabase sync via the setter)
@@ -127,12 +111,12 @@ class ProgressDataManager {
         }
     }
 
-    /// Legacy wrapper so existing call-sites that use `getRequiredXPForCurrentLevel()` still compile
+    // Legacy wrapper so existing call-sites that use `getRequiredXPForCurrentLevel()` still compile
     func getRequiredXPForCurrentLevel() -> Int {
         return requiredXPForCurrentLevel
     }
 
-    // MARK: - Statistic Counters (Badge Triggers)
+    // Counters (Badge Triggers)
 
     var totalQuizzesDone: Int {
         get { UserDefaults.standard.integer(forKey: "stat_quizzes_done") }
@@ -183,8 +167,8 @@ class ProgressDataManager {
         set { UserDefaults.standard.set(newValue, forKey: "stat_docs_uploaded"); checkBadgeUnlocks(for: .sourceMaster, newValue: newValue) }
     }
 
-    // MARK: - Streak Logic
-
+    // Streak Logic
+    
     var currentStreak: Int {
         get { UserDefaults.standard.integer(forKey: "user_current_streak") }
         set {
@@ -204,12 +188,6 @@ class ProgressDataManager {
         set { UserDefaults.standard.set(newValue, forKey: "user_last_challenge_date") }
     }
 
-    /// Call this once per day when the user completes their daily activity.
-    ///
-    /// What it does:
-    /// 1. Determines if the streak continues (consecutive day) or resets to 1.
-    /// 2. Awards 100 XP for maintaining the streak (guarded so it only fires once per day).
-    /// 3. Increments `totalDailyChallengesSolved` (which triggers badge checks).
     func completeDailyChallenge() {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -243,13 +221,13 @@ class ProgressDataManager {
         totalDailyChallengesSolved += 1
     }
 
-    /// IDs of badges that have been unlocked (put in progress). Stored in UserDefaults.
+    // IDs of badges that have been unlocked (put in progress). Stored in UserDefaults.
     private var unlockedBadgeIDs: Set<String> {
         get { Set(UserDefaults.standard.stringArray(forKey: "unlocked_badge_ids") ?? []) }
         set { UserDefaults.standard.set(Array(newValue), forKey: "unlocked_badge_ids") }
     }
 
-    /// IDs of badges that have been fully earned (goal reached). Stored in UserDefaults.
+    // IDs of badges that have been fully earned (goal reached). Stored in UserDefaults.
     private var earnedBadgeIDs: Set<String> {
         get { Set(UserDefaults.standard.stringArray(forKey: "earned_badge_ids") ?? []) }
         set { UserDefaults.standard.set(Array(newValue), forKey: "earned_badge_ids") }
@@ -269,18 +247,7 @@ class ProgressDataManager {
         for (index, badge) in badgesInCategory.enumerated() {
             guard badge.goalValue > 0 else { continue }
 
-            // ── UNLOCK: badge becomes visible and enters "in progress" ───────
-            //
-            // Bronze  → unlocks on the very first attempt (newValue == 1).
-            //           There is no prerequisite tier.
-            //
-            // Silver  → unlocks the moment Bronze is earned
-            //           (newValue == bronze.goalValue).
-            //
-            // Gold    → unlocks the moment Silver is earned
-            //           (newValue == silver.goalValue).
-            //
-            // In every case the unlock fires exactly once, guarded by unlockedBadgeIDs.
+            // ── UNLOCK: badge becomes visible and enters "in progress"
             let shouldUnlock: Bool
             if index == 0 {
                 // Bronze: first ever attempt in this category
@@ -296,8 +263,8 @@ class ProgressDataManager {
                 postBadgeEvent(badge: badge, type: "BadgeUnlocked")
             }
 
-            // ── EARN: badge goal reached for the first time ──────────────────
-            // Fires once when the stat counter exactly hits this badge's goalValue.
+            // EARN: badge goal reached for the first time
+        
             if newValue == badge.goalValue && !currentEarned.contains(badge.id) {
                 currentEarned.insert(badge.id)
                 postBadgeEvent(badge: badge, type: "BadgeEarned")
@@ -319,10 +286,8 @@ class ProgressDataManager {
         }
     }
 
-    // MARK: - XP History
-
-    /// In-memory XP event log, newest first.
-    /// Persisted as a JSON array in UserDefaults (capped at 50 entries).
+    //  XP History
+    
     private(set) var xpHistory: [XPEvent] = {
         guard let data = UserDefaults.standard.data(forKey: "xp_history_v1"),
               let raw  = try? JSONDecoder().decode([[String: String]].self, from: data)
@@ -338,7 +303,7 @@ class ProgressDataManager {
         }
     }()
 
-    /// Call this whenever XP is awarded so the event appears in XPDetailsViewController.
+    
     func recordXPEvent(_ description: String, amount: Int) {
         let event = XPEvent(description: description, amount: amount, date: Date())
         xpHistory.insert(event, at: 0)
@@ -346,6 +311,33 @@ class ProgressDataManager {
         persistXPHistory()
         // Sync this event to Supabase xp_log table
         Task { await SupabaseManager.shared.syncXPEvent(reason: description, amount: amount) }
+    }
+
+    // Session Logging for Progress Chart
+    func logSession(minutes: Double, category: String) {
+        let entry = LogHistoryItem(
+            id: UUID().uuidString,
+            amount: "\(Int(minutes))m",
+            hours: minutes / 60.0,
+            time: nil,
+            date: Date(),
+            category: category
+        )
+        history.append(entry)
+        persistSessionHistory()
+        NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
+    }
+
+    private func persistSessionHistory() {
+        if let data = try? JSONEncoder().encode(history) {
+            UserDefaults.standard.set(data, forKey: "session_history_v1")
+        }
+    }
+
+    private func loadSessionHistory() {
+        guard let data = UserDefaults.standard.data(forKey: "session_history_v1"),
+              let loaded = try? JSONDecoder().decode([LogHistoryItem].self, from: data) else { return }
+        history = loaded
     }
 
     private func persistXPHistory() {
@@ -356,7 +348,7 @@ class ProgressDataManager {
         }
     }
 
-    private init() { }
+    private init() { loadSessionHistory() }
 }
 
 extension Notification.Name {

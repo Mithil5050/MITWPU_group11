@@ -38,6 +38,7 @@ class CheatsheetViewController: UIViewController {
             
             Task { @MainActor in
                 await RevisioManager.shared.earnXP(amount: 10, reason: "Deep Study Focus")
+                ProgressDataManager.shared.logSession(minutes: 1.0, category: "Study")
                 print("✅ Success: 1 Minute Focus Reward Given")
                 self.studyTimer = nil
             }

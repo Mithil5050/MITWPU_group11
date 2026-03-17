@@ -51,6 +51,8 @@ class ConnectionsResultsViewController: UIViewController {
         setupAppearance()
         setupLayout()
         buildCategoryCards()
+        // Log session for progress chart
+        ProgressDataManager.shared.logSession(minutes: 2.0, category: "Games")
     }
     
     // MARK: - Setup
