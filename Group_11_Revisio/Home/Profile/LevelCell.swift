@@ -20,80 +20,43 @@ class LevelCell: UICollectionViewCell {
     @IBOutlet weak var bgView: UIView!
     @IBOutlet weak var levelBadgeContainer: UIView!
     
-    private let badgeView = LevelBadgeView()
-       weak var delegate: LevelCellDelegate?
+        private let badgeView = LevelBadgeView()
 
-       override func awakeFromNib() {
-           super.awakeFromNib()
-           setupUI()
-           setupTapGesture()
-       }
+        override func awakeFromNib() {
+            super.awakeFromNib()
+            setupUI()
+        }
 
-       private func setupUI() {
-           bgView.layer.cornerRadius = 16
-           bgView.backgroundColor = UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0)
+        private func setupUI() {
+            bgView.layer.cornerRadius = 16
+            bgView.backgroundColor = UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0)
+            
+            // 🛑 CRITICAL FIX: Force inner views to ignore touches so the CollectionView gets them!
+            bgView.isUserInteractionEnabled = false
+            levelBadgeContainer.isUserInteractionEnabled = false
 
-           levelLabel.font = UIFont.systemFont(ofSize: 18, weight: .bold)
-           xpLabel.font    = UIFont.systemFont(ofSize: 12, weight: .regular)
+            levelLabel.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+            xpLabel.font    = UIFont.systemFont(ofSize: 12, weight: .regular)
 
-           progressBar.layer.cornerRadius = 4
-           progressBar.clipsToBounds      = true
-           progressBar.progressTintColor  = .systemBlue
-           progressBar.trackTintColor     = UIColor.systemBlue.withAlphaComponent(0.2)
+            progressBar.layer.cornerRadius = 4
+            progressBar.clipsToBounds      = true
+            progressBar.progressTintColor  = .systemBlue
+            progressBar.trackTintColor     = UIColor.systemBlue.withAlphaComponent(0.2)
 
-           badgeView.frame            = levelBadgeContainer.bounds
-           badgeView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-           levelBadgeContainer.addSubview(badgeView)
-           levelBadgeContainer.backgroundColor = .clear
-       }
+            badgeView.frame            = levelBadgeContainer.bounds
+            badgeView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            levelBadgeContainer.addSubview(badgeView)
+            levelBadgeContainer.backgroundColor = .clear
+        }
 
-       // Whole card is tappable — no ⓘ button
-       private func setupTapGesture() {
-           bgView.isUserInteractionEnabled = true
-           let tap = UITapGestureRecognizer(target: self, action: #selector(cardTapped))
-           bgView.addGestureRecognizer(tap)
-       }
+        func configure(level: Int, currentXP: Int, maxXP: Int) {
+            levelLabel.text = "Level \(level)"
+            badgeView.setLevel(level)
+            xpLabel.text    = "\(currentXP)/\(maxXP) XP"
 
-       @objc private func cardTapped() {
-           delegate?.didTapXPCard()
-       }
-
-       func configure(level: Int, currentXP: Int, maxXP: Int) {
-           levelLabel.text = "Level \(level)"
-           badgeView.setLevel(level)
-           xpLabel.text    = "\(currentXP)/\(maxXP) XP"
-
-           let progress = maxXP > 0 ? Float(currentXP) / Float(maxXP) : 0
-           UIView.animate(withDuration: 0.3) {
-               self.progressBar.setProgress(progress, animated: true)
-           }
-       }
-
-       // Kept for backward compatibility — safe no-op now that the button is gone
-       func addInfoButtonIfNeeded(target: AnyObject, action: Selector) { }
-   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            let progress = maxXP > 0 ? Float(currentXP) / Float(maxXP) : 0
+            UIView.animate(withDuration: 0.3) {
+                self.progressBar.setProgress(progress, animated: true)
+            }
+        }
+    }

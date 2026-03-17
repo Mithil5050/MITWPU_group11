@@ -23,7 +23,7 @@ class StreaksCalendarViewController: UIViewController,
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
-        navigationItem.title = "Streak Details"
+        navigationItem.title = "Streaks"
 
         setupLayout()
         buildInfoCard()

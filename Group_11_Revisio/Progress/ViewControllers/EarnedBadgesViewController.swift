@@ -18,7 +18,7 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
-        navigationItem.title = "Earned Badges"
+        navigationItem.title = "Badges"
         loadData()
         setupCollectionView()
         setupEmptyState()
@@ -65,7 +65,7 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
     }
 
     private func setupEmptyState() {
-        emptyLabel.text = "No badges earned yet.\nKeep studying to unlock them!"
+        emptyLabel.text = "No badges earned yet.\nKeep studying to earn them!"
         emptyLabel.font = .systemFont(ofSize: 16, weight: .regular)
         emptyLabel.textColor = .secondaryLabel
         emptyLabel.textAlignment = .center
