@@ -40,7 +40,7 @@ class ProfileViewController: UIViewController {
             self?.collectionView.reloadSections(IndexSet(integersIn: 1...2))
         }
         
-        // ✅ Add Close Button to Navigation Bar
+        // Add Close Button to Navigation Bar
         let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold)
         let xImage = UIImage(systemName: "multiply", withConfiguration: config)
         navigationItem.leftBarButtonItem = UIBarButtonItem(image: xImage, style: .plain, target: self, action: #selector(handleDismiss))
@@ -52,7 +52,7 @@ class ProfileViewController: UIViewController {
         NotificationCenter.default.removeObserver(self)
     }
     
-    // MARK: - Navigation Logic
+    // Navigation Logic
     @objc private func handleDismiss() {
         if isBeingPresented || navigationController?.presentingViewController != nil {
             self.dismiss(animated: true)
@@ -65,7 +65,7 @@ class ProfileViewController: UIViewController {
         fetchUserData()
     }
     
-    // MARK: - Fetch Data Logic
+    // Fetch Data Logic
     private func fetchUserData() {
         Task {
             do {
@@ -121,7 +121,7 @@ class ProfileViewController: UIViewController {
         }
     }
 
-    // MARK: - CollectionView Setup
+    // CollectionView Setup
     func setupCollectionView() {
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -214,7 +214,7 @@ class ProfileViewController: UIViewController {
     }
 }
 
-// MARK: - Extensions
+// Extensions
 extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func numberOfSections(in collectionView: UICollectionView) -> Int { return 5 }
     
@@ -229,33 +229,35 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
             if let img = self.userImage { cell.pfp.image = img }
             cell.didTapEdit = { [weak self] in self?.openEditProfile() }
             return cell
-        }  else if indexPath.section == 1 {
+            
+        } else if indexPath.section == 1 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LevelCell", for: indexPath) as! LevelCell
-            
             let manager = ProgressDataManager.shared
-            
-            
             cell.configure(
                 level: manager.userLevel,
                 currentXP: manager.currentLevelXP,
                 maxXP: manager.pointsPerLevel
             )
             return cell
+            
         } else if indexPath.section == 2 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StatCardCell", for: indexPath) as! StatCardCell
             if indexPath.item == 0 {
                 let streak = ProgressDataManager.shared.currentStreak
                 let streakSuffix = streak == 1 ? "Day" : "Days"
-                cell.configure(title: "Streak", value: "\(streak) \(streakSuffix)", icon: "flame.fill", color: .systemOrange)
+                cell.configure(title: "Streaks", value: "\(streak) \(streakSuffix)", icon: "flame.fill", color: .systemOrange)
             } else {
-                cell.configure(title: "Badges", value: "8 Unlocked", icon: "trophy.fill", color: .systemYellow)
+                let earnedCount = Badging.allMilestones.filter { $0.isEarned }.count
+                cell.configure(title: "Badges", value: "\(earnedCount) Earned", icon: "trophy.fill", color: .systemYellow)
             }
             return cell
+            
         } else if indexPath.section == 3 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SettingsCell", for: indexPath) as! SettingsCell
             let data = settingsData[indexPath.item]
             cell.configure(title: data.title, icon: data.icon, color: data.color, isSwitch: data.isSwitch)
             return cell
+            
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LogoutCell", for: indexPath)
             cell.contentView.subviews.forEach { $0.removeFromSuperview() }
@@ -267,14 +269,30 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
             return cell
         }
     }
-
-    // ✅ Cleaned up duplicate functions!
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        collectionView.deselectItem(at: indexPath, animated: true)
-        if indexPath.section == 4 {
-            handleLogout()
+            collectionView.deselectItem(at: indexPath, animated: true)
+            
+            if indexPath.section == 1 {
+                // Level Card -> Push XP Info
+                let xpVC = XPInfoSheetViewController()
+                navigationController?.pushViewController(xpVC, animated: true)
+                
+            } else if indexPath.section == 2 {
+                // Stat Cards
+                if indexPath.item == 0 {
+                    let streaksVC = StreaksCalendarViewController()
+                    navigationController?.pushViewController(streaksVC, animated: true)
+                } else if indexPath.item == 1 {
+                    let badgesVC = EarnedBadgesViewController()
+                    navigationController?.pushViewController(badgesVC, animated: true)
+                }
+                
+            } else if indexPath.section == 4 {
+                // Log Out
+                handleLogout()
+            }
         }
-    }
 }
 
 extension ProfileViewController: EditProfileDelegate {

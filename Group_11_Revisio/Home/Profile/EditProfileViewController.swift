@@ -11,7 +11,6 @@ protocol EditProfileDelegate: AnyObject {
     func didUpdateProfile(name: String, image: UIImage?)
 }
 
-// ✅ Helper struct for updating the database
 struct ProfileUpdateParams: Encodable {
     let username: String
     let avatar_url: String?
@@ -19,7 +18,6 @@ struct ProfileUpdateParams: Encodable {
 
 class EditProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
-    // MARK: - UI Components
     private let profileImageView: UIImageView = {
         let iv = UIImageView()
         iv.translatesAutoresizingMaskIntoConstraints = false
@@ -46,7 +44,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         return tf
     }()
 
-    // MARK: - Properties
+    // Properties
     weak var delegate: EditProfileDelegate?
     var currentName: String?
     var currentImage: UIImage?
@@ -54,7 +52,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
     // We use this to track if the user actually picked a new photo
     private var didChangePhoto = false
 
-    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -65,7 +63,6 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         changePhotoButton.addTarget(self, action: #selector(changePhotoTapped), for: .touchUpInside)
     }
 
-    // MARK: - Setup
     private func setupNavigationBar() {
         title = "Edit Profile"
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelTapped))
@@ -97,7 +94,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         if let image = currentImage { profileImageView.image = image }
     }
 
-    // MARK: - Actions
+
     @objc private func changePhotoTapped() {
         let picker = UIImagePickerController()
         picker.delegate = self
@@ -110,7 +107,6 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         dismiss(animated: true)
     }
 
-    // ✅ THE MAGIC HAPPENS HERE
     @objc private func saveTapped() {
         guard let newName = nameTextField.text, !newName.isEmpty else {
             let alert = UIAlertController(title: "Error", message: "Name cannot be empty.", preferredStyle: .alert)
@@ -160,7 +156,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
                 
                 // 4. Success! Tell the Profile & Home screens to update
                 DispatchQueue.main.async {
-                    // ✅ Broadcast update to all listeners (Home & Profile ViewControllers)
+                    //  Broadcast update to all listeners (Home & Profile ViewControllers)
                     NotificationCenter.default.post(name: NSNotification.Name("ProfileDidUpdate"), object: nil)
                     
                     self.delegate?.didUpdateProfile(name: newName, image: self.profileImageView.image)
@@ -179,7 +175,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         }
     }
 
-    // MARK: - UIImagePickerControllerDelegate
+    //  UIImagePickerControllerDelegate
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let editedImage = info[.editedImage] as? UIImage {
             profileImageView.image = editedImage
