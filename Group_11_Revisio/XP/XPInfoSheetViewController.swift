@@ -9,27 +9,21 @@ import UIKit
 
 class XPInfoSheetViewController: UIViewController {
 
-    // MARK: - UI
     private let scrollView   = UIScrollView()
     private let contentStack = UIStackView()
 
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        navigationItem.title = "How XP Works"
-
-        if let sheet = sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-            sheet.prefersGrabberVisible = true
-            sheet.preferredCornerRadius = 20
-        }
+        
+        // dynamic navigation title based on current level
+        let manager = ProgressDataManager.shared
+        navigationItem.title = "Level \(manager.userLevel)"
 
         setupLayout()
         populateContent()
     }
 
-    // MARK: - Layout
     private func setupLayout() {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
@@ -57,14 +51,21 @@ class XPInfoSheetViewController: UIViewController {
         let manager   = ProgressDataManager.shared
         let remaining = max(0, manager.requiredXPForCurrentLevel - manager.currentLevelXP)
 
-    // Next level callout
+        // Next level callout
         contentStack.addArrangedSubview(makeCallout(
             "You need \(remaining) more XP to reach Level \(manager.userLevel + 1)."
         ))
 
-        // What is XP
         contentStack.addArrangedSubview(makeDivider())
+        
+        // "How XP Works" 
+        let mainHeadingLabel = UILabel()
+        mainHeadingLabel.text = "How XP Works"
+        mainHeadingLabel.font = .systemFont(ofSize: 22, weight: .bold)
+        mainHeadingLabel.textColor = .label
+        contentStack.addArrangedSubview(mainHeadingLabel)
 
+        // What is XP
         let boltImageView = UIImageView(image: UIImage(systemName: "bolt.fill"))
         boltImageView.tintColor = .systemYellow
         boltImageView.contentMode = .scaleAspectFit
@@ -87,7 +88,7 @@ class XPInfoSheetViewController: UIViewController {
             "The more you study, the faster you level up."
         ))
         
-    // How XP is earned
+        // How XP is earned
         contentStack.addArrangedSubview(makeDivider())
         contentStack.addArrangedSubview(makeHeading("How You Earn XP"))
 
@@ -104,7 +105,7 @@ class XPInfoSheetViewController: UIViewController {
             contentStack.addArrangedSubview(makeBulletRow(icon: icon, color: color, text: text))
         }
 
-    // How leveling works
+        // How leveling works
         contentStack.addArrangedSubview(makeDivider())
         contentStack.addArrangedSubview(makeHeading("How Leveling Works"))
         contentStack.addArrangedSubview(makeBody(
@@ -119,77 +120,77 @@ class XPInfoSheetViewController: UIViewController {
     }
 
     // Reusable view builders
-        private func makeHeading(_ text: String) -> UILabel {
-            let label = UILabel()
-            label.text          = text
-            label.font          = .systemFont(ofSize: 17, weight: .semibold)
-            label.textColor     = .label
-            label.numberOfLines = 0
-            return label
-        }
-
-        private func makeBody(_ text: String) -> UILabel {
-            let label = UILabel()
-            label.text          = text
-            label.font          = .systemFont(ofSize: 15, weight: .regular)
-            label.textColor     = .secondaryLabel
-            label.numberOfLines = 0
-            return label
-        }
-
-        private func makeBulletRow(icon: String, color: UIColor, text: String) -> UIView {
-            let row       = UIStackView()
-            row.axis      = .horizontal
-            row.spacing   = 12
-            row.alignment = .center
-
-            let imageView = UIImageView(image: UIImage(systemName: icon))
-            imageView.tintColor                = color
-            imageView.contentMode              = .scaleAspectFit
-            imageView.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                imageView.widthAnchor.constraint(equalToConstant: 20),
-                imageView.heightAnchor.constraint(equalToConstant: 20)
-            ])
-            imageView.setContentHuggingPriority(.required, for: .horizontal)
-
-            let textLabel           = UILabel()
-            textLabel.text          = text
-            textLabel.font          = .systemFont(ofSize: 15)
-            textLabel.textColor     = .secondaryLabel
-            textLabel.numberOfLines = 0
-
-            row.addArrangedSubview(imageView)
-            row.addArrangedSubview(textLabel)
-            return row
-        }
-
-        private func makeCallout(_ text: String) -> UIView {
-            let card = UIView()
-            card.backgroundColor    = UIColor.systemBlue.withAlphaComponent(0.1)
-            card.layer.cornerRadius = 12
-
-            let label           = UILabel()
-            label.text          = text
-            label.font          = .systemFont(ofSize: 15, weight: .medium)
-            label.textColor     = .systemBlue
-            label.numberOfLines = 0
-            label.translatesAutoresizingMaskIntoConstraints = false
-
-            card.addSubview(label)
-            NSLayoutConstraint.activate([
-                label.topAnchor.constraint(equalTo: card.topAnchor, constant: 14),
-                label.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
-                label.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
-                label.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -14)
-            ])
-            return card
-        }
-
-        private func makeDivider() -> UIView {
-            let line = UIView()
-            line.backgroundColor = .separator
-            line.heightAnchor.constraint(equalToConstant: 0.5).isActive = true
-            return line
-        }
+    private func makeHeading(_ text: String) -> UILabel {
+        let label = UILabel()
+        label.text          = text
+        label.font          = .systemFont(ofSize: 17, weight: .semibold)
+        label.textColor     = .label
+        label.numberOfLines = 0
+        return label
     }
+
+    private func makeBody(_ text: String) -> UILabel {
+        let label = UILabel()
+        label.text          = text
+        label.font          = .systemFont(ofSize: 15, weight: .regular)
+        label.textColor     = .secondaryLabel
+        label.numberOfLines = 0
+        return label
+    }
+
+    private func makeBulletRow(icon: String, color: UIColor, text: String) -> UIView {
+        let row       = UIStackView()
+        row.axis      = .horizontal
+        row.spacing   = 12
+        row.alignment = .center
+
+        let imageView = UIImageView(image: UIImage(systemName: icon))
+        imageView.tintColor                = color
+        imageView.contentMode              = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            imageView.widthAnchor.constraint(equalToConstant: 20),
+            imageView.heightAnchor.constraint(equalToConstant: 20)
+        ])
+        imageView.setContentHuggingPriority(.required, for: .horizontal)
+
+        let textLabel           = UILabel()
+        textLabel.text          = text
+        textLabel.font          = .systemFont(ofSize: 15)
+        textLabel.textColor     = .secondaryLabel
+        textLabel.numberOfLines = 0
+
+        row.addArrangedSubview(imageView)
+        row.addArrangedSubview(textLabel)
+        return row
+    }
+
+    private func makeCallout(_ text: String) -> UIView {
+        let card = UIView()
+        card.backgroundColor    = UIColor.systemBlue.withAlphaComponent(0.1)
+        card.layer.cornerRadius = 12
+
+        let label           = UILabel()
+        label.text          = text
+        label.font          = .systemFont(ofSize: 15, weight: .medium)
+        label.textColor     = .systemBlue
+        label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
+
+        card.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: card.topAnchor, constant: 14),
+            label.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
+            label.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
+            label.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -14)
+        ])
+        return card
+    }
+
+    private func makeDivider() -> UIView {
+        let line = UIView()
+        line.backgroundColor = .separator
+        line.heightAnchor.constraint(equalToConstant: 0.5).isActive = true
+        return line
+    }
+}
