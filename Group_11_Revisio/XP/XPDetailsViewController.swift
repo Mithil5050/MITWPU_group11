@@ -5,6 +5,7 @@
 //  Created by Ashika Yadav on 05/03/26.
 //
 
+
 import UIKit
 
 // XP History Model
@@ -32,7 +33,8 @@ import UIKit
         override func viewDidLoad() {
             super.viewDidLoad()
             view.backgroundColor = .systemBackground
-            navigationItem.title = "XP Details"
+            let level = ProgressDataManager.shared.userLevel
+            navigationItem.title = "Level \(level)"
             setupLayout()
             refreshData()
             NotificationCenter.default.addObserver(self, selector: #selector(refreshData),
@@ -125,6 +127,7 @@ import UIKit
                 guard let self else { return }
                 let manager = ProgressDataManager.shared
 
+                self.navigationItem.title = "Level \(manager.userLevel)"
                 self.levelLabel.text    = "Level \(manager.userLevel)"
                 self.xpValueLabel.text  = "\(manager.currentLevelXP) / \(manager.requiredXPForCurrentLevel) XP"
                 self.progressBar.setProgress(manager.progressToNextLevel, animated: true)

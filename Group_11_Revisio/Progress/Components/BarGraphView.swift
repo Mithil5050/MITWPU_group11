@@ -108,7 +108,7 @@ struct BarChartView: View {
     }
     
     private func dynamicYMax(for index: Int) -> Double {
-        guard index >= 0 && index < history.count else { return 30 }
+        guard index >= 0 && index < history.count else { return 120 }
         let maxTotal = history[index].map { $0.studyMinutes + $0.gamesMinutes }.max() ?? 0
         let padded = max(maxTotal * 1.3, 60)
         return (padded / 60.0).rounded(.up) * 60.0
@@ -117,7 +117,10 @@ struct BarChartView: View {
     @ViewBuilder
     private func chartPage(for index: Int) -> some View {
         let yMax = dynamicYMax(for: index)
-        let mid  = (yMax / 2).rounded()
+        let maxHours = Int(yMax) / 60
+        // ≤ 2h: always show 0h/1h/2h  |  > 2h: show 0h / half / max (even hours)
+        let axisValues: [Double] = maxHours <= 2 ? [0, 60, 120] : [0, yMax / 2, yMax]
+        let axisDomain: ClosedRange<Double> = maxHours <= 2 ? 0...120 : 0...yMax
         Chart(history[index]) { item in
             BarMark(x: .value("Day", item.label), y: .value("Study", item.studyMinutes))
                 .foregroundStyle(colors.study)
@@ -125,14 +128,13 @@ struct BarChartView: View {
             BarMark(x: .value("Day", item.label), y: .value("Games", item.gamesMinutes))
                 .foregroundStyle(colors.games)
         }
-        .chartYScale(domain: 0...yMax)
+        .chartYScale(domain: axisDomain)
         .chartYAxis {
-            AxisMarks(position: .trailing, values: [0, mid, yMax]) { value in
+            AxisMarks(position: .trailing, values: axisValues) { value in
                 AxisGridLine().foregroundStyle(.white.opacity(0.15))
                 AxisValueLabel {
                     if let mins = value.as(Double.self) {
-                        let h = Int(mins) / 60
-                        Text("\(h)h").font(.system(size: 9))
+                        Text("\(Int(mins) / 60)h").font(.system(size: 9))
                     }
                 }
             }
