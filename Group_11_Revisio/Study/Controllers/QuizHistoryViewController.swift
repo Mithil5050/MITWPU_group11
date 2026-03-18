@@ -17,7 +17,7 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // Sets the title in the system Navigation Bar
+        
         self.title = quizTopic?.name ?? "Quiz History"
         
         if let subject = parentSubject, let currentName = quizTopic?.name {
@@ -29,7 +29,7 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         unpackSummaryData()
         tableView.reloadData()
         
-        // Pushes the score card to the top
+      
         tableView.tableHeaderView = createModernHeroHeader()
     }
     
@@ -40,14 +40,13 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
         
-        // Removes top gap on iOS 15+
+        
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
     }
 
     func createModernHeroHeader() -> UIView {
-        // Minimal height to move content up
         let headerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 150))
 
         let card = UIView()
@@ -60,7 +59,7 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         scoreLabel.text = latestScore
         
        
-        let scoreFont = UIFont.systemFont(ofSize: 54, weight: .bold)
+        let scoreFont = UIFont.systemFont(ofSize: 54, weight: .black)
         scoreLabel.font = UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: scoreFont)
         scoreLabel.adjustsFontForContentSizeCategory = true
         
@@ -72,8 +71,8 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
         let subtitleLabel = UILabel()
         subtitleLabel.text = summaryData.isEmpty ? "No Previous Attempt" :"Latest Score"
         
-        // Native caption style
-        let subtitleFont = UIFont.systemFont(ofSize: 12, weight: .bold)
+        
+        let subtitleFont = UIFont.systemFont(ofSize: 12, weight: .heavy)
         subtitleLabel.font = UIFontMetrics(forTextStyle: .caption1).scaledFont(for: subtitleFont)
         subtitleLabel.adjustsFontForContentSizeCategory = true
         
@@ -116,7 +115,7 @@ class QuizHistoryViewController: UIViewController, UITableViewDelegate, UITableV
             cell.textLabel?.text = attempt.dateString
             cell.detailTextLabel?.text = "\(attempt.score)/\(attempt.totalQuestions)"
             
-            // Native body scaling
+            
             cell.textLabel?.font = UIFont.preferredFont(forTextStyle: .body)
             cell.textLabel?.adjustsFontForContentSizeCategory = true
             

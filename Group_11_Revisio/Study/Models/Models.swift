@@ -13,7 +13,7 @@ struct QuestionResultDetail:Codable {
     let correctAnswerFullText: String
     let isFlagged: Bool
     var correctOptionLetter: String {
-            // Find the index right after the first character
+           
             guard let firstChar = correctAnswerFullText.first else {
                 return "N/A"
             }
