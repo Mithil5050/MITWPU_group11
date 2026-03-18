@@ -13,7 +13,7 @@
         <!--Profile-->
         <scene sceneID="TUB-E4-WgM">
             <objects>
-                <viewController id="app-ce-bSr" customClass="ProfileViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="app-ce-bSr" customClass="ProfileViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="U63-0e-cz1">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="793"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -45,7 +45,7 @@
         <!--Word Fill View Controller-->
         <scene sceneID="hjh-J9-Bp2">
             <objects>
-                <viewController id="29q-b6-TaY" customClass="WordFillViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="29q-b6-TaY" customClass="WordFillViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="cJB-yH-dJA">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -191,7 +191,7 @@
         <!--Word Fill Launch View Controller-->
         <scene sceneID="YRA-50-TtV">
             <objects>
-                <viewController id="zbs-cn-zP7" customClass="WordFillLaunchViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="zbs-cn-zP7" customClass="WordFillLaunchViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="xfH-fU-NAd">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -254,7 +254,7 @@
         <!--Connections Launching Screen View Controller-->
         <scene sceneID="76M-xd-TRN">
             <objects>
-                <viewController id="DRA-Mm-MJo" customClass="ConnectionsLaunchingScreenViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="DRA-Mm-MJo" customClass="ConnectionsLaunchingScreenViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="m2Y-mO-f3Z">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -317,7 +317,7 @@
         <!--Connections Results View Controller-->
         <scene sceneID="e9D-yV-okf">
             <objects>
-                <viewController id="ux0-ui-64b" customClass="ConnectionsResultsViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="ux0-ui-64b" customClass="ConnectionsResultsViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="GOn-4F-fVs">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -333,7 +333,7 @@
         <!--Connections-->
         <scene sceneID="S0G-jM-cV4">
             <objects>
-                <viewController id="OcD-Ae-olb" customClass="ConnectionsViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="OcD-Ae-olb" customClass="ConnectionsViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="n50-H9-pG1">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -382,7 +382,7 @@
         <!--Home-->
         <scene sceneID="tYZ-Br-z2I">
             <objects>
-                <viewController storyboardIdentifier="HomeViewController" id="4ZY-0A-Wo4" customClass="HomeViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="HomeViewController" id="4ZY-0A-Wo4" customClass="HomeViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="QFp-Kk-Ioy" customClass="UICollectionView">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -447,7 +447,7 @@
         <!--Add to Material-->
         <scene sceneID="na4-Op-mpZ">
             <objects>
-                <viewController storyboardIdentifier="UploadContent" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ry9-kf-REg" customClass="SelectMaterialViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="UploadContent" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ry9-kf-REg" customClass="SelectMaterialViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eec-Sm-vQp">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -509,7 +509,7 @@
         <!--Upload Content-->
         <scene sceneID="OBc-0S-qpG">
             <objects>
-                <viewController storyboardIdentifier="ConfirmationVC" useStoryboardIdentifierAsRestorationIdentifier="YES" id="WNP-DU-Qf0" customClass="UploadConfirmationViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ConfirmationVC" useStoryboardIdentifierAsRestorationIdentifier="YES" id="WNP-DU-Qf0" customClass="UploadConfirmationViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hnx-2M-7GR">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -575,7 +575,7 @@
         <!--Generation Screen-->
         <scene sceneID="KqS-LP-aKJ">
             <objects>
-                <viewController id="5F1-6M-WRb" customClass="GenerateHomeViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="5F1-6M-WRb" customClass="GenerateHomeViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="lgr-Vc-Vao">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -586,11 +586,11 @@
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="VFe-eY-EWu">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="124"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vXX-3U-BIS" customClass="TappableCardView" customModule="MITWPU_group11_" customModuleProvider="target">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vXX-3U-BIS" customClass="TappableCardView" customModule="Group_11_Revisio" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="0.0" width="164.66666666666666" height="124"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                             </view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WJs-OC-HGy" customClass="TappableCardView" customModule="MITWPU_group11_" customModuleProvider="target">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WJs-OC-HGy" customClass="TappableCardView" customModule="Group_11_Revisio" customModuleProvider="target">
                                                 <rect key="frame" x="188.66666666666663" y="0.0" width="164.33333333333337" height="124"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                             </view>
@@ -602,11 +602,11 @@
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="WRC-wT-tX7">
                                         <rect key="frame" x="0.0" y="148" width="353" height="124"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="y18-lY-e1y" customClass="TappableCardView" customModule="MITWPU_group11_" customModuleProvider="target">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="y18-lY-e1y" customClass="TappableCardView" customModule="Group_11_Revisio" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="0.0" width="164.66666666666666" height="124"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                             </view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yFa-49-ZoB" customClass="TappableCardView" customModule="MITWPU_group11_" customModuleProvider="target">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yFa-49-ZoB" customClass="TappableCardView" customModule="Group_11_Revisio" customModuleProvider="target">
                                                 <rect key="frame" x="188.66666666666663" y="0.0" width="164.33333333333337" height="124"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                             </view>
@@ -716,7 +716,7 @@
         <!--Flashcards-->
         <scene sceneID="yGd-NL-qxy">
             <objects>
-                <viewController id="z8q-8S-FlA" customClass="FlashcardViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="z8q-8S-FlA" customClass="FlashcardViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Mar-51-CW7">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -811,7 +811,7 @@
         <!--Add Flashcard-->
         <scene sceneID="e10-LL-N4Q">
             <objects>
-                <viewController id="5kv-o4-MUT" customClass="AddFlashcardViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="5kv-o4-MUT" customClass="AddFlashcardViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="jKR-Ft-EMT">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="793"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -954,7 +954,7 @@
         <!--Exora-->
         <scene sceneID="o9A-Bv-DqW">
             <objects>
-                <viewController id="m3S-Zg-TfN" customClass="AIChatViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="m3S-Zg-TfN" customClass="AIChatViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="5Mx-Rz-1eW">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -986,7 +986,7 @@
         <!--Notes View Controller-->
         <scene sceneID="saa-Hr-J8X">
             <objects>
-                <viewController id="LBk-py-eDN" customClass="NotesViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="LBk-py-eDN" customClass="NotesViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="d0C-9g-cUc">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1046,7 +1046,7 @@
         <!--Cheatsheet View Controller-->
         <scene sceneID="u6c-gJ-O4L">
             <objects>
-                <viewController id="eKj-Mm-Ug8" customClass="CheatsheetViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="eKj-Mm-Ug8" customClass="CheatsheetViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="bHb-Ja-lAm">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1106,7 +1106,7 @@
         <!--Quiz Start View Controller-->
         <scene sceneID="0L3-6J-GiZ">
             <objects>
-                <viewController id="HNf-Dz-am1" customClass="QuizStartViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="HNf-Dz-am1" customClass="QuizStartViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="wX4-AR-GZu">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1192,7 +1192,7 @@
         <!--Quiz Session View Controller-->
         <scene sceneID="jba-L3-3zX">
             <objects>
-                <viewController id="laJ-Xe-lv2" customClass="QuizSessionViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="laJ-Xe-lv2" customClass="QuizSessionViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="rHy-dc-u5I">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1338,7 +1338,7 @@
         <!--Score-->
         <scene sceneID="v8V-Yt-bPo">
             <objects>
-                <viewController id="aZP-rB-Q3d" customClass="QuizResultsViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="aZP-rB-Q3d" customClass="QuizResultsViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="sl9-Hs-Rih">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1437,7 +1437,7 @@
         <!--Summary View Controller-->
         <scene sceneID="8vs-Dx-arq">
             <objects>
-                <viewController id="6vP-c7-XND" customClass="SummaryViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="6vP-c7-XND" customClass="SummaryViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="K2j-Rp-5B8">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1446,33 +1446,33 @@
                                 <rect key="frame" x="0.0" y="172" width="393" height="563"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SummaryCell" id="FGe-L4-kZ9" customClass="SummaryTableViewCell" customModule="MITWPU_group11_" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="50" width="393" height="360.66665649414062"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SummaryCell" id="FGe-L4-kZ9" customClass="SummaryTableViewCell" customModule="Group_11_Revisio" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="50" width="393" height="361.66665649414062"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="FGe-L4-kZ9" id="h72-uO-f67">
-                                            <rect key="frame" x="0.0" y="0.0" width="393" height="360.66665649414062"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="393" height="361.66665649414062"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Tep-OH-G4p">
-                                                    <rect key="frame" x="8" y="8" width="377" height="344.66666666666669"/>
+                                                    <rect key="frame" x="8" y="8" width="377" height="345.66666666666669"/>
                                                     <subviews>
                                                         <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="auE-Dp-Ys8">
-                                                            <rect key="frame" x="0.0" y="0.0" width="377" height="242"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="377" height="243"/>
                                                             <subviews>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="O8d-9b-hnu">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="329" height="242"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="329" height="243"/>
                                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                                     <nil key="textColor"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Vft-6X-we4">
-                                                                    <rect key="frame" x="329" y="0.0" width="24" height="242"/>
+                                                                    <rect key="frame" x="329" y="0.0" width="24" height="243"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="width" constant="24" id="NHZ-0W-a7P"/>
                                                                     </constraints>
                                                                 </imageView>
                                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="leE-wz-VIr">
-                                                                    <rect key="frame" x="353" y="0.0" width="24" height="242"/>
+                                                                    <rect key="frame" x="353" y="0.0" width="24" height="243"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="width" constant="24" id="qdY-qv-xyJ"/>
                                                                     </constraints>
@@ -1480,7 +1480,7 @@
                                                             </subviews>
                                                         </stackView>
                                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="xfL-Wf-njH">
-                                                            <rect key="frame" x="0.0" y="241.99999999999997" width="377" height="102.66666666666666"/>
+                                                            <rect key="frame" x="0.0" y="242.99999999999997" width="377" height="102.66666666666666"/>
                                                             <subviews>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kin-ln-nRp">
                                                                     <rect key="frame" x="0.0" y="0.0" width="377" height="21"/>
@@ -1568,7 +1568,7 @@
         <!--Daily Challenge View Controller-->
         <scene sceneID="vnv-oN-fMj">
             <objects>
-                <viewController id="gFG-hC-fQP" customClass="DailyChallengeViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="gFG-hC-fQP" customClass="DailyChallengeViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="FKu-n4-0l7">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1655,13 +1655,13 @@
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemGray6Color">
-            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGrayColor">
-            <color red="0.55686274509803924" green="0.55686274509803924" blue="0.57647058823529407" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGreenColor">
-            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
