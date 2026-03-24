@@ -27,7 +27,7 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
     var parentSubjectName: String?
     var isFromGenerationScreen: Bool = false
     
-    // Background "Stack" Views
+   
     private var backgroundCard1: UIView!
     private var backgroundCard2: UIView!
     
@@ -69,7 +69,7 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
         cardsView.layer.shadowOffset = CGSize(width: 0, height: 4)
         cardsView.layer.shadowRadius = 8
         cardsView.backgroundColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0)
-        cardsView.layer.zPosition = 100 // Keeps main card on top
+        cardsView.layer.zPosition = 100
     }
 
     private func setupStackVisuals() {
@@ -113,7 +113,7 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
     private func resetStackTransforms() {
         cardsView.transform = .identity
         cardsView.alpha = 1.0
-        // Fanned out look
+        
         backgroundCard1.transform = CGAffineTransform(scaleX: 0.96, y: 0.96).translatedBy(x: 0, y: 24)
         backgroundCard2.transform = CGAffineTransform(scaleX: 0.92, y: 0.92).translatedBy(x: 0, y: 48)
         updateStackVisibility()
@@ -158,13 +158,13 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
         
         
         UIView.animate(withDuration: 0.3, animations: {
-            // Swipe Left and Rotate
+          
             let translation = CGAffineTransform(translationX: -self.view.bounds.width, y: -20)
             let rotation = CGAffineTransform(rotationAngle: -0.15)
             self.cardsView.transform = translation.concatenating(rotation)
             self.cardsView.alpha = 0
             
-            // Move Stack Up
+           
             self.backgroundCard1.transform = .identity
             self.backgroundCard2.transform = CGAffineTransform(scaleX: 0.96, y: 0.96).translatedBy(x: 0, y: 24)
         }) { _ in
@@ -184,7 +184,7 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
         self.updateCardContent(animated: false)
         self.updateCounterLabel()
         
-        // Prepare Offscreen Right
+      
         let offScreen = CGAffineTransform(translationX: self.view.bounds.width, y: -20).rotated(by: 0.15)
         self.cardsView.transform = offScreen
         self.cardsView.alpha = 0
@@ -263,7 +263,7 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate {
             self.flashcards = loadedCards
             self.currentCardIndex = 0
             
-            // 3. Ensure stack visibility is refreshed now that we have cards
+          
             if backgroundCard1 != nil {
                 resetStackTransforms()
             }

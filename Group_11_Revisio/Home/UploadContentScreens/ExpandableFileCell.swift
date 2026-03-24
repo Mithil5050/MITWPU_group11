@@ -135,7 +135,7 @@ class ExpandableFileCell: UITableViewCell {
             chevronImageView.isHidden = true
         } else if file.isAnalyzing {
             statusLabel.text = "Analyzing..."
-            statusLabel.textColor = .systemBlue
+            statusLabel.textColor = .systemIndigo  // Changed to indigo
             chevronImageView.isHidden = true
         } else if file.topics.isEmpty {
             statusLabel.text = "No topics found"
@@ -164,6 +164,24 @@ class ExpandableFileCell: UITableViewCell {
             divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
             topicsContainer.addArrangedSubview(divider)
             
+            // Add "Select topics" label
+            let headerContainer = UIView()
+            headerContainer.translatesAutoresizingMaskIntoConstraints = false
+            let selectTopicsLabel = UILabel()
+            selectTopicsLabel.text = "Select topics to study:"
+            selectTopicsLabel.font = .systemFont(ofSize: 14, weight: .semibold)
+            selectTopicsLabel.textColor = .secondaryLabel
+            selectTopicsLabel.translatesAutoresizingMaskIntoConstraints = false
+            headerContainer.addSubview(selectTopicsLabel)
+            
+            NSLayoutConstraint.activate([
+                selectTopicsLabel.topAnchor.constraint(equalTo: headerContainer.topAnchor, constant: 16),
+                selectTopicsLabel.bottomAnchor.constraint(equalTo: headerContainer.bottomAnchor, constant: 4),
+                selectTopicsLabel.leadingAnchor.constraint(equalTo: headerContainer.leadingAnchor, constant: 20),
+                selectTopicsLabel.trailingAnchor.constraint(equalTo: headerContainer.trailingAnchor, constant: -20)
+            ])
+            topicsContainer.addArrangedSubview(headerContainer)
+            
             // Add Rows
             for (i, topic) in file.topics.enumerated() {
                 let row = createTopicRow(title: topic, isSelected: file.selectedTopicIndices.contains(i), topicIndex: i)
@@ -173,40 +191,88 @@ class ExpandableFileCell: UITableViewCell {
     }
     
     private func createTopicRow(title: String, isSelected: Bool, topicIndex: Int) -> UIView {
+        let paddingContainer = UIView()
+        
+        // 1. Container matches `optionViews[i]`
         let container = UIView()
+        container.layer.cornerRadius = 10
+        container.layer.borderWidth = 1
+        container.translatesAutoresizingMaskIntoConstraints = false
         
+        let indigoColor = UIColor.systemIndigo
+        
+        if isSelected {
+            container.backgroundColor = indigoColor.withAlphaComponent(0.15)
+            container.layer.borderColor = indigoColor.cgColor
+        } else {
+            container.backgroundColor = UIColor.secondarySystemFill
+            container.layer.borderColor = UIColor.clear.cgColor
+        }
+        
+        // 2. Horizontal Stack
+        let hStack = UIStackView()
+        hStack.axis = .horizontal
+        hStack.spacing = 8
+        hStack.alignment = .center
+        hStack.translatesAutoresizingMaskIntoConstraints = false
+        
+        let topicTitleLabel = UILabel()
+        topicTitleLabel.text = title
+        topicTitleLabel.font = isSelected ? UIFont.boldSystemFont(ofSize: 15) : UIFont.systemFont(ofSize: 15)
+        topicTitleLabel.textColor = isSelected ? indigoColor : .label
+        topicTitleLabel.numberOfLines = 0
+        
+        let iconImageView = UIImageView()
+        iconImageView.image = UIImage(systemName: "checkmark.circle.fill")
+        iconImageView.tintColor = indigoColor
+        iconImageView.contentMode = .scaleAspectFit
+        iconImageView.isHidden = !isSelected
+        iconImageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            iconImageView.widthAnchor.constraint(equalToConstant: 20),
+            iconImageView.heightAnchor.constraint(equalToConstant: 20)
+        ])
+        
+        hStack.addArrangedSubview(topicTitleLabel)
+        hStack.addArrangedSubview(iconImageView)
+        
+        container.addSubview(hStack)
+        
+        // Stack padding matching `Opt-A-Stack` (leading/trailing 12, top/bottom 8)
+        NSLayoutConstraint.activate([
+            hStack.topAnchor.constraint(equalTo: container.topAnchor, constant: 12),
+            hStack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -12),
+            hStack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 12),
+            hStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -12)
+        ])
+        
+        paddingContainer.addSubview(container)
+        
+        // Button Over Container
         let button = UIButton(type: .custom)
-        button.contentHorizontalAlignment = .leading
-        
-        // Icon selection
-        let iconName = isSelected ? "checkmark.circle.fill" : "circle"
-        button.setImage(UIImage(systemName: iconName), for: .normal)
-        
-        // Text styling
-        button.setTitle("  " + title, for: .normal)
-        button.setTitleColor(.label, for: .normal)
-        button.tintColor = isSelected ? .systemBlue : .systemGray3
-        button.titleLabel?.font = .systemFont(ofSize: 15)
-        button.titleLabel?.numberOfLines = 2
-        
-        // Internal Padding
-        button.contentEdgeInsets = UIEdgeInsets(top: 12, left: 20, bottom: 12, right: 20)
-        
         button.tag = topicIndex
         button.addTarget(self, action: #selector(topicTapped(_:)), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         
-        container.addSubview(button)
+        paddingContainer.addSubview(button)
         
+        // Add outer padding Constraints so the options aren't touching each other
         NSLayoutConstraint.activate([
+            container.topAnchor.constraint(equalTo: paddingContainer.topAnchor, constant: 6),
+            container.bottomAnchor.constraint(equalTo: paddingContainer.bottomAnchor, constant: -6),
+            container.leadingAnchor.constraint(equalTo: paddingContainer.leadingAnchor, constant: 20),
+            container.trailingAnchor.constraint(equalTo: paddingContainer.trailingAnchor, constant: -20),
+            
             button.topAnchor.constraint(equalTo: container.topAnchor),
             button.bottomAnchor.constraint(equalTo: container.bottomAnchor),
             button.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             button.trailingAnchor.constraint(equalTo: container.trailingAnchor)
         ])
         
-        return container
+        return paddingContainer
     }
+    
     
     @objc private func topicTapped(_ sender: UIButton) {
         delegate?.didToggleTopic(fileIndex: self.fileIndex, topicIndex: sender.tag)

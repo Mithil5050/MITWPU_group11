@@ -68,4 +68,29 @@ class AIContentManager {
             throw error
         }
     }
+    
+    // Process Vision Framework labels specifically without forcing "Notes" or "Cheatsheets" format
+    func processVisionLabels(words: [String]) async throws -> [String] {
+        let list = words.joined(separator: ", ")
+        let prompt = """
+        I extracted these words from a diagram using OCR: [\(list)].
+        Filter out diagram titles (like 'Plant Cell Anatomy'), user instructions, watermarks, or random stray letters.
+        Return ONLY a raw comma-separated list of the actual scientific diagram anatomical parts/labels.
+        Do NOT output tables, markdown, or any other explanations. Just the raw comma-separated labels.
+        """
+        
+        let requestBody = AIRequest(
+            topic: prompt,
+            type: "Filter",
+            count: 1,
+            difficulty: "Normal"
+        )
+        
+        let response: AIResponse = try await SupabaseManager.shared.client.functions
+            .invoke("generate-study-material", options: FunctionInvokeOptions(body: requestBody))
+            
+        return response.content.components(separatedBy: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
 }

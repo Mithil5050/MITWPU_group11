@@ -1,0 +1,75 @@
+--- /Users/mithil/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/DiagramGameViewController.swift
++++ /Users/mithil/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/DiagramGameViewController.swift
+@@ -87,41 +87,55 @@
+     
+     private func processTextObservations(_ observations: [VNRecognizedTextObservation], imageSize: CGSize) {
+         var foundWords: [String] = []
++        var observationMap: [String: VNRecognizedTextObservation] = [:]
+         
+         for observation in observations {
+             guard let topCandidate = observation.topCandidates(1).first else { continue }
+             let text = topCandidate.string.trimmingCharacters(in: .whitespacesAndNewlines)
+             
+-            // Filter out titles or stray letters
+-            if text.lowercased().contains("structure") || text.lowercased().contains("anatomy") || text.count < 3 {
+-                continue
+-            }
++            if text.count < 3 { continue }
+             
+             foundWords.append(text)
++            observationMap[text.lowercased()] = observation
++        }
++        
++        Task {
++            do {
++                let filteredWords = try await AIContentManager.shared.processVisionLabels(words: foundWords)
++                await MainActor.run { self.placeTargetBoxes(for: filteredWords, observationMap: observationMap) }
++            } catch {
++                print("Failed to filter labels with AI: \(error). Falling back to all found labels.")
++                let safetyFallback = foundWords.filter { !($0.lowercased().contains("structure") || $0.lowercased().contains("anatomy")) }
++                await MainActor.run { self.placeTargetBoxes(for: safetyFallback, observationMap: observationMap) }
++            }
++        }
++    }
++    
++    private func placeTargetBoxes(for wordsList: [String], observationMap: [String: VNRecognizedTextObservation]) {
++        var finalWords: [String] = []
++        
++        for rawWord in wordsList {
++            let key = rawWord.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
++            guard let observation = observationMap[key] else { continue }
+             
+-            let box = TargetBoxView(correctAnswer: text)
++            let displayWord = observation.topCandidates(1).first?.string ?? rawWord
++            
++            let box = TargetBoxView(correctAnswer: displayWord)
+             box.translatesAutoresizingMaskIntoConstraints = false
+             diagramImageView.addSubview(box)
+             targetBoxes.append(box)
+             
+             let tap = UITapGestureRecognizer(target: self, action: #selector(didTapTargetBox(_:)))
+             box.addGestureRecognizer(tap)
+             
+-            // Vision Bounding Box coordinate system has origin at bottom-left. 
+-            // `boundingBox` is normalized (0.0 to 1.0)
+             let bbox = observation.boundingBox
+             let safeCenterXMulti = max(CGFloat((bbox.minX + bbox.width / 2.0) * 2.0), 0.001)
+             let safeCenterYMulti = max(CGFloat((1.0 - bbox.midY) * 2.0), 0.001)
+             
+-            // Constrain proportionally to bounding box! Pad the size a bit so it covers completely.
+             NSLayoutConstraint.activate([
+                 NSLayoutConstraint(item: box, attribute: .width, relatedBy: .equal, toItem: diagramImageView, attribute: .width, multiplier: bbox.width * 1.5, constant: 24),
+                 NSLayoutConstraint(item: box, attribute: .height, relatedBy: .equal, toItem: diagramImageView, attribute: .height, multiplier: bbox.height * 1.5, constant: 16),
+                 NSLayoutConstraint(item: box, attribute: .centerX, relatedBy: .equal, toItem: diagramImageView, attribute: .centerX, multiplier: safeCenterXMulti, constant: 0),
+                 NSLayoutConstraint(item: box, attribute: .centerY, relatedBy: .equal, toItem: diagramImageView, attribute: .centerY, multiplier: safeCenterYMulti, constant: 0)
+             ])
++            
++            finalWords.append(displayWord)
+         }
+         
+-        // Start Game with discovered words!
+-        words = foundWords.shuffled()
++        self.words = finalWords.shuffled()
+         score = 0
+         wordBankCollectionView?.reloadData()
+     }

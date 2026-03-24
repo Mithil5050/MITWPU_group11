@@ -6,86 +6,114 @@ class QuickGamesCollectionViewCell: UICollectionViewCell {
     static let reuseIdentifier = "QuickGamesCollectionViewCell"
     weak var delegate: QuickGamesCellDelegate?
     
-    // MARK: - IBOutlets
-    @IBOutlet weak var gameCard: UIView!
-    @IBOutlet weak var gameImage1: UIImageView!
-    @IBOutlet weak var gameTitle1: UILabel!
-    
-    @IBOutlet weak var gameCard2: UIView!
-    @IBOutlet weak var gameImage2: UIImageView!
-    @IBOutlet weak var gameTitle2: UILabel!
+    private let scrollView = UIScrollView()
+    private let stackView = UIStackView()
     
     // MARK: - Lifecycle
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        configureStyle()
-        setupGestureRecognizers()
-        gameImage1.layer.cornerRadius = 16
-        gameImage2.layer.cornerRadius = 16
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
     }
     
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        gameTitle1.text = nil
-        gameTitle2.text = nil
-        gameImage1.image = nil
-        gameImage2.image = nil
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupUI()
     }
     
-    // MARK: - UI Setup
-    // MARK: - UI Setup
-        private func configureStyle() {
-            // Card Shape
-            [gameCard, gameCard2].forEach { card in
-                card?.layer.cornerRadius = 24 // Updated to match the smooth 24pt radius in the image
-                card?.layer.cornerCurve = .continuous
-                card?.isUserInteractionEnabled = true
-            }
-            
-            // MARK: - 🎨 DARK MODE THEME COLORS
-            // These colors match the deep background tones of the 3D assets provided.
-            
-            // WordFill: "Deep Azure" (#0F1724)
-            // RGB: 15, 23, 36
-            let wordFillTheme = UIColor(red: 15/255, green: 23/255, blue: 36/255, alpha: 1.0)
-            
-            // Connections: "Midnight Violet" (#151221)
-            // RGB: 21, 18, 33
-            let connectionsTheme = UIColor(red: 21/255, green: 18/255, blue: 33/255, alpha: 1.0)
-            
-            // Apply the solid theme colors
-            gameCard.backgroundColor = wordFillTheme
-            gameCard2.backgroundColor = connectionsTheme
-            
-            // Content Mode
-            gameImage1.contentMode = .scaleAspectFit
-            gameImage2.contentMode = .scaleAspectFit
-        }
-    
-    private func setupGestureRecognizers() {
-        let wordFillTap = UITapGestureRecognizer(target: self, action: #selector(handleWordFillTap))
-        gameCard.addGestureRecognizer(wordFillTap)
+    private func setupUI() {
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(scrollView)
         
-        let connectionsTap = UITapGestureRecognizer(target: self, action: #selector(handleConnectionsTap))
-        gameCard2.addGestureRecognizer(connectionsTap)
-    }
-    
-    // MARK: - Actions
-    @objc private func handleWordFillTap() {
-        delegate?.didSelectQuickGame(gameTitle: "Word Fill")
-    }
-    
-    @objc private func handleConnectionsTap() {
-        delegate?.didSelectQuickGame(gameTitle: "Connections")
+        stackView.axis = .horizontal
+        stackView.spacing = 16
+        stackView.alignment = .fill
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(stackView)
+        
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            
+            stackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            stackView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            stackView.heightAnchor.constraint(equalTo: scrollView.frameLayoutGuide.heightAnchor)
+        ])
     }
     
     // MARK: - Configuration
-    func configure(with item1: GameItem, and item2: GameItem) {
-        gameTitle1.text = item1.title.uppercased()
-        gameImage1.image = fetchImage(named: item1.imageAsset)
+    func configure(with items: [GameItem]) {
+        // Clear old items
+        stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        gameTitle2.text = item2.title.uppercased()
-        gameImage2.image = fetchImage(named: item2.imageAsset)
+        let themes: [(light: UIColor, dark: UIColor)] = [
+            (UIColor(red: 230/255, green: 242/255, blue: 255/255, alpha: 1.0),
+             UIColor(red: 15/255, green: 23/255, blue: 36/255, alpha: 1.0)),
+            
+            (UIColor(red: 245/255, green: 235/255, blue: 255/255, alpha: 1.0),
+             UIColor(red: 21/255, green: 18/255, blue: 33/255, alpha: 1.0)),
+            
+            (UIColor(red: 235/255, green: 245/255, blue: 255/255, alpha: 1.0),
+             UIColor(red: 20/255, green: 30/255, blue: 35/255, alpha: 1.0))
+        ]
+        
+        for (index, item) in items.enumerated() {
+            let cardView = UIView()
+            cardView.layer.cornerRadius = 24
+            cardView.layer.cornerCurve = .continuous
+            cardView.isUserInteractionEnabled = true
+            cardView.translatesAutoresizingMaskIntoConstraints = false
+            
+            let theme = themes[index % themes.count]
+            cardView.backgroundColor = UIColor { trait in
+                trait.userInterfaceStyle == .dark ? theme.dark : theme.light
+            }
+            
+            let imageView = UIImageView(image: fetchImage(named: item.imageAsset))
+            imageView.contentMode = .scaleAspectFit
+            imageView.layer.cornerRadius = 16
+            imageView.clipsToBounds = true
+            imageView.translatesAutoresizingMaskIntoConstraints = false
+            
+            cardView.addSubview(imageView)
+            
+            NSLayoutConstraint.activate([
+                cardView.widthAnchor.constraint(equalToConstant: 160),
+                
+                imageView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
+                imageView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16),
+                imageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16),
+                imageView.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -16)
+            ])
+            
+            let tap = UITapGestureRecognizer(target: self, action: #selector(handleCardTap(_:)))
+            cardView.addGestureRecognizer(tap)
+            cardView.tag = index
+            
+            stackView.addArrangedSubview(cardView)
+        }
+    }
+    
+    private var cachedItems: [GameItem] = []
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        cachedItems.removeAll()
+    }
+    
+    @objc private func handleCardTap(_ sender: UITapGestureRecognizer) {
+        guard let view = sender.view else { return }
+        
+        // Items match tag
+        let titles = ["Word Fill", "Connections", "Diagram Dash"]
+        if view.tag < titles.count {
+            delegate?.didSelectQuickGame(gameTitle: titles[view.tag])
+        }
     }
     
     private func fetchImage(named name: String) -> UIImage? {

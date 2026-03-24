@@ -13,18 +13,20 @@ class QuestTableViewCell: UITableViewCell {
     weak var delegate: QuestCellDelegate?
     
     override func awakeFromNib() {
-        super.awakeFromNib()
-        backgroundColor = .clear
-        selectionStyle = .none
-        
-        checkButton.layer.borderWidth = 2
-        checkButton.layer.cornerRadius = 12
-        checkButton.layer.borderColor = UIColor.lightGray.cgColor
-        checkButton.addTarget(self, action: #selector(checkTapped), for: .touchUpInside)
-        
-        strikeLine.isHidden = true
-    }
-
+            super.awakeFromNib()
+            backgroundColor = .clear
+            selectionStyle = .none
+            
+            titleLabel.textColor = .label
+            
+            checkButton.layer.borderWidth = 2
+            checkButton.layer.cornerRadius = 12
+            checkButton.layer.borderColor = UIColor.lightGray.cgColor
+            checkButton.addTarget(self, action: #selector(checkTapped), for: .touchUpInside)
+            
+            strikeLine.isHidden = true
+        }
+    
     func configure(with quest: SideQuest) {
         titleLabel.text = quest.title
         checkButton.layer.borderColor = UIColor.systemIndigo.cgColor

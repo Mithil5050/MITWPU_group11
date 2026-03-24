@@ -160,8 +160,10 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         
         let prompt = """
         Analyze the following text and identify 4 to 6 main topics.
-        Return ONLY the list of topic names, separated by newlines.
-        Do not use numbering, bullets, or JSON. Just the names.
+        Return ONLY the list of topic names, one per line. Do NOT use emojis, bullet points, or numbering.
+        Example:
+        Biology and Classification
+        Habitat and Ecology
         
         TEXT TO ANALYZE:
         \(String(text.prefix(4000)))

@@ -62,14 +62,14 @@ class MaterialViewCell: UITableViewCell {
         case .source(let source):
             titleLabel.text = source.name
             
-            // All sources use systemIndigo per your requirement
+            
             iconColor = .systemIndigo
             
             let type = source.fileType.uppercased()
             
-            // Specific logic for icons and subtitle formatting
+           
             if type == "LINK" || type == "URL" {
-                symbolname = "link" // Specific link icon
+                symbolname = "link"
                 subtitleLabel.text = "Web Link"
             } else if type == "IMAGE" || type == "JPG" || type == "PNG" || type == "JPEG" {
                 symbolname = "photo.fill"
@@ -81,13 +81,13 @@ class MaterialViewCell: UITableViewCell {
                 symbolname = "textformat"
                 subtitleLabel.text = "\(type) • \(source.size)"
             } else {
-                // Default source icon (Video, etc.)
+                
                 symbolname = "link"
                 subtitleLabel.text = "\(type) • \(source.size)"
             }
         }
         
-        // Apply visual styling
+       
         iconImageView.image = UIImage(systemName: symbolname)
         iconImageView.tintColor = iconColor
         iconContainerView.backgroundColor = iconColor.withAlphaComponent(0.15)
