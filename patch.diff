@@ -1,0 +1,78 @@
+--- /Users/mithil/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/DiagramGameViewController.swift
++++ /Users/mithil/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/DiagramGameViewController.swift
+@@ -6,7 +6,6 @@
+     
+     // MARK: - 🔌 Storyboard Outlets
+     @IBOutlet weak var scoreLabel: UILabel!
+-    @IBOutlet weak var timerLabel: UILabel!
+     @IBOutlet weak var canvasView: UIView!
+     
+     // Connect your 4 buttons from the bottom grid here
+@@ -25,10 +24,6 @@
+         didSet { scoreLabel.text = "Score: \(score) / 4" }
+     }
+     
+-    // MARK: - Timer Variables
+-    private var gameTimer: Timer?
+-    private var timeRemaining = 60
+-    
+     // MARK: - Lifecycle
+     override func viewDidLoad() {
+         super.viewDidLoad()
+@@ -41,11 +36,6 @@
+         canvasView.layer.cornerRadius = 16
+         canvasView.layer.masksToBounds = true
+         
+-        // Timer Setup
+-        gameTimer?.invalidate()
+-        timeRemaining = 60
+-        timerLabel?.text = "01:00"
+-        gameTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
+-        
+         // Clear previous target boxes if any
+         targetBoxes.forEach { $0.removeFromSuperview() }
+         targetBoxes.removeAll()
+@@ -167,7 +157,6 @@
+             
+             score += 1
+             if score == 4 { 
+-                gameTimer?.invalidate()
+                 showWinAlert() 
+             }
+         } else {
+@@ -186,35 +175,10 @@
+     
+     // Connect your top-left Back button here
+     @IBAction func closeButtonTapped(_ sender: UIButton) {
+-        gameTimer?.invalidate()
+         dismiss(animated: true)
+     }
+     
+     // Connect your bottom Home button here
+     @IBAction func homeButtonTapped(_ sender: UIButton) {
+-        gameTimer?.invalidate()
+-        dismiss(animated: true)
+-    }
+-    
+-    @objc private func updateTimer() {
+-        timeRemaining -= 1
+-        timerLabel?.text = String(format: "00:%02d", max(0, timeRemaining))
+-        
+-        if timeRemaining <= 0 {
+-            gameTimer?.invalidate()
+-            showLossAlert()
+-        }
+-    }
+-    
+-    private func showLossAlert() {
+-        let alert = UIAlertController(title: "Time's Up!", message: "You didn't finish the diagram in time.", preferredStyle: .alert)
+-        alert.addAction(UIAlertAction(title: "Try Again", style: .default, handler: { _ in
+-            self.setupGame()
+-        }))
+-        alert.addAction(UIAlertAction(title: "Close", style: .cancel, handler: { _ in
+-            self.dismiss(animated: true)
+-        }))
+-        present(alert, animated: true)
++        dismiss(animated: true)
+     }
+     

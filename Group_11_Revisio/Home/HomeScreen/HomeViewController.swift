@@ -264,8 +264,9 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         ]
         learningItems = []
         gameItems = [
-            GameItem(title: "", imageAsset: "Gemini_Generated_Image_p66f9tp66f9tp66f-removebg-preview"),
-            GameItem(title: "", imageAsset: "Gemini_Generated_Image_y6xx8iy6xx8iy6xx-removebg-preview")
+            GameItem(title: "Word Fill", imageAsset: "Gemini_Generated_Image_p66f9tp66f9tp66f-removebg-preview"),
+            GameItem(title: "Connections", imageAsset: "Gemini_Generated_Image_y6xx8iy6xx8iy6xx-removebg-preview"),
+            GameItem(title: "Diagram Dash", imageAsset: "Diagram_dash")
         ]
         
         loadQuests()
@@ -284,7 +285,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         collectionView.register(UINib(nibName: "HiAlexCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: hiAlexCellID)
         collectionView.register(UINib(nibName: "UploadContentCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: uploadContentCellID)
         collectionView.register(UINib(nibName: "ContinueLearningCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: continueLearningCellID)
-        collectionView.register(UINib(nibName: "QuickGamesCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: quickGamesCellID)
+        collectionView.register(QuickGamesCollectionViewCell.self, forCellWithReuseIdentifier: quickGamesCellID)
         collectionView.register(UINib(nibName: "SideQuestsCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: sideQuestsCellID)
         collectionView.register(UINib(nibName: "HeaderViewCollectionReusableView", bundle: nil),
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
@@ -438,7 +439,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .quickGames:
-                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .estimated(130))
+                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .absolute(130))
                 let item = NSCollectionLayoutItem(layoutSize: size)
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: size, subitems: [item])
                 let section = NSCollectionLayoutSection(group: group)
@@ -491,7 +492,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         case .quickGames:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: quickGamesCellID, for: indexPath) as! QuickGamesCollectionViewCell
             cell.delegate = self
-            if gameItems.count >= 2 { cell.configure(with: gameItems[0], and: gameItems[1]) }
+            if gameItems.count >= 3 { cell.configure(with: gameItems) }
             return cell
         }
     }
@@ -605,6 +606,10 @@ extension HomeViewController: ContinueLearningCellDelegate {
 // MARK: - Quick Games Delegate
 extension HomeViewController: QuickGamesCellDelegate {
     func didSelectQuickGame(gameTitle: String) {
+        if gameTitle == "Diagram Dash" {
+            performSegue(withIdentifier: "ShowDiagramLaunch", sender: nil)
+            return
+        }
         let segueID = (gameTitle == "Word Fill") ? showWordFillSegueID : showConnectionsSegueID
         performSegue(withIdentifier: segueID, sender: nil)
     }
