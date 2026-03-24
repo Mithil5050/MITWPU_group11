@@ -104,7 +104,7 @@ class AddFlashcardsViewController: UIViewController {
                         
                        
                         let cleanDef = aiDefinition.trimmingCharacters(in: .whitespacesAndNewlines)
-                        let newCard = Flashcard(term: term, definition: cleanDef)
+                        let newCard = Flashcard(term: term, definition: cleanDef, keyword: term)
                         
                        
                         self.delegate?.didCreateNewFlashcard(card: newCard)
@@ -127,7 +127,7 @@ class AddFlashcardsViewController: UIViewController {
             }
         } else {
            
-            let newCard = Flashcard(term: term, definition: manualDefinition)
+            let newCard = Flashcard(term: term, definition: manualDefinition, keyword: term)
             delegate?.didCreateNewFlashcard(card: newCard)
             dismiss(animated: true, completion: nil)
         }
