@@ -483,52 +483,12 @@
                                     <constraint firstItem="0eR-yI-SJN" firstAttribute="leading" secondItem="B7G-UG-Iq2" secondAttribute="leading" constant="24" id="sOH-gm-8qF"/>
                                 </constraints>
                             </view>
-                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LxG-Ej-IK3">
-                                <rect key="frame" x="40" y="649" width="313" height="56"/>
-                                <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4sD-ja-wzp">
-                                        <rect key="frame" x="0.0" y="0.0" width="97" height="56"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="56" id="Dji-Xd-xoo"/>
-                                            <constraint firstAttribute="width" constant="97" id="kZ7-jM-jAx"/>
-                                        </constraints>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="gray" title="Previous">
-                                            <fontDescription key="titleFontDescription" style="UICTFontTextStyleHeadline"/>
-                                        </buttonConfiguration>
-                                        <connections>
-                                            <action selector="previousCardButtonTapped:" destination="ER4-VE-j5w" eventType="touchUpInside" id="dYa-VU-vNx"/>
-                                        </connections>
-                                    </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1/5" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="w5E-sm-tL0">
-                                        <rect key="frame" x="97" y="0.0" width="119" height="56"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <nil key="textColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DGY-Dy-5sF">
-                                        <rect key="frame" x="216" y="0.0" width="97" height="56"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="97" id="dDq-qE-QIM"/>
-                                        </constraints>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="gray" title="Next">
-                                            <fontDescription key="titleFontDescription" style="UICTFontTextStyleHeadline"/>
-                                        </buttonConfiguration>
-                                        <connections>
-                                            <action selector="nextCardButtonTapped:" destination="ER4-VE-j5w" eventType="touchUpInside" id="ZrD-Wc-LXi"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
-                            </stackView>
+                            
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="rTW-8x-EUS"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="rTW-8x-EUS" firstAttribute="trailing" secondItem="LxG-Ej-IK3" secondAttribute="trailing" constant="40" id="4qo-uJ-icA"/>
-                            <constraint firstItem="LxG-Ej-IK3" firstAttribute="leading" secondItem="B7G-UG-Iq2" secondAttribute="leading" id="Fvi-fV-DOR"/>
-                            <constraint firstItem="rTW-8x-EUS" firstAttribute="bottom" secondItem="LxG-Ej-IK3" secondAttribute="bottom" constant="30" id="LAi-bM-pxg"/>
-                            <constraint firstItem="B7G-UG-Iq2" firstAttribute="top" secondItem="rTW-8x-EUS" secondAttribute="top" constant="16" id="MOt-TH-GEO"/>
+                                                                                                                <constraint firstItem="B7G-UG-Iq2" firstAttribute="top" secondItem="rTW-8x-EUS" secondAttribute="top" constant="16" id="MOt-TH-GEO"/>
                             <constraint firstItem="B7G-UG-Iq2" firstAttribute="leading" secondItem="rTW-8x-EUS" secondAttribute="leading" constant="40" id="U3e-Tw-TnC"/>
                             <constraint firstItem="rTW-8x-EUS" firstAttribute="trailing" secondItem="B7G-UG-Iq2" secondAttribute="trailing" constant="40" id="XGg-kU-YNR"/>
                             <constraint firstAttribute="bottom" secondItem="B7G-UG-Iq2" secondAttribute="bottom" constant="306.33333333333326" id="uUe-Rs-R8l"/>
@@ -544,10 +504,7 @@
                     <connections>
                         <outlet property="cardsLabel" destination="0eR-yI-SJN" id="pSf-wy-JOk"/>
                         <outlet property="cardsView" destination="B7G-UG-Iq2" id="YCg-Le-dYI"/>
-                        <outlet property="counterLabel" destination="w5E-sm-tL0" id="1pW-Gj-qyu"/>
-                        <outlet property="nextButtonStudy" destination="DGY-Dy-5sF" id="Amf-4Q-eaM"/>
-                        <outlet property="previousButtonStudy" destination="4sD-ja-wzp" id="3xy-EQ-hyk"/>
-                        <segue destination="xKO-Df-Dw4" kind="presentation" identifier="addFlashcard" id="BzV-3g-A6N"/>
+                                                                                                <segue destination="xKO-Df-Dw4" kind="presentation" identifier="addFlashcard" id="BzV-3g-A6N"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iJS-5h-JLk" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

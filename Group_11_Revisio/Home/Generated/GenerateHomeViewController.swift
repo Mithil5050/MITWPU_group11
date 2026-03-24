@@ -9,12 +9,16 @@ struct HomeParsedAIFlashcard: Codable {
     let back: String?
     let term: String?
     let definition: String?
+    let keyword: String?
     
     var safeFront: String {
         return front ?? term ?? "Term"
     }
     var safeBack: String {
         return back ?? definition ?? "Definition"
+    }
+    var safeKeyword: String {
+        return keyword ?? safeFront // fallback to front term if not generated
     }
 }
 
@@ -441,7 +445,7 @@ class GenerateHomeViewController: UIViewController {
             var instruction = ""
             switch selectedMaterialType {
             case .flashcards:
-                instruction = "Generate exactly \(selectedCount) flashcards covering the most important concepts. The difficulty should be \(difficultyString). STRICTLY use this EXACT JSON format: { \"flashcards\": [ { \"front\": \"Term or concept here\", \"back\": \"Definition or explanation here\" } ] }"
+                instruction = "Generate exactly \(selectedCount) flashcards covering the most important concepts. The difficulty should be \(difficultyString). For each flashcard, provide 'front' (the question), 'back' (the answer), and 'keyword' (a single concise word or short phrase from the back that represents the core answer). STRICTLY use this EXACT JSON format: { \"flashcards\": [ { \"front\": \"Term or concept here\", \"back\": \"Definition or explanation here\", \"keyword\": \"Word\" } ] }"
             case .cheatsheet:
                 instruction = "You are an expert tutor creating a beautifully formatted Cheatsheet. DO NOT output JSON. Output ONLY plain text. You MUST use double line breaks to separate sections. You MUST use bullet points for lists."
             case .notes:
@@ -549,7 +553,7 @@ class GenerateHomeViewController: UIViewController {
                 self.showError("AI generated empty flashcards. Please try again.")
                 return
             }
-            let serializedCards = parsedFlashcards.map { "\($0.safeFront)|\($0.safeBack)" }.joined(separator: "\n")
+            let serializedCards = parsedFlashcards.map { "\($0.safeFront)|\($0.safeBack)|\($0.safeKeyword)" }.joined(separator: "\n")
             newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: "Flashcards", notes: serializedCards, sourceName: topicName, createdDate: "Just now")
         } else {
             var finalText = generatedContent.trimmingCharacters(in: .whitespacesAndNewlines)
