@@ -39,6 +39,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         messagesCollectionView.messagesDataSource      = self
         messagesCollectionView.messagesLayoutDelegate  = self
         messagesCollectionView.messagesDisplayDelegate = self
+        messagesCollectionView.messageCellDelegate     = self
         messageInputBar.delegate = self
 
         setupInputBar()
@@ -68,8 +69,11 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
 
         let send = messageInputBar.sendButton
         send.setTitle(nil, for: .normal)
-        send.setImage(UIImage(systemName: "arrow.up.circle.fill"), for: .normal)
+        send.setImage(UIImage(systemName: "arrow.up.circle.fill")?
+            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 28, weight: .semibold)),
+                      for: .normal)
         send.tintColor = .systemBlue
+        send.setSize(CGSize(width: 36, height: 36), animated: false)
 
         let attachButton = InputBarButtonItem()
         attachButton.image     = UIImage(systemName: "plus")
@@ -123,7 +127,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
                                       style: .default) { [weak self] _ in
             self?.openDocumentPicker()
         })
-        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        sheet.addAction(UIAlertAction(title: "Cancel", style: .destructive))
         present(sheet, animated: true)
     }
 
@@ -329,7 +333,7 @@ extension ChatViewController: AttachmentSendDelegate {
                         groupId: groupId,
                         senderId: currentUser.senderId,
                         attachment: att)
-                } catch { print("sendAttachment error: \(error)") }
+                } catch { print("❌ sendAttachment error: \(error)") }
             }
         }
 
@@ -375,12 +379,12 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
                       let sid = UUID(uuidString: currentUser.senderId) else { return }
                 try await SupabaseManager.shared.client.from("messages")
                     .insert(ImageInsert(group_id: gid, sender_id: sid,
-                                        content: "Image",
+                                        content: "📷 Image",
                                         file_url: publicUrl,
                                         file_name: "Image",
                                         file_type: "image"))
                     .execute()
-            } catch { print("image upload error: \(error)") }
+            } catch { print("❌ image upload error: \(error)") }
         }
     }
 
@@ -429,7 +433,7 @@ extension ChatViewController: UIDocumentPickerDelegate {
                                       file_name: fileName,
                                       file_type: "document"))
                     .execute()
-            } catch { print("document upload error: \(error)") }
+            } catch { print("❌ document upload error: \(error)") }
         }
     }
 }
@@ -477,6 +481,12 @@ extension ChatViewController: MessagesLayoutDelegate {
         return LabelAlignment(textAlignment: .left,
                               textInsets: UIEdgeInsets(top: 0, left: 48, bottom: 4, right: 0))
     }
+
+    func messagePadding(for message: MessageType,
+                        at indexPath: IndexPath,
+                        in messagesCollectionView: MessagesCollectionView) -> UIEdgeInsets {
+        return UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
+    }
 }
 
 // MARK: - MessagesDisplayDelegate
@@ -519,15 +529,8 @@ extension ChatViewController: MessagesDisplayDelegate {
                               at indexPath: IndexPath,
                               in messagesCollectionView: MessagesCollectionView) {
         avatarView.isHidden = false
-        if message.sender.senderId == currentUser.senderId {
-            avatarView.image = UIImage(named: "pfp_default")
-                ?? UIImage(systemName: "person.circle.fill")
-        } else {
-            avatarView.set(avatar: Avatar(
-                image: nil,
-                initials: String(message.sender.displayName.prefix(1)).uppercased()
-            ))
-        }
+        let initial = String(message.sender.displayName.prefix(1)).uppercased()
+        avatarView.set(avatar: Avatar(image: nil, initials: initial))
         avatarView.layer.cornerRadius = 14
         avatarView.clipsToBounds = true
     }
@@ -570,7 +573,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
             do {
                 try await SupabaseManager.shared.sendMessage(
                     groupId: groupId, senderId: currentUser.senderId, text: trimmed)
-            } catch { print("sendMessage error: \(error)") }
+            } catch { print("❌ sendMessage error: \(error)") }
         }
     }
 
@@ -599,6 +602,82 @@ extension ChatViewController: LeaveGroupDelegate {
             btn.configuration = cfg
         }
         updateDelegate?.didUpdateGroup(group)
+    }
+}
+
+// MARK: - MessageCellDelegate  (tap on doc / image bubbles)
+
+extension ChatViewController: MessageCellDelegate {
+
+    func didTapMessage(in cell: MessageCollectionViewCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell) else { return }
+        let message = chatMessages[indexPath.section]
+
+        switch message.kind {
+        case .photo(let media):
+            guard let image = media.image else { return }
+            let vc  = MediaPreviewViewController()
+            vc.image = image
+            let nav = UINavigationController(rootViewController: vc)
+            nav.modalPresentationStyle = .fullScreen
+            present(nav, animated: true)
+
+        case .attributedText(let attr):
+            // Detect doc bubble by checking for a URL link attribute
+            var foundURL: URL? = nil
+            attr.enumerateAttribute(.link, in: NSRange(location: 0, length: attr.length)) { val, _, _ in
+                if let url = val as? URL { foundURL = url }
+            }
+            if let url = foundURL {
+                // Link bubble — open in Safari
+                UIApplication.shared.open(url)
+                return
+            }
+            // Doc bubble — look up the stored file_url for this message
+            openDocumentFromMessage(at: indexPath.section)
+
+        default:
+            break
+        }
+    }
+
+    private func openDocumentFromMessage(at section: Int) {
+        guard let groupId = group?.id else { return }
+        let raw = DataManager.shared.groupMessages[groupId] ?? []
+        // match by position — chatMessages and raw are both sorted by date
+        guard section < raw.count else { return }
+        let msg = raw[section]
+        guard let urlString = msg.fileUrl, !urlString.isEmpty,
+              let url = URL(string: urlString) else { return }
+
+        if msg.fileType == "image" {
+            // Download and present in MediaPreviewViewController
+            URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
+                guard let data = data, let img = UIImage(data: data) else { return }
+                DispatchQueue.main.async {
+                    let vc  = MediaPreviewViewController()
+                    vc.image = img
+                    let nav = UINavigationController(rootViewController: vc)
+                    nav.modalPresentationStyle = .fullScreen
+                    self?.present(nav, animated: true)
+                }
+            }.resume()
+        } else if msg.fileType == "document" {
+            // Download to temp file and open in DocumentPreviewViewController
+            URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
+                guard let data = data else { return }
+                let tmp = FileManager.default.temporaryDirectory
+                    .appendingPathComponent(msg.fileName ?? "document")
+                try? data.write(to: tmp)
+                DispatchQueue.main.async {
+                    let vc  = DocumentPreviewViewController()
+                    vc.documentURL = tmp
+                    let nav = UINavigationController(rootViewController: vc)
+                    nav.modalPresentationStyle = .fullScreen
+                    self?.present(nav, animated: true)
+                }
+            }.resume()
+        }
     }
 }
 
