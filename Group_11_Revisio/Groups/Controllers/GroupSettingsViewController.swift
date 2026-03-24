@@ -145,7 +145,7 @@ class GroupSettingsViewController: UIViewController {
         updateDelegate?.didUpdateGroup(group)
         Task {
             do { try await SupabaseManager.shared.updateGroupAvatar(id: group.id, avatarUrl: nil) }
-            catch { print("removeAvatar: \(error)") }
+            catch { print("❌ removeAvatar: \(error)") }
         }
     }
 
@@ -179,7 +179,7 @@ class GroupSettingsViewController: UIViewController {
             Task {
                 do { try await SupabaseManager.shared.updateGroup(id: self.group.id,
                                                                    newName: name) }
-                catch { print("rename: \(error)") }
+                catch { print("❌ rename: \(error)") }
             }
         })
         present(alert, animated: true)
@@ -203,14 +203,14 @@ class GroupSettingsViewController: UIViewController {
                     "\(fetched.count) member\(fetched.count == 1 ? "" : "s")"
                 membersCollectionView.reloadData()
             }
-        } catch { print("loadMembers: \(error)") }
+        } catch { print("❌ loadMembers: \(error)") }
     }
 
     private func loadInviteCode() async {
         do {
             let code = try await SupabaseManager.shared.fetchInviteCode(for: group.id)
             await MainActor.run { inviteCode = code }
-        } catch { print("loadInviteCode: \(error)") }
+        } catch { print("❌ loadInviteCode: \(error)") }
     }
 
     private func loadFiles() async {
@@ -228,7 +228,7 @@ class GroupSettingsViewController: UIViewController {
                 applyEmptyState(mediaCollectionView, isEmpty: mediaFiles.isEmpty,
                                 message: "No media shared yet")
             }
-        } catch { print("loadFiles: \(error)") }
+        } catch { print("❌ loadFiles: \(error)") }
     }
 
     private func applyEmptyState(_ cv: UICollectionView,
@@ -310,7 +310,7 @@ class GroupSettingsViewController: UIViewController {
                     .eq("user_id",  value: uid)
                     .eq("group_id", value: gid)
                     .execute()
-            } catch { print("leave: \(error)") }
+            } catch { print("❌ leave: \(error)") }
         }
         delegate?.didLeaveGroup(group)
         navigationController?.popToRootViewController(animated: true)
@@ -342,7 +342,7 @@ extension GroupSettingsViewController:
                 try await SupabaseManager.shared.updateGroupAvatar(
                     id: group.id, avatarUrl: url)
                 updateDelegate?.didUpdateGroup(group)
-            } catch { print("uploadGroupAvatar: \(error)") }
+            } catch { print("❌ uploadGroupAvatar: \(error)") }
         }
     }
 
@@ -449,11 +449,19 @@ extension GroupSettingsViewController:
         if cv == docsCollectionView {
             let file = documents[ip.item]
             guard let url = URL(string: file.fileUrl) else { return }
-            let vc  = DocumentPreviewViewController()
-            vc.documentURL = url
-            let nav = UINavigationController(rootViewController: vc)
-            nav.modalPresentationStyle = .fullScreen
-            present(nav, animated: true)
+            URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
+                guard let data = data else { return }
+                let tmp = FileManager.default.temporaryDirectory
+                    .appendingPathComponent(file.fileName)
+                try? data.write(to: tmp)
+                DispatchQueue.main.async {
+                    let vc  = DocumentPreviewViewController()
+                    vc.documentURL = tmp
+                    let nav = UINavigationController(rootViewController: vc)
+                    nav.modalPresentationStyle = .fullScreen
+                    self?.present(nav, animated: true)
+                }
+            }.resume()
         }
     }
 
