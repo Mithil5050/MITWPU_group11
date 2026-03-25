@@ -12,64 +12,120 @@ import Speech
 import AVFoundation
 
 // MARK: - MessageMeta
-// Sidecar dictionary keyed by messageId.
-// NEVER use array indices to look up file info — chatMessages has optimistic bubbles
-// that don't exist in DataManager, so indices don't match.
+// Sidecar keyed by messageId. Stores file info AND raw content so
+// study material can be previewed without a network call.
 private struct MessageMeta {
-    let fileType: String?
-    let fileUrl:  String?
-    let fileName: String?
+    let fileType:    String?
+    let fileUrl:     String?
+    let fileName:    String?
+    let content:     String?   // raw packed content (notes text / quiz JSON / flashcard JSON)
+    let materialType: String?  // "Notes" | "Cheatsheet" | "Flashcards" | "Quiz"
 }
 
 // MARK: - DocBubbleView
-// UIView rendered inside .custom MessageKind bubbles for document messages.
-// Using .custom instead of .attributedText makes didTapMessage fire without interception.
+// Renders inside .custom bubbles. Shows material-type icon + name.
 class DocBubbleView: UIView {
-    let iconView  = UIImageView()
-    let nameLabel = UILabel()
+    let iconView   = UIImageView()
+    let nameLabel  = UILabel()
+    let badgeLabel = UILabel()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         iconView.contentMode = .scaleAspectFit
         iconView.translatesAutoresizingMaskIntoConstraints = false
-        nameLabel.font          = UIFont.systemFont(ofSize: 14, weight: .semibold)
+
+        nameLabel.font          = UIFont.systemFont(ofSize: 13, weight: .semibold)
         nameLabel.numberOfLines = 2
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        badgeLabel.font          = UIFont.systemFont(ofSize: 10, weight: .bold)
+        badgeLabel.layer.cornerRadius = 4
+        badgeLabel.clipsToBounds      = true
+        badgeLabel.textAlignment      = .center
+        badgeLabel.translatesAutoresizingMaskIntoConstraints = false
+
         addSubview(iconView)
         addSubview(nameLabel)
+        addSubview(badgeLabel)
+
         NSLayoutConstraint.activate([
-            iconView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 2),
+            iconView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
             iconView.centerYAnchor.constraint(equalTo: centerYAnchor),
             iconView.widthAnchor.constraint(equalToConstant: 28),
-            iconView.heightAnchor.constraint(equalToConstant: 34),
+            iconView.heightAnchor.constraint(equalToConstant: 32),
+
+            badgeLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
+            badgeLabel.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            badgeLabel.heightAnchor.constraint(equalToConstant: 16),
+
             nameLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
-            nameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
-            nameLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
+            nameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
+            nameLabel.topAnchor.constraint(equalTo: badgeLabel.bottomAnchor, constant: 3),
+            nameLabel.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -8)
         ])
     }
     required init?(coder: NSCoder) { fatalError() }
 
-    func configure(fileName: String, isOutgoing: Bool) {
-        let color = isOutgoing ? UIColor.white : UIColor.systemBlue
-        let cfg   = UIImage.SymbolConfiguration(pointSize: 22, weight: .regular)
-        let ext   = (fileName as NSString).pathExtension.lowercased()
-        let symbol: String
-        switch ext {
-        case "pdf":          symbol = "doc.richtext.fill"
-        case "doc", "docx":  symbol = "doc.text.fill"
-        default:             symbol = "doc.fill"
+    func configure(fileName: String, materialType: String?, isOutgoing: Bool) {
+        let textColor  = isOutgoing ? UIColor.white : UIColor.label
+        let iconColor  = isOutgoing ? UIColor.white : UIColor.systemBlue
+
+        // Badge
+        if let mt = materialType, !mt.isEmpty {
+            badgeLabel.text            = mt.uppercased()
+            badgeLabel.isHidden        = false
+            badgeLabel.textColor       = isOutgoing ? .systemBlue : .white
+            badgeLabel.backgroundColor = isOutgoing ? UIColor.white.withAlphaComponent(0.25)
+                                                    : badgeColor(for: mt)
+            // badge width is dynamic
+            let w = (mt.uppercased() as NSString)
+                .size(withAttributes: [.font: badgeLabel.font!]).width + 10
+            badgeLabel.widthAnchor.constraint(equalToConstant: w).isActive = true
+        } else {
+            badgeLabel.isHidden = true
         }
-        iconView.image     = UIImage(systemName: symbol, withConfiguration: cfg)?
-            .withTintColor(color, renderingMode: .alwaysOriginal)
+
+        // Icon
+        let cfg    = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
+        let symbol = iconSymbol(for: materialType, fileName: fileName)
+        iconView.image = UIImage(systemName: symbol, withConfiguration: cfg)?
+            .withTintColor(iconColor, renderingMode: .alwaysOriginal)
+
         nameLabel.text      = fileName
-        nameLabel.textColor = isOutgoing ? .white : .label
+        nameLabel.textColor = textColor
+    }
+
+    private func badgeColor(for type: String) -> UIColor {
+        switch type {
+        case "Notes":      return .systemYellow
+        case "Flashcards": return .systemBlue
+        case "Quiz":       return .systemGreen
+        case "Cheatsheet": return .systemPurple
+        default:           return .systemGray
+        }
+    }
+
+    private func iconSymbol(for materialType: String?, fileName: String) -> String {
+        switch materialType {
+        case "Notes":      return "book.pages.fill"
+        case "Flashcards": return "rectangle.on.rectangle.angled.fill"
+        case "Quiz":       return "checkmark.circle.fill"
+        case "Cheatsheet": return "list.clipboard.fill"
+        default:
+            let ext = (fileName as NSString).pathExtension.lowercased()
+            switch ext {
+            case "pdf":         return "doc.richtext.fill"
+            case "doc","docx":  return "doc.text.fill"
+            default:            return "doc.fill"
+            }
+        }
     }
 }
 
 // MARK: - CustomMessageSizeCalculator
 private class CustomMessageSizeCalculator: MessageSizeCalculator {
     override func messageContainerSize(for message: MessageType, at indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 220, height: 52)
+        CGSize(width: 200, height: 68)
     }
 }
 
@@ -87,12 +143,12 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
     private var senderNameCache: [String: String] = [:]
     private var realtimeChannel: RealtimeChannelV2?
 
-    // Speech recognition
-    private let speechRecognizer = SFSpeechRecognizer(locale: Locale.current)
-    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
-    private var recognitionTask: SFSpeechRecognitionTask?
-    private let audioEngine = AVAudioEngine()
-    private var isRecording = false
+    // Speech
+    private let speechRecognizer     = SFSpeechRecognizer(locale: Locale.current)
+    private var recognitionRequest:  SFSpeechAudioBufferRecognitionRequest?
+    private var recognitionTask:     SFSpeechRecognitionTask?
+    private let audioEngine          = AVAudioEngine()
+    private var isRecording          = false
 
     private lazy var micButton: InputBarButtonItem = {
         let item = InputBarButtonItem()
@@ -171,7 +227,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         messageInputBar.setRightStackViewWidthConstant(to: 40, animated: false)
     }
 
-    // MARK: - Nav title
+    // MARK: - Navigation title
 
     private func setupNavigationTitle() {
         view.layoutIfNeeded()
@@ -196,13 +252,13 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
     private func showAttachmentSheet() {
         let sheet = UIAlertController(title: "Send Attachment", message: nil,
                                       preferredStyle: .actionSheet)
-        sheet.addAction(UIAlertAction(title: "📚  Study Material", style: .default) { [weak self] _ in
+        sheet.addAction(UIAlertAction(title: "Study Material", style: .default) { [weak self] _ in
             self?.openStudyMaterialPicker() })
-        sheet.addAction(UIAlertAction(title: "🖼  Photo Library", style: .default) { [weak self] _ in
+        sheet.addAction(UIAlertAction(title: "Photo Library", style: .default) { [weak self] _ in
             self?.openPhotoLibrary() })
-        sheet.addAction(UIAlertAction(title: "📄  Files", style: .default) { [weak self] _ in
+        sheet.addAction(UIAlertAction(title: "Files", style: .default) { [weak self] _ in
             self?.openDocumentPicker() })
-        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        sheet.addAction(UIAlertAction(title: "Cancel", style: .destructive))
         present(sheet, animated: true)
     }
 
@@ -242,10 +298,16 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
                 ? currentUser.displayName
                 : await fetchDisplayName(for: msg.senderId.uuidString)
             let sender = ChatSender(senderId: msg.senderId.uuidString, displayName: name)
-            let cm = makeChatMessage(from: msg, sender: sender)
+            let cm     = makeChatMessage(from: msg, sender: sender)
             built.append(cm)
+            // Derive materialType from fileName ("Recursion · Notes" → "Notes")
+            let mt = extractMaterialType(from: msg.fileName)
             messageMeta[cm.messageId] = MessageMeta(
-                fileType: msg.fileType, fileUrl: msg.fileUrl, fileName: msg.fileName)
+                fileType:     msg.fileType,
+                fileUrl:      msg.fileUrl,
+                fileName:     msg.fileName,
+                content:      msg.content,
+                materialType: mt)
         }
         built.sort { $0.sentDate < $1.sentDate }
 
@@ -256,50 +318,65 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         }
     }
 
+    // Extract material type from file name like "Recursion · Notes" → "Notes"
+    private func extractMaterialType(from fileName: String?) -> String? {
+        guard let fn = fileName else { return nil }
+        let types = ["Notes", "Flashcards", "Quiz", "Cheatsheet"]
+        for t in types { if fn.contains(t) { return t } }
+        return nil
+    }
+
     // MARK: - Build ChatMessage from DB row
 
     private func makeChatMessage(from msg: Message, sender: ChatSender) -> ChatMessage {
         let out = msg.senderId.uuidString == currentUser.senderId
+        let mt  = extractMaterialType(from: msg.fileName)
 
+        // Link bubble
         if let urlStr = msg.fileUrl, msg.fileType == "link", let url = URL(string: urlStr) {
             return ChatMessage(sender: sender, messageId: msg.id.uuidString,
                                sentDate: msg.createdAt,
                                kind: .attributedText(linkAttr(text: msg.content, url: url, isOutgoing: out)))
         }
+
+        // Study material OR uploaded document — both use .custom DocBubbleView
         if msg.fileType == "document", let fn = msg.fileName, !fn.isEmpty {
             return ChatMessage(sender: sender, messageId: msg.id.uuidString,
                                sentDate: msg.createdAt,
-                               kind: .custom(makeDocBubbleView(fileName: fn, isOutgoing: out)))
+                               kind: .custom(makeDocBubbleView(fileName: fn, materialType: mt, isOutgoing: out)))
         }
+
+        // Image
         if msg.fileType == "image" {
             return ChatMessage(sender: sender, messageId: msg.id.uuidString,
                                sentDate: msg.createdAt,
-                               kind: .photo(RemoteImageMediaItem(urlString: msg.fileUrl, collectionView: messagesCollectionView)))
+                               kind: .photo(RemoteImageMediaItem(urlString: msg.fileUrl,
+                                                                 collectionView: messagesCollectionView)))
         }
+
         return ChatMessage(sender: sender, messageId: msg.id.uuidString,
                            sentDate: msg.createdAt, kind: .text(msg.content))
     }
 
     // MARK: - Doc bubble factory
 
-    private func makeDocBubbleView(fileName: String, isOutgoing: Bool) -> DocBubbleView {
-        let v = DocBubbleView(frame: CGRect(x: 0, y: 0, width: 220, height: 52))
-        v.configure(fileName: fileName, isOutgoing: isOutgoing)
+    private func makeDocBubbleView(fileName: String, materialType: String?, isOutgoing: Bool) -> DocBubbleView {
+        let v = DocBubbleView(frame: CGRect(x: 0, y: 0, width: 240, height: 68))
+        v.configure(fileName: fileName, materialType: materialType, isOutgoing: isOutgoing)
         return v
     }
 
     // MARK: - Link attributed string
-    // NO .link attribute key — MessageKit overrides foregroundColor for .link to tintColor (blue).
-    // We store the URL in a custom attribute and handle taps manually.
+
     private func linkAttr(text: String, url: URL, isOutgoing: Bool) -> NSAttributedString {
         let color = isOutgoing ? UIColor.white : UIColor.systemBlue
         let a = NSMutableAttributedString(string: text)
         let r = NSRange(text.startIndex..., in: text)
         a.addAttributes([
-            .foregroundColor:                  color,
-            .underlineColor:                   color,
-            .underlineStyle:                   NSUnderlineStyle.single.rawValue,
-            .font:                             UIFont.systemFont(ofSize: 15),
+            .foregroundColor:                    color,
+            .underlineColor:                     color,
+            .underlineStyle:                     NSUnderlineStyle.single.rawValue,
+            .font:                               UIFont.systemFont(ofSize: 15),
             NSAttributedString.Key("customURL"): url
         ], range: r)
         return a
@@ -348,20 +425,23 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
             let fileUrl  = row["file_url"]?.stringValue
             let fileType = row["file_type"]?.stringValue
             let fileName = row["file_name"]?.stringValue
+            let mt       = extractMaterialType(from: fileName)
 
             let kind: MessageKind
             if let u = fileUrl, fileType == "link", let url = URL(string: u) {
                 kind = .attributedText(linkAttr(text: content, url: url, isOutgoing: false))
             } else if fileType == "document", let fn = fileName, !fn.isEmpty {
-                kind = .custom(makeDocBubbleView(fileName: fn, isOutgoing: false))
+                kind = .custom(makeDocBubbleView(fileName: fn, materialType: mt, isOutgoing: false))
             } else if fileType == "image" {
-                kind = .photo(RemoteImageMediaItem(urlString: fileUrl, collectionView: messagesCollectionView))
+                kind = .photo(RemoteImageMediaItem(urlString: fileUrl,
+                                                   collectionView: messagesCollectionView))
             } else {
                 kind = .text(content)
             }
 
             let cm   = ChatMessage(sender: sender, messageId: id, sentDate: date, kind: kind)
-            let meta = MessageMeta(fileType: fileType, fileUrl: fileUrl, fileName: fileName)
+            let meta = MessageMeta(fileType: fileType, fileUrl: fileUrl, fileName: fileName,
+                                   content: content, materialType: mt)
 
             await MainActor.run {
                 chatMessages.append(cm)
@@ -372,66 +452,11 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         }
     }
 
-    // MARK: - Long press gesture (guaranteed to fire for all bubble types)
-
-    private func setupLongPressGesture() {
-        let lp = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
-        lp.minimumPressDuration = 0.4
-        lp.cancelsTouchesInView = false
-        messagesCollectionView.addGestureRecognizer(lp)
-    }
-
-    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
-        guard gesture.state == .began else { return }
-
-        let point = gesture.location(in: messagesCollectionView)
-        guard let indexPath = messagesCollectionView.indexPathForItem(at: point) else { return }
-        guard indexPath.section < chatMessages.count else { return }
-
-        let cm = chatMessages[indexPath.section]
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-
-        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-
-        // Copy — available for every message
-        alert.addAction(UIAlertAction(title: "Copy", style: .default) { _ in
-            if case .text(let text) = cm.kind {
-                UIPasteboard.general.string = text
-            } else if case .attributedText(let attr) = cm.kind {
-                UIPasteboard.general.string = attr.string
-            }
-        })
-
-        // Unsend — only for own messages
-        if cm.sender.senderId == currentUser.senderId {
-            alert.addAction(UIAlertAction(title: "Unsend", style: .destructive) { [weak self] _ in
-                self?.unsendMessage(cm, at: indexPath)
-            })
-        }
-
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        present(alert, animated: true)
-    }
-
-    // MARK: - Nav tap
-
-    @objc private func groupTitleTapped() {
-        let sb = UIStoryboard(name: "Groups", bundle: nil)
-        guard let vc = sb.instantiateViewController(
-            withIdentifier: "GroupSettingsVC") as? GroupSettingsViewController else { return }
-        vc.group          = group
-        vc.updateDelegate = self
-        vc.delegate       = navigationController?.viewControllers
-            .first { $0 is GroupsViewController } as? LeaveGroupDelegate
-        navigationController?.pushViewController(vc, animated: true)
-    }
-
-    // MARK: - Dictation (mic button)
+    // MARK: - Dictation
 
     private func handleMicTapped() {
-        if isRecording {
-            stopDictation()
-        } else {
+        if isRecording { stopDictation() }
+        else {
             SFSpeechRecognizer.requestAuthorization { [weak self] status in
                 DispatchQueue.main.async {
                     guard status == .authorized else { return }
@@ -442,69 +467,107 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
     }
 
     private func startDictation() {
-        // Cancel any previous task
-        recognitionTask?.cancel()
-        recognitionTask = nil
-
+        recognitionTask?.cancel(); recognitionTask = nil
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.record, mode: .measurement, options: .duckOthers)
         try? session.setActive(true, options: .notifyOthersOnDeactivation)
 
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
-        guard let recognitionRequest = recognitionRequest,
-              let recognizer = speechRecognizer, recognizer.isAvailable else { return }
-
-        recognitionRequest.shouldReportPartialResults = true
+        guard let req = recognitionRequest,
+              let rec = speechRecognizer, rec.isAvailable else { return }
+        req.shouldReportPartialResults = true
 
         let inputNode = audioEngine.inputNode
-        recognitionTask = recognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
+        recognitionTask = rec.recognitionTask(with: req) { [weak self] result, error in
             guard let self = self else { return }
             if let result = result {
-                // Update text field in real time — exactly like iMessage dictation
-                let text = result.bestTranscription.formattedString
-                self.messageInputBar.inputTextView.text = text
-                // Show send button as soon as there's text
+                self.messageInputBar.inputTextView.text = result.bestTranscription.formattedString
                 self.messageInputBar.setStackViewItems([self.messageInputBar.sendButton],
                                                        forStack: .right, animated: false)
             }
-            if error != nil || (result?.isFinal == true) {
-                self.stopDictation()
-            }
+            if error != nil || result?.isFinal == true { self.stopDictation() }
         }
-
-        let format = inputNode.outputFormat(forBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
-            self?.recognitionRequest?.append(buffer)
+        let fmt = inputNode.outputFormat(forBus: 0)
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: fmt) { [weak self] buf, _ in
+            self?.recognitionRequest?.append(buf)
         }
-
         audioEngine.prepare()
         try? audioEngine.start()
         isRecording = true
-
-        // Pulse the mic button red to show active recording — like iMessage
         micButton.tintColor = .systemRed
-        micButton.image = UIImage(systemName: "mic.fill")
     }
 
     private func stopDictation() {
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
         recognitionRequest?.endAudio()
-        recognitionRequest = nil
-        recognitionTask = nil
+        recognitionRequest = nil; recognitionTask = nil
         isRecording = false
-
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-
-        // Restore mic button to grey
         micButton.tintColor = .systemGray
-        micButton.image = UIImage(systemName: "mic.fill")
-
-        // If there's text now, keep send button visible
         let hasText = !(messageInputBar.inputTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
         if !hasText {
             messageInputBar.setStackViewItems([micButton], forStack: .right, animated: true)
         }
+    }
+
+    // MARK: - Long press gesture
+
+    private func setupLongPressGesture() {
+        let lp = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        lp.minimumPressDuration = 0.4
+        lp.cancelsTouchesInView = false
+        messagesCollectionView.addGestureRecognizer(lp)
+    }
+
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+        let point = gesture.location(in: messagesCollectionView)
+        guard let indexPath = messagesCollectionView.indexPathForItem(at: point),
+              indexPath.section < chatMessages.count else { return }
+
+        let cm = chatMessages[indexPath.section]
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+
+        alert.addAction(UIAlertAction(title: "Copy", style: .default) { _ in
+            if case .text(let t) = cm.kind { UIPasteboard.general.string = t }
+            else if case .attributedText(let a) = cm.kind { UIPasteboard.general.string = a.string }
+        })
+
+        if cm.sender.senderId == currentUser.senderId {
+            alert.addAction(UIAlertAction(title: "Unsend", style: .destructive) { [weak self] _ in
+                self?.unsendMessage(cm)
+            })
+        }
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func unsendMessage(_ cm: ChatMessage) {
+        guard let idx = chatMessages.firstIndex(where: { $0.messageId == cm.messageId }) else { return }
+        chatMessages.remove(at: idx)
+        messageMeta.removeValue(forKey: cm.messageId)
+        messagesCollectionView.reloadData()
+        Task {
+            do { try await SupabaseManager.shared.deleteMessage(id: cm.messageId,
+                                                                 senderId: currentUser.senderId) }
+            catch { print("❌ unsend: \(error)") }
+        }
+    }
+
+    // MARK: - Navigation
+
+    @objc private func groupTitleTapped() {
+        let sb = UIStoryboard(name: "Groups", bundle: nil)
+        guard let vc = sb.instantiateViewController(
+            withIdentifier: "GroupSettingsVC") as? GroupSettingsViewController else { return }
+        vc.group          = group
+        vc.updateDelegate = self
+        vc.delegate       = navigationController?.viewControllers
+            .first { $0 is GroupsViewController } as? LeaveGroupDelegate
+        navigationController?.pushViewController(vc, animated: true)
     }
 
     deinit {
@@ -521,17 +584,21 @@ extension ChatViewController: AttachmentSendDelegate {
         guard let groupId = group?.id else { return }
         for att in items {
             let msgId = UUID().uuidString
+            let mt    = extractMaterialType(from: att.displayName)
             chatMessages.append(ChatMessage(sender: currentUser, messageId: msgId,
                                             sentDate: Date(),
-                                            kind: .custom(makeDocBubbleView(fileName: att.displayName,
-                                                                            isOutgoing: true))))
+                                            kind: .custom(makeDocBubbleView(
+                                                fileName: att.displayName,
+                                                materialType: mt,
+                                                isOutgoing: true))))
             messageMeta[msgId] = MessageMeta(fileType: "document", fileUrl: nil,
-                                              fileName: att.displayName)
+                                              fileName: att.displayName,
+                                              content: att.content,
+                                              materialType: mt)
             Task {
-                do {
-                    try await SupabaseManager.shared.sendAttachment(
-                        groupId: groupId, senderId: currentUser.senderId, attachment: att)
-                } catch { print("❌ sendAttachment: \(error)") }
+                do { try await SupabaseManager.shared.sendAttachment(
+                    groupId: groupId, senderId: currentUser.senderId, attachment: att) }
+                catch { print("❌ sendAttachment: \(error)") }
             }
         }
         messagesCollectionView.reloadData()
@@ -555,7 +622,8 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
         let msgId = UUID().uuidString
         chatMessages.append(ChatMessage(sender: currentUser, messageId: msgId, sentDate: Date(),
                                         kind: .photo(LocalImageMediaItem(image: image))))
-        messageMeta[msgId] = MessageMeta(fileType: "image", fileUrl: nil, fileName: "Image")
+        messageMeta[msgId] = MessageMeta(fileType: "image", fileUrl: nil,
+                                          fileName: "Image", content: nil, materialType: nil)
         messagesCollectionView.reloadData()
         messagesCollectionView.scrollToLastItem(animated: true)
 
@@ -564,7 +632,6 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
                 let path      = "\(groupId)/\(UUID().uuidString).jpg"
                 let publicUrl = try await SupabaseManager.shared.uploadFile(
                     bucket: "group-media", path: path, data: imgData, contentType: "image/jpeg")
-
                 struct ImageInsert: Encodable {
                     let group_id: UUID; let sender_id: UUID; let content: String
                     let file_url: String; let file_name: String; let file_type: String
@@ -576,8 +643,9 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
                                         file_url: publicUrl, file_name: "Image",
                                         file_type: "image")).execute()
                 await MainActor.run {
-                    self.messageMeta[msgId] = MessageMeta(fileType: "image",
-                                                          fileUrl: publicUrl, fileName: "Image")
+                    self.messageMeta[msgId] = MessageMeta(fileType: "image", fileUrl: publicUrl,
+                                                          fileName: "Image", content: nil,
+                                                          materialType: nil)
                 }
             } catch { print("❌ image upload: \(error)") }
         }
@@ -591,31 +659,24 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
 // MARK: - UIDocumentPickerDelegate
 
 extension ChatViewController: UIDocumentPickerDelegate {
-
     func documentPicker(_ controller: UIDocumentPickerViewController,
                         didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first, let groupId = group?.id else { return }
 
-        // IMPORTANT: Read file data synchronously here, before the Task.
-        // defer would release the security scope when this function returns —
-        // which happens before the async Task body runs, making Data(contentsOf:) fail.
         let accessed = url.startAccessingSecurityScopedResource()
         let fileData: Data?
         do { fileData = try Data(contentsOf: url) } catch { fileData = nil }
         if accessed { url.stopAccessingSecurityScopedResource() }
-
-        guard let data = fileData else {
-            print("❌ Could not read file: \(url.lastPathComponent)")
-            return
-        }
+        guard let data = fileData else { return }
 
         let fileName = url.lastPathComponent
         let msgId    = UUID().uuidString
-
         chatMessages.append(ChatMessage(sender: currentUser, messageId: msgId, sentDate: Date(),
                                         kind: .custom(makeDocBubbleView(fileName: fileName,
+                                                                        materialType: nil,
                                                                         isOutgoing: true))))
-        messageMeta[msgId] = MessageMeta(fileType: "document", fileUrl: nil, fileName: fileName)
+        messageMeta[msgId] = MessageMeta(fileType: "document", fileUrl: nil,
+                                          fileName: fileName, content: nil, materialType: nil)
         messagesCollectionView.reloadData()
         messagesCollectionView.scrollToLastItem(animated: true)
 
@@ -625,7 +686,6 @@ extension ChatViewController: UIDocumentPickerDelegate {
                 let publicUrl = try await SupabaseManager.shared.uploadFile(
                     bucket: "group-media", path: path, data: data,
                     contentType: "application/octet-stream")
-
                 struct DocInsert: Encodable {
                     let group_id: UUID; let sender_id: UUID; let content: String
                     let file_url: String; let file_name: String; let file_type: String
@@ -637,8 +697,9 @@ extension ChatViewController: UIDocumentPickerDelegate {
                                       file_url: publicUrl, file_name: fileName,
                                       file_type: "document")).execute()
                 await MainActor.run {
-                    self.messageMeta[msgId] = MessageMeta(fileType: "document",
-                                                          fileUrl: publicUrl, fileName: fileName)
+                    self.messageMeta[msgId] = MessageMeta(fileType: "document", fileUrl: publicUrl,
+                                                          fileName: fileName, content: nil,
+                                                          materialType: nil)
                 }
             } catch { print("❌ doc upload: \(error)") }
         }
@@ -660,7 +721,6 @@ extension ChatViewController: MessagesDataSource {
         chatMessages[indexPath.section]
     }
 
-    // Renders the DocBubbleView inside a plain registered cell
     func customCell(for message: MessageType, at indexPath: IndexPath,
                     in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell {
         messagesCollectionView.register(UICollectionViewCell.self,
@@ -668,14 +728,21 @@ extension ChatViewController: MessagesDataSource {
         let cell = messagesCollectionView.dequeueReusableCell(
             withReuseIdentifier: "DocBubbleCell", for: indexPath)
         cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+        // Background colour matching bubble side
+        let cm = chatMessages[indexPath.section]
+        let isOut = cm.sender.senderId == currentUser.senderId
+        cell.contentView.backgroundColor = isOut ? .systemBlue : .systemGray5
+        cell.contentView.layer.cornerRadius = 16
+        cell.contentView.clipsToBounds = true
+
         if case .custom(let payload) = message.kind, let v = payload as? DocBubbleView {
             v.translatesAutoresizingMaskIntoConstraints = false
             cell.contentView.addSubview(v)
             NSLayoutConstraint.activate([
                 v.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
                 v.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor),
-                v.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor),
-                v.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor)
+                v.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 8),
+                v.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -8)
             ])
         }
         return cell
@@ -698,13 +765,11 @@ extension ChatViewController {
 // MARK: - MessagesLayoutDelegate
 
 extension ChatViewController: MessagesLayoutDelegate {
-
     func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath,
                                 in messagesCollectionView: MessagesCollectionView) -> CGFloat {
         if message.sender.senderId == currentUser.senderId { return 0 }
         return (indexPath.section == 0 || !isPreviousMessageSameSender(at: indexPath)) ? 16 : 0
     }
-
     func messageTopLabelAlignment(for message: MessageType, at indexPath: IndexPath,
                                    in messagesCollectionView: MessagesCollectionView) -> LabelAlignment? {
         guard message.sender.senderId != currentUser.senderId else { return nil }
@@ -712,7 +777,6 @@ extension ChatViewController: MessagesLayoutDelegate {
         return LabelAlignment(textAlignment: .left,
                               textInsets: UIEdgeInsets(top: 0, left: 48, bottom: 4, right: 0))
     }
-
     func messagePadding(for message: MessageType, at indexPath: IndexPath,
                         in messagesCollectionView: MessagesCollectionView) -> UIEdgeInsets {
         UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
@@ -722,24 +786,20 @@ extension ChatViewController: MessagesLayoutDelegate {
 // MARK: - MessagesDisplayDelegate
 
 extension ChatViewController: MessagesDisplayDelegate {
-
     func backgroundColor(for message: MessageType, at indexPath: IndexPath,
                           in messagesCollectionView: MessagesCollectionView) -> UIColor {
         message.sender.senderId == currentUser.senderId ? .systemBlue : .systemGray5
     }
-
     func textColor(for message: MessageType, at indexPath: IndexPath,
                    in messagesCollectionView: MessagesCollectionView) -> UIColor {
         message.sender.senderId == currentUser.senderId ? .white : .label
     }
-
     func configureMessageLabel(_ messageLabel: MessageLabel, for message: MessageType,
                                at indexPath: IndexPath,
                                in messagesCollectionView: MessagesCollectionView) {
         messageLabel.tintColor = message.sender.senderId == currentUser.senderId
             ? .white : .systemBlue
     }
-
     func messageTopLabelAttributedText(for message: MessageType,
                                         at indexPath: IndexPath) -> NSAttributedString? {
         if message.sender.senderId == currentUser.senderId { return nil }
@@ -749,7 +809,6 @@ extension ChatViewController: MessagesDisplayDelegate {
             .foregroundColor: UIColor.secondaryLabel
         ])
     }
-
     func configureAvatarView(_ avatarView: AvatarView, for message: MessageType,
                               at indexPath: IndexPath,
                               in messagesCollectionView: MessagesCollectionView) {
@@ -764,15 +823,13 @@ extension ChatViewController: MessagesDisplayDelegate {
 // MARK: - InputBarAccessoryViewDelegate
 
 extension ChatViewController: InputBarAccessoryViewDelegate {
-
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
-        let detector = try? NSDataDetector(
-            types: NSTextCheckingResult.CheckingType.link.rawValue)
-        let r      = NSRange(trimmed.startIndex..., in: trimmed)
-        let isLink = !(detector?.matches(in: trimmed, options: [], range: r) ?? []).isEmpty
+        let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+        let r        = NSRange(trimmed.startIndex..., in: trimmed)
+        let isLink   = !(detector?.matches(in: trimmed, options: [], range: r) ?? []).isEmpty
 
         let msgId = UUID().uuidString
         let kind: MessageKind
@@ -784,8 +841,8 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
 
         chatMessages.append(ChatMessage(sender: currentUser, messageId: msgId,
                                         sentDate: Date(), kind: kind))
-        messageMeta[msgId] = MessageMeta(fileType: isLink ? "link" : nil,
-                                          fileUrl: nil, fileName: nil)
+        messageMeta[msgId] = MessageMeta(fileType: isLink ? "link" : nil, fileUrl: nil,
+                                          fileName: nil, content: nil, materialType: nil)
         messagesCollectionView.reloadData()
         messagesCollectionView.scrollToLastItem(animated: true)
         inputBar.inputTextView.text = ""
@@ -793,13 +850,11 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
 
         guard let groupId = group?.id else { return }
         Task {
-            do {
-                try await SupabaseManager.shared.sendMessage(
-                    groupId: groupId, senderId: currentUser.senderId, text: trimmed)
-            } catch { print("❌ sendMessage: \(error)") }
+            do { try await SupabaseManager.shared.sendMessage(
+                groupId: groupId, senderId: currentUser.senderId, text: trimmed) }
+            catch { print("❌ sendMessage: \(error)") }
         }
     }
-
     func inputBar(_ inputBar: InputBarAccessoryView, textViewTextDidChangeTo text: String) {
         inputBar.setStackViewItems(
             text.isEmpty ? [micButton] : [inputBar.sendButton],
@@ -816,9 +871,7 @@ extension ChatViewController: LeaveGroupDelegate {
     func didUpdateGroup(_ group: Group) {
         self.group = group
         if let btn = navigationItem.titleView as? UIButton {
-            var cfg = btn.configuration
-            cfg?.title = group.name
-            btn.configuration = cfg
+            var cfg = btn.configuration; cfg?.title = group.name; btn.configuration = cfg
         }
         updateDelegate?.didUpdateGroup(group)
     }
@@ -829,18 +882,16 @@ extension ChatViewController: LeaveGroupDelegate {
 extension ChatViewController: MessageCellDelegate {
 
     func didTapMessage(in cell: MessageCollectionViewCell) {
-        guard let indexPath = messagesCollectionView.indexPath(for: cell) else { return }
+        guard let indexPath = messagesCollectionView.indexPath(for: cell),
+              indexPath.section < chatMessages.count else { return }
         let cm   = chatMessages[indexPath.section]
         let meta = messageMeta[cm.messageId]
 
         switch cm.kind {
 
         case .photo(let media):
-            if let img = media.image {
-                openImagePreview(img)
-            } else if let urlStr = meta?.fileUrl, let url = URL(string: urlStr) {
-                downloadThenShowImage(url: url)
-            }
+            if let img = media.image { openImagePreview(img) }
+            else if let s = meta?.fileUrl, let url = URL(string: s) { downloadThenShowImage(url: url) }
 
         case .attributedText(let attr):
             var found: URL? = nil
@@ -853,14 +904,75 @@ extension ChatViewController: MessageCellDelegate {
         case .custom:
             guard let m = meta else { return }
             if m.fileType == "document" {
-                openRemoteDoc(urlString: m.fileUrl, fileName: m.fileName)
-            } else if m.fileType == "image",
-                      let s = m.fileUrl, let url = URL(string: s) {
+                openDocument(meta: m)
+            } else if m.fileType == "image", let s = m.fileUrl, let url = URL(string: s) {
                 downloadThenShowImage(url: url)
             }
 
         default: break
         }
+    }
+
+    // Backup long press for text/link bubbles
+    func didLongPressMessage(in cell: MessageCollectionViewCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell),
+              indexPath.section < chatMessages.count else { return }
+        let cm = chatMessages[indexPath.section]
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "Copy", style: .default) { _ in
+            if case .text(let t) = cm.kind { UIPasteboard.general.string = t }
+            else if case .attributedText(let a) = cm.kind { UIPasteboard.general.string = a.string }
+        })
+        if cm.sender.senderId == currentUser.senderId {
+            alert.addAction(UIAlertAction(title: "Unsend", style: .destructive) { [weak self] _ in
+                self?.unsendMessage(cm)
+            })
+        }
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    // MARK: - Open document (study material or real file)
+
+    private func openDocument(meta: MessageMeta) {
+        let fileUrl  = meta.fileUrl  ?? ""
+        let fileName = meta.fileName ?? "document"
+
+        // revisio:// = study material — render inline preview
+        if fileUrl.hasPrefix("revisio://") || fileUrl.isEmpty {
+            openStudyMaterialPreview(meta: meta)
+            return
+        }
+
+        // Real uploaded file — download to temp and open with QLPreviewController
+        guard let url = URL(string: fileUrl) else { return }
+        openRemoteFile(url: url, fileName: fileName)
+    }
+
+    private func openStudyMaterialPreview(meta: MessageMeta) {
+        let vc = StudyMaterialPreviewViewController()
+        vc.materialType  = meta.materialType ?? "Notes"
+        vc.materialName  = meta.fileName    ?? ""
+        vc.content       = meta.content     ?? "No content available."
+        let nav = UINavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .pageSheet
+        present(nav, animated: true)
+    }
+
+    private func openRemoteFile(url: URL, fileName: String) {
+        URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
+            guard let data = data else { return }
+            let tmp = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+            try? data.write(to: tmp)
+            DispatchQueue.main.async {
+                let vc  = DocumentPreviewViewController()
+                vc.documentURL = tmp
+                let nav = UINavigationController(rootViewController: vc)
+                nav.modalPresentationStyle = .fullScreen
+                self?.present(nav, animated: true)
+            }
+        }.resume()
     }
 
     private func openImagePreview(_ image: UIImage) {
@@ -877,71 +989,6 @@ extension ChatViewController: MessageCellDelegate {
             DispatchQueue.main.async { self?.openImagePreview(img) }
         }.resume()
     }
-
-    private func openRemoteDoc(urlString: String?, fileName: String?) {
-        guard let s = urlString, !s.isEmpty, !s.hasPrefix("revisio://"),
-              let url = URL(string: s) else { return }
-        let name = fileName ?? "document"
-        URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
-            guard let data = data else { return }
-            let tmp = FileManager.default.temporaryDirectory.appendingPathComponent(name)
-            try? data.write(to: tmp)
-            DispatchQueue.main.async {
-                let vc  = DocumentPreviewViewController()
-                vc.documentURL = tmp
-                let nav = UINavigationController(rootViewController: vc)
-                nav.modalPresentationStyle = .fullScreen
-                self?.present(nav, animated: true)
-            }
-        }.resume()
-    }
-
-    // Backup: MessageCellDelegate long press (fires for text/link bubbles)
-    func didLongPressMessage(in cell: MessageCollectionViewCell) {
-        guard let indexPath = messagesCollectionView.indexPath(for: cell) else { return }
-        guard indexPath.section < chatMessages.count else { return }
-        let cm = chatMessages[indexPath.section]
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-
-        // Copy — available for every message
-        alert.addAction(UIAlertAction(title: "Copy", style: .default) { _ in
-            if case .text(let text) = cm.kind {
-                UIPasteboard.general.string = text
-            } else if case .attributedText(let attr) = cm.kind {
-                UIPasteboard.general.string = attr.string
-            }
-        })
-
-        // Unsend — only for own messages
-        if cm.sender.senderId == currentUser.senderId {
-            alert.addAction(UIAlertAction(title: "Unsend", style: .destructive) { [weak self] _ in
-                self?.unsendMessage(cm, at: indexPath)
-            })
-        }
-
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        present(alert, animated: true)
-    }
-
-    private func unsendMessage(_ cm: ChatMessage, at indexPath: IndexPath) {
-        // Find by messageId — safer than using indexPath which can be stale
-        guard let idx = chatMessages.firstIndex(where: { $0.messageId == cm.messageId }) else { return }
-        chatMessages.remove(at: idx)
-        messageMeta.removeValue(forKey: cm.messageId)
-        messagesCollectionView.reloadData()
-
-        // Delete from Supabase
-        // Note: optimistic messages use a local UUID that isn't in the DB yet —
-        // the delete will affect 0 rows silently, which is fine (bubble is already gone locally).
-        Task {
-            do {
-                try await SupabaseManager.shared.deleteMessage(
-                    id: cm.messageId,
-                    senderId: currentUser.senderId)
-            } catch { print("❌ unsend: \(error)") }
-        }
-    }
 }
 
 // MARK: - Media items
@@ -955,11 +1002,10 @@ private struct LocalImageMediaItem: MediaItem {
 }
 
 private class RemoteImageMediaItem: NSObject, MediaItem {
-    var url: URL?
+    var url:   URL?
     var image: UIImage?
     var placeholderImage: UIImage { UIImage(systemName: "photo") ?? UIImage() }
-    var size: CGSize { CGSize(width: 200, height: 150) }
-    // Weak ref to collection view so we can reload when download finishes
+    var size:  CGSize { CGSize(width: 200, height: 150) }
     weak var collectionView: MessagesCollectionView?
 
     init(urlString: String?, collectionView: MessagesCollectionView? = nil) {
@@ -974,10 +1020,7 @@ private class RemoteImageMediaItem: NSObject, MediaItem {
         URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
             guard let data = data, let img = UIImage(data: data) else { return }
             self?.image = img
-            // Reload so the cell replaces placeholder with the real image
-            DispatchQueue.main.async {
-                self?.collectionView?.reloadData()
-            }
+            DispatchQueue.main.async { self?.collectionView?.reloadData() }
         }.resume()
     }
 }
