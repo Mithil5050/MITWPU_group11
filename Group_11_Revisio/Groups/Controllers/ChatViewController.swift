@@ -121,6 +121,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
 
         setupInputBar()
         setupNavigationTitle()
+        setupLongPressGesture()
 
         messagesCollectionView.scrollsToTop = false
         messagesCollectionView.contentInsetAdjustmentBehavior = .always
@@ -369,6 +370,47 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
                 messagesCollectionView.scrollToLastItem(animated: true)
             }
         }
+    }
+
+    // MARK: - Long press gesture (guaranteed to fire for all bubble types)
+
+    private func setupLongPressGesture() {
+        let lp = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        lp.minimumPressDuration = 0.4
+        lp.cancelsTouchesInView = false
+        messagesCollectionView.addGestureRecognizer(lp)
+    }
+
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+
+        let point = gesture.location(in: messagesCollectionView)
+        guard let indexPath = messagesCollectionView.indexPathForItem(at: point) else { return }
+        guard indexPath.section < chatMessages.count else { return }
+
+        let cm = chatMessages[indexPath.section]
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+
+        // Copy — available for every message
+        alert.addAction(UIAlertAction(title: "Copy", style: .default) { _ in
+            if case .text(let text) = cm.kind {
+                UIPasteboard.general.string = text
+            } else if case .attributedText(let attr) = cm.kind {
+                UIPasteboard.general.string = attr.string
+            }
+        })
+
+        // Unsend — only for own messages
+        if cm.sender.senderId == currentUser.senderId {
+            alert.addAction(UIAlertAction(title: "Unsend", style: .destructive) { [weak self] _ in
+                self?.unsendMessage(cm, at: indexPath)
+            })
+        }
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
     }
 
     // MARK: - Nav tap
@@ -852,6 +894,53 @@ extension ChatViewController: MessageCellDelegate {
                 self?.present(nav, animated: true)
             }
         }.resume()
+    }
+
+    // Backup: MessageCellDelegate long press (fires for text/link bubbles)
+    func didLongPressMessage(in cell: MessageCollectionViewCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell) else { return }
+        guard indexPath.section < chatMessages.count else { return }
+        let cm = chatMessages[indexPath.section]
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+
+        // Copy — available for every message
+        alert.addAction(UIAlertAction(title: "Copy", style: .default) { _ in
+            if case .text(let text) = cm.kind {
+                UIPasteboard.general.string = text
+            } else if case .attributedText(let attr) = cm.kind {
+                UIPasteboard.general.string = attr.string
+            }
+        })
+
+        // Unsend — only for own messages
+        if cm.sender.senderId == currentUser.senderId {
+            alert.addAction(UIAlertAction(title: "Unsend", style: .destructive) { [weak self] _ in
+                self?.unsendMessage(cm, at: indexPath)
+            })
+        }
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func unsendMessage(_ cm: ChatMessage, at indexPath: IndexPath) {
+        // Find by messageId — safer than using indexPath which can be stale
+        guard let idx = chatMessages.firstIndex(where: { $0.messageId == cm.messageId }) else { return }
+        chatMessages.remove(at: idx)
+        messageMeta.removeValue(forKey: cm.messageId)
+        messagesCollectionView.reloadData()
+
+        // Delete from Supabase
+        // Note: optimistic messages use a local UUID that isn't in the DB yet —
+        // the delete will affect 0 rows silently, which is fine (bubble is already gone locally).
+        Task {
+            do {
+                try await SupabaseManager.shared.deleteMessage(
+                    id: cm.messageId,
+                    senderId: currentUser.senderId)
+            } catch { print("❌ unsend: \(error)") }
+        }
     }
 }
 

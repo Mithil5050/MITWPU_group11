@@ -215,6 +215,18 @@ class SupabaseManager {
         try await client.from("study_groups").delete().eq("id", value: uuid).execute()
     }
 
+    // MARK: - 10b. Delete (unsend) a single message
+    func deleteMessage(id: String, senderId: String) async throws {
+        guard let msgUUID = UUID(uuidString: id),
+              let senderUUID = UUID(uuidString: senderId) else { return }
+        // Only delete if the current user is the sender
+        try await client.from("messages")
+            .delete()
+            .eq("id", value: msgUUID)
+            .eq("sender_id", value: senderUUID)
+            .execute()
+    }
+
     // MARK: - 11. Update Group Name
     func updateGroup(id: String, newName: String) async throws {
         guard let uuid = UUID(uuidString: id) else { return }
