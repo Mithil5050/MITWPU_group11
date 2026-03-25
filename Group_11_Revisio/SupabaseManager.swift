@@ -18,13 +18,21 @@ class SupabaseManager {
         client = SupabaseClient(supabaseURL: projectURL, supabaseKey: apiKey)
     }
 
-    // MARK: - 1. Sync XP
+    // MARK: - 1. Sync XP + Level + Streak
     func syncXP(totalXP: Int) async {
         guard let userId = client.auth.currentUser?.id else { return }
-        struct XPUpdate: Encodable { let total_xp: Int }
+        struct ProfileUpdate: Encodable {
+            let total_xp: Int
+            let current_level: Int
+            let current_streak: Int
+        }
+        let level  = ProgressDataManager.shared.userLevel
+        let streak = ProgressDataManager.shared.currentStreak
         do {
             try await client.from("profiles")
-                .update(XPUpdate(total_xp: totalXP))
+                .update(ProfileUpdate(total_xp: totalXP,
+                                      current_level: level,
+                                      current_streak: streak))
                 .eq("id", value: userId).execute()
         } catch { print("❌ XP Sync Failed: \(error)") }
     }
@@ -329,6 +337,33 @@ class SupabaseManager {
                   let type = $0.file_type else { return nil }
             return GroupFile(fileUrl: url, fileName: name, fileType: type)
         }
+    }
+
+    // MARK: - 18. Load User Profile (XP + Level + Streak on app launch)
+    func loadUserProfile() async throws -> (totalXP: Int, currentLevel: Int, currentStreak: Int) {
+        guard let userId = client.auth.currentUser?.id else {
+            throw NSError(domain: "Auth", code: 401)
+        }
+        struct ProfileRow: Decodable {
+            let total_xp: Int?
+            let current_level: Int?
+            let current_streak: Int?
+        }
+        let rows: [ProfileRow] = try await client
+            .from("profiles")
+            .select("total_xp, current_level, current_streak")
+            .eq("id", value: userId)
+            .limit(1)
+            .execute()
+            .value
+        guard let row = rows.first else {
+            throw NSError(domain: "Profiles", code: 404)
+        }
+        return (
+            totalXP:       row.total_xp       ?? 0,
+            currentLevel:  row.current_level  ?? 1,
+            currentStreak: row.current_streak ?? 0
+        )
     }
 }
 

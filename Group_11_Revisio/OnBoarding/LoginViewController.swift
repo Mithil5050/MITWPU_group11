@@ -18,7 +18,7 @@ class LoginViewController: UIViewController {
         addPasswordToggle(to: passwordTextField)
     }
 
-    // MARK: - Supabase Log In Logic
+    // Supabase Log In Logic
     @IBAction func loginButtonTapped(_ sender: UIButton) {
         guard let emailText = emailTextField.text, !emailText.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
@@ -28,7 +28,7 @@ class LoginViewController: UIViewController {
             return
         }
         
-        // ✅ Clean up any invisible spaces iOS adds to the email
+        //  Clean up any invisible spaces iOS adds to the email
         let cleanEmail = emailText.trimmingCharacters(in: .whitespacesAndNewlines)
         
         Task {
@@ -50,21 +50,22 @@ class LoginViewController: UIViewController {
         }
     }
     
-    // MARK: - Navigation
+    // Navigation
     private func transitionToMainApp() {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        
-        // ✅ Load the Tab Bar Controller instead of just the Home screen
         let tabBarVC = storyboard.instantiateViewController(withIdentifier: "MainTabBarController")
-        
+
+        //  Restore XP/Level/Streak from Supabase before showing the app
+        ProgressDataManager.shared.restoreFromSupabase()
+
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else { return }
-        
+
         window.rootViewController = tabBarVC
         UIView.transition(with: window, duration: 0.4, options: .transitionCrossDissolve, animations: nil, completion: nil)
     }
     
-    // MARK: - UI & Navigation Setup
+    //  UI & Navigation Setup
     private func configureTextFields() {
         styleTextField(emailTextField)
         emailTextField.keyboardType = .emailAddress
@@ -151,7 +152,7 @@ class LoginViewController: UIViewController {
     }
 }
 
-// MARK: - Apple Sign In Delegates
+// Apple Sign In Delegates
 extension LoginViewController: ASAuthorizationControllerDelegate {
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
         if let credential = authorization.credential as? ASAuthorizationAppleIDCredential {
