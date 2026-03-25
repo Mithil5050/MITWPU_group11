@@ -12,7 +12,6 @@ class ProgressDataManager {
 
     var history: [LogHistoryItem] = []
 
-
     // Count of fully earned badges — used by the Profile Badges card.
     var earnedBadgeCount: Int { return earnedBadgeIDs.count }
 
@@ -20,6 +19,7 @@ class ProgressDataManager {
     var hasEarnedAnyXP: Bool {
         return totalXP > 0 || userLevel > 1
     }
+
     // XP the user currently holds toward the next level (the carry-over amount)
     var currentLevelXP: Int { return totalXP }
 
@@ -30,7 +30,7 @@ class ProgressDataManager {
     var requiredXPForCurrentLevel: Int {
         return levelRequirements[userLevel] ?? 5000
     }
-    
+
     var progressToNextLevel: Float {
         let required = requiredXPForCurrentLevel
         guard required > 0 else { return 1.0 }
@@ -38,7 +38,6 @@ class ProgressDataManager {
     }
 
     var pointsPerLevel: Int { return requiredXPForCurrentLevel }
-    
 
     // Carry-over XP toward the next level.
     // posts .xpDidUpdate for UI refresh, and syncs to Supabase.
@@ -75,13 +74,11 @@ class ProgressDataManager {
         }
     }
 
-
     private let levelRequirements: [Int: Int] = [
         1: 250, 2: 400, 3: 600,  4: 850,  5: 1200,
         6: 1700, 7: 2300, 8: 3000, 9: 3800, 10: 4700
     ]
 
-   
     func addXP(amount: Int, reason: String = "XP Earned") {
         var carryXP = totalXP + amount
         var workingLevel = userLevel
@@ -116,7 +113,42 @@ class ProgressDataManager {
         return requiredXPForCurrentLevel
     }
 
-    // Counters (Badge Triggers)
+    // MARK: - Restore XP + Level + Streak from Supabase on login / cold launch
+    func restoreFromSupabase() {
+        Task {
+            do {
+                let profile = try await SupabaseManager.shared.loadUserProfile()
+
+                let localXP    = UserDefaults.standard.integer(forKey: "user_total_xp")
+                let localLevel = UserDefaults.standard.integer(forKey: "user_current_level")
+
+                if profile.totalXP >= localXP {
+                    // Supabase is ahead or equal — restore from cloud
+                    UserDefaults.standard.set(profile.totalXP, forKey: "user_total_xp")
+                    UserDefaults.standard.set(
+                        max(profile.currentLevel, 1),
+                        forKey: "user_current_level"
+                    )
+                    UserDefaults.standard.set(profile.currentStreak, forKey: "user_current_streak")
+
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
+                    }
+
+                    print("✅ Restored from Supabase — XP: \(profile.totalXP), Level: \(profile.currentLevel), Streak: \(profile.currentStreak)")
+                } else {
+                    // Local is ahead (offline progress) — push local up to reconcile
+                    await SupabaseManager.shared.syncXP(totalXP: localXP)
+                    print("⬆️ Local XP ahead (\(localXP) vs \(profile.totalXP)) — pushed local to Supabase")
+                }
+            } catch {
+                // Silently fail — user keeps whatever local state exists
+                print("⚠️ Could not restore profile from Supabase: \(error)")
+            }
+        }
+    }
+
+    // MARK: - Counters (Badge Triggers)
 
     var totalQuizzesDone: Int {
         get { UserDefaults.standard.integer(forKey: "stat_quizzes_done") }
@@ -167,8 +199,8 @@ class ProgressDataManager {
         set { UserDefaults.standard.set(newValue, forKey: "stat_docs_uploaded"); checkBadgeUnlocks(for: .sourceMaster, newValue: newValue) }
     }
 
-    // Streak Logic
-    
+    // MARK: - Streak Logic
+
     var currentStreak: Int {
         get { UserDefaults.standard.integer(forKey: "user_current_streak") }
         set {
@@ -264,7 +296,6 @@ class ProgressDataManager {
             }
 
             // EARN: badge goal reached for the first time
-        
             if newValue == badge.goalValue && !currentEarned.contains(badge.id) {
                 currentEarned.insert(badge.id)
                 postBadgeEvent(badge: badge, type: "BadgeEarned")
@@ -286,8 +317,8 @@ class ProgressDataManager {
         }
     }
 
-    //  XP History
-    
+    // MARK: - XP History
+
     private(set) var xpHistory: [XPEvent] = {
         guard let data = UserDefaults.standard.data(forKey: "xp_history_v1"),
               let raw  = try? JSONDecoder().decode([[String: String]].self, from: data)
@@ -303,7 +334,6 @@ class ProgressDataManager {
         }
     }()
 
-    
     func recordXPEvent(_ description: String, amount: Int) {
         let event = XPEvent(description: description, amount: amount, date: Date())
         xpHistory.insert(event, at: 0)
@@ -313,7 +343,7 @@ class ProgressDataManager {
         Task { await SupabaseManager.shared.syncXPEvent(reason: description, amount: amount) }
     }
 
-    // Session Logging for Progress Chart
+    // MARK: - Session Logging for Progress Chart
     func logSession(minutes: Double, category: String) {
         let entry = LogHistoryItem(
             id: UUID().uuidString,

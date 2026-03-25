@@ -25,11 +25,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             do {
                 _ = try await SupabaseManager.shared.client.auth.session
                 
+                // ✅ User already has an active session — restore their XP/Level/Streak
+                // before the tab bar appears so UI is correct from the first frame
+                ProgressDataManager.shared.restoreFromSupabase()
+                
                 DispatchQueue.main.async {
                     let tabBarVC = storyboard.instantiateViewController(withIdentifier: "MainTabBarController")
                     window.rootViewController = tabBarVC
                     UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil, completion: nil)
-                
                 }
             } catch {
                 DispatchQueue.main.async {
