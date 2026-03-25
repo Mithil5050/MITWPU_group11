@@ -304,11 +304,12 @@ class SupabaseManager {
         struct Row: Decodable {
             let file_url: String?; let file_name: String?; let file_type: String?
         }
+        // Use in() with the three known file types — avoids null-filter SDK inconsistencies
         let result: [Row] = try await client
             .from("messages")
             .select("file_url, file_name, file_type")
             .eq("group_id", value: uuid)
-            .not("file_type", operator: .is, value: AnyJSON.null)
+            .in("file_type", values: ["document", "image", "link"])
             .execute().value
         return result.compactMap {
             guard let url  = $0.file_url,
