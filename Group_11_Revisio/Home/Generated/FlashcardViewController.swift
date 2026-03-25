@@ -194,15 +194,19 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
     private func unpackFlashcards(from content: String) {
         let lines = content.components(separatedBy: "\n")
         var loaded: [Flashcard] = []
+        
         for line in lines where !line.isEmpty {
             let parts = line.components(separatedBy: "|")
+            
             if parts.count >= 3 {
+                // ✅ SUCCESS: AI provided Term, Definition, and Keyword
                 loaded.append(Flashcard(term: parts[0], definition: parts[1], keyword: parts[2]))
-            } else if parts.count >= 2 {
-                // Fallback if keyword is missing
+            } else if parts.count == 2 {
+                // ⚠️ FALLBACK: If AI missed the keyword, use the Term as the keyword
                 loaded.append(Flashcard(term: parts[0], definition: parts[1], keyword: parts[0]))
             }
         }
+        
         if !loaded.isEmpty {
             self.flashcards = loaded
         }
@@ -548,7 +552,10 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
     func didCreateNewFlashcard(card: Flashcard) {
         ProgressDataManager.shared.totalFlashcardsViewed += 1
         flashcards.append(card)
+        
+        // ✅ Updated to include the 3rd component (keyword)
         let updatedText = flashcards.map { "\($0.term)|\($0.definition)|\($0.keyword)" }.joined(separator: "\n")
+        
         currentTopic?.largeContentBody = updatedText
         
         if let subject = parentSubjectName, let topicName = currentTopic?.name {

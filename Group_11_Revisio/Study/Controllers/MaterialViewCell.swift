@@ -26,19 +26,25 @@ class MaterialViewCell: UITableViewCell {
         self.contentView.layer.borderColor = UIColor.separator.cgColor
         
         self.contentView.clipsToBounds = true
+        
+        // ✅ LOGIC CHANGE: Enable Word Wrap and Disable Hyphenation for list titles
+        titleLabel.numberOfLines = 2
+        titleLabel.lineBreakMode = .byWordWrapping
+        titleLabel.allowsDefaultTighteningForTruncation = true
     }
-    @IBAction func infoButtonAction(_ sender: UIButton) {
-            onInfoButtonTapped?()
-        }
     
+    @IBAction func infoButtonAction(_ sender: UIButton) {
+        onInfoButtonTapped?()
+    }
     
     func configure(with item: StudyItem) {
         let symbolname: String
         let iconColor: UIColor
+        let rawName: String
         
         switch item {
         case .topic(let topic):
-            titleLabel.text = topic.name
+            rawName = topic.name
             subtitleLabel.text = "\(topic.materialType) • \(topic.lastAccessed)"
             
             switch topic.materialType {
@@ -60,14 +66,11 @@ class MaterialViewCell: UITableViewCell {
             }
             
         case .source(let source):
-            titleLabel.text = source.name
-            
-            
+            rawName = source.name
             iconColor = .systemIndigo
             
             let type = source.fileType.uppercased()
             
-           
             if type == "LINK" || type == "URL" {
                 symbolname = "link"
                 subtitleLabel.text = "Web Link"
@@ -81,18 +84,27 @@ class MaterialViewCell: UITableViewCell {
                 symbolname = "textformat"
                 subtitleLabel.text = "\(type) • \(source.size)"
             } else {
-                
                 symbolname = "link"
                 subtitleLabel.text = "\(type) • \(source.size)"
             }
         }
         
-       
+        // ✅ LOGIC CHANGE: Clean the display name (Remove Note_, .txt, and underscores)
+        let cleanName = rawName.replacingOccurrences(of: ".txt", with: "")
+                               .replacingOccurrences(of: "Note_", with: "")
+                               .replacingOccurrences(of: "Link_", with: "")
+                               .replacingOccurrences(of: "Image_", with: "")
+                               .replacingOccurrences(of: "_", with: " ")
+                               .trimmingCharacters(in: .whitespaces)
+        
+        titleLabel.text = cleanName
+        
         iconImageView.image = UIImage(systemName: symbolname)
         iconImageView.tintColor = iconColor
         iconContainerView.backgroundColor = iconColor.withAlphaComponent(0.15)
         iconContainerView.layer.cornerRadius = 8
     }
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         
@@ -122,7 +134,4 @@ class MaterialViewCell: UITableViewCell {
         let shift: CGFloat = isEditing ? 60 : 16
         self.contentView.layoutMargins = UIEdgeInsets(top: 0, left: shift, bottom: 0, right: 16)
     }
-
 }
-
-    
