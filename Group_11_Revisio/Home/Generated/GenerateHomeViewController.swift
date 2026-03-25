@@ -445,13 +445,30 @@ class GenerateHomeViewController: UIViewController {
             var instruction = ""
             switch selectedMaterialType {
             case .flashcards:
-                instruction = "Generate exactly \(selectedCount) flashcards covering the most important concepts. The difficulty should be \(difficultyString). For each flashcard, provide 'front' (the question), 'back' (the answer), and 'keyword' (a single concise word or short phrase from the back that represents the core answer). STRICTLY use this EXACT JSON format: { \"flashcards\": [ { \"front\": \"Term or concept here\", \"back\": \"Definition or explanation here\", \"keyword\": \"Word\" } ] }"
+                instruction = """
+                Generate exactly \(selectedCount) flashcards.
+                
+                RULES:
+                1. 'deckTitle': Provide a clean, human-readable name (e.g., "Mole Concept").
+                2. NO HYPHENS: Do not break words with hyphens (e.g., use "aqueous", NOT "aque-ous").
+                3. For each card: provide 'front', 'back', and one 'keyword' from the back.
+                
+                Format: {"deckTitle": "Name", "flashcards": [{"front": "T", "back": "D", "keyword": "K"}]}
+                """
             case .cheatsheet:
                 instruction = "You are an expert tutor creating a beautifully formatted Cheatsheet. DO NOT output JSON. Output ONLY plain text. You MUST use double line breaks to separate sections. You MUST use bullet points for lists."
             case .notes:
                 instruction = "You are an expert tutor creating detailed Study Notes. DO NOT output JSON. Output ONLY plain text. You MUST use double line breaks to separate paragraphs and sections. You MUST use bullet points for lists."
             case .quiz:
-                instruction = "Generate exactly \(selectedCount) quiz questions in JSON format. The test is designed to be solved within a \(selectedTime) minute limit. STRICTLY use this EXACT JSON format: { \"questions\": [ { \"question\": \"Question text here?\", \"options\": [\"Option 1\", \"Option 2\", \"Option 3\", \"Option 4\"], \"answer\": \"Option 1\", \"hint\": \"Explanation here\" } ] }"
+                instruction = """
+                Generate exactly \(selectedCount) quiz questions.
+                
+                RULES:
+                1. 'quizTitle': Provide a clean, human-readable name.
+                2. NO HYPHENS: Do not break words with hyphens mid-line.
+                
+                Format: {"quizTitle": "Name", "questions": [{"question": "Q", "options": ["A","B","C","D"], "answer": "A", "hint": "H"}]}
+                """
             default: break
             }
             
@@ -516,7 +533,15 @@ class GenerateHomeViewController: UIViewController {
     private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
         self.resetUI(sender)
         let subjectName = self.contextSubjectTitle ?? "General Study"
-        
+        var finalTopicName = topicName
+           if let aiTitle = self.parseTitleFromJSON(generatedContent) {
+               finalTopicName = aiTitle
+           } else {
+              
+               finalTopicName = topicName.replacingOccurrences(of: ".txt", with: "")
+                                         .replacingOccurrences(of: "Note_", with: "")
+                                         .replacingOccurrences(of: "_", with: " ")
+           }
         if self.selectedMaterialType == .notes {
             ProgressDataManager.shared.totalNotesGenerated += 1
         } else if self.selectedMaterialType == .cheatsheet {
@@ -554,17 +579,17 @@ class GenerateHomeViewController: UIViewController {
                 return
             }
             let serializedCards = parsedFlashcards.map { "\($0.safeFront)|\($0.safeBack)|\($0.safeKeyword)" }.joined(separator: "\n")
-            newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: "Flashcards", notes: serializedCards, sourceName: topicName, createdDate: "Just now")
+            newTopic = DataManager.shared.saveGeneratedTopic(name: finalTopicName, subject: subjectName, type: "Flashcards", notes: serializedCards, sourceName: topicName, createdDate: "Just now")
         } else {
             var finalText = generatedContent.trimmingCharacters(in: .whitespacesAndNewlines)
             if finalText.hasPrefix("```markdown") {
                 finalText = finalText.replacingOccurrences(of: "```markdown", with: "").replacingOccurrences(of: "```", with: "")
             }
-            newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: self.selectedMaterialType.description, notes: finalText, sourceName: topicName, createdDate: "Just now")
+            newTopic = DataManager.shared.saveGeneratedTopic(name: finalTopicName, subject: subjectName, type: self.selectedMaterialType.description, notes: finalText, sourceName: topicName, createdDate: "Just now")
         }
         
         if let savedTopic = newTopic {
-            self.navigateToResult(type: self.selectedMaterialType, topic: savedTopic, sourceName: topicName)
+            self.navigateToResult(type: self.selectedMaterialType, topic: savedTopic, sourceName: finalTopicName)
             Task { await RevisioManager.shared.earnXP(amount: 5, reason: "Material Generated") }
         } else {
             self.showError("Failed to save content.")
@@ -702,6 +727,14 @@ extension GenerateHomeViewController {
         }
         
         return clean.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    private func parseTitleFromJSON(_ jsonString: String) -> String? {
+        let clean = cleanJSONText(jsonString)
+        guard let data = clean.data(using: .utf8) else { return nil }
+        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            return json["deckTitle"] as? String ?? json["quizTitle"] as? String
+        }
+        return nil
     }
 }
 

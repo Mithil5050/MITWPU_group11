@@ -351,16 +351,17 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     private func getTitle(for item: Any) -> String {
+        var rawName = ""
         if let studyItem = item as? StudyItem {
             switch studyItem {
-            case .topic(let t): return t.name
-            case .source(let s): return s.name
+            case .topic(let t): rawName = t.name
+            case .source(let s): rawName = s.name
             }
         }
-        else if let topic = item as? Topic { return topic.name }
-        else if let source = item as? Source { return source.name }
+        else if let topic = item as? Topic { rawName = topic.name }
+        else if let source = item as? Source { rawName = source.name }
         
-        return ""
+        return cleanName(rawName) // ✅ Now returns "Physics" instead of "Note_Physics.txt"
     }
     
     func applySortAndReload() {
@@ -783,10 +784,10 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         present(activityViewController, animated: true)
     }
-    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         var finalTopic: Topic?
         
+        // 1. Identify and Unwrap the Topic
         if let studyItem = sender as? StudyItem, case .topic(let topic) = studyItem {
             var foundTopic = topic
             if let subject = self.selectedSubject,
@@ -803,11 +804,14 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             finalTopic = topic
         }
         
+        // 2. Handle Specific Segues with Clean Naming
         if segue.identifier == "ShowQuizHistory" {
             if let historyVC = segue.destination as? QuizHistoryViewController,
                let topic = finalTopic {
                 historyVC.quizTopic = topic
                 historyVC.parentSubject = self.selectedSubject
+                // Clean title for history screen
+                historyVC.title = cleanName(topic.name)
             }
         }
         else if segue.identifier == "ShowMaterialInfo",
@@ -819,92 +823,82 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             switch studyItem {
             case .topic(let topic):
-                infoVC.materialName = topic.name
+                infoVC.materialName = cleanName(topic.name) // ✅ Cleaned
                 infoVC.materialType = topic.materialType
-                
-                print("DEBUG - Topic Name: \(topic.name)")
-                print("DEBUG - Topic sourceName: \(topic.sourceName ?? "NIL")")
-                print("DEBUG - Topic createdDate: \(topic.createdDate ?? "NIL")")
-                print("DEBUG - Topic lastAccessed: \(topic.lastAccessed)")
-                
                 infoVC.dateCreated = topic.createdDate ?? topic.lastAccessed ?? "Just now"
-                infoVC.sourceName = topic.sourceName ?? "Attached Document"
+                infoVC.sourceName = cleanName(topic.sourceName ?? "Attached Document") // ✅ Cleaned
                 
+                // Icon Logic...
                 switch topic.materialType {
-                case "Quiz":
-                    infoVC.iconName = "timer"
-                    infoVC.iconColor = UIColor(hex: "88D769")
-                case "Notes":
-                    infoVC.iconName = "book.pages"
-                    infoVC.iconColor = UIColor(hex: "FFC445", alpha: 0.75)
-                case "Flashcards":
-                    infoVC.iconName = "rectangle.on.rectangle.angled"
-                    infoVC.iconColor = UIColor(hex: "91C1EF")
-                case "Cheatsheet":
-                    infoVC.iconName = "list.clipboard"
-                    infoVC.iconColor = UIColor(hex: "8A38F5", alpha: 0.50)
-                default:
-                    infoVC.iconName = "doc.text.fill"
-                    infoVC.iconColor = .systemGray
+                case "Quiz": infoVC.iconName = "timer"; infoVC.iconColor = UIColor(hex: "88D769")
+                case "Notes": infoVC.iconName = "book.pages"; infoVC.iconColor = UIColor(hex: "FFC445", alpha: 0.75)
+                case "Flashcards": infoVC.iconName = "rectangle.on.rectangle.angled"; infoVC.iconColor = UIColor(hex: "91C1EF")
+                case "Cheatsheet": infoVC.iconName = "list.clipboard"; infoVC.iconColor = UIColor(hex: "8A38F5", alpha: 0.50)
+                default: infoVC.iconName = "doc.text.fill"; infoVC.iconColor = .systemGray
                 }
                 
             case .source(let source):
-                infoVC.materialName = source.name
+                infoVC.materialName = cleanName(source.name) // ✅ Cleaned
                 infoVC.materialType = source.fileType
                 infoVC.dateCreated = "Added Recently"
-                
                 let type = source.fileType.uppercased()
-                if type == "IMAGE" || type == "JPG" || type == "PNG" || type == "JPEG" {
-                    infoVC.iconName = "photo.fill"
-                } else if type == "DOC" || type == "PDF" {
-                    infoVC.iconName = "text.document"
-                } else if type == "TEXT" || type == "TXT" {
-                    infoVC.iconName = "doc.text.fill"
-                } else {
-                    infoVC.iconName = "link"
-                }
+                infoVC.iconName = (type == "IMAGE" || type == "JPG") ? "photo.fill" : "doc.text.fill"
                 infoVC.iconColor = .systemIndigo
             }
         }
         else if segue.identifier == "ShowMaterialDetail",
                 let detailVC = segue.destination as? MaterialDetailViewController,
                 let topic = finalTopic {
-            detailVC.materialName = topic.name
+            detailVC.materialName = cleanName(topic.name) // ✅ Cleaned
             detailVC.contentData = topic
             detailVC.parentSubjectName = selectedSubject
             detailVC.materialType = topic.materialType
+            detailVC.title = cleanName(topic.name) // ✅ Cleaned
         }
         else if segue.identifier == "ShowNotes",
                 let dest = segue.destination as? NotesViewController,
                 let topic = finalTopic {
             dest.currentTopic = topic
             dest.parentSubjectName = self.selectedSubject
+            dest.title = cleanName(topic.name) // ✅ Cleaned
         }
         else if segue.identifier == "ShowCheatsheet",
                 let dest = segue.destination as? CheatsheetViewController,
                 let topic = finalTopic {
             dest.currentTopic = topic
             dest.parentSubjectName = self.selectedSubject
+            dest.title = cleanName(topic.name) // ✅ Cleaned
         }
         else if segue.identifier == "ShowInstructionScreen",
                 let instructionVC = segue.destination as? QuizStartViewController,
                 let topic = finalTopic {
             instructionVC.currentTopic = topic
             instructionVC.parentSubject = selectedSubject
+            // Important: instructionVC uses topic name internally for the big label
         }
         else if segue.identifier == "openFlashcards",
                 let flashVC = segue.destination as? FlashcardsViewController,
                 let topic = finalTopic {
             flashVC.currentTopic = topic
             flashVC.parentSubjectName = self.selectedSubject
+            flashVC.title = cleanName(topic.name) // ✅ Cleaned
         }
         else if segue.identifier == "ShowGenerationScreen",
                 let generationVC = segue.destination as? GenerationViewController,
                 let items = sender as? [Any] {
             generationVC.sourceItems = items
             generationVC.parentSubjectName = selectedSubject
+            generationVC.title = "Generate"
             selectionCancelTapped()
         }
+    }
+    private func cleanName(_ rawName: String) -> String {
+        return rawName.replacingOccurrences(of: ".txt", with: "")
+                      .replacingOccurrences(of: "Note_", with: "")
+                      .replacingOccurrences(of: "Link_", with: "")
+                      .replacingOccurrences(of: "Image_", with: "")
+                      .replacingOccurrences(of: "_", with: " ")
+                      .trimmingCharacters(in: .whitespaces)
     }
 }
 

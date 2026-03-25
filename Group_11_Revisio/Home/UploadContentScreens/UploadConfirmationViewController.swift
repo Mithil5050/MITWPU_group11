@@ -3,7 +3,6 @@ import UniformTypeIdentifiers
 
 // MARK: - Data Model
 
-// ✅ 1. New Enum to track file source
 enum FileSourceType {
     case document
     case link
@@ -13,7 +12,7 @@ enum FileSourceType {
 
 struct UploadedFileModel {
     let url: URL
-    let type: FileSourceType // ✅ Track the type explicitly
+    let type: FileSourceType
     
     var isAnalyzing: Bool = false
     var isWaiting: Bool = true
@@ -21,7 +20,6 @@ struct UploadedFileModel {
     var topics: [String] = []
     var selectedTopicIndices: Set<Int> = []
     
-    // ✅ Helper to get the correct SF Symbol
     var iconName: String {
         switch type {
         case .link: return "link"
@@ -44,7 +42,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
     var filesData: [UploadedFileModel] = []
     
     // 🚦 RATE LIMIT QUEUE
-    private var analysisQueue: [Int] = [] // Stores the Index of files waiting
+    private var analysisQueue: [Int] = []
     private var isProcessingQueue: Bool = false
     
     // MARK: - Lifecycle
@@ -79,7 +77,6 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         
         if FileManager.default.fileExists(atPath: dataString) {
             let url = URL(fileURLWithPath: dataString)
-            // Guess type for incoming shared files
             let type: FileSourceType = ["jpg","png","jpeg"].contains(url.pathExtension.lowercased()) ? .image : .document
             addFile(url: url, type: type)
         } else {
@@ -98,14 +95,12 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         
         do {
             try text.write(to: tempFileURL, atomically: true, encoding: .utf8)
-            // ✅ Pass correct type
             addFile(url: tempFileURL, type: isLink ? .link : .note)
         } catch {
             print("❌ Failed to create temp file: \(error)")
         }
     }
     
-    // ✅ Add File with Explicit Type
     private func addFile(url: URL, type: FileSourceType) {
         ProgressDataManager.shared.totalDocumentsUploaded += 1
         var newFile = UploadedFileModel(url: url, type: type)
@@ -115,22 +110,18 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         let newIndex = filesData.count
         filesData.append(newFile)
         
-        // Add to Queue
         analysisQueue.append(newIndex)
         UploadedContent.reloadData()
         
-        // Try to start processing
         processNextInQueue()
     }
     
-    // 🚦 QUEUE PROCESSOR (The "Traffic Cop")
     private func processNextInQueue() {
         guard !isProcessingQueue, !analysisQueue.isEmpty else { return }
         
         isProcessingQueue = true
         let fileIndex = analysisQueue.removeFirst()
         
-        // Update UI to "Analyzing..."
         DispatchQueue.main.async {
             if fileIndex < self.filesData.count {
                 self.filesData[fileIndex].isWaiting = false
@@ -139,18 +130,16 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
             }
         }
         
-        // Start Analysis
         Task {
             if fileIndex < self.filesData.count {
                 let fileURL = self.filesData[fileIndex].url
                 await analyzeTopics(for: fileURL, index: fileIndex)
             }
             
-            // 🛑 RATE LIMIT PAUSE
             try? await Task.sleep(nanoseconds: 4 * 1_000_000_000)
             
             self.isProcessingQueue = false
-            self.processNextInQueue() // Run next file!
+            self.processNextInQueue()
         }
     }
     
@@ -161,10 +150,6 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         let prompt = """
         Analyze the following text and identify 4 to 6 main topics.
         Return ONLY the list of topic names, one per line. Do NOT use emojis, bullet points, or numbering.
-        Example:
-        Biology and Classification
-        Habitat and Ecology
-        
         TEXT TO ANALYZE:
         \(String(text.prefix(4000)))
         """
@@ -194,10 +179,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
             }
             
         } catch {
-            print("⚠️ AI Attempt \(attempt) Failed: \(error.localizedDescription)")
-            
             if attempt < 3 {
-                // Retry Wait
                 try? await Task.sleep(nanoseconds: 5 * 1_000_000_000)
                 await analyzeTopics(for: url, index: index, attempt: attempt + 1)
             } else {
@@ -216,27 +198,19 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
     // MARK: - Actions
     @IBAction func DoneTapped(_ sender: Any) {
         var finalFiles: [URL] = []
-        
         for fileData in filesData {
             if !fileData.topics.isEmpty && fileData.selectedTopicIndices.count < fileData.topics.count {
                 let selectedNames = fileData.selectedTopicIndices.map { fileData.topics[$0] }
-                let instructions = """
-                SOURCE FILE: \(fileData.url.lastPathComponent)
-                TOPICS TO FOCUS ON:
-                \(selectedNames.joined(separator: ", "))
-                """
-                
+                let instructions = "SOURCE FILE: \(fileData.url.lastPathComponent)\nTOPICS: \(selectedNames.joined(separator: ", "))"
                 let tempDir = FileManager.default.temporaryDirectory
                 let filteredName = "Filtered_\(fileData.url.deletingPathExtension().lastPathComponent).txt"
                 let filteredURL = tempDir.appendingPathComponent(filteredName)
-                
                 try? instructions.write(to: filteredURL, atomically: true, encoding: .utf8)
                 finalFiles.append(filteredURL)
             } else {
                 finalFiles.append(fileData.url)
             }
         }
-        
         performSegue(withIdentifier: "showSelectMaterial", sender: finalFiles)
     }
     
@@ -247,13 +221,6 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         alert.addAction(UIAlertAction(title: "Web Link", style: .default, handler: { _ in self.showTextInput(title: "Add Web Link", placeholder: "https://example.com") }))
         alert.addAction(UIAlertAction(title: "Text Note", style: .default, handler: { _ in self.showTextInput(title: "Add Quick Note", placeholder: "Enter note title...") }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        
-        if let popover = alert.popoverPresentationController {
-            if let btn = sender as? UIView {
-                popover.sourceView = btn
-                popover.sourceRect = btn.bounds
-            }
-        }
         present(alert, animated: true)
     }
     
@@ -268,7 +235,10 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         }
         
         let file = filesData[indexPath.row]
+        
+        // ✅ FIXED: Removed 'customName' argument to match ExpandableFileCell's original signature
         cell.configure(with: file, index: indexPath.row)
+        
         cell.delegate = self
         return cell
     }
@@ -303,7 +273,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         }
     }
     
-    // MARK: - Helper Methods (Pickers)
+    // MARK: - Helper Methods
     private func openDocumentPicker() {
         let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.pdf, .plainText, .image], asCopy: true)
         picker.delegate = self
@@ -328,6 +298,16 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
+
+    private func cleanDisplayName(for url: URL) -> String {
+        let rawName = url.lastPathComponent
+        return rawName.replacingOccurrences(of: ".txt", with: "")
+                      .replacingOccurrences(of: "Note_", with: "")
+                      .replacingOccurrences(of: "Link_", with: "")
+                      .replacingOccurrences(of: "Image_", with: "")
+                      .replacingOccurrences(of: "Filtered_", with: "")
+                      .replacingOccurrences(of: "_", with: " ")
+    }
 }
 
 // MARK: - Delegates Extension
@@ -338,7 +318,6 @@ extension UploadConfirmationViewController: UIDocumentPickerDelegate, UIImagePic
             let tempDir = FileManager.default.temporaryDirectory
             let destURL = tempDir.appendingPathComponent(url.lastPathComponent)
             try? FileManager.default.copyItem(at: url, to: destURL)
-            // ✅ Pass .document type
             addFile(url: destURL, type: .document)
         }
     }
@@ -350,9 +329,7 @@ extension UploadConfirmationViewController: UIDocumentPickerDelegate, UIImagePic
             
             let filename = "Image_\(Int(Date().timeIntervalSince1970)).jpg"
             let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-            
             try? data.write(to: tempURL)
-            // ✅ Pass .image type
             self.addFile(url: tempURL, type: .image)
         }
     }

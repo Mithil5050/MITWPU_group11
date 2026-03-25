@@ -111,22 +111,26 @@ class ExpandableFileCell: UITableViewCell {
     // MARK: - Configuration
     func configure(with file: UploadedFileModel, index: Int) {
         self.fileIndex = index
-        titleLabel.text = file.url.lastPathComponent
         
-        // ✅ NEW ICON LOGIC (Uses the type passed from the View Controller)
+        // --- START CLEANING LOGIC ---
+        // Extract the raw filename from the URL
+        let rawName = file.url.lastPathComponent
+        
+        // Remove extensions, prefixes, and replace underscores with spaces
+        let cleanName = rawName.replacingOccurrences(of: ".txt", with: "")
+                               .replacingOccurrences(of: "Note_", with: "")
+                               .replacingOccurrences(of: "Link_", with: "")
+                               .replacingOccurrences(of: "Image_", with: "")
+                               .replacingOccurrences(of: "Filtered_", with: "")
+                               .replacingOccurrences(of: "_", with: " ")
+        
+        // Apply the clean name to the label
+        titleLabel.text = cleanName
+        // --- END CLEANING LOGIC ---
+        
+        // ✅ ICON LOGIC
         iconImageView.image = UIImage(systemName: file.iconName)
-        
-        // Set specific colors for different types if desired
-        switch file.type {
-        case .link:
-            iconImageView.tintColor = .systemIndigo
-        case .image:
-            iconImageView.tintColor = .systemIndigo
-        case .note:
-            iconImageView.tintColor = .systemIndigo
-        default:
-            iconImageView.tintColor = .systemIndigo
-        }
+        iconImageView.tintColor = .systemIndigo
         
         // ✅ Status Logic
         if file.isWaiting {
@@ -135,7 +139,7 @@ class ExpandableFileCell: UITableViewCell {
             chevronImageView.isHidden = true
         } else if file.isAnalyzing {
             statusLabel.text = "Analyzing..."
-            statusLabel.textColor = .systemIndigo  // Changed to indigo
+            statusLabel.textColor = .systemIndigo
             chevronImageView.isHidden = true
         } else if file.topics.isEmpty {
             statusLabel.text = "No topics found"
@@ -147,7 +151,7 @@ class ExpandableFileCell: UITableViewCell {
             statusLabel.textColor = .secondaryLabel
             chevronImageView.isHidden = false
             
-            // Rotate chevron
+            // Rotate chevron based on expanded state
             let rotationAngle: CGFloat = file.isExpanded ? .pi : 0
             chevronImageView.transform = CGAffineTransform(rotationAngle: rotationAngle)
         }
@@ -182,7 +186,7 @@ class ExpandableFileCell: UITableViewCell {
             ])
             topicsContainer.addArrangedSubview(headerContainer)
             
-            // Add Rows
+            // Add Individual Topic Rows
             for (i, topic) in file.topics.enumerated() {
                 let row = createTopicRow(title: topic, isSelected: file.selectedTopicIndices.contains(i), topicIndex: i)
                 topicsContainer.addArrangedSubview(row)
