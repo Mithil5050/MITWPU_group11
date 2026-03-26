@@ -23,100 +23,52 @@ private struct MessageMeta {
 }
 
 // MARK: - DocBubbleView
-// Renders inside .custom bubbles. Shows material-type icon + name.
+// Single horizontal row: icon on left, text on right — compact like iMessage file bubble.
 class DocBubbleView: UIView {
-    let iconView   = UIImageView()
-    let nameLabel  = UILabel()
-    let badgeLabel = UILabel()
+    private let iconView  = UIImageView()
+    private let nameLabel = UILabel()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         iconView.contentMode = .scaleAspectFit
         iconView.translatesAutoresizingMaskIntoConstraints = false
-
-        nameLabel.font          = UIFont.systemFont(ofSize: 13, weight: .semibold)
+        nameLabel.font          = UIFont.systemFont(ofSize: 14, weight: .medium)
         nameLabel.numberOfLines = 2
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
-
-        badgeLabel.font          = UIFont.systemFont(ofSize: 10, weight: .bold)
-        badgeLabel.layer.cornerRadius = 4
-        badgeLabel.clipsToBounds      = true
-        badgeLabel.textAlignment      = .center
-        badgeLabel.translatesAutoresizingMaskIntoConstraints = false
-
         addSubview(iconView)
         addSubview(nameLabel)
-        addSubview(badgeLabel)
-
         NSLayoutConstraint.activate([
-            iconView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
+            iconView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
             iconView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            iconView.widthAnchor.constraint(equalToConstant: 28),
-            iconView.heightAnchor.constraint(equalToConstant: 32),
-
-            badgeLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
-            badgeLabel.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-            badgeLabel.heightAnchor.constraint(equalToConstant: 16),
-
-            nameLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
-            nameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            nameLabel.topAnchor.constraint(equalTo: badgeLabel.bottomAnchor, constant: 3),
-            nameLabel.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -8)
+            iconView.widthAnchor.constraint(equalToConstant: 22),
+            iconView.heightAnchor.constraint(equalToConstant: 26),
+            nameLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 10),
+            nameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+            nameLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }
     required init?(coder: NSCoder) { fatalError() }
 
     func configure(fileName: String, materialType: String?, isOutgoing: Bool) {
-        let textColor  = isOutgoing ? UIColor.white : UIColor.label
-        let iconColor  = isOutgoing ? UIColor.white : UIColor.systemBlue
-
-        // Badge
-        if let mt = materialType, !mt.isEmpty {
-            badgeLabel.text            = mt.uppercased()
-            badgeLabel.isHidden        = false
-            badgeLabel.textColor       = isOutgoing ? .systemBlue : .white
-            badgeLabel.backgroundColor = isOutgoing ? UIColor.white.withAlphaComponent(0.25)
-                                                    : badgeColor(for: mt)
-            // badge width is dynamic
-            let w = (mt.uppercased() as NSString)
-                .size(withAttributes: [.font: badgeLabel.font!]).width + 10
-            badgeLabel.widthAnchor.constraint(equalToConstant: w).isActive = true
-        } else {
-            badgeLabel.isHidden = true
-        }
-
-        // Icon
-        let cfg    = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
-        let symbol = iconSymbol(for: materialType, fileName: fileName)
-        iconView.image = UIImage(systemName: symbol, withConfiguration: cfg)?
-            .withTintColor(iconColor, renderingMode: .alwaysOriginal)
-
         nameLabel.text      = fileName
-        nameLabel.textColor = textColor
+        nameLabel.textColor = isOutgoing ? .white : .label
+        let cfg = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+        iconView.image = UIImage(systemName: iconSymbol(for: materialType, fileName: fileName),
+                                 withConfiguration: cfg)?
+            .withTintColor(isOutgoing ? .white : .systemBlue, renderingMode: .alwaysOriginal)
     }
 
-    private func badgeColor(for type: String) -> UIColor {
+    private func iconSymbol(for type: String?, fileName: String) -> String {
         switch type {
-        case "Notes":      return .systemYellow
-        case "Flashcards": return .systemBlue
-        case "Quiz":       return .systemGreen
-        case "Cheatsheet": return .systemPurple
-        default:           return .systemGray
-        }
-    }
-
-    private func iconSymbol(for materialType: String?, fileName: String) -> String {
-        switch materialType {
         case "Notes":      return "book.pages.fill"
         case "Flashcards": return "rectangle.on.rectangle.angled.fill"
         case "Quiz":       return "checkmark.circle.fill"
         case "Cheatsheet": return "list.clipboard.fill"
         default:
-            let ext = (fileName as NSString).pathExtension.lowercased()
-            switch ext {
-            case "pdf":         return "doc.richtext.fill"
-            case "doc","docx":  return "doc.text.fill"
-            default:            return "doc.fill"
+            switch (fileName as NSString).pathExtension.lowercased() {
+            case "pdf":        return "doc.richtext.fill"
+            case "doc","docx": return "doc.text.fill"
+            default:           return "doc.fill"
             }
         }
     }
@@ -125,7 +77,7 @@ class DocBubbleView: UIView {
 // MARK: - CustomMessageSizeCalculator
 private class CustomMessageSizeCalculator: MessageSizeCalculator {
     override func messageContainerSize(for message: MessageType, at indexPath: IndexPath) -> CGSize {
-        CGSize(width: 200, height: 68)
+        CGSize(width: 220, height: 50)
     }
 }
 
@@ -518,6 +470,46 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         lp.minimumPressDuration = 0.4
         lp.cancelsTouchesInView = false
         messagesCollectionView.addGestureRecognizer(lp)
+
+        // Tap gesture on the collection view — fires for ALL cell types (.custom, .photo, .text)
+        // didTapMessage from MessageCellDelegate does NOT fire for plain UICollectionViewCell
+        // (.custom cells), so we handle ALL taps here instead.
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+        tap.cancelsTouchesInView = false
+        messagesCollectionView.addGestureRecognizer(tap)
+    }
+
+    @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
+        let point = gesture.location(in: messagesCollectionView)
+        guard let indexPath = messagesCollectionView.indexPathForItem(at: point),
+              indexPath.section < chatMessages.count else { return }
+
+        let cm   = chatMessages[indexPath.section]
+        let meta = messageMeta[cm.messageId]
+
+        switch cm.kind {
+
+        case .photo(let media):
+            if let img = media.image {
+                openImagePreview(img)
+            } else if let s = meta?.fileUrl, let url = URL(string: s) {
+                downloadThenShowImage(url: url)
+            }
+
+        case .attributedText(let attr):
+            var found: URL? = nil
+            attr.enumerateAttribute(NSAttributedString.Key("customURL"),
+                                    in: NSRange(location: 0, length: attr.length)) { v, _, _ in
+                if let u = v as? URL { found = u }
+            }
+            if let url = found { UIApplication.shared.open(url) }
+
+        case .custom:
+            guard let m = meta else { return }
+            openDocument(meta: m)
+
+        default: break
+        }
     }
 
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
@@ -881,39 +873,7 @@ extension ChatViewController: LeaveGroupDelegate {
 
 extension ChatViewController: MessageCellDelegate {
 
-    func didTapMessage(in cell: MessageCollectionViewCell) {
-        guard let indexPath = messagesCollectionView.indexPath(for: cell),
-              indexPath.section < chatMessages.count else { return }
-        let cm   = chatMessages[indexPath.section]
-        let meta = messageMeta[cm.messageId]
-
-        switch cm.kind {
-
-        case .photo(let media):
-            if let img = media.image { openImagePreview(img) }
-            else if let s = meta?.fileUrl, let url = URL(string: s) { downloadThenShowImage(url: url) }
-
-        case .attributedText(let attr):
-            var found: URL? = nil
-            attr.enumerateAttribute(NSAttributedString.Key("customURL"),
-                                    in: NSRange(location: 0, length: attr.length)) { v, _, _ in
-                if let u = v as? URL { found = u }
-            }
-            if let url = found { UIApplication.shared.open(url) }
-
-        case .custom:
-            guard let m = meta else { return }
-            if m.fileType == "document" {
-                openDocument(meta: m)
-            } else if m.fileType == "image", let s = m.fileUrl, let url = URL(string: s) {
-                downloadThenShowImage(url: url)
-            }
-
-        default: break
-        }
-    }
-
-    // Backup long press for text/link bubbles
+    // Long press backup for text/link bubbles (handleTap handles actual taps)
     func didLongPressMessage(in cell: MessageCollectionViewCell) {
         guard let indexPath = messagesCollectionView.indexPath(for: cell),
               indexPath.section < chatMessages.count else { return }
@@ -936,16 +896,16 @@ extension ChatViewController: MessageCellDelegate {
     // MARK: - Open document (study material or real file)
 
     private func openDocument(meta: MessageMeta) {
-        let fileUrl  = meta.fileUrl  ?? ""
+        let fileUrl  = meta.fileUrl ?? ""
         let fileName = meta.fileName ?? "document"
 
-        // revisio:// = study material — render inline preview
-        if fileUrl.hasPrefix("revisio://") || fileUrl.isEmpty {
+        // study material: revisio:// deep link OR no URL (optimistic bubble not yet confirmed)
+        if fileUrl.isEmpty || fileUrl.hasPrefix("revisio://") {
             openStudyMaterialPreview(meta: meta)
             return
         }
 
-        // Real uploaded file — download to temp and open with QLPreviewController
+        // Real file uploaded to Supabase Storage — download then open
         guard let url = URL(string: fileUrl) else { return }
         openRemoteFile(url: url, fileName: fileName)
     }
