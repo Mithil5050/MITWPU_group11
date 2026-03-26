@@ -47,6 +47,7 @@ class DocBubbleView: UIView {
             nameLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }
+    
     required init?(coder: NSCoder) { fatalError() }
 
     func configure(fileName: String, materialType: String?, isOutgoing: Bool) {
