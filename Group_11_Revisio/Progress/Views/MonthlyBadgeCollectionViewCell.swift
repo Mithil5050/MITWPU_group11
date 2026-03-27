@@ -17,7 +17,7 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
     
     
     @IBOutlet weak var monthlyBadgeImageView: UIImageView!
-    @IBOutlet weak var levelLabel: UILabel!
+    @IBOutlet weak var xpLabel: UILabel!
     
     @IBOutlet weak var xpProgressBar: UIProgressView!
     
@@ -39,8 +39,8 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
        }
 
        private func setupAppleLayout() {
-           levelLabel.font      = .systemFont(ofSize: 22, weight: .semibold)
-           levelLabel.textColor = .white
+           xpLabel.font      = .systemFont(ofSize: 22, weight: .semibold)
+           xpLabel.textColor = .white
 
            xpValueLabel.font      = .systemFont(ofSize: 14, weight: .regular)
            xpValueLabel.textColor = .systemGray
@@ -62,7 +62,7 @@ class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
            let requiredXP = manager.requiredXPForCurrentLevel
            let level      = manager.userLevel
 
-           levelLabel.text   = "Level \(level)"
+           xpLabel.text   = "Xp Progress"
            xpValueLabel.text = "\(currentXP) / \(requiredXP) XP"
 
            if let image = UIImage(named: "awards_monthly_main") {

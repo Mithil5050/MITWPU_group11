@@ -34,7 +34,8 @@ import UIKit
             super.viewDidLoad()
             view.backgroundColor = .systemBackground
             let level = ProgressDataManager.shared.userLevel
-            navigationItem.title = "Level \(level)"
+            navigationItem.title = "XP Progress"
+            navigationController?.navigationBar.prefersLargeTitles = false
             setupLayout()
             refreshData()
             NotificationCenter.default.addObserver(self, selector: #selector(refreshData),
@@ -127,7 +128,7 @@ import UIKit
                 guard let self else { return }
                 let manager = ProgressDataManager.shared
 
-                self.navigationItem.title = "Level \(manager.userLevel)"
+                // nav title stays fixed as "XP Breakdown"
                 self.levelLabel.text    = "Level \(manager.userLevel)"
                 self.xpValueLabel.text  = "\(manager.currentLevelXP) / \(manager.requiredXPForCurrentLevel) XP"
                 self.progressBar.setProgress(manager.progressToNextLevel, animated: true)
