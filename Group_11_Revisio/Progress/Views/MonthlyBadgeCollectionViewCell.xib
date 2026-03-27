@@ -37,7 +37,7 @@
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="40" id="LOs-hp-8Jv"/>
                                                 </constraints>
-                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
@@ -52,7 +52,7 @@
                                                 <constraints>
                                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="20" id="ggb-GB-gJS"/>
                                                 </constraints>
-                                                <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                                 <color key="textColor" systemColor="systemGrayColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
@@ -95,9 +95,9 @@
                 <constraint firstItem="qI9-jV-5yP" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="Kkv-yg-DhD"/>
             </constraints>
             <connections>
-                <outlet property="levelLabel" destination="4cK-ip-vsX" id="GfA-zu-LQ0"/>
                 <outlet property="monthlyBadgeContainerView" destination="qI9-jV-5yP" id="hNd-Wx-JqF"/>
                 <outlet property="monthlyBadgeImageView" destination="4L8-hV-wqe" id="b4i-aS-DRR"/>
+                <outlet property="xpLabel" destination="4cK-ip-vsX" id="R2R-75-4CX"/>
                 <outlet property="xpProgressBar" destination="kcl-3N-uE8" id="ssv-7n-JHB"/>
                 <outlet property="xpValueLabel" destination="zgo-ZG-9Mr" id="u0g-LL-vtr"/>
             </connections>
