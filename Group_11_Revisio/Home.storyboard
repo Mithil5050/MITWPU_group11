@@ -1448,7 +1448,7 @@
         <!--Score-->
         <scene sceneID="v8V-Yt-bPo">
             <objects>
-                <viewController id="aZP-rB-Q3d" customClass="QuizResultsViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="aZP-rB-Q3d" storyboardIdentifier="QuizResultsViewController" customClass="QuizResultsViewController" customModule="MITWPU_group11_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="sl9-Hs-Rih">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

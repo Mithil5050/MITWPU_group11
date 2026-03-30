@@ -9,6 +9,13 @@ class QuizResultsViewController: UIViewController {
     
     var summaryData: [QuizSummaryItem] = []
     
+    // MARK: - Flashcard Properties
+    var isFlashcardMode: Bool = false
+    var knownCount: Int = 0
+    var unknownCount: Int = 0
+    var onChallengeMode: (() -> Void)?
+    var onSaveAndExit: (() -> Void)?
+    
     // MARK: - Outlets
     @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet weak var scoreLabel: UILabel!
@@ -40,6 +47,11 @@ class QuizResultsViewController: UIViewController {
     }
     
     func setupUI() {
+        if isFlashcardMode {
+            setupForFlashcards()
+            return
+        }
+        
         // 1. Safety check for the result data
         guard let result = finalResult else { return }
         
@@ -87,8 +99,45 @@ class QuizResultsViewController: UIViewController {
         }
     }
     
+    private func setupForFlashcards() {
+        let total = knownCount + unknownCount
+        scoreLabel.text = "You mastered \(knownCount) out of \(total)."
+        
+        let percentage = total > 0 ? Double(knownCount) / Double(total) : 0
+        if percentage < 0.5 {
+            headerLabel.text = "Result Screen"
+            resultImageView.image = UIImage(named: "BadMarks")
+        } else {
+            headerLabel.text = "Result Screen"
+            resultImageView.image = UIImage(named: "GoodMarks")
+        }
+        
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.tableFooterView = UIView()
+        tableView.backgroundColor = .clear
+        
+        retakeButton.setTitle("Challenge Mode", for: .normal)
+        homeButton.setTitle("Save & Exit", for: .normal)
+        
+        retakeButton.layer.cornerRadius = 14
+        homeButton.layer.cornerRadius = 14
+        
+        retakeButton.isHidden = false
+        homeButton.isHidden = false
+    }
+
     // ✅ Exit Warning Pop-up
     private func showExitWarning() {
+        if isFlashcardMode {
+            let alert = UIAlertController(title: "Quit Session?", message: "Your progress will be saved automatically. Exit?", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            alert.addAction(UIAlertAction(title: "Exit", style: .default) { [weak self] _ in
+                self?.dismiss(animated: true) { self?.onSaveAndExit?() }
+            })
+            present(alert, animated: true)
+            return
+        }
         let alert = UIAlertController(
             title: "Quit Quiz?",
             message: "Your progress for this attempt will be lost. Are you sure you want to Quit?",
@@ -114,6 +163,11 @@ class QuizResultsViewController: UIViewController {
 
     // MARK: - Actions
     @IBAction func retakeButtonTapped(_ sender: UIButton) {
+        if isFlashcardMode {
+            dismiss(animated: true) { self.onChallengeMode?() }
+            return
+        }
+        
         if let nav = navigationController, let sessionVC = nav.viewControllers.first(where: { $0 is QuizSessionViewController }) as? QuizSessionViewController {
             sessionVC.questionIndex = 0
             sessionVC.initiateTimer()
@@ -129,6 +183,11 @@ class QuizResultsViewController: UIViewController {
     }
     
     @IBAction func homeButtonTapped(_ sender: UIButton) {
+        if isFlashcardMode {
+            dismiss(animated: true) { self.onSaveAndExit?() }
+            return
+        }
+        
         // Just Navigate Home
         if let nav = self.navigationController {
             nav.popToRootViewController(animated: true)
@@ -158,6 +217,21 @@ extension QuizResultsViewController: UITableViewDataSource, UITableViewDelegate 
         cell.textLabel?.textColor = .white
         cell.detailTextLabel?.textColor = .lightGray
         
+        if isFlashcardMode {
+            if indexPath.row == 0 {
+                cell.textLabel?.text = "Known"
+                cell.detailTextLabel?.text = "\(knownCount)"
+                cell.detailTextLabel?.textColor = .white
+            } else {
+                cell.textLabel?.text = "Not Known"
+                cell.detailTextLabel?.text = "\(unknownCount)"
+                cell.detailTextLabel?.textColor = .white
+            }
+            cell.selectionStyle = .none
+            cell.accessoryType = .none
+            return cell
+        }
+        
         if indexPath.row == 0 {
             cell.textLabel?.text = "Time Taken"
             let time = finalResult?.timeElapsed ?? 0
@@ -174,6 +248,8 @@ extension QuizResultsViewController: UITableViewDataSource, UITableViewDelegate 
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        if isFlashcardMode { return }
+        
         if indexPath.row == 1 {
             performSegue(withIdentifier: "ShowSummary", sender: self)
         }
