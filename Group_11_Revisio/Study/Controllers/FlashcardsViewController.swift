@@ -20,6 +20,15 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
     @IBOutlet weak var cardsView: UIView!
     @IBOutlet weak var cardsLabel: UILabel!
     
+    private let sideLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 14, weight: .bold)
+        label.textAlignment = .center
+        label.backgroundColor = .clear
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     private let challengeModeSwitch: UISwitch = {
         let toggle = UISwitch()
         toggle.translatesAutoresizingMaskIntoConstraints = false
@@ -63,10 +72,6 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
     var parentSubjectName: String?
     var isFromGenerationScreen: Bool = false
     
-    private var backgroundCard1: UIView!
-    private var backgroundCard2: UIView!
-    
-    // MARK: - State Management
     private var flashcards: [Flashcard] = []
     private var isTermDisplayed = true
     private var isChallengePhase = false
@@ -102,7 +107,6 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
             unpackFlashcards(from: fallbackContent)
         }
         
-        setupStackVisuals()
         setupProgrammaticUI()
         
         challengeTextField.delegate = self
@@ -144,7 +148,7 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
     @objc private func showSwipeInstructions() {
         let alert = UIAlertController(
             title: "How to use Flashcards",
-            message: "• Tap the card to flip between Term and Definition.\n• Swipe Left to go to the Next card.\n• Swipe Right to go to the Previous card.\n• Swipe Up when you Know the card.\n• Swipe Down if you need to Review it.",
+            message: "• Tap the card to flip between Term and Definition.\n• Swipe Up to go to the Next card.\n• Swipe Down to go to the Previous card.\n• Swipe Right when you Know the card.\n• Swipe Left if you need to Review it.",
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "Got it!", style: .default, handler: nil))
@@ -160,7 +164,7 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
         
         let attributes: [NSAttributedString.Key: Any] = [
             .paragraphStyle: paragraphStyle,
-            .font: cardsLabel.font ?? UIFont.systemFont(ofSize: 18)
+            .font: UIFont.systemFont(ofSize: 26, weight: .semibold)
         ]
         cardsLabel.attributedText = NSAttributedString(string: text, attributes: attributes)
     }
@@ -168,7 +172,14 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
     private func setupProgrammaticUI() {
         view.addSubview(challengeTextField)
         view.addSubview(countLabel)
+        cardsView.addSubview(sideLabel)
+        
         NSLayoutConstraint.activate([
+            sideLabel.bottomAnchor.constraint(equalTo: cardsView.bottomAnchor, constant: -16),
+            sideLabel.centerXAnchor.constraint(equalTo: cardsView.centerXAnchor),
+            sideLabel.heightAnchor.constraint(equalToConstant: 24),
+            sideLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 80),
+            
             countLabel.topAnchor.constraint(equalTo: cardsView.bottomAnchor, constant: 80),
             countLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
@@ -237,37 +248,19 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
         cardsView.layer.shadowOpacity = 0.8
         cardsView.layer.shadowOffset = .zero
         cardsView.layer.shadowRadius = 15
-        cardsView.backgroundColor = .systemGray6
+        cardsView.backgroundColor = .clear // Fully transparent hollow card
         cardsView.layer.borderWidth = 3.0
         cardsView.layer.borderColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0).cgColor
         cardsView.layer.zPosition = 100
     }
-
+    
     private func setupStackVisuals() {
-        backgroundCard1?.removeFromSuperview()
-        backgroundCard2?.removeFromSuperview()
-        backgroundCard1 = createBackgroundCard()
-        backgroundCard2 = createBackgroundCard()
-        guard let parentView = cardsView.superview else { return }
-        parentView.insertSubview(backgroundCard1, belowSubview: cardsView)
-        parentView.insertSubview(backgroundCard2, belowSubview: backgroundCard1)
-        
-        NSLayoutConstraint.activate([
-            backgroundCard1.centerXAnchor.constraint(equalTo: cardsView.centerXAnchor),
-            backgroundCard1.centerYAnchor.constraint(equalTo: cardsView.centerYAnchor),
-            backgroundCard1.widthAnchor.constraint(equalTo: cardsView.widthAnchor),
-            backgroundCard1.heightAnchor.constraint(equalTo: cardsView.heightAnchor),
-            backgroundCard2.centerXAnchor.constraint(equalTo: cardsView.centerXAnchor),
-            backgroundCard2.centerYAnchor.constraint(equalTo: cardsView.centerYAnchor),
-            backgroundCard2.widthAnchor.constraint(equalTo: cardsView.widthAnchor),
-            backgroundCard2.heightAnchor.constraint(equalTo: cardsView.heightAnchor)
-        ])
-        resetStackTransforms()
+        // Stack removed as requested to prevent overlapping borders
     }
-
+    
     private func createBackgroundCard() -> UIView {
         let v = UIView()
-        v.backgroundColor = .systemGray6
+        v.backgroundColor = UIColor(white: 0.05, alpha: 1.0) // solid dark to occlude stack
         v.layer.cornerRadius = 16
         v.layer.masksToBounds = false
         v.layer.shadowColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0).cgColor
@@ -282,17 +275,11 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
 
     private func resetStackTransforms() {
         cardsView.transform = .identity
-        backgroundCard1.transform = CGAffineTransform(scaleX: 0.96, y: 0.96).translatedBy(x: 0, y: 24)
-        backgroundCard2.transform = CGAffineTransform(scaleX: 0.92, y: 0.92).translatedBy(x: 0, y: 48)
         updateStackVisibility()
     }
 
     private func updateStackVisibility() {
-        let remaining = flashcards.count - (currentCardIndex + 1)
-        UIView.animate(withDuration: 0.3) {
-            self.backgroundCard1.alpha = remaining >= 1 ? 1.0 : 0
-            self.backgroundCard2.alpha = remaining >= 2 ? 1.0 : 0
-        }
+        // Stack removed
     }
 
     private func setupTapGesture() {
@@ -365,11 +352,6 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
         UIView.animate(withDuration: 0.3, animations: {
             self.cardsView.transform = CGAffineTransform(translationX: translationX, y: translationY).rotated(by: translationX > 0 ? 0.3 : (translationX < 0 ? -0.3 : 0))
             self.cardsView.alpha = 0
-            
-            if isNext {
-                self.backgroundCard1.transform = .identity
-                self.backgroundCard2.transform = CGAffineTransform(scaleX: 0.96, y: 0.96).translatedBy(x: 0, y: 24)
-            }
         }) { _ in
             self.cardsView.transform = .identity
             self.cardsView.alpha = 1.0
@@ -381,7 +363,13 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
                     self.currentCardIndex += 1
                     self.isTermDisplayed = true
                     self.updateCardContent(animated: false)
-                    self.resetStackTransforms()
+                    
+                    self.cardsView.transform = CGAffineTransform(translationX: 0, y: 200).rotated(by: 0.3)
+                    self.cardsView.alpha = 0
+                    UIView.animate(withDuration: 0.5, delay: 0.0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.6, options: .curveEaseOut, animations: {
+                        self.cardsView.transform = .identity
+                        self.cardsView.alpha = 1.0
+                    }, completion: nil)
                 } else {
                     self.cardsView.isHidden = true
                     self.showResultsScreen()
@@ -390,7 +378,13 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
                 self.currentCardIndex -= 1
                 self.isTermDisplayed = true
                 self.updateCardContent(animated: false)
-                self.resetStackTransforms()
+                
+                self.cardsView.transform = CGAffineTransform(translationX: 0, y: -200).rotated(by: -0.3)
+                self.cardsView.alpha = 0
+                UIView.animate(withDuration: 0.5, delay: 0.0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.6, options: .curveEaseOut, animations: {
+                        self.cardsView.transform = .identity
+                        self.cardsView.alpha = 1.0
+                }, completion: nil)
             }
         }
     }
@@ -426,6 +420,11 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
         let card = flashcards[currentCardIndex]
         let newText = isTermDisplayed ? card.term : card.definition
         cardsView.isUserInteractionEnabled = !(isChallengePhase && isTermDisplayed)
+        
+        sideLabel.text = isTermDisplayed ? "TERM" : "DEFINITION"
+        sideLabel.textColor = isTermDisplayed ? UIColor.systemBlue : UIColor.systemPurple
+        sideLabel.backgroundColor = .clear
+        cardsView.layer.borderColor = isTermDisplayed ? UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0).cgColor : UIColor.systemPurple.withAlphaComponent(0.6).cgColor
         
         countLabel.text = "\(currentCardIndex + 1) / \(flashcards.count)"
         

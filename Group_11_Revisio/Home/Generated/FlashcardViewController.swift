@@ -55,12 +55,18 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
     
 
     
+    private let sideLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 14, weight: .bold)
+        label.textAlignment = .center
+        label.backgroundColor = .clear
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     // MARK: - Properties
     var currentTopic: Topic?
     var parentSubjectName: String?
-    
-    private var backgroundCard1: UIView!
-    private var backgroundCard2: UIView!
     
     private var flashcards: [Flashcard] = []
     private var isTermDisplayed = true
@@ -89,9 +95,6 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         
         // 1. Setup Main Card (Color is set here)
         setupCardView()
-        
-        // 2. Setup Stack (Inherits color from Main Card)
-        setupStackVisuals()
         
         setupProgrammaticUI()
         setupGesture()
@@ -135,7 +138,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
     @objc private func showSwipeInstructions() {
         let alert = UIAlertController(
             title: "How to use Flashcards",
-            message: "• Tap the card to flip between Term and Definition.\n• Swipe Left to go to the Next card.\n• Swipe Right to go to the Previous card.\n• Swipe Up when you Know the card.\n• Swipe Down if you need to Review it.",
+            message: "• Tap the card to flip between Term and Definition.\n• Swipe Up to go to the Next card.\n• Swipe Down to go to the Previous card.\n• Swipe Right when you Know the card.\n• Swipe Left if you need to Review it.",
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "Got it!", style: .default, handler: nil))
@@ -149,7 +152,14 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
     private func setupProgrammaticUI() {
         view.addSubview(challengeTextField)
         view.addSubview(countLabel)
+        cardView.addSubview(sideLabel)
+        
         NSLayoutConstraint.activate([
+            sideLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -16),
+            sideLabel.centerXAnchor.constraint(equalTo: cardView.centerXAnchor),
+            sideLabel.heightAnchor.constraint(equalToConstant: 24),
+            sideLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 80),
+            
             countLabel.topAnchor.constraint(equalTo: cardView.bottomAnchor, constant: 80),
             countLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
@@ -244,36 +254,13 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
     
     // MARK: - UI Setup
     private func setupCardView() {
-        cardView.backgroundColor = .systemGray6
+        cardView.backgroundColor = .clear // Fully transparent hollow card
         styleCard(cardView)
         cardView.layer.zPosition = 100
-    }
-    
-    private func setupStackVisuals() {
-        backgroundCard1?.removeFromSuperview()
-        backgroundCard2?.removeFromSuperview()
         
-        backgroundCard1 = createBackgroundCard()
-        backgroundCard2 = createBackgroundCard()
-        
-        guard let parentView = cardView.superview else { return }
-        parentView.clipsToBounds = false
-        
-        parentView.insertSubview(backgroundCard1, belowSubview: cardView)
-        parentView.insertSubview(backgroundCard2, belowSubview: backgroundCard1)
-        
-        alignBackgroundCard(backgroundCard1)
-        alignBackgroundCard(backgroundCard2)
-        
-        resetStackTransforms()
-    }
-    
-    private func createBackgroundCard() -> UIView {
-        let v = UIView()
-        v.backgroundColor = cardView.backgroundColor
-        styleCard(v)
-        v.translatesAutoresizingMaskIntoConstraints = false
-        return v
+        cardLabel.font = .systemFont(ofSize: 26, weight: .medium)
+        cardLabel.textAlignment = .center
+        cardLabel.numberOfLines = 0
     }
     
     private func styleCard(_ view: UIView) {
@@ -288,33 +275,17 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
     }
     
     private func alignBackgroundCard(_ bgView: UIView) {
-        NSLayoutConstraint.activate([
-            bgView.centerXAnchor.constraint(equalTo: cardView.centerXAnchor),
-            bgView.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
-            bgView.widthAnchor.constraint(equalTo: cardView.widthAnchor),
-            bgView.heightAnchor.constraint(equalTo: cardView.heightAnchor)
-        ])
+        // Removed
     }
     
     private func resetStackTransforms() {
         cardView.transform = .identity
         cardView.alpha = 1.0
-        
-        backgroundCard1.transform = CGAffineTransform(scaleX: 0.96, y: 0.96).translatedBy(x: 0, y: 24)
-        backgroundCard1.alpha = 1.0
-        
-        backgroundCard2.transform = CGAffineTransform(scaleX: 0.92, y: 0.92).translatedBy(x: 0, y: 48)
-        backgroundCard2.alpha = 1.0
-        
         updateStackVisibility()
     }
     
     private func updateStackVisibility() {
-        let cardsRemaining = flashcards.count - (currentCardIndex + 1)
-        UIView.animate(withDuration: 0.2) {
-            self.backgroundCard1.isHidden = cardsRemaining < 1
-            self.backgroundCard2.isHidden = cardsRemaining < 2
-        }
+        // Stack removed
     }
 
     private func setupGesture() {
@@ -363,11 +334,11 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
                 translation.y < 0 ? (knownCount += 1) : (unknownCount += 1)
                 finishSwipe(translationX: 0, translationY: translation.y < 0 ? -view.bounds.height : view.bounds.height, isNext: true)
             } else if !isVertical && abs(translation.x) > 150 {
-                if translation.x < 0 { // Next
+                if translation.x < 0 { 
                     let skippedCard = self.flashcards[self.currentCardIndex]
                     self.flashcards.append(skippedCard)
                     finishSwipe(translationX: -view.bounds.width, translationY: 0, isNext: true)
-                } else { // Prev
+                } else { 
                     if currentCardIndex > 0 {
                         finishSwipe(translationX: view.bounds.width, translationY: 0, isNext: false)
                     } else {
@@ -393,11 +364,6 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         UIView.animate(withDuration: 0.3, animations: {
             self.cardView.transform = CGAffineTransform(translationX: translationX, y: translationY).rotated(by: translationX > 0 ? 0.3 : (translationX < 0 ? -0.3 : 0))
             self.cardView.alpha = 0
-            
-            if isNext {
-                self.backgroundCard1.transform = .identity
-                self.backgroundCard2.transform = CGAffineTransform(scaleX: 0.96, y: 0.96).translatedBy(x: 0, y: 24)
-            }
         }) { _ in
             self.cardView.transform = .identity
             self.cardView.alpha = 1.0
@@ -409,7 +375,14 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
                     self.currentCardIndex += 1
                     self.isTermDisplayed = true
                     self.updateUI(animated: false)
-                    self.resetStackTransforms()
+                    
+                    self.cardView.transform = CGAffineTransform(translationX: 0, y: 200).rotated(by: 0.3)
+                    self.cardView.alpha = 0
+                    UIView.animate(withDuration: 0.5, delay: 0.0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.6, options: .curveEaseOut, animations: {
+                        self.cardView.transform = .identity
+                        self.cardView.alpha = 1.0
+                    }, completion: nil)
+                    
                 } else {
                     self.cardView.isHidden = true
                     self.challengeTextField.isHidden = true
@@ -419,7 +392,13 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
                 self.currentCardIndex -= 1
                 self.isTermDisplayed = true
                 self.updateUI(animated: false)
-                self.resetStackTransforms()
+                
+                self.cardView.transform = CGAffineTransform(translationX: 0, y: -200).rotated(by: -0.3)
+                self.cardView.alpha = 0
+                UIView.animate(withDuration: 0.5, delay: 0.0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.6, options: .curveEaseOut, animations: {
+                        self.cardView.transform = .identity
+                        self.cardView.alpha = 1.0
+                }, completion: nil)
             }
         }
     }
@@ -448,13 +427,17 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         // ✅ Safely handle 0 cards state
         guard !flashcards.isEmpty else {
             cardLabel.text = "No flashcards available.\nTap '+' to add one."
-            // countLabel removed
-            updateStackVisibility()
             return
         }
         
         let card = flashcards[currentCardIndex]
         let text = isTermDisplayed ? card.term : card.definition
+        
+        // Update header and colors based on Term/Definition
+        sideLabel.text = isTermDisplayed ? "TERM" : "DEFINITION"
+        sideLabel.textColor = isTermDisplayed ? UIColor.systemBlue : UIColor.systemPurple
+        sideLabel.backgroundColor = .clear
+        cardView.layer.borderColor = isTermDisplayed ? UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0).cgColor : UIColor.systemPurple.withAlphaComponent(0.6).cgColor
         
         // countLabel removed
         
@@ -476,10 +459,6 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         } else {
             self.cardLabel.text = text
         }
-        
-
-        
-        updateStackVisibility()
     }
     
     func handleSave() {
