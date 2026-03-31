@@ -461,7 +461,21 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                 performSegue(withIdentifier: "ShowQuizHistory", sender: latestTopic)
             }
         case "Flashcards":
-            performSegue(withIdentifier: "openFlashcards", sender: latestTopic)
+            let modeVC = FlashcardStudyModeSelectionVC()
+            if let sheet = modeVC.sheetPresentationController {
+                if #available(iOS 16.0, *) {
+                    sheet.detents = [.custom(resolver: { _ in return 340 })]
+                } else {
+                    sheet.detents = [.medium()]
+                }
+                sheet.prefersGrabberVisible = true
+                sheet.preferredCornerRadius = 28
+            }
+            modeVC.onModeSelected = { [weak self] isChallenge in
+                self?.pendingChallengeMode = isChallenge
+                self?.performSegue(withIdentifier: "openFlashcards", sender: latestTopic)
+            }
+            self.present(modeVC, animated: true, completion: nil)
         default:
             performSegue(withIdentifier: "ShowMaterialDetail", sender: latestTopic)
         }
@@ -490,6 +504,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
 
     var currentPreviewURL: URL?
+    private var pendingChallengeMode: Bool = false
     
     func updateToolbarForSelection() {
         let selectedCount = topicsTableView.indexPathsForSelectedRows?.count ?? 0
@@ -882,6 +897,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             flashVC.currentTopic = topic
             flashVC.parentSubjectName = self.selectedSubject
             flashVC.title = cleanName(topic.name) // ✅ Cleaned
+            flashVC.startInChallengeMode = self.pendingChallengeMode
         }
         else if segue.identifier == "ShowGenerationScreen",
                 let generationVC = segue.destination as? GenerationViewController,
@@ -962,5 +978,144 @@ extension SubjectViewController: QLPreviewControllerDataSource {
     
     func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {
         return currentPreviewURL! as QLPreviewItem
+    }
+}
+
+// MARK: - Flashcard Mode Selection Custom Native Sheet
+class FlashcardStudyModeSelectionVC: UIViewController {
+    var onModeSelected: ((Bool) -> Void)?
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+        setupUI()
+    }
+    
+    private func setupUI() {
+        let titleLabel = UILabel()
+        titleLabel.text = "Select Study Mode"
+        titleLabel.font = .systemFont(ofSize: 22, weight: .bold)
+        titleLabel.textAlignment = .center
+        
+        let normalBtn = ModeCardButton(
+            title: "Normal Mode",
+            desc: "Standard visual review. Tap to flip.",
+            icon: "rectangle.portrait.on.rectangle.portrait",
+            accentColor: .systemBlue
+        )
+        normalBtn.addAction(UIAction { [weak self] _ in
+            self?.dismiss(animated: true) { self?.onModeSelected?(false) }
+        }, for: .touchUpInside)
+        
+        let challengeBtn = ModeCardButton(
+            title: "Challenge Mode",
+            desc: "Test your memory. Type the exact term.",
+            icon: "keyboard",
+            accentColor: UIColor(red: 0.86, green: 0.24, blue: 0.96, alpha: 1.0)
+        )
+        challengeBtn.addAction(UIAction { [weak self] _ in
+            self?.dismiss(animated: true) { self?.onModeSelected?(true) }
+        }, for: .touchUpInside)
+        
+        let stack = UIStackView(arrangedSubviews: [titleLabel, normalBtn, challengeBtn])
+        stack.axis = .vertical
+        stack.spacing = 16
+        stack.setCustomSpacing(24, after: titleLabel)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: view.topAnchor, constant: 40),
+            stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24)
+        ])
+    }
+}
+
+class ModeCardButton: UIControl {
+    private let title: String
+    private let desc: String
+    private let icon: String
+    private let accentColor: UIColor
+    
+    init(title: String, desc: String, icon: String, accentColor: UIColor) {
+        self.title = title
+        self.desc = desc
+        self.icon = icon
+        self.accentColor = accentColor
+        super.init(frame: .zero)
+        setupView()
+    }
+    
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    
+    private func setupView() {
+        backgroundColor = accentColor.withAlphaComponent(0.12)
+        layer.cornerRadius = 20
+        layer.cornerCurve = .continuous
+        layer.borderWidth = 1.0
+        layer.borderColor = accentColor.withAlphaComponent(0.2).cgColor
+        
+        // Touch feedback
+        addTarget(self, action: #selector(touchDown), for: [.touchDown, .touchDragEnter])
+        addTarget(self, action: #selector(touchUp), for: [.touchUpInside, .touchDragExit, .touchCancel])
+        
+        let iconView = UIImageView(image: UIImage(systemName: icon, withConfiguration: UIImage.SymbolConfiguration(pointSize: 24, weight: .medium)))
+        iconView.tintColor = accentColor
+        iconView.contentMode = .center
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+        
+        let iconBg = UIView()
+        iconBg.backgroundColor = accentColor.withAlphaComponent(0.18)
+        iconBg.layer.cornerRadius = 14
+        iconBg.layer.cornerCurve = .continuous
+        iconBg.translatesAutoresizingMaskIntoConstraints = false
+        iconBg.addSubview(iconView)
+        
+        NSLayoutConstraint.activate([
+            iconBg.widthAnchor.constraint(equalToConstant: 56),
+            iconBg.heightAnchor.constraint(equalToConstant: 56),
+            iconView.centerXAnchor.constraint(equalTo: iconBg.centerXAnchor),
+            iconView.centerYAnchor.constraint(equalTo: iconBg.centerYAnchor)
+        ])
+        
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = .systemFont(ofSize: 19, weight: .bold)
+        titleLabel.textColor = .label
+        
+        let descLabel = UILabel()
+        descLabel.text = desc
+        descLabel.font = .systemFont(ofSize: 15, weight: .regular)
+        descLabel.textColor = .secondaryLabel
+        descLabel.numberOfLines = 0
+        
+        let textStack = UIStackView(arrangedSubviews: [titleLabel, descLabel])
+        textStack.axis = .vertical
+        textStack.spacing = 3
+        textStack.alignment = .leading
+        
+        let hStack = UIStackView(arrangedSubviews: [iconBg, textStack])
+        hStack.axis = .horizontal
+        hStack.spacing = 18
+        hStack.alignment = .center
+        hStack.isUserInteractionEnabled = false
+        hStack.translatesAutoresizingMaskIntoConstraints = false
+        
+        addSubview(hStack)
+        NSLayoutConstraint.activate([
+            hStack.topAnchor.constraint(equalTo: topAnchor, constant: 20),
+            hStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20),
+            hStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            hStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20)
+        ])
+    }
+    
+    @objc private func touchDown() {
+        UIView.animate(withDuration: 0.1) { self.transform = CGAffineTransform(scaleX: 0.96, y: 0.96); self.alpha = 0.8 }
+    }
+    
+    @objc private func touchUp() {
+        UIView.animate(withDuration: 0.2) { self.transform = .identity; self.alpha = 1.0 }
     }
 }

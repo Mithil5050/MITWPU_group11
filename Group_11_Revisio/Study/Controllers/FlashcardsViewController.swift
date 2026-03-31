@@ -114,6 +114,7 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
     var currentTopic: Topic?
     var parentSubjectName: String?
     var isFromGenerationScreen: Bool = false
+    var startInChallengeMode: Bool = false
 
     private var flashcards: [Flashcard] = []
     private var isTermDisplayed = true
@@ -178,6 +179,12 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
         lastLayoutSize = size
         layoutCardFrames()
         refreshCarousel(animated: false)
+        
+        if startInChallengeMode {
+            DispatchQueue.main.async {
+                self.didSelectChallengeMode()
+            }
+        }
     }
 
     // MARK: - Carousel Setup
