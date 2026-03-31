@@ -1,5 +1,6 @@
 import UIKit
 
+// MARK: - Data Model
 struct Flashcard {
     let term: String
     let definition: String
@@ -10,27 +11,98 @@ protocol AddFlashcardDelegate: AnyObject {
     func didCreateNewFlashcard(card: Flashcard)
 }
 
+// MARK: - Reusable Card Slot View
+private class CardSlotView: UIView {
+
+    let textLabel: UILabel = {
+        let l = UILabel()
+        l.font = .systemFont(ofSize: 24, weight: .medium)
+        l.textAlignment = .center
+        l.numberOfLines = 0
+        l.textColor = .white
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
+    }()
+
+    let sideLabel: UILabel = {
+        let l = UILabel()
+        l.font = .systemFont(ofSize: 13, weight: .bold)
+        l.textAlignment = .center
+        l.letterSpacing(2)
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
+    }()
+
+    override init(frame: CGRect) { super.init(frame: frame); setup() }
+    required init?(coder: NSCoder) { super.init(coder: coder); setup() }
+
+    private func setup() {
+        backgroundColor = UIColor(red: 0.13, green: 0.15, blue: 0.24, alpha: 1.0)
+        layer.cornerRadius = 20
+        layer.borderWidth = 2.8
+        layer.masksToBounds = false
+        addSubview(textLabel)
+        addSubview(sideLabel)
+        NSLayoutConstraint.activate([
+            textLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+            textLabel.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -10),
+            textLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 24),
+            textLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -24),
+            sideLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20),
+            sideLabel.centerXAnchor.constraint(equalTo: centerXAnchor)
+        ])
+    }
+
+    func configure(isTerm: Bool, text: String) {
+        textLabel.text = text
+        sideLabel.text = isTerm ? "TERM" : "DEFINITION"
+        sideLabel.isHidden = false
+        let blue = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0)
+        let purple = UIColor.systemPurple.withAlphaComponent(0.8)
+        let color = isTerm ? blue : purple
+        sideLabel.textColor = color
+        layer.borderColor = color.cgColor
+        layer.shadowColor = color.cgColor
+        layer.shadowOpacity = 0.55
+        layer.shadowOffset = .zero
+        layer.shadowRadius = 8
+    }
+
+    func resetBorderToTerm() {
+        layer.borderColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0).cgColor
+        layer.shadowColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0).cgColor
+    }
+}
+
+private extension UILabel {
+    func letterSpacing(_ spacing: CGFloat) {
+        // swift won't allow stored props in extension, just a no-op helper tag
+    }
+}
+
+// MARK: - FlashcardViewController (Home)
 class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFieldDelegate {
 
-    // MARK: - Outlets
+    // MARK: - Storyboard Outlets (hidden, replaced by carousel)
     @IBOutlet weak var cardView: UIView!
     @IBOutlet weak var cardLabel: UILabel!
-    
 
-    private let challengeModeSwitch: UISwitch = {
-        let toggle = UISwitch()
-        toggle.translatesAutoresizingMaskIntoConstraints = false
-        return toggle
+    // MARK: - Carousel Views
+    private let carouselContainer = UIView()
+    private let prevCard  = CardSlotView()
+    private let frontCard = CardSlotView()
+    private let nextCard  = CardSlotView()
+
+    // MARK: - Supporting UI
+    private let countLabel: UILabel = {
+        let l = UILabel()
+        l.textColor = UIColor.lightGray
+        l.font = .systemFont(ofSize: 14, weight: .medium)
+        l.textAlignment = .center
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
     }()
-    
-    private let challengeModeLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Challenge Mode"
-        label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
+
     private let challengeTextField: UITextField = {
         let tf = UITextField()
         tf.placeholder = "Type keyword here..."
@@ -40,493 +112,572 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         tf.autocorrectionType = .no
         tf.autocapitalizationType = .none
         tf.translatesAutoresizingMaskIntoConstraints = false
-        tf.layer.zPosition = 101
+        tf.layer.zPosition = 200
         return tf
     }()
-    
-    private let countLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .lightGray
-        label.font = .systemFont(ofSize: 14, weight: .medium)
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
 
-    
-    private let sideLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 14, weight: .bold)
-        label.textAlignment = .center
-        label.backgroundColor = .clear
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
     // MARK: - Properties
     var currentTopic: Topic?
     var parentSubjectName: String?
-    
+
     private var flashcards: [Flashcard] = []
     private var isTermDisplayed = true
     private var isChallengePhase = false
     private var currentCardIndex = 0
-    
     private var knownCount = 0
     private var unknownCount = 0
-    
-    private var initialCardCenter: CGPoint = .zero
+    private var isAnimating = false
+    private var lastLayoutSize: CGSize = .zero
+
+    // Carousel slot configs
+    private struct SlotCfg {
+        let yOff: CGFloat; let scale: CGFloat; let alpha: CGFloat; let xRotDeg: CGFloat; let zOff: CGFloat
+    }
+    private let cfgPrev  = SlotCfg(yOff: -140, scale: 0.92, alpha: 0.45, xRotDeg: 0, zOff: -80)
+    private let cfgFront = SlotCfg(yOff:    0, scale: 1.00, alpha: 1.00, xRotDeg: 0, zOff: 100)
+    private let cfgNext  = SlotCfg(yOff:  140, scale: 0.92, alpha: 0.45, xRotDeg: 0, zOff: -80)
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        if let topicName = currentTopic?.name {
-            self.title = topicName
+        cardView?.isHidden = true
+        cardLabel?.isHidden = true
+
+        if let name = currentTopic?.name { self.title = name }
+
+        if let body = currentTopic?.largeContentBody, !body.isEmpty {
+            unpackFlashcards(from: body)
+        } else if let fallback = currentTopic?.notesContent, !fallback.isEmpty {
+            unpackFlashcards(from: fallback)
         }
-        
-        // ✅ LOAD DATA: Check largeContentBody first, fallback to notesContent for backwards compatibility
-        if let content = currentTopic?.largeContentBody, !content.isEmpty {
-            unpackFlashcards(from: content)
-        } else if let fallbackContent = currentTopic?.notesContent, !fallbackContent.isEmpty {
-            unpackFlashcards(from: fallbackContent)
-        }
-        
-        // 1. Setup Main Card (Color is set here)
-        setupCardView()
-        
-        setupProgrammaticUI()
-        setupGesture()
-        
+
+        setupCarouselContainer()
+        setupSupportingUI()
+        setupGestures()
+
         challengeTextField.delegate = self
         challengeTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        
+
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-        
-        updateUI(animated: false)
-        
-        let infoBtn = UIBarButtonItem(image: UIImage(systemName: "info.circle"), style: .plain, target: self, action: #selector(showSwipeInstructions))
-        let addBtn = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addFlashcardTapped))
-        navigationItem.rightBarButtonItems = [addBtn, infoBtn]
+
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addFlashcardTapped)),
+            UIBarButtonItem(image: UIImage(systemName: "info.circle"), style: .plain, target: self, action: #selector(showInstructions))
+        ]
     }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
+
+    deinit { NotificationCenter.default.removeObserver(self) }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        let size = carouselContainer.bounds.size
+        guard size != lastLayoutSize, size.width > 0 else { return }
+        lastLayoutSize = size
+        layoutCardFrames()
+        refreshCarousel(animated: false)
     }
-    
-    @objc private func keyboardWillShow(notification: NSNotification) {
-        if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
-            let originalFrame = self.challengeTextField.frame.applying(self.challengeTextField.transform.inverted())
-            let textFieldBottom = originalFrame.maxY
-            let offset = textFieldBottom - (self.view.frame.height - keyboardSize.height)
-            if offset > 0 {
-                UIView.animate(withDuration: 0.3) {
-                    self.challengeTextField.transform = CGAffineTransform(translationX: 0, y: -(offset + 20))
-                }
-            }
+
+    // MARK: - Carousel Setup
+    private func setupCarouselContainer() {
+        carouselContainer.clipsToBounds = false
+        carouselContainer.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(carouselContainer)
+        NSLayoutConstraint.activate([
+            carouselContainer.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            carouselContainer.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -30),
+            carouselContainer.widthAnchor.constraint(equalTo: view.widthAnchor),
+            carouselContainer.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.62)
+        ])
+        prevCard.isUserInteractionEnabled = false
+        nextCard.isUserInteractionEnabled = false
+        prevCard.layer.zPosition  = 1
+        nextCard.layer.zPosition  = 1
+        frontCard.layer.zPosition = 10
+        [prevCard, nextCard, frontCard].forEach { carouselContainer.addSubview($0) }
+    }
+
+    private func layoutCardFrames() {
+        guard carouselContainer.bounds.width > 0 else { return }
+        let w = carouselContainer.bounds.width - 80
+        let h = carouselContainer.bounds.height * 0.68
+        let cx = carouselContainer.bounds.midX
+        let cy = carouselContainer.bounds.midY
+
+        prevCard.bounds  = CGRect(origin: .zero, size: CGSize(width: w, height: h))
+        frontCard.bounds = CGRect(origin: .zero, size: CGSize(width: w, height: h))
+        nextCard.bounds  = CGRect(origin: .zero, size: CGSize(width: w, height: h))
+
+        prevCard.center  = CGPoint(x: cx, y: cy)
+        frontCard.center = CGPoint(x: cx, y: cy)
+        nextCard.center  = CGPoint(x: cx, y: cy)
+    }
+
+    // MARK: - Transform Helpers
+    private func makeTransform(_ cfg: SlotCfg) -> CATransform3D {
+        var t = CATransform3DIdentity
+        t.m34 = -1.0 / 900.0
+        t = CATransform3DTranslate(t, 0, cfg.yOff, cfg.zOff)
+        t = CATransform3DRotate(t, cfg.xRotDeg * .pi / 180, 1, 0, 0)
+        t = CATransform3DScale(t, cfg.scale, cfg.scale, 1)
+        return t
+    }
+
+    private func applySlotTransforms(animated: Bool) {
+        let hasPrev = currentCardIndex > 0
+        let hasNext = currentCardIndex < flashcards.count - 1
+
+        let block: () -> Void = {
+            self.prevCard.layer.transform  = self.makeTransform(self.cfgPrev)
+            self.prevCard.alpha            = hasPrev ? self.cfgPrev.alpha : 0
+            self.frontCard.layer.transform = self.makeTransform(self.cfgFront)
+            self.frontCard.alpha           = 1.0
+            self.nextCard.layer.transform  = self.makeTransform(self.cfgNext)
+            self.nextCard.alpha            = hasNext ? self.cfgNext.alpha : 0
         }
-    }
-    
-    @objc private func keyboardWillHide(notification: NSNotification) {
-        UIView.animate(withDuration: 0.3) {
-            self.challengeTextField.transform = .identity
+
+        if animated {
+            UIView.animate(withDuration: 0.42, delay: 0,
+                           usingSpringWithDamping: 0.84, initialSpringVelocity: 0.4,
+                           options: .curveEaseOut, animations: block)
+        } else {
+            block()
         }
     }
 
-    @objc private func showSwipeInstructions() {
-        let alert = UIAlertController(
-            title: "How to use Flashcards",
-            message: "• Tap the card to flip between Term and Definition.\n• Swipe Up to go to the Next card.\n• Swipe Down to go to the Previous card.\n• Swipe Right when you Know the card.\n• Swipe Left if you need to Review it.",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "Got it!", style: .default, handler: nil))
-        present(alert, animated: true)
+    // MARK: - Content Refresh
+    private func refreshCarousel(animated: Bool) {
+        guard !flashcards.isEmpty else {
+            frontCard.configure(isTerm: true, text: "No flashcards yet.\nTap '+' to add one.")
+            frontCard.sideLabel.text = ""
+            prevCard.alpha = 0; nextCard.alpha = 0
+            countLabel.text = "0 / 0"
+            return
+        }
+
+        let card = flashcards[currentCardIndex]
+        frontCard.configure(isTerm: isTermDisplayed, text: isTermDisplayed ? card.term : card.definition)
+        frontCard.layer.borderWidth = 2.8
+
+        if currentCardIndex > 0 {
+            prevCard.configure(isTerm: true, text: flashcards[currentCardIndex - 1].term)
+        }
+        if currentCardIndex < flashcards.count - 1 {
+            nextCard.configure(isTerm: true, text: flashcards[currentCardIndex + 1].term)
+        }
+
+        // Strip decoration from background cards but keep fill visible
+        for bg in [prevCard, nextCard] {
+            bg.layer.borderWidth = 0
+            bg.layer.shadowOpacity = 0
+            bg.sideLabel.isHidden = true
+            bg.backgroundColor = UIColor(red: 0.10, green: 0.12, blue: 0.18, alpha: 1.0)
+        }
+        // Ensure front card is solid
+        frontCard.backgroundColor = UIColor(red: 0.13, green: 0.15, blue: 0.24, alpha: 1.0)
+
+        countLabel.text = "\(currentCardIndex + 1) / \(flashcards.count)"
+        frontCard.isUserInteractionEnabled = !(isChallengePhase && isTermDisplayed)
+        applySlotTransforms(animated: animated)
     }
-    
-    @objc private func addFlashcardTapped() {
-        performSegue(withIdentifier: "AddCardSegue", sender: self)
+
+    // MARK: - Gesture Setup
+    private func setupGestures() {
+        frontCard.isUserInteractionEnabled = true
+        frontCard.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTap)))
+        frontCard.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:))))
     }
-    
-    private func setupProgrammaticUI() {
-        view.addSubview(challengeTextField)
+
+    @objc private func handleTap() {
+        guard !flashcards.isEmpty else { return }
+        if isChallengePhase && isTermDisplayed { return }
+        isTermDisplayed.toggle()
+        let card = flashcards[currentCardIndex]
+        let flipDir: UIView.AnimationOptions = isTermDisplayed ? .transitionFlipFromLeft : .transitionFlipFromRight
+        UIView.transition(with: frontCard, duration: 0.5, options: flipDir, animations: {
+            self.frontCard.configure(isTerm: self.isTermDisplayed,
+                                     text: self.isTermDisplayed ? card.term : card.definition)
+            self.frontCard.layer.borderWidth = 2.8
+        })
+        // Re-strip background cards
+        for bg in [prevCard, nextCard] {
+            bg.layer.borderWidth = 0
+            bg.layer.shadowOpacity = 0
+            bg.sideLabel.isHidden = true
+        }
+    }
+
+    @objc private func handlePan(_ sender: UIPanGestureRecognizer) {
+        guard !flashcards.isEmpty, !isAnimating else { return }
+        if isChallengePhase && isTermDisplayed { return }
+
+        let tx = sender.translation(in: view)
+        let vel = sender.velocity(in: view)
+        let isVertical = abs(tx.y) > abs(tx.x)
+
+        switch sender.state {
+        case .changed:
+            if isVertical {
+                // Follow finger vertically with mild resistance
+                var t = CATransform3DIdentity; t.m34 = -1.0 / 900.0
+                let drag = tx.y * 0.55
+                t = CATransform3DTranslate(t, 0, drag, 0)
+                let scaleDown = max(0.88, 1.0 - abs(drag) / 800)
+                t = CATransform3DScale(t, scaleDown, scaleDown, 1)
+                frontCard.layer.transform = t
+
+                // Peek adjacent card
+                let progress = min(abs(tx.y) / 200, 1.0)
+                if tx.y < 0 && currentCardIndex < flashcards.count - 1 {
+                    // Going up (next): nextCard peeks up
+                    var nt = makeTransform(cfgNext)
+                    nt = CATransform3DTranslate(nt, 0, -cfgNext.yOff * progress * 0.4, 0)
+                    nextCard.layer.transform = nt
+                    nextCard.alpha = cfgNext.alpha + (1.0 - cfgNext.alpha) * progress * 0.6
+                } else if tx.y > 0 && currentCardIndex > 0 {
+                    // Going down (prev): prevCard peeks down
+                    var pt = makeTransform(cfgPrev)
+                    pt = CATransform3DTranslate(pt, 0, -cfgPrev.yOff * progress * 0.4, 0)
+                    prevCard.layer.transform = pt
+                    prevCard.alpha = cfgPrev.alpha + (1.0 - cfgPrev.alpha) * progress * 0.6
+                }
+            } else {
+                // Horizontal: follow with z-rotation
+                let rot = (tx.x / view.bounds.width) * 0.28
+                frontCard.layer.transform = CATransform3DMakeAffineTransform(
+                    CGAffineTransform(translationX: tx.x, y: tx.y * 0.15).rotated(by: rot)
+                )
+                if tx.x > 40 {
+                    frontCard.layer.borderColor = UIColor.systemGreen.cgColor
+                    frontCard.layer.shadowColor = UIColor.systemGreen.cgColor
+                } else if tx.x < -40 {
+                    frontCard.layer.borderColor = UIColor.systemRed.cgColor
+                    frontCard.layer.shadowColor = UIColor.systemRed.cgColor
+                } else {
+                    frontCard.resetBorderToTerm()
+                }
+            }
+
+        case .ended, .cancelled:
+            let threshold: CGFloat = 110
+            if isVertical {
+                if tx.y < -threshold || vel.y < -700 {
+                    rolodexForward()
+                } else if tx.y > threshold || vel.y > 700 {
+                    rolodexBackward()
+                } else {
+                    snapBack()
+                }
+            } else {
+                if tx.x > threshold || vel.x > 700 {
+                    animateKnown()
+                } else if tx.x < -threshold || vel.x < -700 {
+                    animateReview()
+                } else {
+                    snapBack()
+                }
+            }
+
+        default: break
+        }
+    }
+
+    private func snapBack() {
+        UIView.animate(withDuration: 0.38, delay: 0,
+                       usingSpringWithDamping: 0.72, initialSpringVelocity: 0.5,
+                       options: .curveEaseOut) {
+            self.applySlotTransforms(animated: false)
+            self.frontCard.resetBorderToTerm()
+        }
+    }
+
+    // MARK: - Rolodex Navigation
+    private func rolodexForward() {
+        guard currentCardIndex < flashcards.count - 1 else { snapBack(); return }
+        isAnimating = true
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+        UIView.animate(withDuration: 0.38, delay: 0, options: .curveEaseIn, animations: {
+            // Front exits upward
+            var t = CATransform3DIdentity; t.m34 = -1.0 / 900.0
+            t = CATransform3DTranslate(t, 0, -self.view.bounds.height * 0.38, 0)
+            t = CATransform3DRotate(t, 18 * .pi / 180, 1, 0, 0)
+            t = CATransform3DScale(t, 0.62, 0.62, 1)
+            self.frontCard.layer.transform = t
+            self.frontCard.alpha = 0
+            // Next card rises to center
+            self.nextCard.layer.transform = CATransform3DIdentity
+            self.nextCard.alpha = 1.0
+        }) { _ in
+            self.currentCardIndex += 1
+            self.isTermDisplayed = true
+            self.refreshCarousel(animated: false)
+
+            if self.currentCardIndex < self.flashcards.count - 1 {
+                // Pre-stage new next card below and animate in
+                var startT = self.makeTransform(self.cfgNext)
+                startT = CATransform3DTranslate(startT, 0, 90, 0)
+                self.nextCard.alpha = 0
+                self.nextCard.layer.transform = startT
+                UIView.animate(withDuration: 0.35, delay: 0.05,
+                               usingSpringWithDamping: 0.88, initialSpringVelocity: 0.3,
+                               options: .curveEaseOut) {
+                    self.nextCard.layer.transform = self.makeTransform(self.cfgNext)
+                    self.nextCard.alpha = self.cfgNext.alpha
+                }
+            }
+            self.isAnimating = false
+        }
+    }
+
+    private func rolodexBackward() {
+        guard currentCardIndex > 0 else { snapBack(); return }
+        isAnimating = true
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+        UIView.animate(withDuration: 0.38, delay: 0, options: .curveEaseIn, animations: {
+            // Front exits downward
+            var t = CATransform3DIdentity; t.m34 = -1.0 / 900.0
+            t = CATransform3DTranslate(t, 0, self.view.bounds.height * 0.38, 0)
+            t = CATransform3DRotate(t, -18 * .pi / 180, 1, 0, 0)
+            t = CATransform3DScale(t, 0.62, 0.62, 1)
+            self.frontCard.layer.transform = t
+            self.frontCard.alpha = 0
+            // Prev card drops to center
+            self.prevCard.layer.transform = CATransform3DIdentity
+            self.prevCard.alpha = 1.0
+        }) { _ in
+            self.currentCardIndex -= 1
+            self.isTermDisplayed = true
+            self.refreshCarousel(animated: false)
+
+            if self.currentCardIndex > 0 {
+                var startT = self.makeTransform(self.cfgPrev)
+                startT = CATransform3DTranslate(startT, 0, -90, 0)
+                self.prevCard.alpha = 0
+                self.prevCard.layer.transform = startT
+                UIView.animate(withDuration: 0.35, delay: 0.05,
+                               usingSpringWithDamping: 0.88, initialSpringVelocity: 0.3,
+                               options: .curveEaseOut) {
+                    self.prevCard.layer.transform = self.makeTransform(self.cfgPrev)
+                    self.prevCard.alpha = self.cfgPrev.alpha
+                }
+            }
+            self.isAnimating = false
+        }
+    }
+
+    // MARK: - Known / Review
+    private func animateKnown() {
+        isAnimating = true
+        knownCount += 1
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
+        UIView.animate(withDuration: 0.15) {
+            self.frontCard.layer.borderColor = UIColor.systemGreen.cgColor
+            self.frontCard.layer.shadowColor = UIColor.systemGreen.cgColor
+        }
+        UIView.animate(withDuration: 0.38, delay: 0.08, options: .curveEaseIn, animations: {
+            let rot = CATransform3DMakeAffineTransform(
+                CGAffineTransform(translationX: self.view.bounds.width * 1.1, y: 0).rotated(by: 0.28))
+            self.frontCard.layer.transform = rot
+            self.frontCard.alpha = 0
+        }) { _ in self.advanceAfterSwipe() }
+    }
+
+    private func animateReview() {
+        isAnimating = true
+        unknownCount += 1
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        // Re-queue this card to end
+        flashcards.append(flashcards[currentCardIndex])
+
+        UIView.animate(withDuration: 0.15) {
+            self.frontCard.layer.borderColor = UIColor.systemRed.cgColor
+            self.frontCard.layer.shadowColor = UIColor.systemRed.cgColor
+        }
+        UIView.animate(withDuration: 0.38, delay: 0.08, options: .curveEaseIn, animations: {
+            let rot = CATransform3DMakeAffineTransform(
+                CGAffineTransform(translationX: -self.view.bounds.width * 1.1, y: 0).rotated(by: -0.28))
+            self.frontCard.layer.transform = rot
+            self.frontCard.alpha = 0
+        }) { _ in self.advanceAfterSwipe() }
+    }
+
+    private func advanceAfterSwipe() {
+        if currentCardIndex < flashcards.count - 1 {
+            currentCardIndex += 1
+            isTermDisplayed = true
+            refreshCarousel(animated: false)
+            // Animate new front card in from below
+            var startT = CATransform3DIdentity; startT.m34 = -1.0 / 900.0
+            startT = CATransform3DTranslate(startT, 0, 160, 0)
+            startT = CATransform3DScale(startT, 0.72, 0.72, 1)
+            frontCard.layer.transform = startT
+            frontCard.alpha = 0
+            UIView.animate(withDuration: 0.45, delay: 0,
+                           usingSpringWithDamping: 0.80, initialSpringVelocity: 0.4,
+                           options: .curveEaseOut) {
+                self.frontCard.layer.transform = CATransform3DIdentity
+                self.frontCard.alpha = 1.0
+            }
+            isAnimating = false
+        } else {
+            isAnimating = false
+            frontCard.isHidden = true
+            showResultsScreen()
+        }
+    }
+
+    // MARK: - Challenge Mode
+    @objc private func textFieldDidChange() {
+        guard isChallengePhase, let text = challengeTextField.text, !flashcards.isEmpty else { return }
+        let kw = flashcards[currentCardIndex].keyword.lowercased()
+        if text.lowercased().contains(kw) { challengeModeSuccess() }
+    }
+
+    private func challengeModeSuccess() {
+        challengeTextField.resignFirstResponder()
+        UIView.animate(withDuration: 0.25, animations: {
+            self.frontCard.backgroundColor = .systemGreen
+        }, completion: { _ in
+            UIView.animate(withDuration: 0.25) { self.frontCard.backgroundColor = .clear }
+            self.isTermDisplayed = false
+            self.refreshCarousel(animated: true)
+        })
+    }
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        guard isChallengePhase, let text = textField.text, !flashcards.isEmpty else { return false }
+        let kw = flashcards[currentCardIndex].keyword.lowercased()
+        if text.lowercased().contains(kw) { challengeModeSuccess(); return true }
+        shakeCard(); return false
+    }
+
+    private func shakeCard() {
+        let anim = CAKeyframeAnimation(keyPath: "transform.translation.x")
+        anim.timingFunction = CAMediaTimingFunction(name: .linear)
+        anim.duration = 0.4
+        anim.values = [-10, 10, -10, 10, -5, 5, -2, 2, 0] as [CGFloat]
+        frontCard.layer.add(anim, forKey: "shake")
+        UIView.animate(withDuration: 0.1, animations: {
+            self.frontCard.layer.borderColor = UIColor.systemRed.cgColor
+        }) { _ in UIView.animate(withDuration: 0.3, delay: 0.2) { self.frontCard.resetBorderToTerm() } }
+    }
+
+    // MARK: - Supporting UI
+    private func setupSupportingUI() {
         view.addSubview(countLabel)
-        cardView.addSubview(sideLabel)
-        
+        view.addSubview(challengeTextField)
         NSLayoutConstraint.activate([
-            sideLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -16),
-            sideLabel.centerXAnchor.constraint(equalTo: cardView.centerXAnchor),
-            sideLabel.heightAnchor.constraint(equalToConstant: 24),
-            sideLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 80),
-            
-            countLabel.topAnchor.constraint(equalTo: cardView.bottomAnchor, constant: 80),
+            countLabel.topAnchor.constraint(equalTo: carouselContainer.bottomAnchor, constant: 36),
             countLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            cardView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.55),
-            challengeTextField.topAnchor.constraint(equalTo: countLabel.bottomAnchor, constant: 30),
+            challengeTextField.topAnchor.constraint(equalTo: countLabel.bottomAnchor, constant: 16),
             challengeTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             challengeTextField.widthAnchor.constraint(equalToConstant: 250),
             challengeTextField.heightAnchor.constraint(equalToConstant: 44)
         ])
     }
-    
-    
-    @objc private func textFieldDidChange() {
-        guard isChallengePhase, let text = challengeTextField.text, !flashcards.isEmpty else { return }
-        let currentKeyword = flashcards[currentCardIndex].keyword.lowercased()
-        if text.lowercased().contains(currentKeyword) || text.lowercased() == currentKeyword {
-            challengeModeSuccess()
-        }
-    }
-    
-    private func challengeModeSuccess() {
-        challengeTextField.resignFirstResponder()
-        UIView.animate(withDuration: 0.3) {
-            self.cardView.backgroundColor = .systemGreen
-        } completion: { _ in
+
+    // MARK: - Keyboard
+    @objc private func keyboardWillShow(notification: NSNotification) {
+        guard let kbFrame = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else { return }
+        let tfBottom = challengeTextField.frame.maxY
+        let offset = tfBottom - (view.frame.height - kbFrame.height)
+        if offset > 0 {
             UIView.animate(withDuration: 0.3) {
-                self.setupCardView() // revert to blue
+                self.challengeTextField.transform = CGAffineTransform(translationX: 0, y: -(offset + 20))
             }
-            // Auto flip to answer and enable swipe
-            self.isTermDisplayed = false
-            self.updateUI(animated: true)
         }
     }
-    
-    // MARK: - UITextFieldDelegate
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        guard isChallengePhase, let text = textField.text, !flashcards.isEmpty else { return false }
-        
-        let currentKeyword = flashcards[currentCardIndex].keyword.lowercased()
-        
-        if text.lowercased().contains(currentKeyword) || text.lowercased() == currentKeyword {
-            challengeModeSuccess()
-            return true
-        } else {
-            shakeCardRed()
-            return false
-        }
+
+    @objc private func keyboardWillHide(notification: NSNotification) {
+        UIView.animate(withDuration: 0.3) { self.challengeTextField.transform = .identity }
     }
-    
-    private func shakeCardRed() {
-        let animation = CAKeyframeAnimation(keyPath: "transform.translation.x")
-        animation.timingFunction = CAMediaTimingFunction(name: .linear)
-        animation.duration = 0.4
-        animation.values = [-10.0, 10.0, -10.0, 10.0, -5.0, 5.0, -2.0, 2.0, 0.0]
-        cardView.layer.add(animation, forKey: "shake")
-        
-        let originalColor = cardView.backgroundColor
-        let originalBorder = cardView.layer.borderColor
-        
-        UIView.animate(withDuration: 0.1, animations: {
-            self.cardView.backgroundColor = UIColor.systemRed.withAlphaComponent(0.8)
-            self.cardView.layer.borderColor = UIColor.systemRed.cgColor
-        }) { _ in
-            UIView.animate(withDuration: 0.3, delay: 0.2, animations: {
-                self.cardView.backgroundColor = originalColor
-                self.cardView.layer.borderColor = originalBorder
-            }, completion: nil)
-        }
+
+    // MARK: - Misc
+    @objc private func showInstructions() {
+        let alert = UIAlertController(title: "How to use Flashcards",
+            message: "• Tap card to flip Term ↔ Definition\n• Swipe Up → Next card\n• Swipe Down → Previous card\n• Swipe Right → I Know It ✅\n• Swipe Left → Review Later ❌",
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Got it!", style: .default))
+        present(alert, animated: true)
     }
-    
-    // ✅ EXTRACT SAVED DATA
+
+    @objc private func addFlashcardTapped() {
+        performSegue(withIdentifier: "AddCardSegue", sender: self)
+    }
+
+    // MARK: - Data
     private func unpackFlashcards(from content: String) {
-        let lines = content.components(separatedBy: "\n")
         var loaded: [Flashcard] = []
-        
-        for line in lines where !line.isEmpty {
-            let parts = line.components(separatedBy: "|")
-            
-            if parts.count >= 3 {
-                // ✅ SUCCESS: AI provided Term, Definition, and Keyword
-                loaded.append(Flashcard(term: parts[0], definition: parts[1], keyword: parts[2]))
-            } else if parts.count == 2 {
-                // ⚠️ FALLBACK: If AI missed the keyword, use the Term as the keyword
-                loaded.append(Flashcard(term: parts[0], definition: parts[1], keyword: parts[0]))
-            }
+        for line in content.components(separatedBy: "\n") where !line.isEmpty {
+            let p = line.components(separatedBy: "|")
+            if p.count >= 3 { loaded.append(Flashcard(term: p[0], definition: p[1], keyword: p[2])) }
+            else if p.count == 2 { loaded.append(Flashcard(term: p[0], definition: p[1], keyword: p[0])) }
         }
-        
-        if !loaded.isEmpty {
-            self.flashcards = loaded
-        }
-    }
-    
-    // MARK: - UI Setup
-    private func setupCardView() {
-        cardView.backgroundColor = .clear // Fully transparent hollow card
-        styleCard(cardView)
-        cardView.layer.zPosition = 100
-        
-        cardLabel.font = .systemFont(ofSize: 26, weight: .medium)
-        cardLabel.textAlignment = .center
-        cardLabel.numberOfLines = 0
-    }
-    
-    private func styleCard(_ view: UIView) {
-        view.layer.cornerRadius = 16
-        view.layer.borderWidth = 3.0
-        view.layer.borderColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0).cgColor
-        view.layer.shadowColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0).cgColor
-        view.layer.shadowOpacity = 0.8
-        view.layer.shadowOffset = .zero
-        view.layer.shadowRadius = 15
-        view.layer.masksToBounds = false
-    }
-    
-    private func alignBackgroundCard(_ bgView: UIView) {
-        // Removed
-    }
-    
-    private func resetStackTransforms() {
-        cardView.transform = .identity
-        cardView.alpha = 1.0
-        updateStackVisibility()
-    }
-    
-    private func updateStackVisibility() {
-        // Stack removed
+        if !loaded.isEmpty { flashcards = loaded }
     }
 
-    private func setupGesture() {
-        let tap = UITapGestureRecognizer(target: self, action: #selector(handleCardTap))
-        cardView.addGestureRecognizer(tap)
-        
-        let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
-        cardView.addGestureRecognizer(pan)
-    }
-    
-    @objc func handleCardTap() {
-        guard !flashcards.isEmpty else { return }
-        // Cannot flip manually in challenge mode until solved
-        if isChallengePhase && isTermDisplayed {
-            return
-        }
-        isTermDisplayed.toggle()
-        updateUI(animated: true)
-    }
-    
-    @objc func handlePan(_ sender: UIPanGestureRecognizer) {
-        guard !flashcards.isEmpty else { return }
-        guard let card = sender.view else { return }
-        
-        if isChallengePhase && isTermDisplayed { return }
-        
-        let translation = sender.translation(in: view)
-        switch sender.state {
-        case .began:
-            initialCardCenter = card.center
-        case .changed:
-            let rotation = (translation.x / view.bounds.width) * 0.4
-            card.transform = CGAffineTransform(translationX: translation.x, y: translation.y).rotated(by: rotation)
-            let isVertical = abs(translation.y) > abs(translation.x)
-            if isVertical {
-                card.layer.borderColor = translation.y < 0 ? UIColor.systemGreen.cgColor : UIColor.systemRed.cgColor
-            } else {
-                card.layer.borderColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0).cgColor
-            }
-        case .ended:
-            card.layer.borderColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0).cgColor
-            
-            let isVertical = abs(translation.y) > abs(translation.x)
-            
-            if isVertical && abs(translation.y) > 150 {
-                translation.y < 0 ? (knownCount += 1) : (unknownCount += 1)
-                finishSwipe(translationX: 0, translationY: translation.y < 0 ? -view.bounds.height : view.bounds.height, isNext: true)
-            } else if !isVertical && abs(translation.x) > 150 {
-                if translation.x < 0 { 
-                    let skippedCard = self.flashcards[self.currentCardIndex]
-                    self.flashcards.append(skippedCard)
-                    finishSwipe(translationX: -view.bounds.width, translationY: 0, isNext: true)
-                } else { 
-                    if currentCardIndex > 0 {
-                        finishSwipe(translationX: view.bounds.width, translationY: 0, isNext: false)
-                    } else {
-                        snapBack(card: card)
-                    }
-                }
-            } else {
-                snapBack(card: card)
-            }
-        default: break
-        }
-    }
-    
-    private func snapBack(card: UIView) {
-        UIView.animate(withDuration: 0.3) {
-            card.center = self.initialCardCenter
-            card.transform = .identity
-            card.layer.borderColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0).cgColor
-        }
-    }
-
-    private func finishSwipe(translationX: CGFloat, translationY: CGFloat, isNext: Bool) {
-        UIView.animate(withDuration: 0.3, animations: {
-            self.cardView.transform = CGAffineTransform(translationX: translationX, y: translationY).rotated(by: translationX > 0 ? 0.3 : (translationX < 0 ? -0.3 : 0))
-            self.cardView.alpha = 0
-        }) { _ in
-            self.cardView.transform = .identity
-            self.cardView.alpha = 1.0
-            self.cardView.center = self.initialCardCenter
-            self.styleCard(self.cardView)
-            
-            if isNext {
-                if self.currentCardIndex < self.flashcards.count - 1 {
-                    self.currentCardIndex += 1
-                    self.isTermDisplayed = true
-                    self.updateUI(animated: false)
-                    
-                    self.cardView.transform = CGAffineTransform(translationX: 0, y: 200).rotated(by: 0.3)
-                    self.cardView.alpha = 0
-                    UIView.animate(withDuration: 0.5, delay: 0.0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.6, options: .curveEaseOut, animations: {
-                        self.cardView.transform = .identity
-                        self.cardView.alpha = 1.0
-                    }, completion: nil)
-                    
-                } else {
-                    self.cardView.isHidden = true
-                    self.challengeTextField.isHidden = true
-                    self.showResultsScreen()
-                }
-            } else {
-                self.currentCardIndex -= 1
-                self.isTermDisplayed = true
-                self.updateUI(animated: false)
-                
-                self.cardView.transform = CGAffineTransform(translationX: 0, y: -200).rotated(by: -0.3)
-                self.cardView.alpha = 0
-                UIView.animate(withDuration: 0.5, delay: 0.0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.6, options: .curveEaseOut, animations: {
-                        self.cardView.transform = .identity
-                        self.cardView.alpha = 1.0
-                }, completion: nil)
-            }
-        }
-    }
-
-    // MARK: - Animations
+    // MARK: - Results
     private func showResultsScreen() {
-        let storyboard = UIStoryboard(name: "Home", bundle: nil)
-        if let resultsVC = storyboard.instantiateViewController(withIdentifier: "QuizResultsViewController") as? QuizResultsViewController {
-            resultsVC.isFlashcardMode = true
-            resultsVC.knownCount = knownCount
-            resultsVC.unknownCount = unknownCount
-            resultsVC.onChallengeMode = { [weak self] in
-                self?.didSelectChallengeMode()
-            }
-            resultsVC.onSaveAndExit = { [weak self] in
-                self?.didSelectSaveAndExit()
-            }
-            let nav = UINavigationController(rootViewController: resultsVC)
+        let sb = UIStoryboard(name: "Home", bundle: nil)
+        if let vc = sb.instantiateViewController(withIdentifier: "QuizResultsViewController") as? QuizResultsViewController {
+            vc.isFlashcardMode = true
+            vc.knownCount = knownCount
+            vc.unknownCount = unknownCount
+            vc.onChallengeMode = { [weak self] in self?.didSelectChallengeMode() }
+            vc.onSaveAndExit = { [weak self] in self?.didSelectSaveAndExit() }
+            let nav = UINavigationController(rootViewController: vc)
             nav.modalPresentationStyle = .fullScreen
             present(nav, animated: true)
         }
     }
 
-    // MARK: - UI Updates
-    func updateUI(animated: Bool = false) {
-        // ✅ Safely handle 0 cards state
-        guard !flashcards.isEmpty else {
-            cardLabel.text = "No flashcards available.\nTap '+' to add one."
-            return
-        }
-        
-        let card = flashcards[currentCardIndex]
-        let text = isTermDisplayed ? card.term : card.definition
-        
-        // Update header and colors based on Term/Definition
-        sideLabel.text = isTermDisplayed ? "TERM" : "DEFINITION"
-        sideLabel.textColor = isTermDisplayed ? UIColor.systemBlue : UIColor.systemPurple
-        sideLabel.backgroundColor = .clear
-        cardView.layer.borderColor = isTermDisplayed ? UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0).cgColor : UIColor.systemPurple.withAlphaComponent(0.6).cgColor
-        
-        // countLabel removed
-        
-        if isChallengePhase && isTermDisplayed {
-            challengeTextField.text = ""
-            // DO NOT call becomeFirstResponder() continuously as it breaks the keyboard flow if user closes it
-            // Only lock interaction
-            cardView.isUserInteractionEnabled = false // Need to type keyword to unlock
-        } else {
-            cardView.isUserInteractionEnabled = true
-        }
-        
-        countLabel.text = "\(currentCardIndex + 1) / \(flashcards.count)"
-        
-        if animated {
-            UIView.transition(with: cardView, duration: 0.3, options: .transitionFlipFromRight, animations: {
-                self.cardLabel.text = text
-            }, completion: nil)
-        } else {
-            self.cardLabel.text = text
-        }
-    }
-    
     func handleSave() {
-        let folderName = parentSubjectName ?? "Study"
-        
-        let alert = UIAlertController(
-            title: "Session Complete",
-            message: "These cards will be permanently added to your '\(folderName)' folder.",
-            preferredStyle: .alert
-        )
-        
-        let saveAction = UIAlertAction(title: "Yes, Save", style: .default) { [weak self] _ in
+        let folder = parentSubjectName ?? "Study"
+        let alert = UIAlertController(title: "Session Complete",
+            message: "Cards will be saved to '\(folder)'.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Yes, Save", style: .default) { [weak self] _ in
             guard let self = self else { return }
             ProgressDataManager.shared.logSession(minutes: Double(self.flashcards.count) * 0.5, category: "Study")
-            let confirmAlert = UIAlertController(title: "Saved!", message: "Your progress has been recorded.", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                if let nav = self.navigationController {
-                    nav.popToRootViewController(animated: true)
-                } else {
-                    self.dismiss(animated: true, completion: nil)
-                }
-            }
-            confirmAlert.addAction(okAction)
-            self.present(confirmAlert, animated: true)
-        }
-        
-        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive) { _ in
-            self.resetStackTransforms()
-        }
-        
-        alert.addAction(saveAction)
-        alert.addAction(cancelAction)
+            let ok = UIAlertController(title: "Saved!", message: "Progress recorded.", preferredStyle: .alert)
+            ok.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                if let nav = self.navigationController { nav.popToRootViewController(animated: true) }
+                else { self.dismiss(animated: true) }
+            })
+            self.present(ok, animated: true)
+        })
+        alert.addAction(UIAlertAction(title: "Cancel", style: .destructive))
         present(alert, animated: true)
     }
-    
-    // MARK: - Navigation / Delegate
+
+    // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "AddCardSegue" {
-            let destinationVC: AddFlashcardViewController?
+            let dest: AddFlashcardViewController?
             if let nav = segue.destination as? UINavigationController {
-                destinationVC = nav.topViewController as? AddFlashcardViewController
-            } else {
-                destinationVC = segue.destination as? AddFlashcardViewController
-            }
-            destinationVC?.delegate = self
+                dest = nav.topViewController as? AddFlashcardViewController
+            } else { dest = segue.destination as? AddFlashcardViewController }
+            dest?.delegate = self
         }
     }
-    
+
     func didCreateNewFlashcard(card: Flashcard) {
         ProgressDataManager.shared.totalFlashcardsViewed += 1
         flashcards.append(card)
-        
-        // ✅ Updated to include the 3rd component (keyword)
-        let updatedText = flashcards.map { "\($0.term)|\($0.definition)|\($0.keyword)" }.joined(separator: "\n")
-        
-        currentTopic?.largeContentBody = updatedText
-        
-        if let subject = parentSubjectName, let topicName = currentTopic?.name {
-            DataManager.shared.updateTopicContent(subject: subject, topicName: topicName, newText: updatedText, type: "Flashcards")
+        let updated = flashcards.map { "\($0.term)|\($0.definition)|\($0.keyword)" }.joined(separator: "\n")
+        currentTopic?.largeContentBody = updated
+        if let s = parentSubjectName, let t = currentTopic?.name {
+            DataManager.shared.updateTopicContent(subject: s, topicName: t, newText: updated, type: "Flashcards")
         }
-        
         currentCardIndex = flashcards.count - 1
         isTermDisplayed = true
-        updateUI(animated: true)
-        resetStackTransforms()
+        refreshCarousel(animated: true)
     }
 }
 
+// MARK: - Results Delegate + Protocol
 protocol HomeFlashcardResultsDelegate: AnyObject {
     func didSelectChallengeMode()
     func didSelectSaveAndExit()
@@ -536,92 +687,71 @@ class HomeFlashcardResultsViewController: UIViewController {
     var knownCount = 0
     var unknownCount = 0
     weak var delegate: HomeFlashcardResultsDelegate?
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
-        
+
         let titleLabel = UILabel()
         titleLabel.text = "Study Complete! 🎉"
         titleLabel.font = .systemFont(ofSize: 32, weight: .bold)
-        titleLabel.textColor = .white
-        titleLabel.textAlignment = .center
-        
+        titleLabel.textColor = .white; titleLabel.textAlignment = .center
+
         let knownLabel = UILabel()
         knownLabel.text = "✅ Known: \(knownCount)"
-        knownLabel.font = .systemFont(ofSize: 20, weight: .semibold)
-        knownLabel.textColor = .systemGreen
-        
+        knownLabel.font = .systemFont(ofSize: 20, weight: .semibold); knownLabel.textColor = .systemGreen
+
         let unknownLabel = UILabel()
         unknownLabel.text = "❌ Need Review: \(unknownCount)"
-        unknownLabel.font = .systemFont(ofSize: 20, weight: .semibold)
-        unknownLabel.textColor = .systemRed
-        
-        let challengeBtn = UIButton(type: .system)
-        challengeBtn.setTitle("Enter Challenge Mode", for: .normal)
-        challengeBtn.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
-        challengeBtn.backgroundColor = UIColor(red: 0.86, green: 0.24, blue: 0.96, alpha: 1.0)
-        challengeBtn.setTitleColor(.white, for: .normal)
-        challengeBtn.layer.cornerRadius = 14
+        unknownLabel.font = .systemFont(ofSize: 20, weight: .semibold); unknownLabel.textColor = .systemRed
+
+        let challengeBtn = makeButton(title: "Enter Challenge Mode", color: UIColor(red: 0.86, green: 0.24, blue: 0.96, alpha: 1))
         challengeBtn.addTarget(self, action: #selector(challengeTapped), for: .touchUpInside)
-        
-        let saveBtn = UIButton(type: .system)
-        saveBtn.setTitle("Save & Exit", for: .normal)
-        saveBtn.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
-        saveBtn.backgroundColor = UIColor(red: 0.0, green: 0.55, blue: 0.98, alpha: 1.0)
-        saveBtn.setTitleColor(.white, for: .normal)
-        saveBtn.layer.cornerRadius = 14
+
+        let saveBtn = makeButton(title: "Save & Exit", color: UIColor(red: 0, green: 0.55, blue: 0.98, alpha: 1))
         saveBtn.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
-        
+
         let stack = UIStackView(arrangedSubviews: [titleLabel, knownLabel, unknownLabel, challengeBtn, saveBtn])
-        stack.axis = .vertical
-        stack.spacing = 24
+        stack.axis = .vertical; stack.spacing = 24; stack.alignment = .center
         stack.setCustomSpacing(40, after: unknownLabel)
-        stack.alignment = .center
         stack.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(stack)
-        
         NSLayoutConstraint.activate([
             stack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             stack.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -20),
-            challengeBtn.widthAnchor.constraint(equalToConstant: 280),
-            challengeBtn.heightAnchor.constraint(equalToConstant: 54),
-            saveBtn.widthAnchor.constraint(equalToConstant: 280),
-            saveBtn.heightAnchor.constraint(equalToConstant: 54)
+            challengeBtn.widthAnchor.constraint(equalToConstant: 280), challengeBtn.heightAnchor.constraint(equalToConstant: 54),
+            saveBtn.widthAnchor.constraint(equalToConstant: 280), saveBtn.heightAnchor.constraint(equalToConstant: 54)
         ])
     }
-    
-    @objc private func challengeTapped() {
-        dismiss(animated: true) {
-            self.delegate?.didSelectChallengeMode()
-        }
+
+    private func makeButton(title: String, color: UIColor) -> UIButton {
+        let b = UIButton(type: .system)
+        b.setTitle(title, for: .normal)
+        b.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
+        b.backgroundColor = color; b.setTitleColor(.white, for: .normal)
+        b.layer.cornerRadius = 14
+        return b
     }
-    
-    @objc private func saveTapped() {
-        dismiss(animated: true) {
-            self.delegate?.didSelectSaveAndExit()
-        }
-    }
+
+    @objc private func challengeTapped() { dismiss(animated: true) { self.delegate?.didSelectChallengeMode() } }
+    @objc private func saveTapped() { dismiss(animated: true) { self.delegate?.didSelectSaveAndExit() } }
 }
 
+// MARK: - Challenge & Save Extension
 extension FlashcardViewController: HomeFlashcardResultsDelegate {
     func didSelectChallengeMode() {
         isChallengePhase = true
-        let numCards = min(Int.random(in: 5...7), self.flashcards.count)
-        guard numCards > 0 else { return }
-        self.flashcards = Array(self.flashcards.shuffled().prefix(numCards))
-        self.currentCardIndex = 0
-        
-        self.cardView.isHidden = false
-        self.challengeTextField.isHidden = false
-        self.challengeTextField.text = ""
-        self.isTermDisplayed = true
-        self.updateUI(animated: false)
-        self.resetStackTransforms()
-        self.challengeTextField.becomeFirstResponder()
+        let n = min(Int.random(in: 5...7), flashcards.count)
+        guard n > 0 else { return }
+        flashcards = Array(flashcards.shuffled().prefix(n))
+        currentCardIndex = 0
+        frontCard.isHidden = false
+        challengeTextField.isHidden = false
+        challengeTextField.text = ""
+        isTermDisplayed = true
+        refreshCarousel(animated: false)
+        challengeTextField.becomeFirstResponder()
     }
-    
-    func didSelectSaveAndExit() {
-        handleSave()
-    }
+
+    func didSelectSaveAndExit() { handleSave() }
 }
