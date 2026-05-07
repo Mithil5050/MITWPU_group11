@@ -2,49 +2,83 @@ import UIKit
 
 class WordFillLaunchViewController: UIViewController {
 
+    private var topicDropdownButton: UIButton?
+    private var startButton: UIButton?
+    private var selectedTopic: Topic?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        for subview in view.subviews {
+            if let btn = subview as? UIButton {
+                if btn.configuration?.title == "Start" || btn.titleLabel?.text == "Start" {
+                    startButton = btn
+                } else if btn.configuration?.title == "Select Topic" || btn.titleLabel?.text == "Select Topic" {
+                    topicDropdownButton = btn
+                }
+            }
+        }
+        
+        if let topicBtn = topicDropdownButton, let startBtn = startButton {
+            topicBtn.translatesAutoresizingMaskIntoConstraints = false
+            startBtn.translatesAutoresizingMaskIntoConstraints = false
+            
+            view.removeConstraints(view.constraints.filter { 
+                ($0.firstItem as? UIView == topicBtn) || ($0.secondItem as? UIView == topicBtn) ||
+                ($0.firstItem as? UIView == startBtn) || ($0.secondItem as? UIView == startBtn)
+            })
+            topicBtn.removeConstraints(topicBtn.constraints)
+            startBtn.removeConstraints(startBtn.constraints)
+            
+            NSLayoutConstraint.activate([
+                startBtn.heightAnchor.constraint(equalToConstant: 52),
+                startBtn.widthAnchor.constraint(equalToConstant: 353),
+                startBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                startBtn.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+                
+                topicBtn.heightAnchor.constraint(equalToConstant: 52),
+                topicBtn.widthAnchor.constraint(equalToConstant: 353),
+                topicBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                topicBtn.bottomAnchor.constraint(equalTo: startBtn.topAnchor, constant: -16)
+            ])
+        }
+        
+        setupDropdownMenu()
+        startButton?.isEnabled = false
+    }
+    
+    private func setupDropdownMenu() {
+        let topics = DataManager.shared.getAllRecentTopics()
+        var menuActions: [UIAction] = []
+        
+        for topic in topics.prefix(10) {
+            let action = UIAction(title: topic.name) { [weak self] _ in
+                self?.selectedTopic = topic
+                self?.topicDropdownButton?.setTitle(topic.name, for: .normal)
+                self?.startButton?.isEnabled = true
+            }
+            menuActions.append(action)
+        }
+        
+        let randomAction = UIAction(title: "General Knowledge (Random)") { [weak self] _ in
+            self?.selectedTopic = nil
+            self?.topicDropdownButton?.setTitle("General Knowledge (Random)", for: .normal)
+            self?.startButton?.isEnabled = true
+        }
+        menuActions.append(randomAction)
+        
+        topicDropdownButton?.menu = UIMenu(title: "Choose a Topic", children: menuActions)
+        topicDropdownButton?.showsMenuAsPrimaryAction = true
     }
     
     @IBAction func StartButtonTapped(_ sender: UIButton) {
-        let topics = DataManager.shared.getAllRecentTopics()
-        
-        // Create an Action Sheet to let the user choose a topic
-        let alert = UIAlertController(
-            title: "Choose a Topic",
-            message: "Select study material to generate your game from:",
-            preferredStyle: .actionSheet
-        )
-        
-        // Add up to 10 recent topics to the list
-        for topic in topics.prefix(10) {
-            alert.addAction(UIAlertAction(title: topic.name, style: .default) { [weak self] _ in
-                self?.performSegue(withIdentifier: "StartWordFill", sender: topic)
-            })
-        }
-        
-        // Always give them a fallback option to just play a random game
-        alert.addAction(UIAlertAction(title: "General Knowledge (Random)", style: .default) { [weak self] _ in
-            self?.performSegue(withIdentifier: "StartWordFill", sender: nil)
-        })
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        
-        // iPad support for Action Sheets to prevent crashing
-        if let popover = alert.popoverPresentationController {
-            popover.sourceView = sender
-            popover.sourceRect = sender.bounds
-        }
-        
-        present(alert, animated: true)
+        performSegue(withIdentifier: "StartWordFill", sender: selectedTopic)
     }
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "StartWordFill",
            let destVC = segue.destination as? WordFillViewController {
-            
-            // If they picked a topic, pass it to the game!
             if let topic = sender as? Topic {
                 destVC.currentTopic = topic
             }

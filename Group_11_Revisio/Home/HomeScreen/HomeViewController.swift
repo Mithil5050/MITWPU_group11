@@ -510,7 +510,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         
         if sectionType == .continueLearning {
             headerView.isHidden = false
-            headerView.configureHeader(with: "Continue Learning", showViewAll: true, section: indexPath.section, isExpanded: isLearningExpanded)
+            let shouldShowViewAll = learningItems.count > 2
+            headerView.configureHeader(with: "Continue Learning", showViewAll: shouldShowViewAll, section: indexPath.section, isExpanded: isLearningExpanded)
             headerView.delegate = self
             return headerView
         }
