@@ -219,11 +219,11 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter Topic" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="MsR-I8-GwA">
+                            <button opaque="NO" showsMenuAsPrimaryAction="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MsR-I8-GwA">
                                 <rect key="frame" x="46" y="529" width="301" height="34"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textField>
+                                <state key="normal" title="Select Topic"/>
+                                <buttonConfiguration key="configuration" style="tinted" title="Select Topic"/>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="F1c-El-yOd"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -282,11 +282,11 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter Topic" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="kPK-yn-sA6">
+                            <button opaque="NO" showsMenuAsPrimaryAction="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kPK-yn-sA6">
                                 <rect key="frame" x="46" y="549" width="301" height="34"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textField>
+                                <state key="normal" title="Select Topic"/>
+                                <buttonConfiguration key="configuration" style="tinted" title="Select Topic"/>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="LVB-bv-TpU"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -347,11 +347,11 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter Topic" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="ivW-2o-lqc">
+                            <button opaque="NO" showsMenuAsPrimaryAction="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ivW-2o-lqc">
                                 <rect key="frame" x="46" y="525" width="301" height="34"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textField>
+                                <state key="normal" title="Select Topic"/>
+                                <buttonConfiguration key="configuration" style="tinted" title="Select Topic"/>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="2I2-D7-VEd"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
