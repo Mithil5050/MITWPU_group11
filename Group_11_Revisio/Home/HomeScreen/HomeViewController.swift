@@ -51,7 +51,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // MARK: - Properties
     var heroData: [ContentItem] = []
     var uploadItems: [ContentItem] = []
-    var learningItems: [ContentItem] = []
+    var learningItems: [Topic] = []
     var gameItems: [GameItem] = []
     
     // Side Quests Data
@@ -244,13 +244,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             }
             
             let recentTopics = Array(incompleteTasks.prefix(5))
-            
-            self.learningItems = recentTopics.map { topic in
-                var type = topic.materialType
-                if type == "Flashcards" { type = "Flashcard" }
-                return ContentItem(title: topic.name, iconName: "doc.text", itemType: type)
-            }
-            
+            self.learningItems = recentTopics
             DispatchQueue.main.async { self.collectionView.reloadData() }
         }
     
@@ -284,7 +278,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     func registerCustomCells() {
         collectionView.register(UINib(nibName: "HiAlexCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: hiAlexCellID)
         collectionView.register(UINib(nibName: "UploadContentCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: uploadContentCellID)
-        collectionView.register(UINib(nibName: "ContinueLearningCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: continueLearningCellID)
+        collectionView.register(ContinueLearningCollectionViewCell.self, forCellWithReuseIdentifier: continueLearningCellID)
         collectionView.register(QuickGamesCollectionViewCell.self, forCellWithReuseIdentifier: quickGamesCellID)
         collectionView.register(UINib(nibName: "SideQuestsCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: sideQuestsCellID)
         collectionView.register(UINib(nibName: "HeaderViewCollectionReusableView", bundle: nil),
@@ -426,15 +420,16 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .continueLearning:
-                let rowHeight: CGFloat = 75
-                let countToShow = isLearningExpanded ? learningItems.count : min(learningItems.count, 2)
-                let totalHeight = CGFloat(max(countToShow, 1)) * rowHeight
+                let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
+                let item = NSCollectionLayoutItem(layoutSize: itemSize)
                 
-                let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .absolute(totalHeight))
-                let item = NSCollectionLayoutItem(layoutSize: size)
-                let group = NSCollectionLayoutGroup.vertical(layoutSize: size, subitems: [item])
+                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.85), heightDimension: .estimated(180))
+                let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+                
                 let section = NSCollectionLayoutSection(group: group)
-                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: 5, trailing: horizontalPadding)
+                section.orthogonalScrollingBehavior = .groupPaging
+                section.interGroupSpacing = 16
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: 16, trailing: horizontalPadding)
                 section.boundarySupplementaryItems = [headerItem]
                 return section
                 
@@ -457,6 +452,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         let sectionType = HomeSection.allCases[section]
         switch sectionType {
         case .hero: return heroData.count
+        case .continueLearning: return max(learningItems.count, 1)
         default: return 1
         }
     }
@@ -484,8 +480,11 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             
         case .continueLearning:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: continueLearningCellID, for: indexPath) as! ContinueLearningCollectionViewCell
-            let itemsToShow = isLearningExpanded ? learningItems : Array(learningItems.prefix(2))
-            cell.configure(with: itemsToShow)
+            if learningItems.isEmpty {
+                cell.configureAsEmpty()
+            } else {
+                cell.configure(with: learningItems[indexPath.row])
+            }
             cell.delegate = self
             return cell
             
@@ -510,8 +509,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         
         if sectionType == .continueLearning {
             headerView.isHidden = false
-            let shouldShowViewAll = learningItems.count > 2
-            headerView.configureHeader(with: "Continue Learning", showViewAll: shouldShowViewAll, section: indexPath.section, isExpanded: isLearningExpanded)
+            headerView.configureHeader(with: "Continue Learning", showViewAll: false, section: indexPath.section, isExpanded: isLearningExpanded)
             headerView.delegate = self
             return headerView
         }
@@ -585,22 +583,12 @@ extension HomeViewController: SideQuestDelegate {
 
 // MARK: - Continue Learning Delegate
 extension HomeViewController: ContinueLearningCellDelegate {
-    func didSelectLearningItem(_ item: ContentItem) {
-        let allTopics = DataManager.shared.getAllRecentTopics()
-        
-        guard let realTopic = allTopics.first(where: { topic in
-            let nameMatches = (topic.name == item.title)
-            let topicType = topic.materialType.lowercased()
-            let itemType = item.itemType.lowercased()
-            let typeMatches = topicType.contains(itemType) || itemType.contains(topicType)
-            return nameMatches && typeMatches
-        }) else { return }
-        
-        let typeLower = realTopic.materialType.lowercased()
-        if typeLower.contains("quiz") { performSegue(withIdentifier: showQuizStartSegueID, sender: realTopic) }
-        else if typeLower.contains("flashcard") { performSegue(withIdentifier: showFlashcardsSegueID, sender: realTopic) }
-        else if typeLower.contains("cheatsheet") { performSegue(withIdentifier: showCheatsheetSegueID, sender: realTopic) }
-        else { performSegue(withIdentifier: showNotesDetailSegueID, sender: realTopic) }
+    func didSelectLearningItem(_ topic: Topic) {
+        let typeLower = topic.materialType.lowercased()
+        if typeLower.contains("quiz") { performSegue(withIdentifier: showQuizStartSegueID, sender: topic) }
+        else if typeLower.contains("flashcard") { performSegue(withIdentifier: showFlashcardsSegueID, sender: topic) }
+        else if typeLower.contains("cheatsheet") { performSegue(withIdentifier: showCheatsheetSegueID, sender: topic) }
+        else { performSegue(withIdentifier: showNotesDetailSegueID, sender: topic) }
     }
 }
 

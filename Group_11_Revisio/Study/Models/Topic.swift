@@ -16,6 +16,8 @@ struct Topic: Codable, Identifiable {
     
     var sourceName: String?
     var createdDate: String?
+    var currentProgressIndex: Int?
+    var totalItemsCount: Int?
 
     var safeAttempts: [QuizAttempt] {
         return attempts ?? []
@@ -34,6 +36,8 @@ struct Topic: Codable, Identifiable {
         case attempts
         case sourceName
         case createdDate
+        case currentProgressIndex
+        case totalItemsCount
     }
     
     init(from decoder: Decoder) throws {
@@ -51,6 +55,8 @@ struct Topic: Codable, Identifiable {
         self.attempts = try container.decodeIfPresent([QuizAttempt].self, forKey: .attempts)
         self.sourceName = try container.decodeIfPresent(String.self, forKey: .sourceName)
         self.createdDate = try container.decodeIfPresent(String.self, forKey: .createdDate)
+        self.currentProgressIndex = try container.decodeIfPresent(Int.self, forKey: .currentProgressIndex)
+        self.totalItemsCount = try container.decodeIfPresent(Int.self, forKey: .totalItemsCount)
     }
     
     init(id: UUID = UUID(),
@@ -64,7 +70,9 @@ struct Topic: Codable, Identifiable {
          cheatsheetContent: String? = nil,
          attempts: [QuizAttempt]? = nil,
          sourceName: String? = nil,
-         createdDate: String? = nil) {
+         createdDate: String? = nil,
+         currentProgressIndex: Int? = nil,
+         totalItemsCount: Int? = nil) {
         
         self.id = id
         self.name = name
@@ -78,6 +86,8 @@ struct Topic: Codable, Identifiable {
         self.attempts = attempts
         self.sourceName = sourceName
         self.createdDate = createdDate
+        self.currentProgressIndex = currentProgressIndex
+        self.totalItemsCount = totalItemsCount
     }
 }
 

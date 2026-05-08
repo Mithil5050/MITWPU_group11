@@ -435,9 +435,20 @@ class GenerateHomeViewController: UIViewController {
         }
         
         sender.isEnabled = false
-        sender.setTitle("Processing...", for: .normal)
-        loadingIndicator.startAnimating()
+        sender.setTitle("Generating...", for: .normal)
         view.isUserInteractionEnabled = false
+        
+        // Show mascot loading overlay
+        let materialName = selectedMaterialType.description
+        let overlayMessage: String
+        switch selectedMaterialType {
+        case .quiz:       overlayMessage = "Crafting your quiz questions...\nThis may take a moment ☕"
+        case .flashcards: overlayMessage = "Building your flashcards...\nSit tight!"
+        case .notes:      overlayMessage = "Writing your study notes...\nAlmost there!"
+        case .cheatsheet: overlayMessage = "Preparing your cheatsheet...\nHang on!"
+        case .none:       overlayMessage = "Our AI is generating your \(materialName)..."
+        }
+        showGenerationOverlay(message: overlayMessage)
         
         Task {
             let extractedText = await ContentExtractor.shared.extractContent(from: sourceItem)
@@ -475,10 +486,6 @@ class GenerateHomeViewController: UIViewController {
             let safeText = String(extractedText.prefix(15000))
             let finalPrompt = "\(instruction)\n\nCONTEXT:\n\(safeText)\n\nTOPIC REQUEST: \(topicName)"
             
-            await MainActor.run {
-                sender.setTitle("Generating AI Content...", for: .normal)
-            }
-
             do {
                 let generatedContent = try await generateContentWithSmartWait(
                     topic: finalPrompt,
@@ -488,11 +495,13 @@ class GenerateHomeViewController: UIViewController {
                 )
                 
                 DispatchQueue.main.async {
+                    self.hideGenerationOverlay()
                     self.handleSuccess(generatedContent: generatedContent, topicName: topicName, sender: sender)
                 }
                 
             } catch {
                 DispatchQueue.main.async {
+                    self.hideGenerationOverlay()
                     self.resetUI(sender)
                     self.showError("AI Error: \(error.localizedDescription)")
                 }
@@ -597,7 +606,6 @@ class GenerateHomeViewController: UIViewController {
     }
     
     private func resetUI(_ sender: UIButton) {
-        self.loadingIndicator.stopAnimating()
         self.view.isUserInteractionEnabled = true
         sender.isEnabled = true
         let title = (selectedMaterialType == .none) ? "Start Creation" : "Generate \(selectedMaterialType.description)"
