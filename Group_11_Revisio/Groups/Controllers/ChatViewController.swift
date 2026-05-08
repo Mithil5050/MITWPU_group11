@@ -834,6 +834,11 @@ extension ChatViewController: MessagesDataSource {
         if case .custom(let payload) = message.kind, let v = payload as? DocBubbleView {
             let isOut = message.sender.senderId == currentUser.senderId
             let maxWidth = messagesCollectionView.bounds.width * 0.7
+            let layout = messagesCollectionView.messagesCollectionViewFlowLayout
+            let avatarSize = isOut
+                ? layout.textMessageSizeCalculator.outgoingAvatarSize
+                : layout.textMessageSizeCalculator.incomingAvatarSize
+            let avatarInset = avatarSize.width > 0 ? (avatarSize.width + 6) : 0
             v.translatesAutoresizingMaskIntoConstraints = false
             cell.contentView.addSubview(v)
             NSLayoutConstraint.activate([
@@ -841,8 +846,10 @@ extension ChatViewController: MessagesDataSource {
                 v.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor),
                 v.widthAnchor.constraint(lessThanOrEqualToConstant: maxWidth),
                 isOut
-                    ? v.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor)
-                    : v.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor),
+                    ? v.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor,
+                                                  constant: -avatarInset)
+                    : v.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor,
+                                                  constant: avatarInset),
                 isOut
                     ? v.leadingAnchor.constraint(greaterThanOrEqualTo: cell.contentView.leadingAnchor)
                     : v.trailingAnchor.constraint(lessThanOrEqualTo: cell.contentView.trailingAnchor)

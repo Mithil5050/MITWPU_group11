@@ -145,13 +145,26 @@ class GroupSettingsViewController: UIViewController {
     }
 
     private func removeAvatar() {
+        let previousUrl = group.avatarUrl
         group.avatarUrl           = nil
         groupImageView.image      = UIImage(systemName: "person.3.fill")
         groupImageView.tintColor  = .systemGray3
         updateDelegate?.didUpdateGroup(group)
         Task {
-            do { try await SupabaseManager.shared.updateGroupAvatar(id: group.id, avatarUrl: nil) }
-            catch { print("removeAvatar: \(error)") }
+            do {
+                let updated = try await SupabaseManager.shared
+                    .updateGroupAvatar(id: group.id, avatarUrl: nil)
+                await MainActor.run {
+                    self.group = updated
+                    self.updateDelegate?.didUpdateGroup(updated)
+                }
+            } catch {
+                await MainActor.run {
+                    self.group.avatarUrl = previousUrl
+                    self.refreshAvatarImage()
+                    self.showUpdateError(error)
+                }
+            }
         }
     }
 
@@ -179,13 +192,27 @@ class GroupSettingsViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak self] _ in
             guard let self = self,
                   let name = alert.textFields?.first?.text, !name.isEmpty else { return }
-            self.group.name        = name
+            let oldName = self.group.name
+            self.group.name          = name
             self.groupNameLabel.text = name
             self.updateDelegate?.didUpdateGroup(self.group)
             Task {
-                do { try await SupabaseManager.shared.updateGroup(id: self.group.id,
-                                                                   newName: name) }
-                catch { print("rename: \(error)") }
+                do {
+                    let updated = try await SupabaseManager.shared
+                        .updateGroup(id: self.group.id, newName: name)
+                    await MainActor.run {
+                        self.group = updated
+                        self.groupNameLabel.text = updated.name
+                        self.updateDelegate?.didUpdateGroup(updated)
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.group.name = oldName
+                        self.groupNameLabel.text = oldName
+                        self.updateDelegate?.didUpdateGroup(self.group)
+                        self.showUpdateError(error)
+                    }
+                }
             }
         })
         present(alert, animated: true)
@@ -250,6 +277,15 @@ class GroupSettingsViewController: UIViewController {
         } else {
             cv.backgroundView = nil
         }
+    }
+
+    private func showUpdateError(_ error: Error) {
+        let message = (error as NSError).localizedDescription
+        let alert = UIAlertController(title: "Update Failed",
+                                      message: message,
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 
     // remote image with in-memory cache
@@ -337,6 +373,7 @@ extension GroupSettingsViewController:
                       ?? info[.originalImage] as? UIImage,
               let data = img.jpegData(compressionQuality: 0.7) else { return }
 
+        let previousUrl = group.avatarUrl
         groupImageView.image    = img
         groupImageView.tintColor = nil
 
@@ -344,11 +381,19 @@ extension GroupSettingsViewController:
             do {
                 let url = try await SupabaseManager.shared.uploadGroupAvatar(
                     groupId: group.id, imageData: data)
-                group.avatarUrl = url
-                try await SupabaseManager.shared.updateGroupAvatar(
+                let updated = try await SupabaseManager.shared.updateGroupAvatar(
                     id: group.id, avatarUrl: url)
-                updateDelegate?.didUpdateGroup(group)
-            } catch { print("uploadGroupAvatar: \(error)") }
+                await MainActor.run {
+                    self.group = updated
+                    self.updateDelegate?.didUpdateGroup(updated)
+                }
+            } catch {
+                await MainActor.run {
+                    self.group.avatarUrl = previousUrl
+                    self.refreshAvatarImage()
+                    self.showUpdateError(error)
+                }
+            }
         }
     }
 
