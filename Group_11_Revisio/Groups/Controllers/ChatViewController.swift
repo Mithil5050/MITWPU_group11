@@ -25,60 +25,164 @@ private struct MessageMeta {
 // MARK: - DocBubbleView
 // Single horizontal row: icon on left, text on right — compact like iMessage file bubble.
 class DocBubbleView: UIView {
+    private let iconContainerView = UIView()
     private let iconView  = UIImageView()
-    private let nameLabel = UILabel()
+    private let titleLabel = UILabel()
+    private let subtitleLabel = UILabel()
+    private let labelsStack = UIStackView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        iconView.contentMode = .scaleAspectFit
-        iconView.translatesAutoresizingMaskIntoConstraints = false
-        nameLabel.font          = UIFont.systemFont(ofSize: 14, weight: .medium)
-        nameLabel.numberOfLines = 2
-        nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(iconView)
-        addSubview(nameLabel)
-        NSLayoutConstraint.activate([
-            iconView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
-            iconView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            iconView.widthAnchor.constraint(equalToConstant: 22),
-            iconView.heightAnchor.constraint(equalToConstant: 26),
-            nameLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 10),
-            nameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
-            nameLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
-        ])
+        setupUI()
     }
-    
+
     required init?(coder: NSCoder) { fatalError() }
 
-    func configure(fileName: String, materialType: String?, isOutgoing: Bool) {
-        nameLabel.text      = fileName
-        nameLabel.textColor = isOutgoing ? .white : .label
-        let cfg = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
-        iconView.image = UIImage(systemName: iconSymbol(for: materialType, fileName: fileName),
-                                 withConfiguration: cfg)?
-            .withTintColor(isOutgoing ? .white : .systemBlue, renderingMode: .alwaysOriginal)
+    private func setupUI() {
+        backgroundColor = .systemGray6
+        layer.cornerRadius = 12
+        layer.borderWidth = 0.5
+        layer.borderColor = UIColor.separator.cgColor
+        clipsToBounds = true
+        layoutMargins = UIEdgeInsets(top: 5, left: 10, bottom: 5, right: 12)
+
+        iconContainerView.translatesAutoresizingMaskIntoConstraints = false
+        iconContainerView.layer.cornerRadius = 8
+        iconContainerView.clipsToBounds = true
+
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+        iconView.contentMode = .scaleAspectFit
+
+        titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        titleLabel.textColor = .label
+        titleLabel.numberOfLines = 2
+        titleLabel.lineBreakMode = .byWordWrapping
+        titleLabel.allowsDefaultTighteningForTruncation = true
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        subtitleLabel.font = UIFont.systemFont(ofSize: 12, weight: .regular)
+        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        labelsStack.axis = .vertical
+        labelsStack.spacing = 1
+        labelsStack.alignment = .leading
+        labelsStack.translatesAutoresizingMaskIntoConstraints = false
+        labelsStack.addArrangedSubview(titleLabel)
+        labelsStack.addArrangedSubview(subtitleLabel)
+
+        iconContainerView.addSubview(iconView)
+        addSubview(iconContainerView)
+        addSubview(labelsStack)
+
+        NSLayoutConstraint.activate([
+            iconContainerView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+            iconContainerView.centerYAnchor.constraint(equalTo: layoutMarginsGuide.centerYAnchor),
+            iconContainerView.widthAnchor.constraint(equalToConstant: 28),
+            iconContainerView.heightAnchor.constraint(equalToConstant: 28),
+
+            iconView.centerXAnchor.constraint(equalTo: iconContainerView.centerXAnchor),
+            iconView.centerYAnchor.constraint(equalTo: iconContainerView.centerYAnchor),
+            iconView.widthAnchor.constraint(equalToConstant: 14),
+            iconView.heightAnchor.constraint(equalToConstant: 14),
+
+            labelsStack.leadingAnchor.constraint(equalTo: iconContainerView.trailingAnchor, constant: 10),
+            labelsStack.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
+            labelsStack.centerYAnchor.constraint(equalTo: iconContainerView.centerYAnchor)
+        ])
     }
 
-    private func iconSymbol(for type: String?, fileName: String) -> String {
+    func configure(fileName: String, materialType: String?, isOutgoing: Bool) {
+        let parts = Self.displayParts(for: fileName, materialType: materialType)
+        let (symbol, color) = iconStyle(for: parts.type, fileName: fileName)
+
+        titleLabel.text = parts.title
+        subtitleLabel.text = subtitleText(for: parts.type, fileName: fileName)
+
+        iconView.image = UIImage(systemName: symbol)
+        iconView.tintColor = color
+        iconContainerView.backgroundColor = color.withAlphaComponent(0.15)
+        accessibilityIdentifier = isOutgoing ? "studyBubbleOutgoing" : "studyBubbleIncoming"
+    }
+
+    private func displayParts(for fileName: String, materialType: String?) -> (title: String, type: String?) {
+        Self.displayParts(for: fileName, materialType: materialType)
+    }
+
+    static func displayParts(for fileName: String, materialType: String?) -> (title: String, type: String?) {
+        if let type = materialType {
+            let parts = fileName.components(separatedBy: " · ")
+            if parts.count >= 2 {
+                return (Self.cleanDisplayName(parts[0]), type)
+            }
+            let trimmed = fileName.replacingOccurrences(of: " · \(type)", with: "")
+            return (Self.cleanDisplayName(trimmed), type)
+        }
+
+        let parts = fileName.components(separatedBy: " · ")
+        if parts.count >= 2 {
+            return (Self.cleanDisplayName(parts[0]), parts.last)
+        }
+
+        return (Self.cleanDisplayName(fileName), nil)
+    }
+
+    private func subtitleText(for type: String?, fileName: String) -> String {
+        if let type = type, !type.isEmpty {
+            return "\(type) • Shared"
+        }
+        let ext = (fileName as NSString).pathExtension.uppercased()
+        if !ext.isEmpty {
+            return "\(ext) • Shared"
+        }
+        return "Document • Shared"
+    }
+
+    private func iconStyle(for type: String?, fileName: String) -> (String, UIColor) {
         switch type {
-        case "Notes":      return "book.pages.fill"
-        case "Flashcards": return "rectangle.on.rectangle.angled.fill"
-        case "Quiz":       return "checkmark.circle.fill"
-        case "Cheatsheet": return "list.clipboard.fill"
+        case "Quiz":
+            return ("timer", UIColor(red: 0.45, green: 0.85, blue: 0.61, alpha: 1.0))
+        case "Notes":
+            return ("book.pages", UIColor(hex: "FFC445", alpha: 0.75))
+        case "Flashcards":
+            return ("rectangle.on.rectangle.angled", UIColor(hex: "91C1EF"))
+        case "Cheatsheet":
+            return ("list.clipboard", UIColor(hex: "8A38F5", alpha: 0.50))
         default:
-            switch (fileName as NSString).pathExtension.lowercased() {
-            case "pdf":        return "doc.richtext.fill"
-            case "doc","docx": return "doc.text.fill"
-            default:           return "doc.fill"
+            let ext = (fileName as NSString).pathExtension.lowercased()
+            switch ext {
+            case "jpg", "jpeg", "png":
+                return ("photo.fill", .systemIndigo)
+            case "pdf":
+                return ("doc.richtext.fill", .systemIndigo)
+            case "doc", "docx":
+                return ("doc.text.fill", .systemIndigo)
+            case "txt":
+                return ("textformat", .systemIndigo)
+            default:
+                return ("doc.text.fill", .systemIndigo)
             }
         }
+    }
+
+    static func cleanDisplayName(_ rawName: String) -> String {
+        rawName.replacingOccurrences(of: ".txt", with: "")
+            .replacingOccurrences(of: "Note_", with: "")
+            .replacingOccurrences(of: "Link_", with: "")
+            .replacingOccurrences(of: "Image_", with: "")
+            .replacingOccurrences(of: "_", with: " ")
+            .trimmingCharacters(in: .whitespaces)
     }
 }
 
 // MARK: - CustomMessageSizeCalculator
 private class CustomMessageSizeCalculator: MessageSizeCalculator {
     override func messageContainerSize(for message: MessageType, at indexPath: IndexPath) -> CGSize {
-        CGSize(width: 220, height: 50)
+        guard let collectionView = layout?.collectionView else {
+            return CGSize(width: 220, height: 60)
+        }
+        let maxWidth = collectionView.bounds.width * 0.7
+        return CGSize(width: maxWidth, height: 60)
     }
 }
 
@@ -314,7 +418,9 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
     // MARK: - Doc bubble factory
 
     private func makeDocBubbleView(fileName: String, materialType: String?, isOutgoing: Bool) -> DocBubbleView {
-        let v = DocBubbleView(frame: CGRect(x: 0, y: 0, width: 240, height: 68))
+        let availableWidth = messagesCollectionView.bounds.width
+        let maxWidth = availableWidth * 0.7
+        let v = DocBubbleView(frame: CGRect(x: 0, y: 0, width: maxWidth, height: 60))
         v.configure(fileName: fileName, materialType: materialType, isOutgoing: isOutgoing)
         return v
     }
@@ -721,21 +827,25 @@ extension ChatViewController: MessagesDataSource {
         let cell = messagesCollectionView.dequeueReusableCell(
             withReuseIdentifier: "DocBubbleCell", for: indexPath)
         cell.contentView.subviews.forEach { $0.removeFromSuperview() }
-        // Background colour matching bubble side
-        let cm = chatMessages[indexPath.section]
-        let isOut = cm.sender.senderId == currentUser.senderId
-        cell.contentView.backgroundColor = isOut ? .systemBlue : .systemGray5
-        cell.contentView.layer.cornerRadius = 16
-        cell.contentView.clipsToBounds = true
+        cell.contentView.backgroundColor = .clear
+        cell.contentView.layer.cornerRadius = 0
+        cell.contentView.clipsToBounds = false
 
         if case .custom(let payload) = message.kind, let v = payload as? DocBubbleView {
+            let isOut = message.sender.senderId == currentUser.senderId
+            let maxWidth = messagesCollectionView.bounds.width * 0.7
             v.translatesAutoresizingMaskIntoConstraints = false
             cell.contentView.addSubview(v)
             NSLayoutConstraint.activate([
                 v.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
                 v.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor),
-                v.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 8),
-                v.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -8)
+                v.widthAnchor.constraint(lessThanOrEqualToConstant: maxWidth),
+                isOut
+                    ? v.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor)
+                    : v.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor),
+                isOut
+                    ? v.leadingAnchor.constraint(greaterThanOrEqualTo: cell.contentView.leadingAnchor)
+                    : v.trailingAnchor.constraint(lessThanOrEqualTo: cell.contentView.trailingAnchor)
             ])
         }
         return cell
@@ -772,7 +882,7 @@ extension ChatViewController: MessagesLayoutDelegate {
     }
     func messagePadding(for message: MessageType, at indexPath: IndexPath,
                         in messagesCollectionView: MessagesCollectionView) -> UIEdgeInsets {
-        UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+        UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
     }
 }
 
@@ -913,8 +1023,9 @@ extension ChatViewController: MessageCellDelegate {
 
     private func openStudyMaterialPreview(meta: MessageMeta) {
         let vc = StudyMaterialPreviewViewController()
+        let parts = DocBubbleView.displayParts(for: meta.fileName ?? "", materialType: meta.materialType)
         vc.materialType  = meta.materialType ?? "Notes"
-        vc.materialName  = meta.fileName    ?? ""
+        vc.materialName  = parts.title
         vc.content       = meta.content     ?? "No content available."
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .pageSheet
