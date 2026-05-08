@@ -34,6 +34,16 @@ class QuizSessionViewController: UIViewController {
         self.view.backgroundColor = .black
         
         loadData()
+        
+        // Resume from saved progress if not completed
+        if let savedProgress = currentTopic?.currentProgressIndex,
+           let total = currentTopic?.totalItemsCount,
+           savedProgress < total {
+            questionIndex = savedProgress
+        } else {
+            questionIndex = 0
+        }
+        
         styleOptionButtons()
         configureNavBarItems()
         renderQuestion()
@@ -46,6 +56,13 @@ class QuizSessionViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         sessionTimer?.invalidate()
+        
+        // Save current progress before quitting
+        if var topic = currentTopic, !sessionQuestions.isEmpty {
+            topic.currentProgressIndex = questionIndex
+            topic.totalItemsCount = sessionQuestions.count
+            DataManager.shared.updateTopic(subjectName: parentSubject ?? "General Study", topic: topic)
+        }
         
         // ✅ Re-enable swipe-to-go-back for the rest of the app
         navigationController?.interactivePopGestureRecognizer?.isEnabled = true
@@ -283,6 +300,8 @@ class QuizSessionViewController: UIViewController {
         topic.attempts?.append(attempt)
         
         topic.lastAccessed = "Score: \(attempt.score)/\(attempt.totalQuestions)"
+        topic.currentProgressIndex = sessionQuestions.count
+        topic.totalItemsCount = sessionQuestions.count
         
         self.currentTopic = topic
         

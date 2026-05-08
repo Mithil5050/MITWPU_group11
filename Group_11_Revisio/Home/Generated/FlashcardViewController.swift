@@ -150,6 +150,13 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         } else if let fallback = currentTopic?.notesContent, !fallback.isEmpty {
             unpackFlashcards(from: fallback)
         }
+        
+        // Resume from saved progress
+        if let savedIndex = currentTopic?.currentProgressIndex,
+           let total = currentTopic?.totalItemsCount,
+           savedIndex < total {
+            currentCardIndex = savedIndex
+        }
 
         setupCarouselContainer()
         setupSupportingUI()
@@ -165,6 +172,17 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
             UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addFlashcardTapped)),
             UIBarButtonItem(image: UIImage(systemName: "info.circle"), style: .plain, target: self, action: #selector(showInstructions))
         ]
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        // Save current progress before quitting
+        if var topic = currentTopic, !flashcards.isEmpty {
+            topic.currentProgressIndex = currentCardIndex
+            topic.totalItemsCount = flashcards.count
+            DataManager.shared.updateTopic(subjectName: parentSubjectName ?? "Study", topic: topic)
+        }
     }
 
     deinit { NotificationCenter.default.removeObserver(self) }
@@ -641,6 +659,14 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         alert.addAction(UIAlertAction(title: "Yes, Save", style: .default) { [weak self] _ in
             guard let self = self else { return }
             ProgressDataManager.shared.logSession(minutes: Double(self.flashcards.count) * 0.5, category: "Study")
+            
+            // Set progress to 100%
+            if var topic = self.currentTopic {
+                topic.currentProgressIndex = self.flashcards.count
+                topic.totalItemsCount = self.flashcards.count
+                DataManager.shared.updateTopic(subjectName: folder, topic: topic)
+            }
+            
             let ok = UIAlertController(title: "Saved!", message: "Progress recorded.", preferredStyle: .alert)
             ok.addAction(UIAlertAction(title: "OK", style: .default) { _ in
                 if let nav = self.navigationController { nav.popToRootViewController(animated: true) }

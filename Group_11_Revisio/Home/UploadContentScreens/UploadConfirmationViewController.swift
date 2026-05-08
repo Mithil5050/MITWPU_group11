@@ -51,6 +51,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         setupUI()
         setupTable()
         processIncomingData()
+        updateNextButtonState()
     }
     
     // MARK: - UI Setup
@@ -69,6 +70,31 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         table.register(ExpandableFileCell.self, forCellReuseIdentifier: ExpandableFileCell.identifier)
         table.separatorStyle = .none
         table.backgroundColor = .clear
+    }
+    
+    // MARK: - Button State Validation
+    private func updateNextButtonState() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let isProcessing = self.filesData.contains { $0.isAnalyzing || $0.isWaiting }
+            let totalSelectedTopics = self.filesData.reduce(0) { $0 + $1.selectedTopicIndices.count }
+            
+            // Disable if analyzing or if no topics are selected
+            if isProcessing {
+                self.doneButton.isEnabled = false
+                self.doneButton.alpha = 0.5
+                self.doneButton.setTitle("Analyzing...", for: .normal)
+            } else if totalSelectedTopics > 0 {
+                self.doneButton.isEnabled = true
+                self.doneButton.alpha = 1.0
+                self.doneButton.setTitle("Next", for: .normal)
+            } else {
+                self.doneButton.isEnabled = false
+                self.doneButton.alpha = 0.5
+                self.doneButton.setTitle("Next", for: .normal)
+            }
+        }
     }
     
     // MARK: - Data Processing
@@ -112,6 +138,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         
         analysisQueue.append(newIndex)
         UploadedContent.reloadData()
+        updateNextButtonState()
         
         processNextInQueue()
     }
@@ -127,6 +154,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
                 self.filesData[fileIndex].isWaiting = false
                 self.filesData[fileIndex].isAnalyzing = true
                 self.UploadedContent.reloadRows(at: [IndexPath(row: fileIndex, section: 0)], with: .none)
+                self.updateNextButtonState()
             }
         }
         
@@ -175,6 +203,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
                     self.filesData[index].selectedTopicIndices = Set(0..<self.filesData[index].topics.count)
                     self.filesData[index].isAnalyzing = false
                     self.UploadedContent.reloadRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+                    self.updateNextButtonState()
                 }
             }
             
@@ -189,6 +218,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
                         self.filesData[index].selectedTopicIndices = [0]
                         self.filesData[index].isAnalyzing = false
                         self.UploadedContent.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+                        self.updateNextButtonState()
                     }
                 }
             }
@@ -261,6 +291,7 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
         }
         filesData[fileIndex] = file
         UploadedContent.reloadRows(at: [IndexPath(row: fileIndex, section: 0)], with: .none)
+        updateNextButtonState()
     }
 
     // MARK: - Navigation
