@@ -236,19 +236,39 @@ class SupabaseManager {
     }
 
     // MARK: - 11. Update Group Name
-    func updateGroup(id: String, newName: String) async throws {
-        guard let uuid = UUID(uuidString: id) else { return }
+    func updateGroup(id: String, newName: String) async throws -> Group {
+        guard let uuid = UUID(uuidString: id) else {
+            throw NSError(domain: "Groups", code: 400,
+                          userInfo: [NSLocalizedDescriptionKey: "Invalid group id"]) }
         struct NameUpdate: Encodable { let name: String }
-        try await client.from("study_groups")
-            .update(NameUpdate(name: newName)).eq("id", value: uuid).execute()
+        struct GroupRow: Decodable { let id: UUID; let name: String; let avatar_url: String? }
+        let rows: [GroupRow] = try await client.from("study_groups")
+            .update(NameUpdate(name: newName))
+            .eq("id", value: uuid)
+            .select("id, name, avatar_url")
+            .execute().value
+        guard let row = rows.first else {
+            throw NSError(domain: "Groups", code: 404,
+                          userInfo: [NSLocalizedDescriptionKey: "Group not updated"]) }
+        return Group(id: row.id.uuidString, name: row.name, avatarUrl: row.avatar_url)
     }
 
     // MARK: - 12. Update Group Avatar URL in DB
-    func updateGroupAvatar(id: String, avatarUrl: String?) async throws {
-        guard let uuid = UUID(uuidString: id) else { return }
+    func updateGroupAvatar(id: String, avatarUrl: String?) async throws -> Group {
+        guard let uuid = UUID(uuidString: id) else {
+            throw NSError(domain: "Groups", code: 400,
+                          userInfo: [NSLocalizedDescriptionKey: "Invalid group id"]) }
         struct AvatarUpdate: Encodable { let avatar_url: String? }
-        try await client.from("study_groups")
-            .update(AvatarUpdate(avatar_url: avatarUrl)).eq("id", value: uuid).execute()
+        struct GroupRow: Decodable { let id: UUID; let name: String; let avatar_url: String? }
+        let rows: [GroupRow] = try await client.from("study_groups")
+            .update(AvatarUpdate(avatar_url: avatarUrl))
+            .eq("id", value: uuid)
+            .select("id, name, avatar_url")
+            .execute().value
+        guard let row = rows.first else {
+            throw NSError(domain: "Groups", code: 404,
+                          userInfo: [NSLocalizedDescriptionKey: "Group not updated"]) }
+        return Group(id: row.id.uuidString, name: row.name, avatarUrl: row.avatar_url)
     }
 
     // MARK: - 13. Upload Group Avatar Image → Storage → returns public URL
