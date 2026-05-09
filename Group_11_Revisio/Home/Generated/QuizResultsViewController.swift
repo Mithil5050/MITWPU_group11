@@ -13,6 +13,7 @@ class QuizResultsViewController: UIViewController {
     var isFlashcardMode: Bool = false
     var knownCount: Int = 0
     var unknownCount: Int = 0
+    var weakestTerm: String?
     var onChallengeMode: (() -> Void)?
     var onSaveAndExit: (() -> Void)?
     
@@ -100,10 +101,9 @@ class QuizResultsViewController: UIViewController {
     }
     
     private func setupForFlashcards() {
-        let total = knownCount + unknownCount
-        scoreLabel.text = "You mastered \(knownCount) out of \(total)."
+        scoreLabel.text = "You mastered all \(knownCount) cards!"
         
-        let percentage = total > 0 ? Double(knownCount) / Double(total) : 0
+        let percentage = Double(knownCount) / Double(max(knownCount, 1))
         if percentage < 0.5 {
             headerLabel.text = "Result Screen"
             resultImageView.image = UIImage(named: "BadMarks")
@@ -116,6 +116,7 @@ class QuizResultsViewController: UIViewController {
         tableView.dataSource = self
         tableView.tableFooterView = UIView()
         tableView.backgroundColor = .clear
+        tableView.separatorStyle = .none // Cleaner look for flashcards
         
         retakeButton.setTitle("Challenge Mode", for: .normal)
         homeButton.setTitle("Save & Exit", for: .normal)
@@ -209,28 +210,83 @@ class QuizResultsViewController: UIViewController {
 // MARK: - TableView
 extension QuizResultsViewController: UITableViewDataSource, UITableViewDelegate {
     func numberOfSections(in tableView: UITableView) -> Int { return 1 }
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { return 2 }
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if isFlashcardMode { return 1 }
+        return 2
+    }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if isFlashcardMode {
+            let cell = UITableViewCell(style: .default, reuseIdentifier: "FlashcardResultCell")
+            cell.backgroundColor = .clear
+            cell.selectionStyle = .none
+            
+            // Container View
+            let container = UIView()
+            container.backgroundColor = UIColor(red: 0.13, green: 0.15, blue: 0.24, alpha: 1.0) // App Indigo
+            container.layer.cornerRadius = 16
+            container.translatesAutoresizingMaskIntoConstraints = false
+            cell.contentView.addSubview(container)
+            
+            NSLayoutConstraint.activate([
+                container.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 24),
+                container.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -24),
+                container.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 8),
+                container.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -8)
+            ])
+            
+            // Icon
+            let isPerfect = weakestTerm == nil
+            let iconConfig = UIImage.SymbolConfiguration(pointSize: 26, weight: .semibold)
+            let iconName = isPerfect ? "checkmark.seal.fill" : "exclamationmark.triangle.fill"
+            let iconColor = isPerfect ? UIColor.systemGreen : UIColor.systemOrange
+            
+            let iconView = UIImageView(image: UIImage(systemName: iconName, withConfiguration: iconConfig))
+            iconView.tintColor = iconColor
+            iconView.contentMode = .scaleAspectFit
+            iconView.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(iconView)
+            
+            // Title
+            let titleLabel = UILabel()
+            titleLabel.text = isPerfect ? "PERFECT SCORE" : "NEEDS ATTENTION"
+            titleLabel.textColor = iconColor
+            titleLabel.font = .systemFont(ofSize: 14, weight: .heavy)
+            titleLabel.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(titleLabel)
+            
+            // Detail
+            let detailLabel = UILabel()
+            detailLabel.text = isPerfect ? "You've mastered every card in this deck!" : weakestTerm!
+            detailLabel.textColor = .white
+            detailLabel.font = .systemFont(ofSize: 18, weight: .semibold)
+            detailLabel.numberOfLines = 0
+            detailLabel.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(detailLabel)
+            
+            NSLayoutConstraint.activate([
+                iconView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
+                iconView.topAnchor.constraint(equalTo: container.topAnchor, constant: 20),
+                iconView.widthAnchor.constraint(equalToConstant: 32),
+                iconView.heightAnchor.constraint(equalToConstant: 32),
+                
+                titleLabel.topAnchor.constraint(equalTo: container.topAnchor, constant: 20),
+                titleLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 16),
+                titleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
+                
+                detailLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 6),
+                detailLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+                detailLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
+                detailLabel.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -20)
+            ])
+            
+            return cell
+        }
+        
         let cell = UITableViewCell(style: .value1, reuseIdentifier: "ResultCell")
         cell.backgroundColor = .clear
         cell.textLabel?.textColor = .white
         cell.detailTextLabel?.textColor = .lightGray
-        
-        if isFlashcardMode {
-            if indexPath.row == 0 {
-                cell.textLabel?.text = "Known"
-                cell.detailTextLabel?.text = "\(knownCount)"
-                cell.detailTextLabel?.textColor = .white
-            } else {
-                cell.textLabel?.text = "Not Known"
-                cell.detailTextLabel?.text = "\(unknownCount)"
-                cell.detailTextLabel?.textColor = .white
-            }
-            cell.selectionStyle = .none
-            cell.accessoryType = .none
-            return cell
-        }
         
         if indexPath.row == 0 {
             cell.textLabel?.text = "Time Taken"

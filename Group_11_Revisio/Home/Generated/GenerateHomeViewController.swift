@@ -538,9 +538,18 @@ class GenerateHomeViewController: UIViewController {
                finalTopicName = aiTitle
            } else {
               
-               finalTopicName = topicName.replacingOccurrences(of: ".txt", with: "")
-                                         .replacingOccurrences(of: "Note_", with: "")
-                                         .replacingOccurrences(of: "_", with: " ")
+               finalTopicName = topicName
+                   .replacingOccurrences(of: ".txt", with: "")
+                   .replacingOccurrences(of: ".pdf", with: "")
+                   .replacingOccurrences(of: ".docx", with: "")
+                   .replacingOccurrences(of: "Note_", with: "")
+                   .replacingOccurrences(of: "Link_", with: "")
+                   .replacingOccurrences(of: "Source_", with: "")
+                   .replacingOccurrences(of: "Doc_", with: "")
+                   .replacingOccurrences(of: "_", with: " ")
+                   .replacingOccurrences(of: "-", with: " ")
+                   .trimmingCharacters(in: .whitespaces)
+                   .capitalized
            }
         if self.selectedMaterialType == .notes {
             ProgressDataManager.shared.totalNotesGenerated += 1
@@ -571,7 +580,7 @@ class GenerateHomeViewController: UIViewController {
                 self.showError("AI generated an empty quiz. Please try again.")
                 return
             }
-            newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: "Quiz", questions: parsedQuestions, sourceName: topicName, createdDate: "Just now")
+            newTopic = DataManager.shared.saveGeneratedTopic(name: finalTopicName, subject: subjectName, type: "Quiz", questions: parsedQuestions, sourceName: finalTopicName, createdDate: "Just now")
         } else if self.selectedMaterialType == .flashcards {
             let parsedFlashcards = self.parseFlashcardsJSON(generatedContent)
             if parsedFlashcards.isEmpty {

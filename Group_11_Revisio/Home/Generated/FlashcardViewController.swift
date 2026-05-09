@@ -99,6 +99,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         l.textColor = UIColor.lightGray
         l.font = .systemFont(ofSize: 14, weight: .medium)
         l.textAlignment = .center
+        l.layer.zPosition = 1000 // Ensure it renders above cards that overflow the container
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
@@ -121,11 +122,13 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
     var parentSubjectName: String?
 
     private var flashcards: [Flashcard] = []
+    private var fullDeck: [Flashcard] = []
+    private var originalDeckSize = 0
+    private var globalCardStates: [String: Bool] = [:] // true = known, false = review
+    private var reviewCounts: [String: Int] = [:]
     private var isTermDisplayed = true
     private var isChallengePhase = false
     private var currentCardIndex = 0
-    private var knownCount = 0
-    private var unknownCount = 0
     private var isAnimating = false
     private var lastLayoutSize: CGSize = .zero
 
@@ -470,7 +473,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
     // MARK: - Known / Review
     private func animateKnown() {
         isAnimating = true
-        knownCount += 1
+        globalCardStates[flashcards[currentCardIndex].term] = true
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
         UIView.animate(withDuration: 0.15) {
@@ -487,10 +490,9 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
 
     private func animateReview() {
         isAnimating = true
-        unknownCount += 1
+        globalCardStates[flashcards[currentCardIndex].term] = false
+        reviewCounts[flashcards[currentCardIndex].term, default: 0] += 1
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        // Re-queue this card to end
-        flashcards.append(flashcards[currentCardIndex])
 
         UIView.animate(withDuration: 0.15) {
             self.frontCard.layer.borderColor = UIColor.systemRed.cgColor
@@ -523,9 +525,30 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
             }
             isAnimating = false
         } else {
+            // End of round
+            var nextRound: [Flashcard] = []
+            for card in flashcards {
+                if globalCardStates[card.term] != true {
+                    nextRound.append(card)
+                }
+            }
+            
             isAnimating = false
             frontCard.isHidden = true
-            showResultsScreen()
+            
+            if nextRound.isEmpty {
+                showResultsScreen()
+            } else {
+                let alert = UIAlertController(title: "Round Complete", message: "You have \(nextRound.count) cards left to review.", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Continue", style: .default) { _ in
+                    self.flashcards = nextRound
+                    self.currentCardIndex = 0
+                    self.isTermDisplayed = true
+                    self.frontCard.isHidden = false
+                    self.refreshCarousel(animated: true)
+                })
+                self.present(alert, animated: true)
+            }
         }
     }
 
@@ -616,39 +639,52 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
             if p.count >= 3 { loaded.append(Flashcard(term: p[0], definition: p[1], keyword: p[2])) }
             else if p.count == 2 { loaded.append(Flashcard(term: p[0], definition: p[1], keyword: p[0])) }
         }
-        if !loaded.isEmpty { flashcards = loaded }
+        if !loaded.isEmpty {
+            flashcards = loaded
+            fullDeck = loaded
+            originalDeckSize = loaded.count
+        }
     }
 
-    // MARK: - Results
     private func showResultsScreen() {
         let sb = UIStoryboard(name: "Home", bundle: nil)
         if let vc = sb.instantiateViewController(withIdentifier: "QuizResultsViewController") as? QuizResultsViewController {
             vc.isFlashcardMode = true
-            vc.knownCount = knownCount
-            vc.unknownCount = unknownCount
+            let kCount = globalCardStates.values.filter { $0 == true }.count
+            vc.knownCount = originalDeckSize
+            vc.unknownCount = 0
+            vc.weakestTerm = reviewCounts.max(by: { $0.value < $1.value })?.key
+            
             vc.onChallengeMode = { [weak self] in self?.didSelectChallengeMode() }
             vc.onSaveAndExit = { [weak self] in self?.didSelectSaveAndExit() }
-            let nav = UINavigationController(rootViewController: vc)
-            nav.modalPresentationStyle = .fullScreen
-            present(nav, animated: true)
+            
+            vc.modalPresentationStyle = .fullScreen
+            vc.modalTransitionStyle = .crossDissolve
+            present(vc, animated: true)
         }
     }
 
     func handleSave() {
         let folder = parentSubjectName ?? "Study"
-        let alert = UIAlertController(title: "Session Complete",
-            message: "Cards will be saved to '\(folder)'.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Yes, Save", style: .default) { [weak self] _ in
+        let alert = UIAlertController(
+            title: "Save Session?",
+            message: "Your progress will be saved to '\(folder)'.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak self] _ in
             guard let self = self else { return }
-            ProgressDataManager.shared.logSession(minutes: Double(self.flashcards.count) * 0.5, category: "Study")
-            let ok = UIAlertController(title: "Saved!", message: "Progress recorded.", preferredStyle: .alert)
-            ok.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                if let nav = self.navigationController { nav.popToRootViewController(animated: true) }
-                else { self.dismiss(animated: true) }
-            })
-            self.present(ok, animated: true)
+            ProgressDataManager.shared.logSession(
+                minutes: Double(self.flashcards.count) * 0.5,
+                category: "Study"
+            )
+            // Navigate straight back — no second popup
+            if let nav = self.navigationController {
+                nav.popToRootViewController(animated: true)
+            } else {
+                self.dismiss(animated: true)
+            }
         })
-        alert.addAction(UIAlertAction(title: "Cancel", style: .destructive))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
 
@@ -666,6 +702,8 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
     func didCreateNewFlashcard(card: Flashcard) {
         ProgressDataManager.shared.totalFlashcardsViewed += 1
         flashcards.append(card)
+        fullDeck.append(card)
+        originalDeckSize += 1
         let updated = flashcards.map { "\($0.term)|\($0.definition)|\($0.keyword)" }.joined(separator: "\n")
         currentTopic?.largeContentBody = updated
         if let s = parentSubjectName, let t = currentTopic?.name {
@@ -741,9 +779,12 @@ class HomeFlashcardResultsViewController: UIViewController {
 extension FlashcardViewController: HomeFlashcardResultsDelegate {
     func didSelectChallengeMode() {
         isChallengePhase = true
-        let n = min(Int.random(in: 5...7), flashcards.count)
+        let n = min(Int.random(in: 5...7), fullDeck.count)
         guard n > 0 else { return }
-        flashcards = Array(flashcards.shuffled().prefix(n))
+        flashcards = Array(fullDeck.shuffled().prefix(n))
+        globalCardStates.removeAll()
+        reviewCounts.removeAll()
+        originalDeckSize = flashcards.count
         currentCardIndex = 0
         frontCard.isHidden = false
         challengeTextField.isHidden = false

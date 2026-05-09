@@ -47,6 +47,12 @@ class ProfileViewController: UIViewController {
         
         fetchUserData()
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Always refresh level card + stat cards (streaks & badges) when screen appears
+        collectionView.reloadSections(IndexSet(integersIn: 1...2))
+    }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
