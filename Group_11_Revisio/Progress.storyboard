@@ -281,7 +281,7 @@
         <!--Awards-->
         <scene sceneID="9Tg-UF-OHP">
             <objects>
-                <viewController id="Iz6-9K-uFj" customClass="AwardsViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="AwardsViewController" id="Iz6-9K-uFj" customClass="AwardsViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Dhk-g2-RtX">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

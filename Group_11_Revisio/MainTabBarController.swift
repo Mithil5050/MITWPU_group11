@@ -45,57 +45,13 @@ class MainTabBarController: UITabBarController {
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
 
-        let alert: UIAlertController
-
-        if event.type == "BadgeUnlocked" {
-            alert = UIAlertController(
-                title: "🔓 Badge Unlocked!",
-                message: "\"\(event.badge.title)\" is now in progress.\n\(event.badge.detail)",
-                preferredStyle: .alert
-            )
-        } else {
-            alert = UIAlertController(
-                title: "🏆 Badge Earned!",
-                message: "You completed \"\(event.badge.title)\"!\n\(event.badge.detail)",
-                preferredStyle: .alert
-            )
-        }
-
-        // When the user taps OK/Awesome, mark as done and show the next one
-        let actionTitle = event.type == "BadgeUnlocked" ? "Let's Go!" : "Awesome! 🎉"
-        alert.addAction(UIAlertAction(title: actionTitle, style: .default) { [weak self] _ in
+        BadgeUnlockPopup.show(badge: event.badge, type: event.type) { [weak self] in
             self?.isShowingBadgePopup = false
             self?.showNextBadgePopupIfReady()
-        })
-
-        guard let topVC = topMostViewController() else {
-            // If we can't present right now, put it back and try again shortly
-            isShowingBadgePopup = false
-            badgeEventQueue.insert(event, at: 0)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                self?.showNextBadgePopupIfReady()
-            }
-            return
         }
-
-        topVC.present(alert, animated: true)
     }
 
-    private func topMostViewController() -> UIViewController? {
-        guard let windowScene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first,
-              let rootVC = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController
-        else { return nil }
 
-        var topVC = rootVC
-        while let presented = topVC.presentedViewController {
-            // If a badge alert is already on screen, don't try to present over it
-            if presented is UIAlertController { return nil }
-            topVC = presented
-        }
-        return topVC
-    }
 
     deinit {
         NotificationCenter.default.removeObserver(self)

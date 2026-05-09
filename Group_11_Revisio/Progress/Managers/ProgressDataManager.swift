@@ -113,34 +113,71 @@ class ProgressDataManager {
         return requiredXPForCurrentLevel
     }
 
-    // MARK: - Restore XP + Level + Streak from Supabase on login / cold launch
+    // MARK: - Restore XP + Level + Streak + Badge Stats from Supabase on login / cold launch
     func restoreFromSupabase() {
         Task {
             do {
                 let profile = try await SupabaseManager.shared.loadUserProfile()
 
                 let localXP    = UserDefaults.standard.integer(forKey: "user_total_xp")
-                let localLevel = UserDefaults.standard.integer(forKey: "user_current_level")
 
                 if profile.totalXP >= localXP {
-                    // Supabase is ahead or equal — restore from cloud
-                    UserDefaults.standard.set(profile.totalXP, forKey: "user_total_xp")
-                    UserDefaults.standard.set(
-                        max(profile.currentLevel, 1),
-                        forKey: "user_current_level"
-                    )
-                    UserDefaults.standard.set(profile.currentStreak, forKey: "user_current_streak")
+                    // Supabase is ahead or equal — restore XP, level, streak from cloud
+                    UserDefaults.standard.set(profile.totalXP,              forKey: "user_total_xp")
+                    UserDefaults.standard.set(max(profile.currentLevel, 1), forKey: "user_current_level")
+                    UserDefaults.standard.set(profile.currentStreak,        forKey: "user_current_streak")
 
-                    DispatchQueue.main.async {
-                        NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
-                    }
-
-                    print("✅ Restored from Supabase — XP: \(profile.totalXP), Level: \(profile.currentLevel), Streak: \(profile.currentStreak)")
+                    print("✅ Restored XP/Level/Streak — XP: \(profile.totalXP), Level: \(profile.currentLevel), Streak: \(profile.currentStreak)")
                 } else {
                     // Local is ahead (offline progress) — push local up to reconcile
                     await SupabaseManager.shared.syncXP(totalXP: localXP)
                     print("⬆️ Local XP ahead (\(localXP) vs \(profile.totalXP)) — pushed local to Supabase")
                 }
+
+                // ── Restore badge stat counters (take the higher of local vs cloud) ──
+                func restoreStat(key: String, cloudValue: Int) {
+                    let local = UserDefaults.standard.integer(forKey: key)
+                    if cloudValue > local {
+                        UserDefaults.standard.set(cloudValue, forKey: key)
+                    }
+                }
+                restoreStat(key: "stat_quizzes_done",   cloudValue: profile.statQuizzesDone)
+                restoreStat(key: "stat_high_quizzes",    cloudValue: profile.statHighQuizzes)
+                restoreStat(key: "stat_daily_solved",    cloudValue: profile.statDailySolved)
+                restoreStat(key: "stat_cards_viewed",    cloudValue: profile.statCardsViewed)
+                restoreStat(key: "stat_notes_gen",       cloudValue: profile.statNotesGen)
+                restoreStat(key: "stat_cheat_gen",       cloudValue: profile.statCheatGen)
+                restoreStat(key: "stat_quests_done",     cloudValue: profile.statQuestsDone)
+                restoreStat(key: "stat_wordfill_done",   cloudValue: profile.statWordfillDone)
+                restoreStat(key: "stat_connections_win", cloudValue: profile.statConnectionsWin)
+                restoreStat(key: "stat_focus_sessions",  cloudValue: profile.statFocusSessions)
+                restoreStat(key: "stat_messages_sent",   cloudValue: profile.statMessagesSent)
+                restoreStat(key: "stat_docs_uploaded",   cloudValue: profile.statDocsUploaded)
+
+                // ── Restore earned badge IDs (union of local + cloud) ──
+                if !profile.earnedBadgeIds.isEmpty {
+                    var localIds = Set(UserDefaults.standard.stringArray(forKey: "earned_badge_ids") ?? [])
+                    let merged = localIds.union(profile.earnedBadgeIds)
+                    if merged != localIds {
+                        UserDefaults.standard.set(Array(merged), forKey: "earned_badge_ids")
+                        print("✅ Restored earned badge IDs from Supabase: \(profile.earnedBadgeIds)")
+                    }
+                }
+
+                // ── Restore streak calendar dot-dates (union of local + cloud) ──
+                if !profile.streakDotDates.isEmpty {
+                    var localDates = Set(UserDefaults.standard.stringArray(forKey: "streak_dot_dates") ?? [])
+                    let merged = localDates.union(profile.streakDotDates)
+                    if merged != localDates {
+                        UserDefaults.standard.set(Array(merged), forKey: "streak_dot_dates")
+                        print("✅ Restored streak dot-dates from Supabase: \(profile.streakDotDates.count) dates")
+                    }
+                }
+
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
+                }
+
             } catch {
                 // Silently fail — user keeps whatever local state exists
                 print("⚠️ Could not restore profile from Supabase: \(error)")
@@ -152,51 +189,99 @@ class ProgressDataManager {
 
     var totalQuizzesDone: Int {
         get { UserDefaults.standard.integer(forKey: "stat_quizzes_done") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_quizzes_done"); checkBadgeUnlocks(for: .quizMaster, newValue: newValue) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "stat_quizzes_done")
+            checkBadgeUnlocks(for: .quizMaster, newValue: newValue)
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
     var totalHighLevelQuizzes: Int {
         get { UserDefaults.standard.integer(forKey: "stat_high_quizzes") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_high_quizzes"); checkBadgeUnlocks(for: .quizMaster, newValue: newValue) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "stat_high_quizzes")
+            checkBadgeUnlocks(for: .quizMaster, newValue: newValue)
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
     var totalDailyChallengesSolved: Int {
         get { UserDefaults.standard.integer(forKey: "stat_daily_solved") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_daily_solved"); checkBadgeUnlocks(for: .dailyWord, newValue: newValue) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "stat_daily_solved")
+            checkBadgeUnlocks(for: .dailyWord, newValue: newValue)
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
     var totalFlashcardsViewed: Int {
         get { UserDefaults.standard.integer(forKey: "stat_cards_viewed") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_cards_viewed"); checkBadgeUnlocks(for: .flashGenius, newValue: newValue) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "stat_cards_viewed")
+            checkBadgeUnlocks(for: .flashGenius, newValue: newValue)
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
     var totalNotesGenerated: Int {
         get { UserDefaults.standard.integer(forKey: "stat_notes_gen") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_notes_gen"); checkBadgeUnlocks(for: .notesCreator, newValue: newValue) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "stat_notes_gen")
+            checkBadgeUnlocks(for: .notesCreator, newValue: newValue)
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
     var totalCheatsheetsGenerated: Int {
         get { UserDefaults.standard.integer(forKey: "stat_cheat_gen") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_cheat_gen"); checkBadgeUnlocks(for: .cheatsheetPro, newValue: newValue) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "stat_cheat_gen")
+            checkBadgeUnlocks(for: .cheatsheetPro, newValue: newValue)
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
     var totalQuestsCompleted: Int {
         get { UserDefaults.standard.integer(forKey: "stat_quests_done") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_quests_done"); checkBadgeUnlocks(for: .questSeeker, newValue: newValue) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "stat_quests_done")
+            checkBadgeUnlocks(for: .questSeeker, newValue: newValue)
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
     var totalWordFillsDone: Int {
         get { UserDefaults.standard.integer(forKey: "stat_wordfill_done") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_wordfill_done"); checkBadgeUnlocks(for: .wordFiller, newValue: newValue) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "stat_wordfill_done")
+            checkBadgeUnlocks(for: .wordFiller, newValue: newValue)
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
     var totalConnectionsWon: Int {
         get { UserDefaults.standard.integer(forKey: "stat_connections_win") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_connections_win"); checkBadgeUnlocks(for: .connector, newValue: newValue) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "stat_connections_win")
+            checkBadgeUnlocks(for: .connector, newValue: newValue)
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
     var totalFocusSessions: Int {
         get { UserDefaults.standard.integer(forKey: "stat_focus_sessions") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_focus_sessions"); checkBadgeUnlocks(for: .deepFocus, newValue: newValue) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "stat_focus_sessions")
+            checkBadgeUnlocks(for: .deepFocus, newValue: newValue)
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
     var totalMessagesSent: Int {
         get { UserDefaults.standard.integer(forKey: "stat_messages_sent") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_messages_sent"); checkBadgeUnlocks(for: .socialScholar, newValue: newValue) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "stat_messages_sent")
+            checkBadgeUnlocks(for: .socialScholar, newValue: newValue)
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
     var totalDocumentsUploaded: Int {
         get { UserDefaults.standard.integer(forKey: "stat_docs_uploaded") }
-        set { UserDefaults.standard.set(newValue, forKey: "stat_docs_uploaded"); checkBadgeUnlocks(for: .sourceMaster, newValue: newValue) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "stat_docs_uploaded")
+            checkBadgeUnlocks(for: .sourceMaster, newValue: newValue)
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
 
     // MARK: - Streak Logic
@@ -259,10 +344,13 @@ class ProgressDataManager {
         set { UserDefaults.standard.set(Array(newValue), forKey: "unlocked_badge_ids") }
     }
 
-    // IDs of badges that have been fully earned (goal reached). Stored in UserDefaults.
+    // IDs of badges that have been fully earned (goal reached). Stored in UserDefaults + Supabase.
     private var earnedBadgeIDs: Set<String> {
         get { Set(UserDefaults.standard.stringArray(forKey: "earned_badge_ids") ?? []) }
-        set { UserDefaults.standard.set(Array(newValue), forKey: "earned_badge_ids") }
+        set {
+            UserDefaults.standard.set(Array(newValue), forKey: "earned_badge_ids")
+            Task { await SupabaseManager.shared.syncUserStats() }
+        }
     }
 
     private func checkBadgeUnlocks(for category: Badging.BadgeCategory, newValue: Int) {

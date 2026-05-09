@@ -359,8 +359,30 @@ class SupabaseManager {
         }
     }
 
-    // MARK: - 18. Load User Profile (XP + Level + Streak on app launch)
-    func loadUserProfile() async throws -> (totalXP: Int, currentLevel: Int, currentStreak: Int) {
+    // MARK: - 18. Load User Profile (XP + Level + Streak + Badge Stats on app launch)
+    struct UserProfileSnapshot {
+        let totalXP: Int
+        let currentLevel: Int
+        let currentStreak: Int
+        // Badge stat counters
+        let statQuizzesDone: Int
+        let statHighQuizzes: Int
+        let statDailySolved: Int
+        let statCardsViewed: Int
+        let statNotesGen: Int
+        let statCheatGen: Int
+        let statQuestsDone: Int
+        let statWordfillDone: Int
+        let statConnectionsWin: Int
+        let statFocusSessions: Int
+        let statMessagesSent: Int
+        let statDocsUploaded: Int
+        // Badge + streak calendar persistence
+        let earnedBadgeIds: [String]
+        let streakDotDates: [String]
+    }
+
+    func loadUserProfile() async throws -> UserProfileSnapshot {
         guard let userId = client.auth.currentUser?.id else {
             throw NSError(domain: "Auth", code: 401)
         }
@@ -368,10 +390,31 @@ class SupabaseManager {
             let total_xp: Int?
             let current_level: Int?
             let current_streak: Int?
+            let stat_quizzes_done: Int?
+            let stat_high_quizzes: Int?
+            let stat_daily_solved: Int?
+            let stat_cards_viewed: Int?
+            let stat_notes_gen: Int?
+            let stat_cheat_gen: Int?
+            let stat_quests_done: Int?
+            let stat_wordfill_done: Int?
+            let stat_connections_win: Int?
+            let stat_focus_sessions: Int?
+            let stat_messages_sent: Int?
+            let stat_docs_uploaded: Int?
+            let earned_badge_ids: [String]?
+            let streak_dot_dates: [String]?
         }
         let rows: [ProfileRow] = try await client
             .from("profiles")
-            .select("total_xp, current_level, current_streak")
+            .select("""
+                total_xp, current_level, current_streak,
+                stat_quizzes_done, stat_high_quizzes, stat_daily_solved,
+                stat_cards_viewed, stat_notes_gen, stat_cheat_gen,
+                stat_quests_done, stat_wordfill_done, stat_connections_win,
+                stat_focus_sessions, stat_messages_sent, stat_docs_uploaded,
+                earned_badge_ids, streak_dot_dates
+            """)
             .eq("id", value: userId)
             .limit(1)
             .execute()
@@ -379,11 +422,77 @@ class SupabaseManager {
         guard let row = rows.first else {
             throw NSError(domain: "Profiles", code: 404)
         }
-        return (
-            totalXP:       row.total_xp       ?? 0,
-            currentLevel:  row.current_level  ?? 1,
-            currentStreak: row.current_streak ?? 0
+        return UserProfileSnapshot(
+            totalXP:            row.total_xp           ?? 0,
+            currentLevel:       row.current_level      ?? 1,
+            currentStreak:      row.current_streak     ?? 0,
+            statQuizzesDone:    row.stat_quizzes_done  ?? 0,
+            statHighQuizzes:    row.stat_high_quizzes  ?? 0,
+            statDailySolved:    row.stat_daily_solved  ?? 0,
+            statCardsViewed:    row.stat_cards_viewed  ?? 0,
+            statNotesGen:       row.stat_notes_gen     ?? 0,
+            statCheatGen:       row.stat_cheat_gen     ?? 0,
+            statQuestsDone:     row.stat_quests_done   ?? 0,
+            statWordfillDone:   row.stat_wordfill_done ?? 0,
+            statConnectionsWin: row.stat_connections_win ?? 0,
+            statFocusSessions:  row.stat_focus_sessions  ?? 0,
+            statMessagesSent:   row.stat_messages_sent   ?? 0,
+            statDocsUploaded:   row.stat_docs_uploaded   ?? 0,
+            earnedBadgeIds:     row.earned_badge_ids     ?? [],
+            streakDotDates:     row.streak_dot_dates     ?? []
         )
+    }
+
+    // MARK: - 19. Sync Badge Stats + Earned IDs + Streak Dates to Supabase
+    func syncUserStats() async {
+        guard let userId = client.auth.currentUser?.id else { return }
+        let mgr = ProgressDataManager.shared
+
+        struct StatsUpdate: Encodable {
+            let stat_quizzes_done: Int
+            let stat_high_quizzes: Int
+            let stat_daily_solved: Int
+            let stat_cards_viewed: Int
+            let stat_notes_gen: Int
+            let stat_cheat_gen: Int
+            let stat_quests_done: Int
+            let stat_wordfill_done: Int
+            let stat_connections_win: Int
+            let stat_focus_sessions: Int
+            let stat_messages_sent: Int
+            let stat_docs_uploaded: Int
+            let earned_badge_ids: [String]
+            let streak_dot_dates: [String]
+        }
+
+        let earnedIds = Array(
+            Set(UserDefaults.standard.stringArray(forKey: "earned_badge_ids") ?? [])
+        )
+        let dotDates = UserDefaults.standard.stringArray(forKey: "streak_dot_dates") ?? []
+
+        do {
+            try await client.from("profiles")
+                .update(StatsUpdate(
+                    stat_quizzes_done:    mgr.totalQuizzesDone,
+                    stat_high_quizzes:    mgr.totalHighLevelQuizzes,
+                    stat_daily_solved:    mgr.totalDailyChallengesSolved,
+                    stat_cards_viewed:    mgr.totalFlashcardsViewed,
+                    stat_notes_gen:       mgr.totalNotesGenerated,
+                    stat_cheat_gen:       mgr.totalCheatsheetsGenerated,
+                    stat_quests_done:     mgr.totalQuestsCompleted,
+                    stat_wordfill_done:   mgr.totalWordFillsDone,
+                    stat_connections_win: mgr.totalConnectionsWon,
+                    stat_focus_sessions:  mgr.totalFocusSessions,
+                    stat_messages_sent:   mgr.totalMessagesSent,
+                    stat_docs_uploaded:   mgr.totalDocumentsUploaded,
+                    earned_badge_ids:     earnedIds,
+                    streak_dot_dates:     dotDates
+                ))
+                .eq("id", value: userId)
+                .execute()
+        } catch {
+            print("❌ syncUserStats failed: \(error)")
+        }
     }
 }
 
