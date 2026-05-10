@@ -2,78 +2,216 @@ import UIKit
 
 class DiagramGameLaunchViewController: UIViewController {
     
+    private let mascotImageView = UIImageView()
+    private let titleLabel = UILabel()
+    private let subtitleLabel = UILabel()
+    private let topicDropdownButton = UIButton(type: .system)
+    private let startButton = UIButton(type: .system)
+    private let instructionsCard = UIView()
+    
     private var selectedImage: UIImage?
-    private var topicDropdownButton: UIButton?
-    private var startButton: UIButton?
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupBackground()
+        setupUIElements()
+        setupConstraints()
+        setupDropdownMenu()
         
-        for subview in view.subviews {
-            if let btn = subview as? UIButton {
-                if btn.configuration?.title == "Start" || btn.titleLabel?.text == "Start" {
-                    startButton = btn
-                } else if btn.configuration?.title == "Select Topic" || btn.titleLabel?.text == "Select Topic" {
-                    topicDropdownButton = btn
-                }
+        // Hide any leftover storyboard elements
+        view.subviews.forEach { 
+            if $0 != mascotImageView && $0 != titleLabel && $0 != subtitleLabel && 
+               $0 != topicDropdownButton && $0 != startButton && $0 != instructionsCard &&
+               !($0 is UIImageView && $0.tag == 100) {
+                $0.isHidden = true 
             }
         }
+    }
+    
+    private func setupBackground() {
+        view.backgroundColor = .black
         
-        if let topicBtn = topicDropdownButton, let startBtn = startButton {
-            topicBtn.translatesAutoresizingMaskIntoConstraints = false
-            startBtn.translatesAutoresizingMaskIntoConstraints = false
-            
-            view.removeConstraints(view.constraints.filter { 
-                ($0.firstItem as? UIView == topicBtn) || ($0.secondItem as? UIView == topicBtn) ||
-                ($0.firstItem as? UIView == startBtn) || ($0.secondItem as? UIView == startBtn)
-            })
-            topicBtn.removeConstraints(topicBtn.constraints)
-            startBtn.removeConstraints(startBtn.constraints)
-            
-            NSLayoutConstraint.activate([
-                startBtn.heightAnchor.constraint(equalToConstant: 52),
-                startBtn.widthAnchor.constraint(equalToConstant: 353),
-                startBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                startBtn.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
-                
-                topicBtn.heightAnchor.constraint(equalToConstant: 52),
-                topicBtn.widthAnchor.constraint(equalToConstant: 353),
-                topicBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                topicBtn.bottomAnchor.constraint(equalTo: startBtn.topAnchor, constant: -16)
-            ])
-        }
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.colors = [
+            UIColor(red: 0.05, green: 0.05, blue: 0.1, alpha: 1.0).cgColor,
+            UIColor(red: 0.1, green: 0.1, blue: 0.2, alpha: 1.0).cgColor
+        ]
+        gradientLayer.frame = view.bounds
+        let gradientView = UIView(frame: view.bounds)
+        gradientView.layer.insertSublayer(gradientLayer, at: 0)
+        gradientView.tag = 100
+        view.insertSubview(gradientView, at: 0)
+    }
+    
+    private func setupUIElements() {
+        // Mascot
+        mascotImageView.image = UIImage(named: "Diagram_dash")
+        mascotImageView.contentMode = .scaleAspectFit
+        mascotImageView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(mascotImageView)
         
-        setupDropdownMenu()
-        startButton?.isEnabled = false
+        // Header
+        titleLabel.text = "Diagram Dash"
+        titleLabel.font = .systemFont(ofSize: 34, weight: .bold)
+        titleLabel.textColor = .white
+        titleLabel.textAlignment = .center
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(titleLabel)
+        
+        subtitleLabel.text = "Label the components of your\ndiagrams and flowcharts"
+        subtitleLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        subtitleLabel.textColor = UIColor.white.withAlphaComponent(0.7)
+        subtitleLabel.textAlignment = .center
+        subtitleLabel.numberOfLines = 0
+        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(subtitleLabel)
+        
+        // Topic/Image Dropdown
+        topicDropdownButton.setTitle("Choose Diagram Source", for: .normal)
+        topicDropdownButton.setImage(UIImage(systemName: "photo.on.rectangle.angled"), for: .normal)
+        topicDropdownButton.tintColor = .white
+        topicDropdownButton.backgroundColor = UIColor.white.withAlphaComponent(0.1)
+        topicDropdownButton.layer.cornerRadius = 16
+        topicDropdownButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        topicDropdownButton.semanticContentAttribute = .forceLeftToRight
+        topicDropdownButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: -8, bottom: 0, right: 0)
+        topicDropdownButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(topicDropdownButton)
+        
+        // Start Button
+        startButton.setTitle("Play Now", for: .normal)
+        startButton.backgroundColor = UIColor(red: 0.39, green: 0.4, blue: 0.94, alpha: 1.0)
+        startButton.tintColor = .white
+        startButton.layer.cornerRadius = 16
+        startButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
+        startButton.isEnabled = false
+        startButton.alpha = 0.5
+        startButton.addTarget(self, action: #selector(StartButtonTapped), for: .touchUpInside)
+        startButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(startButton)
+        
+        // XP Badge on Start Button
+        let xpLabel = UILabel()
+        xpLabel.text = " +15 XP "
+        xpLabel.font = .systemFont(ofSize: 12, weight: .black)
+        xpLabel.textColor = .white
+        xpLabel.backgroundColor = UIColor.white.withAlphaComponent(0.2)
+        xpLabel.layer.cornerRadius = 6
+        xpLabel.clipsToBounds = true
+        xpLabel.translatesAutoresizingMaskIntoConstraints = false
+        startButton.addSubview(xpLabel)
+        
+        NSLayoutConstraint.activate([
+            xpLabel.trailingAnchor.constraint(equalTo: startButton.trailingAnchor, constant: -16),
+            xpLabel.centerYAnchor.constraint(equalTo: startButton.centerYAnchor),
+            xpLabel.heightAnchor.constraint(equalToConstant: 20)
+        ])
+        
+        // Instructions Card
+        instructionsCard.backgroundColor = UIColor.white.withAlphaComponent(0.05)
+        instructionsCard.layer.cornerRadius = 16
+        instructionsCard.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(instructionsCard)
+        
+        let instIcon = UIImageView(image: UIImage(systemName: "lightbulb.fill"))
+        instIcon.tintColor = .systemYellow
+        instIcon.contentMode = .scaleAspectFit
+        instIcon.translatesAutoresizingMaskIntoConstraints = false
+        instructionsCard.addSubview(instIcon)
+        
+        let instLabel = UILabel()
+        instLabel.text = "Insert the correct labels to complete the diagram!"
+        instLabel.font = .systemFont(ofSize: 13, weight: .regular)
+        instLabel.textColor = UIColor.white.withAlphaComponent(0.6)
+        instLabel.numberOfLines = 0
+        instLabel.translatesAutoresizingMaskIntoConstraints = false
+        instructionsCard.addSubview(instLabel)
+        
+        NSLayoutConstraint.activate([
+            instIcon.leadingAnchor.constraint(equalTo: instructionsCard.leadingAnchor, constant: 16),
+            instIcon.centerYAnchor.constraint(equalTo: instructionsCard.centerYAnchor),
+            instIcon.widthAnchor.constraint(equalToConstant: 20),
+            instIcon.heightAnchor.constraint(equalToConstant: 20),
+            
+            instLabel.leadingAnchor.constraint(equalTo: instIcon.trailingAnchor, constant: 12),
+            instLabel.trailingAnchor.constraint(equalTo: instructionsCard.trailingAnchor, constant: -16),
+            instLabel.topAnchor.constraint(equalTo: instructionsCard.topAnchor, constant: 12),
+            instLabel.bottomAnchor.constraint(equalTo: instructionsCard.bottomAnchor, constant: -12)
+        ])
+    }
+    
+    private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            mascotImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
+            mascotImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            mascotImageView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.25),
+            
+            titleLabel.topAnchor.constraint(equalTo: mascotImageView.bottomAnchor, constant: 24),
+            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
+            subtitleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
+            subtitleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
+            
+            startButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -30),
+            startButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            startButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            startButton.heightAnchor.constraint(equalToConstant: 56),
+            
+            topicDropdownButton.bottomAnchor.constraint(equalTo: startButton.topAnchor, constant: -16),
+            topicDropdownButton.leadingAnchor.constraint(equalTo: startButton.leadingAnchor),
+            topicDropdownButton.trailingAnchor.constraint(equalTo: startButton.trailingAnchor),
+            topicDropdownButton.heightAnchor.constraint(equalToConstant: 56),
+            
+            instructionsCard.bottomAnchor.constraint(equalTo: topicDropdownButton.topAnchor, constant: -24),
+            instructionsCard.leadingAnchor.constraint(equalTo: startButton.leadingAnchor),
+            instructionsCard.trailingAnchor.constraint(equalTo: startButton.trailingAnchor)
+        ])
     }
     
     private func setupDropdownMenu() {
         var menuActions: [UIAction] = []
         
-        let photoAction = UIAction(title: "Photo Library") { [weak self] _ in
+        let photoAction = UIAction(title: "Photo Library", image: UIImage(systemName: "photo.on.rectangle")) { [weak self] _ in
             self?.presentImagePicker(sourceType: .photoLibrary)
         }
         menuActions.append(photoAction)
         
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
-            let cameraAction = UIAction(title: "Camera") { [weak self] _ in
+            let cameraAction = UIAction(title: "Camera", image: UIImage(systemName: "camera")) { [weak self] _ in
                 self?.presentImagePicker(sourceType: .camera)
             }
             menuActions.append(cameraAction)
         }
         
-        let demoAction = UIAction(title: "Use Demo Image") { [weak self] _ in
+        let demoAction = UIAction(title: "Use Demo Image", image: UIImage(systemName: "sparkles")) { [weak self] _ in
             self?.selectedImage = nil
-            self?.topicDropdownButton?.setTitle("Use Demo Image", for: .normal)
-            self?.startButton?.isEnabled = true
+            self?.topicDropdownButton.setTitle("Use Demo Image", for: .normal)
+            self?.topicDropdownButton.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .normal)
+            self?.topicDropdownButton.tintColor = .systemGreen
+            self?.enableStartButton()
         }
         menuActions.append(demoAction)
         
-        topicDropdownButton?.menu = UIMenu(title: "Choose Diagram", children: menuActions)
-        topicDropdownButton?.showsMenuAsPrimaryAction = true
+        topicDropdownButton.menu = UIMenu(title: "Choose Diagram", children: menuActions)
+        topicDropdownButton.showsMenuAsPrimaryAction = true
     }
     
-    @IBAction func StartButtonTapped(_ sender: UIButton) {
+    private func enableStartButton() {
+        UIView.animate(withDuration: 0.3) {
+            self.startButton.isEnabled = true
+            self.startButton.alpha = 1.0
+            self.startButton.transform = CGAffineTransform(scaleX: 1.05, y: 1.05)
+        } completion: { _ in
+            UIView.animate(withDuration: 0.1) {
+                self.startButton.transform = .identity
+            }
+        }
+    }
+    
+    @objc func StartButtonTapped() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
         performSegue(withIdentifier: "StartDiagramGame", sender: nil)
     }
     
@@ -85,32 +223,23 @@ class DiagramGameLaunchViewController: UIViewController {
         present(picker, animated: true)
     }
     
-    // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "StartDiagramGame",
            let destVC = segue.destination as? DiagramGameViewController {
-            
-            // Pass the dynamically selected image to the game
             destVC.diagramImageToPlay = selectedImage
-            
-//            // If they picked a topic, pass it to the game!
-//            if let topic = sender as? Topic {
-//                destVC.currentTopic = topic
-//            }
         }
     }
 }
 
-// MARK: - Image Picker
 extension DiagramGameLaunchViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let image = info[.originalImage] as? UIImage {
             self.selectedImage = image
-            self.startButton?.isEnabled = true
-            self.topicDropdownButton?.setTitle("Image Selected", for: .normal)
-            picker.dismiss(animated: true) {
-                // Do not perform segue here automatically, let them click Start
-            }
+            self.topicDropdownButton.setTitle("Image Selected", for: .normal)
+            self.topicDropdownButton.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .normal)
+            self.topicDropdownButton.tintColor = .systemGreen
+            self.enableStartButton()
+            picker.dismiss(animated: true)
         } else {
             picker.dismiss(animated: true)
         }
