@@ -180,6 +180,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     @objc func refreshXPUI() {
         DispatchQueue.main.async {
             self.collectionView.reloadData()
+            self.setupProfileIcon()  // Refresh XP & streak pills
         }
     }
     
@@ -312,19 +313,64 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     
     // MARK: - Profile Icon
     private func setupProfileIcon() {
-        let button = UIButton(type: .custom)
-        button.setImage(userProfileImage, for: .normal)
+        // Profile avatar
+        let profileButton = UIButton(type: .custom)
+        profileButton.setImage(userProfileImage, for: .normal)
+        profileButton.translatesAutoresizingMaskIntoConstraints = false
+        profileButton.widthAnchor.constraint(equalToConstant: 36).isActive = true
+        profileButton.heightAnchor.constraint(equalToConstant: 36).isActive = true
+        profileButton.imageView?.contentMode = .scaleAspectFill
+        profileButton.layer.cornerRadius = 18
+        profileButton.layer.masksToBounds = true
+        profileButton.addTarget(self, action: #selector(profileButtonTapped(_:)), for: .touchUpInside)
         
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.widthAnchor.constraint(equalToConstant: 40).isActive = true
-        button.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        button.imageView?.contentMode = .scaleAspectFill
-        button.layer.cornerRadius = 20
-        button.layer.masksToBounds = true
-        button.addTarget(self, action: #selector(profileButtonTapped(_:)), for: .touchUpInside)
+        // Level + Streak views
+        let levelView = makeStatView(
+            icon: "shield",
+            value: "\(ProgressDataManager.shared.currentLevel)",
+            iconColor: UIColor(red: 0.39, green: 0.40, blue: 0.94, alpha: 1.0)
+        )
+        let streakView = makeStatView(
+            icon: "flame",
+            value: "\(ProgressDataManager.shared.currentStreak)",
+            iconColor: UIColor(red: 1.0, green: 0.55, blue: 0.15, alpha: 1.0)
+        )
         
-        let barItem = UIBarButtonItem(customView: button)
-        navigationItem.rightBarButtonItem = barItem
+        // Single grouped view: [🛡 5  🔥 0  Avatar]
+        let rightStack = UIStackView(arrangedSubviews: [levelView, streakView, profileButton])
+        rightStack.axis = .horizontal
+        rightStack.spacing = 14
+        rightStack.alignment = .center
+        
+        navigationItem.titleView = nil
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: rightStack)
+    }
+    
+    private func makeStatView(icon: String, value: String, iconColor: UIColor) -> UIView {
+        let container = UIStackView()
+        container.axis = .horizontal
+        container.spacing = 4
+        container.alignment = .center
+        
+        let iconConfig = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
+        let iconView = UIImageView(image: UIImage(systemName: icon, withConfiguration: iconConfig))
+        iconView.tintColor = iconColor
+        iconView.contentMode = .scaleAspectFit
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            iconView.widthAnchor.constraint(equalToConstant: 20),
+            iconView.heightAnchor.constraint(equalToConstant: 20)
+        ])
+        
+        let label = UILabel()
+        label.text = value
+        label.textColor = .label
+        label.font = .systemFont(ofSize: 16, weight: .semibold)
+        
+        container.addArrangedSubview(iconView)
+        container.addArrangedSubview(label)
+        
+        return container
     }
     
     @IBAction func profileButtonTapped(_ sender: Any) {
