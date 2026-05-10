@@ -38,10 +38,10 @@ class BadgeCollectionViewCell: UICollectionViewCell {
             badgeImageView.isHidden = true
             
             if section == .activeChallenges {
-                badgeTitleLabel.text = "No challenges yet"
-                badgeDetailLabel.text = "Generate to start earning XP."
+                badgeTitleLabel.text = "Challenged will appear here"
+                badgeDetailLabel.text = "Start learning to gain XP."
             } else if section == .recentWins {
-                badgeTitleLabel.text = "No achievements yet"
+                badgeTitleLabel.text = "Achivements will appear here"
                 badgeDetailLabel.text = "Your badges will appear here as you learn."
             }
             
