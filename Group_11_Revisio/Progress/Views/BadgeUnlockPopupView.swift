@@ -110,8 +110,8 @@ private final class BadgeUnlockPopupView: UIView {
         NSLayoutConstraint.activate([
             badgeImageView.topAnchor.constraint(equalTo: card.topAnchor, constant: 40),
             badgeImageView.centerXAnchor.constraint(equalTo: card.centerXAnchor),
-            badgeImageView.widthAnchor.constraint(equalToConstant: 100),
-            badgeImageView.heightAnchor.constraint(equalToConstant: 100),
+            badgeImageView.widthAnchor.constraint(equalToConstant: 136),
+            badgeImageView.heightAnchor.constraint(equalToConstant: 136),
         ])
 
         // Tier badge (small pill in corner of image)
@@ -198,10 +198,10 @@ private final class BadgeUnlockPopupView: UIView {
         ribbonLabel.layer.cornerRadius = 12
         ribbonLabel.clipsToBounds      = true
         ribbonLabel.textAlignment      = .center
-        ribbonLabel.text               = isEarned ? "  🏆  BADGE EARNED  " : "  🔓  BADGE UNLOCKED  "
+        ribbonLabel.text               = isEarned ? "BADGE EARNED" : "BADGE UNLOCKED"
 
         // Badge image — no corner clip so badge artwork shows in full
-        badgeImageView.contentMode     = .scaleAspectFit
+        badgeImageView.contentMode     = .scaleAspectFill
         badgeImageView.clipsToBounds   = false
         badgeImageView.backgroundColor = .clear
         // Soft glow shadow around the badge image
@@ -258,21 +258,17 @@ private final class BadgeUnlockPopupView: UIView {
         let isEarned = (eventType == "BadgeEarned")
 
         // Badge image
-        if let name = Badging.imageName(for: badge), let img = UIImage(named: name) {
-            badgeImageView.image = img
-            badgeImageView.alpha = 1.0
-        } else {
-            badgeImageView.image     = UIImage(systemName: "star.circle.fill")
-            badgeImageView.tintColor = .systemYellow
-            badgeImageView.alpha     = 1.0
-        }
+        let resolvedImage = popupBadgeImage(for: badge)
+        badgeImageView.image = resolvedImage.image
+        badgeImageView.tintColor = resolvedImage.usesFallback ? .systemYellow : nil
+        badgeImageView.alpha = 1.0
 
-        headlineLabel.text = isEarned ? "Badge Earned!" : "Badge Unlocked!"
-        titleLabel.text    = "\(badge.title) · \(badge.category.rawValue)"
-        detailLabel.text   = badge.detail
+        headlineLabel.text = sanitizedPopupText(isEarned ? "Badge Earned!" : "Badge Unlocked!")
+        titleLabel.text = sanitizedPopupText("\(badge.title) · \(badge.category.rawValue)")
+        detailLabel.text = sanitizedPopupText(badge.detail)
 
-        let cta = isEarned ? "Awesome! 🎉" : "Let's Go! 💪"
-        ctaButton.setTitle(cta, for: .normal)
+        let cta = isEarned ? "Awesome!" : "Let's Go!"
+        ctaButton.setTitle(sanitizedPopupText(cta), for: .normal)
     }
 
     // MARK: - Animate In
@@ -389,6 +385,31 @@ private final class BadgeUnlockPopupView: UIView {
         // Keep shimmer sized to image view (frame may not be set yet at init time)
         shimmerLayer?.frame = badgeImageView.bounds
     }
+
+    private func popupBadgeImage(for badge: Badging.Badge) -> (image: UIImage?, usesFallback: Bool) {
+        guard let assetName = Badging.imageName(for: badge) else {
+            return (UIImage(systemName: "star.circle.fill"), true)
+        }
+        guard let badgeImage = UIImage(named: assetName) else {
+            return (UIImage(systemName: "star.circle.fill"), true)
+        }
+        return (badgeImage.withRenderingMode(.alwaysOriginal), false)
+    }
+
+    private func sanitizedPopupText(_ text: String) -> String {
+        let filteredScalars = text.unicodeScalars.filter { scalar in
+            let isEmojiScalar =
+                scalar.properties.isEmojiPresentation ||
+                scalar.properties.isEmojiModifier ||
+                scalar.properties.isEmojiModifierBase ||
+                scalar.value == 0xFE0F ||
+                scalar.value == 0x20E3 ||
+                (scalar.properties.isEmoji && scalar.value > 0x238C)
+            return !isEmojiScalar
+        }
+        return String(String.UnicodeScalarView(filteredScalars))
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
 
 // MARK: - TierBadgeView
@@ -417,13 +438,13 @@ private final class TierBadgeView: UIView {
         switch tier {
         case .bronze:
             backgroundColor = UIColor(red: 0.80, green: 0.50, blue: 0.20, alpha: 1)
-            label.text      = "🥉"
+            label.text      = "B"
         case .silver:
             backgroundColor = UIColor(red: 0.75, green: 0.75, blue: 0.80, alpha: 1)
-            label.text      = "🥈"
+            label.text      = "S"
         case .gold:
             backgroundColor = UIColor(red: 1.00, green: 0.80, blue: 0.10, alpha: 1)
-            label.text      = "🥇"
+            label.text      = "G"
         }
     }
 }
