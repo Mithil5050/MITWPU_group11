@@ -1019,7 +1019,7 @@ extension ChatViewController: MessageCellDelegate {
 
         // study material: revisio:// deep link OR no URL (optimistic bubble not yet confirmed)
         if fileUrl.isEmpty || fileUrl.hasPrefix("revisio://") {
-            openStudyMaterialPreview(meta: meta)
+            openStudyMaterial(meta: meta)
             return
         }
 
@@ -1028,18 +1028,88 @@ extension ChatViewController: MessageCellDelegate {
         openRemoteFile(url: url, fileName: fileName)
     }
 
-    private func openStudyMaterialPreview(meta: MessageMeta) {
-        let vc = StudyMaterialPreviewViewController()
+    private func openStudyMaterial(meta: MessageMeta) {
         let parts = DocBubbleView.displayParts(for: meta.fileName ?? "", materialType: meta.materialType)
-        vc.materialType  = meta.materialType ?? "Notes"
-        vc.materialName  = parts.title
-        vc.content       = meta.content     ?? "No content available."
+        let rawName = (meta.fileName ?? "").components(separatedBy: " · ").first ?? parts.title
+        let materialType = meta.materialType ?? parts.type ?? "Notes"
+        let subjectName = group?.name ?? (groupName.isEmpty ? "Shared" : groupName)
+
+        let topic = findExistingTopic(named: rawName, cleanedName: parts.title, type: materialType)
+            ?? buildTopic(name: rawName, materialType: materialType, subjectName: subjectName, content: meta.content)
+
+        if openStudyMaterialViewer(for: topic) { return }
+
+        let vc = StudyMaterialPreviewViewController()
+        vc.materialType = materialType
+        vc.materialName = parts.title
+        vc.content = meta.content ?? "No content available."
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .pageSheet
         present(nav, animated: true)
     }
 
+    private func findExistingTopic(named rawName: String, cleanedName: String, type: String) -> Topic? {
+        let candidates = DataManager.shared.getAllRecentTopics().filter { $0.materialType == type }
+        if let exact = candidates.first(where: { $0.name == rawName }) { return exact }
+        return candidates.first(where: { $0.name == cleanedName })
+    }
+
+    private func buildTopic(name: String, materialType: String, subjectName: String, content: String?) -> Topic {
+        var topic = Topic(name: name, lastAccessed: "Just now", materialType: materialType,
+                          parentSubjectName: subjectName)
+        let payload = content ?? ""
+        switch materialType {
+        case "Notes":
+            topic.notesContent = payload
+        case "Cheatsheet":
+            topic.cheatsheetContent = payload
+        case "Flashcards", "Quiz":
+            topic.largeContentBody = payload
+        default:
+            topic.largeContentBody = payload
+        }
+        return topic
+    }
+
+    private func openStudyMaterialViewer(for topic: Topic) -> Bool {
+        let storyboard = UIStoryboard(name: "Home", bundle: nil)
+        switch topic.materialType {
+        case "Notes":
+            guard let vc = storyboard.instantiateViewController(
+                withIdentifier: "NotesViewController") as? NotesViewController else { return false }
+            vc.currentTopic = topic
+            vc.parentSubjectName = topic.parentSubjectName
+            showMaterialViewer(vc)
+            return true
+        case "Cheatsheet":
+            guard let vc = storyboard.instantiateViewController(
+                withIdentifier: "CheatsheetViewController") as? CheatsheetViewController else { return false }
+            vc.currentTopic = topic
+            vc.parentSubjectName = topic.parentSubjectName
+            showMaterialViewer(vc)
+            return true
+        case "Flashcards":
+            guard let vc = storyboard.instantiateViewController(
+                withIdentifier: "FlashcardViewController") as? FlashcardViewController else { return false }
+            vc.currentTopic = topic
+            vc.parentSubjectName = topic.parentSubjectName
+            showMaterialViewer(vc)
+            return true
+        case "Quiz":
+            guard let vc = storyboard.instantiateViewController(
+                withIdentifier: "QuizStartViewController") as? QuizStartViewController else { return false }
+            vc.currentTopic = topic
+            vc.parentSubject = topic.parentSubjectName
+            vc.quizSourceName = topic.name
+            showMaterialViewer(vc)
+            return true
+        default:
+            return false
+        }
+    }
+
     private func openRemoteFile(url: URL, fileName: String) {
+        // QLPreviewController needs a local file — download to temp first
         URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
             guard let data = data else { return }
             let tmp = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
@@ -1052,6 +1122,16 @@ extension ChatViewController: MessageCellDelegate {
                 self?.present(nav, animated: true)
             }
         }.resume()
+    }
+
+    private func showMaterialViewer(_ vc: UIViewController) {
+        if let nav = navigationController {
+            nav.pushViewController(vc, animated: true)
+        } else {
+            let nav = UINavigationController(rootViewController: vc)
+            nav.modalPresentationStyle = .fullScreen
+            present(nav, animated: true)
+        }
     }
 
     private func openImagePreview(_ image: UIImage) {
