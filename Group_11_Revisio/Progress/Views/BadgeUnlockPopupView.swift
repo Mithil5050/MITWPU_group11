@@ -438,13 +438,13 @@ private final class TierBadgeView: UIView {
         switch tier {
         case .bronze:
             backgroundColor = UIColor(red: 0.80, green: 0.50, blue: 0.20, alpha: 1)
-            label.text      = "B"
+            label.text      = nil
         case .silver:
             backgroundColor = UIColor(red: 0.75, green: 0.75, blue: 0.80, alpha: 1)
-            label.text      = "S"
+            label.text      = nil
         case .gold:
             backgroundColor = UIColor(red: 1.00, green: 0.80, blue: 0.10, alpha: 1)
-            label.text      = "G"
+            label.text      = nil
         }
     }
 }
