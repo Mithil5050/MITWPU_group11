@@ -1,9 +1,3 @@
-//
-//  ReviewQuestionCell.swift
-//  Group_11_Revisio
-//
-//  Created by Ayaana Talwar on 15/12/25.
-//
 
 import UIKit
 
@@ -23,21 +17,17 @@ class ReviewQuestionCell: UITableViewCell {
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
-       
     }
     func configure(with detail: QuestionResultDetail, index: Int) {
-        
-      
+
         QuestionLabel.numberOfLines = 0
         QuestionLabel.text = "Q\(index + 1). \(detail.questionText)"
         
         let userAnswerText = detail.selectedAnswer ?? "N/A"
         userAnswerLabel.text = "Your answer: \(userAnswerText)"
-        
-       
+
         correctAnswerLabel.text = "Correct answer: \(detail.correctOptionLetter)"
-        
-      
+
         if detail.wasCorrect {
             self.contentView.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.1)
         } else {

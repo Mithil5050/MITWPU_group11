@@ -2,21 +2,16 @@ import UIKit
 
 class FlashcardModeSelectionViewController: UIViewController {
     
-    // MARK: - Callbacks
-    /// Fired when the user selects Normal Mode.
     var onNormalModeSelected: (() -> Void)?
     
-    /// Fired when the user selects Challenge Mode.
     var onChallengeModeSelected: (() -> Void)?
     
-    /// Fired when the user taps outside or cancels.
     var onCanceled: (() -> Void)?
     
-    // MARK: - UI Elements
     private let blurEffectView: UIVisualEffectView = {
         let blur = UIBlurEffect(style: .systemUltraThinMaterialDark)
         let view = UIVisualEffectView(effect: blur)
-        view.alpha = 0 // For fade-in animation
+        view.alpha = 0
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -53,10 +48,9 @@ class FlashcardModeSelectionViewController: UIViewController {
         title: "Challenge Mode",
         description: "Test your knowledge.\nType the correct term to unlock the card.",
         iconName: "keyboard",
-        color: UIColor(red: 0.86, green: 0.24, blue: 0.96, alpha: 1.0)
+        color: UIColor.systemIndigo
     )
     
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -68,11 +62,9 @@ class FlashcardModeSelectionViewController: UIViewController {
         animateIn()
     }
     
-    // MARK: - UI Setup
     private func setupUI() {
         view.backgroundColor = .clear
         
-        // Add Blur
         view.addSubview(blurEffectView)
         NSLayoutConstraint.activate([
             blurEffectView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -81,7 +73,6 @@ class FlashcardModeSelectionViewController: UIViewController {
             blurEffectView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
         
-        // Add Container
         view.addSubview(containerView)
         NSLayoutConstraint.activate([
             containerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
@@ -89,7 +80,6 @@ class FlashcardModeSelectionViewController: UIViewController {
             containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24)
         ])
         
-        // Add Title
         containerView.addSubview(titleLabel)
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 24),
@@ -97,7 +87,6 @@ class FlashcardModeSelectionViewController: UIViewController {
             titleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16)
         ])
         
-        // Add StackView for Buttons
         let stackView = UIStackView(arrangedSubviews: [normalModeButton, challengeModeButton])
         stackView.axis = .vertical
         stackView.spacing = 16
@@ -111,11 +100,9 @@ class FlashcardModeSelectionViewController: UIViewController {
             stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -24)
         ])
         
-        // Setup Button Actions
         normalModeButton.addTarget(self, action: #selector(normalModeTapped), for: .touchUpInside)
         challengeModeButton.addTarget(self, action: #selector(challengeModeTapped), for: .touchUpInside)
         
-        // Prepare for animation
         containerView.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
         containerView.alpha = 0
     }
@@ -125,7 +112,6 @@ class FlashcardModeSelectionViewController: UIViewController {
         blurEffectView.addGestureRecognizer(tap)
     }
     
-    // MARK: - Actions
     @objc private func normalModeTapped() {
         animateOut { [weak self] in
             self?.onNormalModeSelected?()
@@ -144,7 +130,6 @@ class FlashcardModeSelectionViewController: UIViewController {
         }
     }
     
-    // MARK: - Animations
     private func animateIn() {
         UIView.animate(withDuration: 0.3, animations: {
             self.blurEffectView.alpha = 1.0
@@ -166,7 +151,6 @@ class FlashcardModeSelectionViewController: UIViewController {
         }
     }
     
-    // MARK: - Helpers
     private static func createModeButton(title: String, description: String, iconName: String, color: UIColor) -> UIButton {
         let button = UIButton(type: .system)
         button.backgroundColor = color.withAlphaComponent(0.1)

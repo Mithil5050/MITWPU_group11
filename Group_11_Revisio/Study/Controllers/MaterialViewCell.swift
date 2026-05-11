@@ -27,7 +27,6 @@ class MaterialViewCell: UITableViewCell {
         
         self.contentView.clipsToBounds = true
         
-        // ✅ LOGIC CHANGE: Enable Word Wrap and Disable Hyphenation for list titles
         titleLabel.numberOfLines = 2
         titleLabel.lineBreakMode = .byWordWrapping
         titleLabel.allowsDefaultTighteningForTruncation = true
@@ -89,7 +88,6 @@ class MaterialViewCell: UITableViewCell {
             }
         }
         
-        // ✅ LOGIC CHANGE: Clean the display name (Remove Note_, .txt, and underscores)
         let cleanName = rawName.replacingOccurrences(of: ".txt", with: "")
                                .replacingOccurrences(of: "Note_", with: "")
                                .replacingOccurrences(of: "Link_", with: "")

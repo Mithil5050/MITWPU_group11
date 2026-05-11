@@ -1,17 +1,10 @@
-//
-//  StudyFolderViewController.swift
-//  Group_11_Revisio
-//
-//  Created by SDC-USER on 26/11/25.
 import UIKit
 
 class StudyFolderViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
-    // MARK: - Properties
     private let studyTableView = UITableView(frame: .zero, style: .plain)
     private var subjectNames: [String] = []
-    
-   
+
     private let emptyLabel: UILabel = {
         let label = UILabel()
         label.text = "Add folder"
@@ -22,12 +15,10 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
         label.isHidden = true
         return label
     }()
-    
-   
+
     private var materialUpdateToken: NSObjectProtocol?
     private var folderUpdateToken: NSObjectProtocol?
 
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -48,7 +39,6 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
         if let folderToken = folderUpdateToken { NotificationCenter.default.removeObserver(folderToken) }
     }
 
-    // MARK: - Setup Methods
     private func setupUI() {
         view.backgroundColor = .systemBackground
         view.addSubview(studyTableView)
@@ -75,8 +65,7 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
             studyTableView.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor),
             studyTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             studyTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
-           
+
             emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
@@ -93,12 +82,10 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
         }
     }
 
-    // MARK: - Data Management
     private func fetchFolderNames() {
         
         self.subjectNames = Array(DataManager.shared.savedMaterials.keys).sorted()
-        
-      
+
         if subjectNames.isEmpty {
             studyTableView.isHidden = true
             emptyLabel.isHidden = false
@@ -112,21 +99,17 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
 
     private func executeDeletion(at indexPath: IndexPath) {
         let subjectToDelete = self.subjectNames[indexPath.row]
-        
-      
+
         DataManager.shared.deleteSubjectFolder(name: subjectToDelete)
-        
-       
+
         self.subjectNames.remove(at: indexPath.row)
         self.studyTableView.deleteRows(at: [indexPath], with: .fade)
-        
-       
+
         if subjectNames.isEmpty {
             fetchFolderNames()
         }
     }
 
-    // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
       
         if segue.identifier == "ShowSubjectDetailProgrammatic",
@@ -136,7 +119,6 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
         }
     }
 
-    // MARK: - UITableViewDataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return subjectNames.count
     }
@@ -177,7 +159,6 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 60
     }
-    // MARK: - UITableViewDelegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let selectedSubjectName = subjectNames[indexPath.row]

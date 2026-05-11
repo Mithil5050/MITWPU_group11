@@ -1,9 +1,3 @@
-//
-//  CreateFolderViewController.swift
-//  Group_11_Revisio
-//
-//  Created by SDC-USER on 27/11/25.
-//
 
 import UIKit
 
@@ -28,13 +22,11 @@ class CreateFolderViewController: UIViewController {
                 string: placeholder,
                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.placeholderText]
             )
-            
-           
+
             let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
             textField.leftView = paddingView
             textField.leftViewMode = .always
-            
-           
+
             textField.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
                 textField.heightAnchor.constraint(equalToConstant: 54)
@@ -51,8 +43,7 @@ class CreateFolderViewController: UIViewController {
             print("Folder name cannot be empty.")
             return
         }
-        
-        
+
         DataManager.shared.createNewSubjectFolder(name: newFolderName)
         
         self.dismiss(animated: true, completion: nil)

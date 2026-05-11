@@ -238,8 +238,9 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 
                 let isInteractive = typeLower.contains("quiz") || typeLower.contains("flashcard")
                 
-               
-                let isNotFinished = true
+                let current = topic.currentProgressIndex ?? 0
+                let total = topic.totalItemsCount ?? (topic.quizQuestions?.count ?? 10)
+                let isNotFinished = total > 0 ? (current < total) : true
                 
                 return isInteractive && isNotFinished
             }

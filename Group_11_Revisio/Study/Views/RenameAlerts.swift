@@ -1,9 +1,3 @@
-//
-//  RenameAlerts.swift
-//  Group_11_Revisio
-//
-//  Created by SDC-USER on 08/12/25.
-//
 
 import Foundation
 import UIKit
@@ -24,8 +18,7 @@ extension UIViewController {
                   newName != subjectName else {
                 return
             }
-            
-            
+
             completion(newName)
         }
         

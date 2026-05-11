@@ -1,9 +1,3 @@
-//
-//  ReviewDetailViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Ayaana Talwar on 14/12/25.
-//
 
 import UIKit
 

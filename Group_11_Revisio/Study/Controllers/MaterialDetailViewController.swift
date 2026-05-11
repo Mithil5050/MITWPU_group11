@@ -1,15 +1,8 @@
-//
-//  MaterialDetailViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Ayaana Talwar on 08/12/25.
-//
 
 import UIKit
 
 class MaterialDetailViewController: UIViewController {
-    
-    
+
     @IBOutlet weak var contentView: UITextView!
     
     @IBOutlet var optionsBarButton: UIBarButtonItem!
@@ -24,13 +17,10 @@ class MaterialDetailViewController: UIViewController {
     private var isEditingMode: Bool = false
     private var studyTimer: Timer?
     private let studyThreshold: TimeInterval = 60.0
-    
-    // MARK: - Lifecycle
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-       
+
         contentView.isEditable = false
         
         setupNavigationButtons()
@@ -39,13 +29,11 @@ class MaterialDetailViewController: UIViewController {
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
-        
+
         studyTimer?.invalidate()
         
         print(" Focus Timer Started: 60 Seconds")
-        
-        
+
         let timer = Timer(timeInterval: studyThreshold, repeats: false) { [weak self] _ in
             guard let self = self else { return }
             
@@ -55,8 +43,7 @@ class MaterialDetailViewController: UIViewController {
                 self.studyTimer = nil
             }
         }
-        
-       
+
         RunLoop.current.add(timer, forMode: .common)
         self.studyTimer = timer
     }
@@ -67,7 +54,6 @@ class MaterialDetailViewController: UIViewController {
         studyTimer?.invalidate()
         studyTimer = nil
     }
-    // MARK: - Content Loading & Management
     
     func displayContent() {
         
@@ -78,7 +64,6 @@ class MaterialDetailViewController: UIViewController {
             return
         }
 
-       
         if materialType == "Notes" {
             contentView.text = topic.notesContent
         } else if materialType == "Cheatsheet" {
@@ -92,15 +77,13 @@ class MaterialDetailViewController: UIViewController {
         
         updateUIForState()
     }
-    
-    
+
     func saveChanges() {
         guard let topic = contentData,
               let subject = parentSubjectName,
               let type = materialType,
               let updatedText = contentView.text else { return }
-        
-        
+
         DataManager.shared.updateTopicContent(
             subject: subject,
             topicName: topic.name,
@@ -108,59 +91,48 @@ class MaterialDetailViewController: UIViewController {
             type: type
         )
     }
-    
-    // MARK: - Navigation Bar Actions
-    
+
     func setupNavigationButtons() {
-        
-        
+
         guard let editButton = editDoneBarButton,
               let optionsButton = optionsBarButton else {
             print("CRITICAL ERROR: Edit or Options Bar Button Outlet is NOT CONNECTED in Storyboard!")
             return
         }
 
-     
         editButton.target = self
         editButton.action = #selector(editButtonTapped)
         editButton.menu = nil
-        
-       
+
         optionsButton.target = nil
         optionsButton.action = nil
         optionsButton.menu = buildOptionsMenu()
       
         navigationItem.rightBarButtonItems = [editButton, optionsButton]
-        
-        
+
         updateUIForState()
     }
-   
 
     func buildOptionsMenu() -> UIMenu {
-        
-       
+
         let shareAction = UIAction(title: "Share Material", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
             
             self?.shareContent(self!.editDoneBarButton)
         }
-        
-       
+
         let pinAction = UIAction(title: "Pin to Top", image: UIImage(systemName: "pin.fill")) { _ in
             print("Action: Pin Toggled")
         }
         let deleteAction = UIAction(title: "Delete Material", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
             print("Action: Delete Material")
         }
-        
-       
+
         let utilityGroup = UIMenu(title: "Actions", options: .displayInline, children: [shareAction, pinAction])
         let destructiveGroup = UIMenu(title: "", options: .displayInline, children: [deleteAction])
         
         return UIMenu(title: "", children: [utilityGroup, destructiveGroup])
     }
 
-    
     @IBAction func shareContent(_ sender: UIBarButtonItem) {
         
         let textToShare = contentView?.text ?? materialName ?? "Study Material"
@@ -168,18 +140,15 @@ class MaterialDetailViewController: UIViewController {
         activityVC.popoverPresentationController?.barButtonItem = sender
         present(activityVC, animated: true)
     }
- 
 
     @objc func editButtonTapped() {
         
         if isEditingMode {
             saveChanges()
         }
-        
-        
+
         isEditingMode.toggle()
-        
-        
+
         updateUIForState()
     }
 
@@ -202,25 +171,17 @@ class MaterialDetailViewController: UIViewController {
             contentView.isEditable = false
             contentView.resignFirstResponder()
         }
-        
-        
+
         optionsButton.menu = buildOptionsMenu()
     }
-    
-    
+
 }
 
-
 extension MaterialDetailViewController: UITextViewDelegate {
-    
-    
+
     func textViewDidChange(_ textView: UITextView) {
-        
-        
-        
-        
+
         saveChanges()
-        
-        
+
     }
 }

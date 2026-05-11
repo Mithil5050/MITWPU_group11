@@ -1,9 +1,3 @@
-//
-//  MaterialGenerationViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Ayaana Talwar on 13/01/26.
-//
 
 import UIKit
 
@@ -27,22 +21,19 @@ class MaterialGenerationViewController: UIViewController {
                 
                 setupNavigationButtons()
                 displayGeneratedContent()
-                
-               
+
                 saveButton.layer.cornerRadius = 12
 
     }
     
     @IBAction func saveTapped(_ sender: Any) {
         saveChanges()
-            
-            
+
             if let topic = contentData, let subject = parentSubjectName {
                 
                 DataManager.shared.addTopic(to: subject, topic: topic)
             }
-            
-            
+
             self.navigationController?.popViewController(animated: true)
     }
     func displayGeneratedContent() {
@@ -51,7 +42,6 @@ class MaterialGenerationViewController: UIViewController {
         
         guard let topic = contentData else { return }
 
-      
         if materialType == "Notes" {
             contentView.text = topic.notesContent
         } else if materialType == "Cheatsheet" {
@@ -61,7 +51,6 @@ class MaterialGenerationViewController: UIViewController {
             contentView.text = topic.largeContentBody
         }
     }
-        // MARK: - Navigation Bar Actions
         func setupNavigationButtons() {
             guard let editButton = editDoneBarButton,
                   let optionsButton = optionsBarButton else { return }
@@ -113,8 +102,7 @@ class MaterialGenerationViewController: UIViewController {
               let subject = parentSubjectName,
               let type = materialType,
               let updatedText = contentView.text else { return }
-        
-        
+
         DataManager.shared.updateTopicContent(
             subject: subject,
             topicName: topic.name,
