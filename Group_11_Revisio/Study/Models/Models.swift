@@ -1,9 +1,3 @@
-//
-//  Models.swift
-//  Group_11_Revisio
-//
-//  Created by Ayaana Talwar on 14/12/25.
-//
 
 import Foundation
 struct QuestionResultDetail:Codable {
@@ -17,8 +11,7 @@ struct QuestionResultDetail:Codable {
             guard let firstChar = correctAnswerFullText.first else {
                 return "N/A"
             }
-            
-            
+
             return String(firstChar)
         }
 }

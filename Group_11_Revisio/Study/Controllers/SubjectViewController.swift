@@ -361,7 +361,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         else if let topic = item as? Topic { rawName = topic.name }
         else if let source = item as? Source { rawName = source.name }
         
-        return cleanName(rawName) // ✅ Now returns "Physics" instead of "Note_Physics.txt"
+        return cleanName(rawName)
     }
     
     func applySortAndReload() {
@@ -802,7 +802,6 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         var finalTopic: Topic?
         
-        // 1. Identify and Unwrap the Topic
         if let studyItem = sender as? StudyItem, case .topic(let topic) = studyItem {
             var foundTopic = topic
             if let subject = self.selectedSubject,
@@ -819,13 +818,11 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             finalTopic = topic
         }
         
-        // 2. Handle Specific Segues with Clean Naming
         if segue.identifier == "ShowQuizHistory" {
             if let historyVC = segue.destination as? QuizHistoryViewController,
                let topic = finalTopic {
                 historyVC.quizTopic = topic
                 historyVC.parentSubject = self.selectedSubject
-                // Clean title for history screen
                 historyVC.title = cleanName(topic.name)
             }
         }
@@ -838,12 +835,11 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             switch studyItem {
             case .topic(let topic):
-                infoVC.materialName = cleanName(topic.name) // ✅ Cleaned
+                infoVC.materialName = cleanName(topic.name)
                 infoVC.materialType = topic.materialType
                 infoVC.dateCreated = topic.createdDate ?? topic.lastAccessed ?? "Just now"
-                infoVC.sourceName = cleanName(topic.sourceName ?? "Attached Document") // ✅ Cleaned
+                infoVC.sourceName = cleanName(topic.sourceName ?? "Attached Document")
                 
-                // Icon Logic...
                 switch topic.materialType {
                 case "Quiz": infoVC.iconName = "timer"; infoVC.iconColor = UIColor(hex: "88D769")
                 case "Notes": infoVC.iconName = "book.pages"; infoVC.iconColor = UIColor(hex: "FFC445", alpha: 0.75)
@@ -853,7 +849,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
                 
             case .source(let source):
-                infoVC.materialName = cleanName(source.name) // ✅ Cleaned
+                infoVC.materialName = cleanName(source.name)
                 infoVC.materialType = source.fileType
                 infoVC.dateCreated = "Added Recently"
                 let type = source.fileType.uppercased()
@@ -864,39 +860,38 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
         else if segue.identifier == "ShowMaterialDetail",
                 let detailVC = segue.destination as? MaterialDetailViewController,
                 let topic = finalTopic {
-            detailVC.materialName = cleanName(topic.name) // ✅ Cleaned
+            detailVC.materialName = cleanName(topic.name)
             detailVC.contentData = topic
             detailVC.parentSubjectName = selectedSubject
             detailVC.materialType = topic.materialType
-            detailVC.title = cleanName(topic.name) // ✅ Cleaned
+            detailVC.title = cleanName(topic.name)
         }
         else if segue.identifier == "ShowNotes",
                 let dest = segue.destination as? NotesViewController,
                 let topic = finalTopic {
             dest.currentTopic = topic
             dest.parentSubjectName = self.selectedSubject
-            dest.title = cleanName(topic.name) // ✅ Cleaned
+            dest.title = cleanName(topic.name)
         }
         else if segue.identifier == "ShowCheatsheet",
                 let dest = segue.destination as? CheatsheetViewController,
                 let topic = finalTopic {
             dest.currentTopic = topic
             dest.parentSubjectName = self.selectedSubject
-            dest.title = cleanName(topic.name) // ✅ Cleaned
+            dest.title = cleanName(topic.name)
         }
         else if segue.identifier == "ShowInstructionScreen",
                 let instructionVC = segue.destination as? QuizStartViewController,
                 let topic = finalTopic {
             instructionVC.currentTopic = topic
             instructionVC.parentSubject = selectedSubject
-            // Important: instructionVC uses topic name internally for the big label
         }
         else if segue.identifier == "openFlashcards",
                 let flashVC = segue.destination as? FlashcardsViewController,
                 let topic = finalTopic {
             flashVC.currentTopic = topic
             flashVC.parentSubjectName = self.selectedSubject
-            flashVC.title = cleanName(topic.name) // ✅ Cleaned
+            flashVC.title = cleanName(topic.name)
             flashVC.startInChallengeMode = self.pendingChallengeMode
         }
         else if segue.identifier == "ShowGenerationScreen",
@@ -962,13 +957,13 @@ extension SubjectViewController: UIDocumentPickerDelegate, UIImagePickerControll
             self.handleDataUpdate()
             
             UINotificationFeedbackGenerator().notificationOccurred(.success)
-            print("✅ Document successfully imported to \(subject)")
+            print(" Document successfully imported to \(subject)")
         }
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true)
-        print("✅ Finished picking image")
+        print(" Finished picking image")
     }
 }
 extension SubjectViewController: QLPreviewControllerDataSource {
@@ -981,7 +976,6 @@ extension SubjectViewController: QLPreviewControllerDataSource {
     }
 }
 
-// MARK: - Flashcard Mode Selection Custom Native Sheet
 class FlashcardStudyModeSelectionVC: UIViewController {
     var onModeSelected: ((Bool) -> Void)?
     
@@ -1011,7 +1005,7 @@ class FlashcardStudyModeSelectionVC: UIViewController {
             title: "Challenge Mode",
             desc: "Test your memory. Type the exact term.",
             icon: "keyboard",
-            accentColor: UIColor(red: 0.86, green: 0.24, blue: 0.96, alpha: 1.0)
+            accentColor: UIColor.systemIndigo
         )
         challengeBtn.addAction(UIAction { [weak self] _ in
             self?.dismiss(animated: true) { self?.onModeSelected?(true) }
@@ -1056,7 +1050,6 @@ class ModeCardButton: UIControl {
         layer.borderWidth = 1.0
         layer.borderColor = accentColor.withAlphaComponent(0.2).cgColor
         
-        // Touch feedback
         addTarget(self, action: #selector(touchDown), for: [.touchDown, .touchDragEnter])
         addTarget(self, action: #selector(touchUp), for: [.touchUpInside, .touchDragExit, .touchCancel])
         

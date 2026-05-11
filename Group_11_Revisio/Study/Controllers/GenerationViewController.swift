@@ -1,6 +1,5 @@
 import UIKit
 
-// MARK: - 1. Definitions
 enum GenerationType {
     case quiz
     case flashcards
@@ -21,18 +20,18 @@ extension GenerationType: CustomStringConvertible {
     }
 }
 
-
 struct ParsedAIFlashcard: Codable {
     let front: String?
     let back: String?
     let term: String?
     let definition: String?
+    let keyword: String?
     
     var safeFront: String { return front ?? term ?? "Term" }
     var safeBack: String { return back ?? definition ?? "Definition" }
+    var safeKeyword: String { return keyword ?? safeFront }
 }
 
-// MARK: - 2. Custom Control
 @IBDesignable
 class MaterialSelectionCard: UIControl {
     private let stackView = UIStackView()
@@ -83,19 +82,15 @@ class MaterialSelectionCard: UIControl {
     }
 }
 
-// MARK: - 3. View Controller
 class GenerationViewController: UIViewController {
-    
-    
+
     static var lastGenerationTime: Date?
     let requiredCooldown: TimeInterval = 8.0
-    
-   
+
     var currentGenerationType: GenerationType = .quiz
-    var sourceItems: [Any]? // Contains URLs passed from SelectMaterialVC
+    var sourceItems: [Any]?
     var parentSubjectName: String?
-    
-    
+
     var selectedCount: Int = 10
     var selectedTime: Int = 15
     var currentDifficulty: DifficultyLevel = .easy
@@ -103,11 +98,9 @@ class GenerationViewController: UIViewController {
     enum DifficultyLevel {
         case easy, medium, hard
     }
-    
-   
+
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
     
-    // MARK: - IBOutlets
     @IBOutlet weak var quizCard: MaterialSelectionCard!
     @IBOutlet weak var flashCard: MaterialSelectionCard!
     @IBOutlet weak var noteCard: MaterialSelectionCard!
@@ -117,8 +110,7 @@ class GenerationViewController: UIViewController {
     @IBOutlet weak var FlashcardSettingsView: UIView!
     @IBOutlet weak var emptySettingsPlaceholder: UIView!
     @IBOutlet weak var generateButton: UIButton!
-    
-    
+
     private let fcCountStepper = UIStepper()
     private let fcCountLabel = UILabel()
     
@@ -129,14 +121,12 @@ class GenerationViewController: UIViewController {
     
     private var allDifficultyButtons: [UIButton] = []
     
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         setupProgrammaticUI()
         setupLoadingIndicator()
-        
-       
+
         updateUISelection(selected: quizCard, type: .quiz)
     }
     
@@ -157,16 +147,13 @@ class GenerationViewController: UIViewController {
             generateButton.layer.cornerRadius = 12
         }
     
-    // MARK: - ✅ PROGRAMMATIC UI INJECTION
     private func setupProgrammaticUI() {
         guard let quizConfigView = QuizSettingsView,
               let flashcardConfigView = FlashcardSettingsView else { return }
-        
-        
+
         quizConfigView.subviews.forEach { $0.removeFromSuperview() }
         flashcardConfigView.subviews.forEach { $0.removeFromSuperview() }
-        
-        
+
         qCountStepper.minimumValue = 5; qCountStepper.maximumValue = 30; qCountStepper.stepValue = 5; qCountStepper.value = 10
         qCountLabel.text = "10"
         qCountStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
@@ -190,8 +177,7 @@ class GenerationViewController: UIViewController {
             quizStack.trailingAnchor.constraint(equalTo: quizConfigView.trailingAnchor, constant: -4),
             quizStack.topAnchor.constraint(equalTo: quizConfigView.topAnchor, constant: 8)
         ])
-        
-      
+
         fcCountStepper.minimumValue = 5; fcCountStepper.maximumValue = 30; fcCountStepper.stepValue = 5; fcCountStepper.value = 10
         fcCountLabel.text = "10"
         fcCountStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
@@ -289,7 +275,6 @@ class GenerationViewController: UIViewController {
         }
     }
     
-    // MARK: - Actions
     @objc func handleCardTap(_ sender: MaterialSelectionCard) {
         if sender == quizCard { updateUISelection(selected: quizCard, type: .quiz) }
         else if sender == flashCard { updateUISelection(selected: flashCard, type: .flashcards) }
@@ -351,7 +336,6 @@ class GenerationViewController: UIViewController {
         ])
     }
 
-    // MARK: - CORE AI LOGIC
     @IBAction func generateButtonTapped(_ sender: UIButton) {
        
         if let lastTime = Self.lastGenerationTime {
@@ -388,11 +372,10 @@ class GenerationViewController: UIViewController {
         sender.setTitle("Generating...", for: .normal)
         view.isUserInteractionEnabled = false
         
-        // Show mascot loading overlay
         let materialName = currentGenerationType.description
         let overlayMessage: String
         switch currentGenerationType {
-        case .quiz:       overlayMessage = "Crafting your quiz questions...\nThis may take a moment ☕"
+        case .quiz:       overlayMessage = "Crafting your quiz questions...\nThis may take a moment "
         case .flashcards: overlayMessage = "Building your flashcards...\nSit tight!"
         case .notes:      overlayMessage = "Writing your study notes...\nAlmost there!"
         case .cheatsheet: overlayMessage = "Preparing your cheatsheet...\nHang on!"
@@ -402,8 +385,7 @@ class GenerationViewController: UIViewController {
         
         Task {
             let extractedText = await ContentExtractor.shared.extractContent(from: sourceItem)
-            
-          
+
             var instruction = ""
             switch currentGenerationType {
             case .flashcards:
@@ -414,8 +396,9 @@ class GenerationViewController: UIViewController {
                 {
                   "flashcards": [
                     {
-                      "front": "Term or concept here",
-                      "back": "Definition or explanation here"
+                      "front": "Term or concept here (Short, 1-3 words)",
+                      "back": "Definition or explanation here",
+                      "keyword": "A single essential word from the 'front' term (lowercase, no parentheses). For example if front is 'Work (Physics)', keyword should be 'work'."
                     }
                   ]
                 }
@@ -432,12 +415,12 @@ class GenerationViewController: UIViewController {
                 ### CHEATSHEET: \(topicName)
                 
                 ### KEY CONCEPTS:
-                • Concept 1: Definition goes here.
-                • Concept 2: Definition goes here.
+                 Concept 1: Definition goes here.
+                 Concept 2: Definition goes here.
                 
                 ### FORMULAS & FACTS:
-                • Fact or Formula 1
-                • Fact or Formula 2
+                 Fact or Formula 1
+                 Fact or Formula 2
                 
                 ### QUICK SUMMARY:
                 A short, readable summary goes here.
@@ -457,12 +440,12 @@ class GenerationViewController: UIViewController {
                 Brief introduction goes here.
                 
                 ### MAIN TOPICS:
-                • Topic 1: Detailed explanation here.
-                • Topic 2: Detailed explanation here.
+                 Topic 1: Detailed explanation here.
+                 Topic 2: Detailed explanation here.
                 
                 ### EXAMPLES:
-                • Example 1
-                • Example 2
+                 Example 1
+                 Example 2
                 """
             case .quiz:
                 instruction = """
@@ -487,7 +470,6 @@ class GenerationViewController: UIViewController {
             let finalPrompt = "\(instruction)\n\nCONTEXT:\n\(safeText)\n\nTOPIC REQUEST: \(topicName)"
             
             await MainActor.run {
-                // Update retry label on overlay won't affect sender title – just log
             }
 
             do {
@@ -527,7 +509,7 @@ class GenerationViewController: UIViewController {
             
             if attempt < 3 {
                 if isQuotaError {
-                    print("🚨 QUOTA HIT. Waiting 70s...")
+                    print(" QUOTA HIT. Waiting 70s...")
                     for i in (1...70).reversed() {
                         await MainActor.run { self.generateButton.setTitle("Limit Hit. Retrying in \(i)s...", for: .normal) }
                         try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -541,15 +523,13 @@ class GenerationViewController: UIViewController {
             }
         }
     }
-    
-   
+
     private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
         self.stopLoading(sender)
         
         let folder = self.parentSubjectName ?? "General Study"
         var savedTopic: Topic?
-        
-       
+
         if let items = self.sourceItems {
             for item in items {
                 if let url = item as? URL {
@@ -565,8 +545,7 @@ class GenerationViewController: UIViewController {
                 }
             }
         }
-        
-        
+
         if self.currentGenerationType == .quiz {
             let questions = self.parseQuizJSON(generatedContent)
             if questions.isEmpty { self.showError("AI generated invalid quiz data."); return }
@@ -576,7 +555,7 @@ class GenerationViewController: UIViewController {
             let parsedCards = self.parseFlashcardsJSON(generatedContent)
             if parsedCards.isEmpty { self.showError("AI generated invalid flashcard data."); return }
             
-            let serialized = parsedCards.map { "\($0.safeFront)|\($0.safeBack)" }.joined(separator: "\n")
+            let serialized = parsedCards.map { "\($0.safeFront)|\($0.safeBack)|\($0.safeKeyword)" }.joined(separator: "\n")
             savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: "Flashcards", notes: serialized, sourceName: topicName, createdDate: "Just now")
             
         } else {
@@ -589,8 +568,7 @@ class GenerationViewController: UIViewController {
             
             savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: self.currentGenerationType.description, notes: finalText, sourceName: topicName, createdDate: "Just now")
         }
-        
-       
+
         if let finalTopic = savedTopic {
             let payload = (topic: finalTopic, sourceName: topicName)
             self.performNavigation(type: self.currentGenerationType, payload: payload)
@@ -598,8 +576,7 @@ class GenerationViewController: UIViewController {
             Task { await RevisioManager.shared.earnXP(amount: 5, reason: "Material Generated") }
         }
     }
-    
-    
+
     func performNavigation(type: GenerationType, payload: (topic: Topic, sourceName: String)) {
         switch type {
         case .quiz: performSegue(withIdentifier: "ShowQuizInstructionsFromGen", sender: payload)
@@ -651,7 +628,6 @@ class GenerationViewController: UIViewController {
     }
 }
 
-// MARK: - JSON & Markdown Helpers
 extension GenerationViewController {
     
     func parseQuizJSON(_ jsonString: String) -> [QuizQuestion] {
@@ -698,7 +674,7 @@ extension GenerationViewController {
             return wrapper.flashcards
         }
         
-        print("⚠️ Failed to parse flashcards JSON. Raw Data: \(cleanString)")
+        print(" Failed to parse flashcards JSON. Raw Data: \(cleanString)")
         return []
     }
     

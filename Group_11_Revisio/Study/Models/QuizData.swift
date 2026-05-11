@@ -1,11 +1,8 @@
 import Foundation
 
-// MARK: - 1. Structure Definitions
-
 struct SourceTopic: Codable {
     let name: String
 }
-
 
 struct QuizQuestion: Codable {
     let questionText: String
@@ -16,7 +13,6 @@ struct QuizQuestion: Codable {
     var hint: String
 }
 
-// MARK: - 2. Source Array
 let allQuizSources: [SourceTopic] = [
     SourceTopic(name: "Taylor Series PDF"),
     SourceTopic(name: "Prof. Leonard Channel"),
@@ -25,7 +21,6 @@ let allQuizSources: [SourceTopic] = [
     SourceTopic(name: "Assembly Guide")
 ]
 
-// MARK: - 3. Quiz Manager
 struct QuizManager {
     
     static let quizDataBySource: [String: [QuizQuestion]] = [
@@ -39,12 +34,12 @@ struct QuizManager {
                         hint: "This is a special trigonometric limit often proven by the Squeeze Theorem."
                     ),
                     QuizQuestion(
-                        questionText: "Evaluate the limit: lim (x→2) [ (x² - 4) / (x - 2) ]",
+                        questionText: "Evaluate the limit: lim (x2) [ (x - 4) / (x - 2) ]",
                         answers: ["0", "2", "4", "Does not exist"],
                         correctAnswerIndex: 2,
                         userAnswerIndex: nil,
                         isFlagged: false,
-                        hint: "Factor the numerator (x² - 4) into (x - 2)(x + 2) and cancel the common term."
+                        hint: "Factor the numerator (x - 4) into (x - 2)(x + 2) and cancel the common term."
                     ),
                     QuizQuestion(
                         questionText: "What is the limit of 1/x as x approaches infinity?",
@@ -55,12 +50,12 @@ struct QuizManager {
                         hint: "Think about what happens to a fraction when the denominator becomes extremely large."
                     ),
                     QuizQuestion(
-                        questionText: "If lim f(x)/g(x) results in 0/0, L'Hôpital's Rule allows you to calculate the limit by:",
+                        questionText: "If lim f(x)/g(x) results in 0/0, L'Hpital's Rule allows you to calculate the limit by:",
                         answers: ["Taking the derivative of the whole fraction", "Multiplying by the conjugate", "Taking the derivative of the numerator and denominator separately", "Dividing by the highest power of x"],
                         correctAnswerIndex: 2,
                         userAnswerIndex: nil,
                         isFlagged: false,
-                        hint: "L'Hôpital's Rule states lim f(x)/g(x) = lim f'(x)/g'(x)."
+                        hint: "L'Hpital's Rule states lim f(x)/g(x) = lim f'(x)/g'(x)."
                     ),
                     QuizQuestion(
                         questionText: "A limit exists only if:",
@@ -68,10 +63,10 @@ struct QuizManager {
                         correctAnswerIndex: 1,
                         userAnswerIndex: nil,
                         isFlagged: false,
-                        hint: "Check both sides: lim (x→a⁻) f(x) must equal lim (x→a⁺) f(x)."
+                        hint: "Check both sides: lim (xa) f(x) must equal lim (xa) f(x)."
                     ),
                     QuizQuestion(
-                        questionText: "Evaluate: lim (x→∞) [ (3x² + 5) / (x² - 2) ]",
+                        questionText: "Evaluate: lim (x) [ (3x + 5) / (x - 2) ]",
                         answers: ["0", "Infinity", "3", "5"],
                         correctAnswerIndex: 2,
                         userAnswerIndex: nil,
@@ -109,7 +104,7 @@ struct QuizManager {
         
         "Prof. Leonard Channel": [
             QuizQuestion(
-                questionText: "If Prof. Leonard discusses L'Hôpital's Rule, what kind of indeterminate form must the limit have?",
+                questionText: "If Prof. Leonard discusses L'Hpital's Rule, what kind of indeterminate form must the limit have?",
                 answers: ["0/0 or infinity/infinity", "1/0 or 0*infinity", "infinity-infinity or 1^infinity", "Any indeterminate form"],
                 correctAnswerIndex: 0,
                 userAnswerIndex: nil,

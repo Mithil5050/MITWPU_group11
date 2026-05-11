@@ -35,14 +35,12 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
     private func setupInitialData() {
         let rawQuizName = selectedSourceName ?? quizTopic?.name ?? "Quiz"
         
-        // ✅ LOGIC CHANGE: Smart Naming for Navigation Title
         let cleanTitle = rawQuizName.replacingOccurrences(of: ".txt", with: "")
                                    .replacingOccurrences(of: "Note_", with: "")
                                    .replacingOccurrences(of: "Link_", with: "")
                                    .replacingOccurrences(of: "_", with: " ")
                                    .trimmingCharacters(in: .whitespaces)
         
-        // This sets the base title; note that displayQuestion() overrides this with "Question X"
         self.title = cleanTitle
         
         let updatedQuestions = QuizManager.getQuestions(for: rawQuizName)
@@ -57,7 +55,6 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
     }
 
     private func setupUI() {
-        // ✅ LOGIC CHANGE: Fix Question Label Word Wrapping
         questionLabel.numberOfLines = 0
         questionLabel.lineBreakMode = .byWordWrapping
         
@@ -75,7 +72,6 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
             config.titleAlignment = .leading
             button.configuration = config
             
-            // ✅ LOGIC CHANGE: Fix Answer Button Word Wrapping
             button.titleLabel?.numberOfLines = 0
             button.titleLabel?.lineBreakMode = .byWordWrapping
             

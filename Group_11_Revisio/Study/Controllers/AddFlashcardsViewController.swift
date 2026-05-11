@@ -1,9 +1,3 @@
-//
-//  AddFlashcardsViewController.swift
-//  Group_11_Revisio
-//
-//  Created by Ayaana Talwar on 09/01/26.
-//
 
 import UIKit
 
@@ -13,8 +7,7 @@ class AddFlashcardsViewController: UIViewController {
     
     @IBOutlet weak var termsTextField: UITextField!
     @IBOutlet weak var definitionsTextField: UITextField!
-    
-    
+
     private let loadingIndicator = UIActivityIndicatorView(style: .medium)
     
     override func viewDidLoad() {
@@ -32,8 +25,7 @@ class AddFlashcardsViewController: UIViewController {
         setupFieldStyling(definitionsTextField, placeholder: "Enter definition...")
         
         view.backgroundColor = .systemGroupedBackground
-        
-      
+
         loadingIndicator.hidesWhenStopped = true
         loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(loadingIndicator)
@@ -70,7 +62,6 @@ class AddFlashcardsViewController: UIViewController {
         dismiss(animated: true, completion: nil)
     }
     
-    // MARK: - Save Action
     @IBAction func saveButtonTapped(_ sender: UIButton) {
         guard let term = termsTextField.text, !term.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             print("Error: Term must be filled.")
@@ -78,8 +69,7 @@ class AddFlashcardsViewController: UIViewController {
         }
         
         let manualDefinition = definitionsTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        
-       
+
         if manualDefinition.isEmpty {
             
             sender.isEnabled = false
@@ -101,12 +91,10 @@ class AddFlashcardsViewController: UIViewController {
                     
                     DispatchQueue.main.async {
                         self.loadingIndicator.stopAnimating()
-                        
-                       
+
                         let cleanDef = aiDefinition.trimmingCharacters(in: .whitespacesAndNewlines)
                         let newCard = Flashcard(term: term, definition: cleanDef, keyword: term)
-                        
-                       
+
                         self.delegate?.didCreateNewFlashcard(card: newCard)
                         self.dismiss(animated: true, completion: nil)
                     }
@@ -117,8 +105,7 @@ class AddFlashcardsViewController: UIViewController {
                         self.view.isUserInteractionEnabled = true
                         sender.isEnabled = true
                         sender.setTitle("Save", for: .normal)
-                        
-                        
+
                         let alert = UIAlertController(title: "AI Error", message: "Failed to generate a definition. Please type it manually.", preferredStyle: .alert)
                         alert.addAction(UIAlertAction(title: "OK", style: .default))
                         self.present(alert, animated: true)

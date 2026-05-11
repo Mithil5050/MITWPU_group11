@@ -2,15 +2,12 @@ import UIKit
 
 class ResultsViewController: UIViewController {
     
-    // MARK: - Properties
     var finalResult: FinalQuizResult?
     var topicToSave: Topic?
     var parentFolder: String?
-    
-    
+
     var summaryData: [QuizSummaryItem] = []
     
-    // MARK: - Outlets
     @IBOutlet weak var scoreLabel: UILabel!
     @IBOutlet weak var detailTableView: UITableView!
     @IBOutlet weak var retakeButton: UIButton!
@@ -83,17 +80,14 @@ class ResultsViewController: UIViewController {
         retakeButton.layer.cornerRadius = 14
         saveButton.layer.cornerRadius = 14
 
-       
         Task {
             
             let totalEarned = 20 + (result.finalScore * 5)
-            
-           
+
             await RevisioManager.shared.earnXP(amount: totalEarned, reason: "Study Quiz")
         }
     }
     
-    // MARK: - Actions
     @IBAction func retakeButtonTapped(_ sender: Any) {
      
         if let nav = navigationController,
@@ -110,9 +104,7 @@ class ResultsViewController: UIViewController {
             nav.popToViewController(quizVC, animated: true)
         }
     }
-    
 
-    
     @IBAction func saveButtonTapped(_ sender: Any) {
        
         guard let result = finalResult, var topic = topicToSave, let folder = parentFolder else {
@@ -121,8 +113,7 @@ class ResultsViewController: UIViewController {
         }
       
         ProgressDataManager.shared.totalQuizzesDone += 1
-        
-        
+
         let percentage = Double(result.finalScore) / Double(result.totalQuestions)
         if percentage >= 0.9 {
            
@@ -134,8 +125,7 @@ class ResultsViewController: UIViewController {
             let userIdx = item.userAnswerIndex ?? -1
             return "\(item.questionText)|\(answers)|\(item.correctAnswerIndex)|\(item.explanation)|\(userIdx)"
         }.joined(separator: "\n")
-        
-        
+
         let newAttempt = QuizAttempt(
             id: UUID(),
             date: Date(),
@@ -143,20 +133,17 @@ class ResultsViewController: UIViewController {
             totalQuestions: result.totalQuestions,
             summaryData: packedData
         )
-        
-       
+
         if topic.attempts == nil {
             topic.attempts = []
         }
         topic.attempts?.append(newAttempt)
-        
-     
+
         topic.lastAccessed = "Score: \(result.finalScore)/\(result.totalQuestions)"
         topic.largeContentBody = packedData
         
         DataManager.shared.updateTopic(subjectName: folder, topic: topic)
-        
-       
+
         let alert = UIAlertController(title: "Saved!", message: "Quiz result archived.", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
             if let nav = self.navigationController {
@@ -173,12 +160,10 @@ class ResultsViewController: UIViewController {
         present(alert, animated: true)
     }
     
-    // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ShowReviewDetail",
            let destVC = segue.destination as? ReviewDetailViewController {
-            
-           
+
             for i in 0..<summaryData.count {
                 summaryData[i].isCorrect = (summaryData[i].userAnswerIndex == summaryData[i].correctAnswerIndex)
             }
@@ -188,7 +173,6 @@ class ResultsViewController: UIViewController {
     }
 }
 
-// MARK: - TableView Handling
 extension ResultsViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 2
