@@ -78,6 +78,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
         setupData()
         setupCollectionView()
         navigationItem.title = "Awards"
+        navigationItem.backButtonDisplayMode = .minimal
 
         NotificationCenter.default.addObserver(
             self,
@@ -265,6 +266,37 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
                 cell.configure(with: previewMilestones[indexPath.row], forSection: .allMilestones)
             }
             return cell
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let sectionType = AwardsSection(rawValue: indexPath.section)!
+        let hasActivity = ProgressDataManager.shared.hasEarnedAnyXP
+        
+        var selectedBadge: Badging.Badge?
+        
+        switch sectionType {
+        case .feature:
+            didTapMonthlyBadgeCard()
+            return
+        case .activeChallenges:
+            if !(!hasActivity || activeBadges.isEmpty) {
+                selectedBadge = activeBadges[indexPath.row]
+            }
+        case .recentWins:
+            if !(!hasActivity || earnedBadges.isEmpty) {
+                selectedBadge = earnedBadges[indexPath.row]
+            }
+        case .allMilestones:
+            if !previewMilestones.isEmpty {
+                selectedBadge = previewMilestones[indexPath.row]
+            }
+        }
+        
+        if let badge = selectedBadge {
+            let vc = BadgeDetailViewController()
+            vc.badge = badge
+            navigationController?.pushViewController(vc, animated: true)
         }
     }
 
