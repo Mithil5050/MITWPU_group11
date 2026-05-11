@@ -153,16 +153,17 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
             case .allMilestones:
                 let item = NSCollectionLayoutItem(
                     layoutSize: .init(widthDimension: .fractionalWidth(0.5),
-                                      heightDimension: .absolute(160))
+                                      heightDimension: .absolute(140))
                 )
-                item.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 6, bottom: 6, trailing: 6)
                 let groupSize = NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1.0),
-                    heightDimension: .absolute(160)
+                    heightDimension: .absolute(140)
                 )
                 let group   = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+                group.interItemSpacing = .fixed(16)
                 let section = NSCollectionLayoutSection(group: group)
-                section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 10, bottom: 20, trailing: 10)
+                section.interGroupSpacing = 16
+                section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 16, bottom: 20, trailing: 16)
                 section.boundarySupplementaryItems = [header]
                 section.supplementariesFollowContentInsets = false
                 return section
@@ -184,13 +185,13 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
                     : .fractionalWidth(0.42)
                 let groupSize = NSCollectionLayoutSize(
                     widthDimension: currentWidth,
-                    heightDimension: .absolute(145)
+                    heightDimension: .absolute(140)
                 )
                 let group   = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
                 let section = NSCollectionLayoutSection(group: group)
                 section.orthogonalScrollingBehavior = isEmpty ? .none : .continuous
                 section.interGroupSpacing = 16
-                section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 16, bottom: 16, trailing: 16)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 16, bottom: 20, trailing: 16)
                 section.boundarySupplementaryItems = [header]
                 section.supplementariesFollowContentInsets = false
                 return section

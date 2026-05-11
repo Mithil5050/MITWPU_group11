@@ -90,7 +90,6 @@ class BadgeDetailViewController: UIViewController {
     private func populateData() {
         guard let badge = badge else { return }
         
-        navigationItem.title = badge.title
         challengeTitleLabel.text = badge.title
         
         if let imageName = Badging.imageName(for: badge) {

@@ -101,26 +101,49 @@ class ProgressViewContoller: UIViewController {
                 mainMonthBagdeImageView.image = UIImage(named: "awards_monthly_main")
             }
 
-        // Tap Gestures
+        // Navigation Gestures & Buttons
 
-            private func setupTapGestures() {
-                streaksCard.isUserInteractionEnabled = true
-                awardsCard.isUserInteractionEnabled  = true
+        private func setupTapGestures() {
+            streaksCard.isUserInteractionEnabled = true
+            awardsCard.isUserInteractionEnabled  = true
 
-                streaksCard.addGestureRecognizer(
-                    UITapGestureRecognizer(target: self, action: #selector(streaksCardTapped))
-                )
-                awardsCard.addGestureRecognizer(
-                    UITapGestureRecognizer(target: self, action: #selector(awardsCardTapped))
-                )
-            }
+            // Overlay transparent button for Streaks Chevron (44x44 Hit Test Area)
+            let streaksButton = UIButton(type: .system)
+            streaksButton.backgroundColor = .clear
+            streaksButton.showsTouchWhenHighlighted = true
+            streaksButton.translatesAutoresizingMaskIntoConstraints = false
+            streaksButton.addTarget(self, action: #selector(streaksChevronTapped), for: .touchUpInside)
+            streaksCard.addSubview(streaksButton)
+            
+            NSLayoutConstraint.activate([
+                streaksButton.trailingAnchor.constraint(equalTo: streaksCard.trailingAnchor),
+                streaksButton.topAnchor.constraint(equalTo: streaksCard.topAnchor),
+                streaksButton.widthAnchor.constraint(equalToConstant: 44),
+                streaksButton.heightAnchor.constraint(equalToConstant: 44)
+            ])
+            
+            // Overlay transparent button for Awards Chevron (44x44 Hit Test Area)
+            let awardsButton = UIButton(type: .system)
+            awardsButton.backgroundColor = .clear
+            awardsButton.showsTouchWhenHighlighted = true
+            awardsButton.translatesAutoresizingMaskIntoConstraints = false
+            awardsButton.addTarget(self, action: #selector(awardsChevronTapped), for: .touchUpInside)
+            awardsCard.addSubview(awardsButton)
+            
+            NSLayoutConstraint.activate([
+                awardsButton.trailingAnchor.constraint(equalTo: awardsCard.trailingAnchor),
+                awardsButton.topAnchor.constraint(equalTo: awardsCard.topAnchor),
+                awardsButton.widthAnchor.constraint(equalToConstant: 44),
+                awardsButton.heightAnchor.constraint(equalToConstant: 44)
+            ])
+        }
 
-            @objc private func streaksCardTapped() {
-                let vc = StreaksCalendarViewController()
-                navigationController?.pushViewController(vc, animated: true)
-            }
+        @objc private func streaksChevronTapped() {
+            let vc = StreaksCalendarViewController()
+            navigationController?.pushViewController(vc, animated: true)
+        }
 
-        @objc private func awardsCardTapped() {
+        @objc private func awardsChevronTapped() {
             let storyboard = UIStoryboard(name: "Progress", bundle: nil)
             let vc = storyboard.instantiateViewController(withIdentifier: "AwardsViewController")
             navigationController?.pushViewController(vc, animated: true)

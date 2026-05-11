@@ -33,6 +33,24 @@ struct Badging {
         case deepFocus      = "Deep Focus"
         case socialScholar  = "Social Scholar"
         case sourceMaster   = "Source Master"
+        
+        var unitLabel: String {
+            switch self {
+            case .globalXP:      return "XP"
+            case .quizMaster:    return "quizzes"
+            case .flashGenius:   return "flashcards"
+            case .notesCreator:  return "notes"
+            case .cheatsheetPro: return "cheatsheets"
+            case .questSeeker:   return "quests"
+            case .wordFiller:    return "words"
+            case .connector:     return "connections"
+            case .dailyWord:     return "challenges"
+            case .streakMaster:  return "days"
+            case .deepFocus:     return "sessions"
+            case .socialScholar: return "messages"
+            case .sourceMaster:  return "documents"
+            }
+        }
     }
 
     // Badge Model

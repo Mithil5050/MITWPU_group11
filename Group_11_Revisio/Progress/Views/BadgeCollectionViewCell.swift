@@ -38,6 +38,16 @@ class BadgeCollectionViewCell: UICollectionViewCell {
 
         badgeTitleLabel.numberOfLines  = 0
         badgeDetailLabel.numberOfLines = 0
+        
+        // Remove progress bar entirely and use default 4pt stack spacing
+        badgeProgressBar.removeFromSuperview()
+        
+        // Shrink the badge icon to 60x60
+        badgeImageView.constraints.forEach { constraint in
+            if constraint.firstAttribute == .width || constraint.firstAttribute == .height {
+                constraint.constant = 60
+            }
+        }
     }
 
     // MARK: - Empty State
@@ -46,7 +56,6 @@ class BadgeCollectionViewCell: UICollectionViewCell {
         badgeCardView.isHidden        = false
         badgeCardView.backgroundColor = .clear
 
-        badgeProgressBar.isHidden = true
         badgeImageView.isHidden   = true
 
         if section == .activeChallenges {
@@ -64,7 +73,7 @@ class BadgeCollectionViewCell: UICollectionViewCell {
 
         badgeDetailLabel.isHidden      = false
         badgeDetailLabel.textColor     = .secondaryLabel  // adaptive grey
-        badgeDetailLabel.font          = .systemFont(ofSize: 12, weight: .medium)
+        badgeDetailLabel.font          = .systemFont(ofSize: 12, weight: .regular)
         badgeDetailLabel.textAlignment = .center
 
         if let stackView = badgeTitleLabel.superview as? UIStackView {
@@ -97,6 +106,7 @@ class BadgeCollectionViewCell: UICollectionViewCell {
         badgeTitleLabel.textAlignment = section == .allMilestones ? .center : .left
 
         badgeDetailLabel.textColor = .secondaryLabel  // adaptive
+        badgeDetailLabel.font      = .systemFont(ofSize: 12, weight: .regular)
 
         if let imageName = Badging.imageName(for: badge) {
             badgeImageView.image = UIImage(named: imageName)
@@ -106,13 +116,10 @@ class BadgeCollectionViewCell: UICollectionViewCell {
             badgeImageView.tintColor = .systemGray
         }
 
-        if section == .activeChallenges {
-            badgeProgressBar.isHidden = false
-            badgeProgressBar.setProgress(badge.progress, animated: true)
-            badgeDetailLabel.text = "\(badge.currentValue) / \(badge.goalValue)"
+        if badge.isEarned {
+            badgeDetailLabel.text = "Earned!"
         } else {
-            badgeProgressBar.isHidden = true
-            badgeDetailLabel.text = badge.isEarned ? "Earned!" : "Locked"
+            badgeDetailLabel.text = "\(badge.currentValue) / \(badge.goalValue) \(badge.category.unitLabel)"
         }
     }
 }

@@ -20,6 +20,7 @@ struct XPEvent {
 class XPDetailsViewController: UIViewController {
 
     private let scrollView    = UIScrollView()
+    private let contentView   = UIView()
     private let contentStack  = UIStackView()
 
     private let levelCard      = UIView()
@@ -62,16 +63,30 @@ class XPDetailsViewController: UIViewController {
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(contentView)
+        
+        let widthConstraint = contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
+        widthConstraint.priority = .required
+
+        NSLayoutConstraint.activate([
+            contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            widthConstraint
+        ])
+
         contentStack.axis    = .vertical
         contentStack.spacing = 20
         contentStack.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(contentStack)
+        contentView.addSubview(contentStack)
+        
         NSLayoutConstraint.activate([
-            contentStack.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 24),
-            contentStack.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 16),
-            contentStack.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -16),
-            contentStack.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: -32),
-            contentStack.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -32)
+            contentStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
+            contentStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            contentStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            contentStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -32)
         ])
 
         // Level card — blue tint works in both light and dark
@@ -152,6 +167,22 @@ class XPDetailsViewController: UIViewController {
             self.view.layoutIfNeeded()
             self.historyTableHeightConstraint?.constant = self.historyTableView.contentSize.height
         }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        self.scrollView.contentSize = self.contentView.frame.size
+    }
+
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        
+        coordinator.animate(alongsideTransition: { _ in
+            self.view.setNeedsUpdateConstraints()
+            // We reload data to trigger intrinsic content size updates
+            self.historyTableView.reloadData()
+            self.refreshData()
+        })
     }
 
     // MARK: - Helpers
