@@ -1,18 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="P8i-AW-oRX">
-    <device id="retina6_12" orientation="portrait" appearance="dark"/>
-    <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
-        <capability name="collection view cell content view" minToolsVersion="11.0"/>
-        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
-    </dependencies>
-    <scenes>
-        <!--Progress-->
-        <scene sceneID="Kjq-gx-4e3">
-            <objects>
-                <viewController id="SZh-hW-Isu" customClass="ProgressViewContoller" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
+import re
+
+with open('/Users/ashika/Desktop/Group_11_Revisio/Group_11_Revisio/Progress.storyboard', 'r') as f:
+    content = f.read()
+
+start_tag = '<viewController id="SZh-hW-Isu"'
+end_tag = '</viewController>'
+
+start_idx = content.find(start_tag)
+end_idx = content.find(end_tag, start_idx) + len(end_tag)
+
+new_vc = """<viewController id="SZh-hW-Isu" customClass="ProgressViewContoller" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ezR-DV-9D6">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -236,156 +233,11 @@
                         <outlet property="streaksDateLabel" destination="BGu-G9-1h7" id="c32-dq-Kum"/>
                         <outlet property="streaksLabel" destination="dyt-Tg-q8U" id="QkO-Ji-G6m"/>
                     </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="xsh-Ob-ena" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-1605.3435114503816" y="-1064.0845070422536"/>
-        </scene>
-        <!--Progress-->
-        <scene sceneID="XMz-2C-bnh">
-            <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="P8i-AW-oRX" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Progress" image="chart.line.uptrend.xyaxis" catalog="system" id="T5m-7t-LcH"/>
-                    <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" largeTitles="YES" id="zqf-Nt-nPz">
-                        <rect key="frame" x="0.0" y="118" width="393" height="106"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </navigationBar>
-                    <nil name="viewControllers"/>
-                    <connections>
-                        <segue destination="SZh-hW-Isu" kind="relationship" relationship="rootViewController" id="kre-ez-koT"/>
-                    </connections>
-                </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="OFm-2E-I3V" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-2532.06106870229" y="-1064.0845070422536"/>
-        </scene>
-        <!--Awards-->
-        <scene sceneID="9Tg-UF-OHP">
-            <objects>
-                <viewController storyboardIdentifier="AwardsViewController" id="Iz6-9K-uFj" customClass="AwardsViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="Dhk-g2-RtX">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="am1-Bf-ns0" userLabel="Awards Collection View">
-                                <rect key="frame" x="0.0" y="224" width="393" height="503"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                <collectionViewLayout key="collectionViewLayout" id="hc2-82-0ll"/>
-                                <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="A53-c6-8R2">
-                                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="ay3-BI-1OI">
-                                            <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                        </collectionViewCellContentView>
-                                    </collectionViewCell>
-                                </cells>
-                            </collectionView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="SYr-kK-1ui"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="am1-Bf-ns0" firstAttribute="leading" secondItem="SYr-kK-1ui" secondAttribute="leading" id="0iz-pa-OWV"/>
-                            <constraint firstItem="SYr-kK-1ui" firstAttribute="trailing" secondItem="am1-Bf-ns0" secondAttribute="trailing" id="Aoe-8o-lNY"/>
-                            <constraint firstItem="SYr-kK-1ui" firstAttribute="bottom" secondItem="am1-Bf-ns0" secondAttribute="bottom" constant="8" id="ceo-IM-jFY"/>
-                            <constraint firstItem="am1-Bf-ns0" firstAttribute="top" secondItem="SYr-kK-1ui" secondAttribute="top" id="ePq-aI-dmM"/>
-                        </constraints>
-                    </view>
-                    <navigationItem key="navigationItem" title="Awards" largeTitleDisplayMode="always" id="Iyy-EC-yI2" customClass="Badge"/>
-                    <connections>
-                        <outlet property="collectionView" destination="am1-Bf-ns0" id="TW1-Yt-tyK"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="ONw-iS-NJn" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-674.04580152671758" y="-1063.3802816901409"/>
-        </scene>
-        <!--Streaks-->
-        <scene sceneID="sYp-F7-sfR">
-            <objects>
-                <viewController id="wN2-Ig-61i" customClass="StreaksCalendarViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="ZOf-eq-FYp">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Oe-mx-mtH">
-                                <rect key="frame" x="16" y="260" width="361" height="592"/>
-                                <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rus-wB-hsc" customClass="ContentView">
-                                        <rect key="frame" x="0.0" y="0.0" width="361" height="592"/>
-                                        <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JhD-wU-30d" customClass="CalendarContainerView">
-                                                <rect key="frame" x="0.0" y="-87" width="361" height="679"/>
-                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                            </view>
-                                        </subviews>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                        <constraints>
-                                            <constraint firstItem="JhD-wU-30d" firstAttribute="top" secondItem="rus-wB-hsc" secondAttribute="top" constant="-87" id="R9h-fs-wnc"/>
-                                            <constraint firstItem="JhD-wU-30d" firstAttribute="leading" secondItem="rus-wB-hsc" secondAttribute="leading" id="hCp-50-XJi"/>
-                                            <constraint firstAttribute="bottom" secondItem="JhD-wU-30d" secondAttribute="bottom" id="nTr-kY-aLO"/>
-                                            <constraint firstAttribute="trailing" secondItem="JhD-wU-30d" secondAttribute="trailing" id="z2x-Uq-6ng"/>
-                                        </constraints>
-                                    </view>
-                                </subviews>
-                                <constraints>
-                                    <constraint firstItem="Ldy-bs-EQA" firstAttribute="bottom" secondItem="rus-wB-hsc" secondAttribute="bottom" id="4pe-bH-eVl"/>
-                                    <constraint firstAttribute="trailing" secondItem="rus-wB-hsc" secondAttribute="trailing" id="C4Y-DD-Klf"/>
-                                    <constraint firstItem="rus-wB-hsc" firstAttribute="trailing" secondItem="Ldy-bs-EQA" secondAttribute="trailing" id="Lbw-R1-zxj"/>
-                                    <constraint firstAttribute="bottom" secondItem="rus-wB-hsc" secondAttribute="bottom" constant="-48" id="Q6M-2c-u9Q"/>
-                                    <constraint firstItem="rus-wB-hsc" firstAttribute="leading" secondItem="Ldy-bs-EQA" secondAttribute="leading" id="XNU-oG-AWx"/>
-                                    <constraint firstItem="rus-wB-hsc" firstAttribute="top" secondItem="Ldy-bs-EQA" secondAttribute="top" id="cC4-ch-DDt"/>
-                                </constraints>
-                                <viewLayoutGuide key="contentLayoutGuide" id="q9m-OS-B1P"/>
-                                <viewLayoutGuide key="frameLayoutGuide" id="Ldy-bs-EQA"/>
-                            </scrollView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="C7G-Hs-ft6"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="6Oe-mx-mtH" firstAttribute="leading" secondItem="ZOf-eq-FYp" secondAttribute="leadingMargin" id="EZI-Ve-ZBW"/>
-                            <constraint firstItem="6Oe-mx-mtH" firstAttribute="trailing" secondItem="ZOf-eq-FYp" secondAttribute="trailingMargin" id="qnH-ds-Xhe"/>
-                            <constraint firstItem="6Oe-mx-mtH" firstAttribute="top" secondItem="C7G-Hs-ft6" secondAttribute="top" constant="88" id="rZh-Rd-k1t"/>
-                            <constraint firstAttribute="bottom" secondItem="6Oe-mx-mtH" secondAttribute="bottom" id="uR8-nI-VYh"/>
-                        </constraints>
-                    </view>
-                    <navigationItem key="navigationItem" title="Streaks" largeTitleDisplayMode="never" id="D7X-Js-LBC"/>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="4u2-Ri-ieQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-2240.4580152671756" y="-357.04225352112678"/>
-        </scene>
-        <!--Monthly Challenge Detail View Controller-->
-        <scene sceneID="aPE-tn-H4i">
-            <objects>
-                <viewController id="uXR-VA-BhQ" customClass="MonthlyChallengeDetailViewController" customModule="Group_11_Revisio" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="Bkc-Pc-Qsx">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <viewLayoutGuide key="safeArea" id="laf-hT-7Lt"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                    </view>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="PG2-Hi-eDV" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="425" y="-1063"/>
-        </scene>
-    </scenes>
-    <resources>
-        <image name="chart.line.uptrend.xyaxis" catalog="system" width="128" height="102"/>
-        <image name="chevron.forward.circle.fill" catalog="system" width="128" height="123"/>
-        <image name="chevron.right.circle.fill" catalog="system" width="128" height="123"/>
-        <image name="flame" catalog="system" width="106" height="128"/>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
-        <systemColor name="systemGray6Color">
-            <color red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
-        <systemColor name="systemOrangeColor">
-            <color red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
-    </resources>
-</document>
+                </viewController>"""
+
+new_content = content[:start_idx] + new_vc + content[end_idx:]
+
+with open('/Users/ashika/Desktop/Group_11_Revisio/Group_11_Revisio/Progress.storyboard', 'w') as f:
+    f.write(new_content)
+
+print("Updated Progress.storyboard")

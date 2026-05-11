@@ -13,7 +13,6 @@ class ProgressViewContoller: UIViewController {
     
     
     @IBOutlet weak var scrollView: UIScrollView!
-    @IBOutlet weak var stackView: UIStackView!
     
     @IBOutlet weak var chartContainerView: UIView!
     @IBOutlet weak var hoursStudiedHeaderLabel: UILabel!
