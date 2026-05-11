@@ -3,6 +3,7 @@ import UIKit
 protocol SideQuestDelegate: AnyObject {
     func didUpdateQuests(_ quests: [SideQuest])
     func didEarnXP(amount: Int, sourceView: UIView)
+    func didReachQuestLimit()
     
     // History Methods
     func didCompleteQuest(_ quest: SideQuest)
@@ -74,8 +75,11 @@ class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource,
         return layoutAttributes
     }
     
-    func configure(with quests: [SideQuest]) {
+    private var todayCount: Int = 0
+    
+    func configure(with quests: [SideQuest], todayCount: Int) {
         self.quests = quests
+        self.todayCount = todayCount
         tableView.reloadData()
         updateHeight()
     }
@@ -96,13 +100,15 @@ class SideQuestsCollectionViewCell: UICollectionViewCell, UITableViewDataSource,
         // If the user typed nothing and closed the keyboard, just return
         guard let text = textField.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         
-        if quests.count >= 5 {
+        if todayCount >= 5 {
             textField.text = ""
+            delegate?.didReachQuestLimit()
             return
         }
         
         let newQuest = SideQuest(title: text.trimmingCharacters(in: .whitespacesAndNewlines))
         quests.append(newQuest)
+        todayCount += 1
         
         textField.text = ""
         tableView.reloadData()

@@ -53,8 +53,20 @@ class QuestHistoryViewController: UIViewController, UITableViewDataSource, UITab
         
         var content = cell.defaultContentConfiguration()
         content.text = quest.title
-        content.image = UIImage(systemName: "checkmark.circle.fill")
-        content.imageProperties.tintColor = .systemIndigo
+        
+        if quest.isExpired {
+            content.secondaryText = "Expired"
+            content.image = UIImage(systemName: "timer")
+            content.imageProperties.tintColor = .systemGray
+            content.textProperties.color = .secondaryLabel
+            content.secondaryTextProperties.color = .systemRed
+        } else {
+            content.secondaryText = "Completed"
+            content.image = UIImage(systemName: "checkmark.circle.fill")
+            content.imageProperties.tintColor = .systemIndigo
+            content.textProperties.color = .label
+            content.secondaryTextProperties.color = .systemGreen
+        }
         
         cell.contentConfiguration = content
         return cell

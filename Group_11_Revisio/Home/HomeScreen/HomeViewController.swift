@@ -201,25 +201,44 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     // MARK: - Persistence (Save & Load Tasks)
     private func loadQuests() {
         let defaults = UserDefaults.standard
+        let calendar = Calendar.current
         
+        var loadedActive: [SideQuest] = []
         if let data = defaults.data(forKey: activeQuestsKey),
            let saved = try? JSONDecoder().decode([SideQuest].self, from: data) {
-            self.sideQuests = saved
-        } else {
-            self.sideQuests = []
+            loadedActive = saved
         }
         
+        var loadedCompleted: [SideQuest] = []
         if let data = defaults.data(forKey: completedQuestsKey),
            let saved = try? JSONDecoder().decode([SideQuest].self, from: data) {
-            self.completedQuests = saved
-        } else {
-            self.completedQuests = []
+            loadedCompleted = saved
+        }
+        
+        // Filter expired quests
+        var stillActive: [SideQuest] = []
+        var newlyExpired: [SideQuest] = []
+        
+        for var quest in loadedActive {
+            if calendar.isDateInToday(quest.dateCreated) {
+                stillActive.append(quest)
+            } else {
+                quest.isExpired = true
+                newlyExpired.append(quest)
+            }
+        }
+        
+        self.sideQuests = stillActive
+        self.completedQuests = newlyExpired + loadedCompleted
+        
+        // If anything expired, save immediately
+        if !newlyExpired.isEmpty {
+            saveQuests()
         }
     }
 
     private func saveQuests() {
         let defaults = UserDefaults.standard
-        
         if let data = try? JSONEncoder().encode(sideQuests) {
             defaults.set(data, forKey: activeQuestsKey)
         }
@@ -514,7 +533,10 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             
         case .sideQuests:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: sideQuestsCellID, for: indexPath) as! SideQuestsCollectionViewCell
-            cell.configure(with: self.sideQuests)
+            let calendar = Calendar.current
+            let todayCount = (sideQuests.filter { calendar.isDateInToday($0.dateCreated) }.count) +
+                             (completedQuests.filter { calendar.isDateInToday($0.dateCreated) }.count)
+            cell.configure(with: self.sideQuests, todayCount: todayCount)
             cell.delegate = self
             return cell
             
@@ -597,6 +619,19 @@ extension HomeViewController: SideQuestDelegate {
         self.completedQuests.insert(completedTask, at: 0)
         ProgressDataManager.shared.totalQuestsCompleted += 1
         saveQuests()
+    }
+    
+    func didReachQuestLimit() {
+        let alert = UIAlertController(
+            title: "Daily Limit Reached",
+            message: "You can only add up to 5 side quests per day to maintain a healthy study balance! 🛡️",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Got it!", style: .default))
+        self.present(alert, animated: true)
+        
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.warning)
     }
     
     func didTapHistory() {

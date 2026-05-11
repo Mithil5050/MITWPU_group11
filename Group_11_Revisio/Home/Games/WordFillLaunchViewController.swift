@@ -45,7 +45,7 @@ class WordFillLaunchViewController: UIViewController {
     
     private func setupUIElements() {
         // Mascot
-        mascotImageView.image = UIImage(named: "bot_find")
+        mascotImageView.image = UIImage(named: "bot_pencil")
         mascotImageView.contentMode = .scaleAspectFit
         mascotImageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mascotImageView)
