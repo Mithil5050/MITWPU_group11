@@ -86,9 +86,8 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
         NSLayoutConstraint.activate([
             // Center the label in the view
             emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -20),
-            emptyLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
-            emptyLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
+            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            emptyLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             
             
             badgeImageView.topAnchor.constraint(equalTo: emptyLabel.bottomAnchor, constant: 12),

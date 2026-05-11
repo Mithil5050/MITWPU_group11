@@ -13,6 +13,7 @@ class AllLockedBadgesViewController: UIViewController,
 
     private var badges: [Badging.Badge] = Badging.allMilestones
     private var collectionView: UICollectionView!
+    private let emptyStateLabel = UILabel()
 
     // MARK: - Lifecycle
 
@@ -22,6 +23,7 @@ class AllLockedBadgesViewController: UIViewController,
         view.backgroundColor = .systemGroupedBackground
         navigationItem.title = "All Milestones"
         setupCollectionView()
+        setupEmptyState()
 
         NotificationCenter.default.addObserver(
             self,
@@ -43,6 +45,7 @@ class AllLockedBadgesViewController: UIViewController,
     @objc private func refresh() {
         badges = Badging.allMilestones
         collectionView?.reloadData()
+        updateEmptyState()
     }
 
     // MARK: - Collection View Setup
@@ -69,6 +72,30 @@ class AllLockedBadgesViewController: UIViewController,
         )
 
         view.addSubview(collectionView)
+    }
+
+    private func setupEmptyState() {
+        emptyStateLabel.text = "No milestones available yet."
+        emptyStateLabel.font = .systemFont(ofSize: 16, weight: .regular)
+        emptyStateLabel.textColor = .secondaryLabel
+        emptyStateLabel.textAlignment = .center
+        emptyStateLabel.numberOfLines = 0
+        emptyStateLabel.translatesAutoresizingMaskIntoConstraints = false
+        emptyStateLabel.isHidden = true
+
+        view.addSubview(emptyStateLabel)
+
+        NSLayoutConstraint.activate([
+            emptyStateLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            emptyStateLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            emptyStateLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8)
+        ])
+    }
+
+    private func updateEmptyState() {
+        let isEmpty = badges.isEmpty
+        collectionView?.isHidden = isEmpty
+        emptyStateLabel.isHidden = !isEmpty
     }
 
     // MARK: - Layout
@@ -140,6 +167,14 @@ class AllLockedBadgesViewController: UIViewController,
         cell.badgeCardView.isHidden = false
         cell.configure(with: badge, forSection: .allMilestones)
         return cell
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        didSelectItemAt indexPath: IndexPath) {
+        let selectedBadge = badges(for: indexPath.section)[indexPath.item]
+        let detailVC = BadgeDetailViewController()
+        detailVC.badge = selectedBadge
+        navigationController?.pushViewController(detailVC, animated: true)
     }
 
     func collectionView(_ collectionView: UICollectionView,
