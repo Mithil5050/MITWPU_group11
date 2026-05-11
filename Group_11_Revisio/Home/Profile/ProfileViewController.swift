@@ -9,15 +9,12 @@ struct UserProfile: Decodable {
 
 class ProfileViewController: UIViewController {
 
-   
     var collectionView: UICollectionView!
-    
- 
+
     var userName: String = "Loading..."
     var userEmail: String = "Loading..."
     var userImage: UIImage? = UIImage(named: "profile_placeholder")
 
-    // Settings Data
     struct SettingItem { let title: String; let icon: String; let color: UIColor; let isSwitch: Bool }
     let settingsData = [
         SettingItem(title: "Study Reminder", icon: "book", color: .systemBlue, isSwitch: true),
@@ -26,39 +23,33 @@ class ProfileViewController: UIViewController {
         SettingItem(title: "Help & Support", icon: "questionmark.circle", color: .systemGray, isSwitch: false)
     ]
 
-
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
+        view.backgroundColor = .systemGroupedBackground
         setupCollectionView()
-        
-        // Listen for updates to refresh Profile info
+
         NotificationCenter.default.addObserver(self, selector: #selector(reloadProfile), name: NSNotification.Name("ProfileDidUpdate"), object: nil)
-        
-        // Listen for updates to refresh Level Card
+
         NotificationCenter.default.addObserver(forName: .xpDidUpdate, object: nil, queue: .main) { [weak self] _ in
             self?.collectionView.reloadSections(IndexSet(integersIn: 1...2))
         }
-        
-        // Add Close Button to Navigation Bar
+
         let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold)
         let xImage = UIImage(systemName: "multiply", withConfiguration: config)
         navigationItem.leftBarButtonItem = UIBarButtonItem(image: xImage, style: .plain, target: self, action: #selector(handleDismiss))
-        
+
         fetchUserData()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // Always refresh level card + stat cards (streaks & badges) when screen appears
         collectionView.reloadSections(IndexSet(integersIn: 1...2))
     }
-    
+
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-    
-    // Navigation Logic
+
     @objc private func handleDismiss() {
         if isBeingPresented || navigationController?.presentingViewController != nil {
             self.dismiss(animated: true)
@@ -66,19 +57,18 @@ class ProfileViewController: UIViewController {
             self.tabBarController?.selectedIndex = 0
         }
     }
-    
+
     @objc private func reloadProfile() {
         fetchUserData()
     }
-    
-    // Fetch Data Logic
+
     private func fetchUserData() {
         Task {
             do {
                 let user = try await supabase.auth.session.user
                 let userId = user.id.uuidString
                 let email = user.email ?? "No Email"
-                
+
                 let profile: UserProfile = try await supabase
                     .from("profiles")
                     .select("username, avatar_url")
@@ -86,15 +76,14 @@ class ProfileViewController: UIViewController {
                     .single()
                     .execute()
                     .value
-                
+
                 DispatchQueue.main.async {
                     self.userName = profile.username
                     self.userEmail = email
                     self.collectionView.reloadSections(IndexSet(integer: 0))
                 }
-                
+
                 if let avatarString = profile.avatar_url {
-                    // Bypass the cache to get the newest photo
                     let cacheBuster = "?v=\(Date().timeIntervalSince1970)"
                     if let url = URL(string: avatarString + cacheBuster) {
                         downloadProfileImage(from: url)
@@ -110,7 +99,7 @@ class ProfileViewController: UIViewController {
             }
         }
     }
-    
+
     private func downloadProfileImage(from url: URL) {
         Task {
             do {
@@ -127,18 +116,17 @@ class ProfileViewController: UIViewController {
         }
     }
 
-    // CollectionView Setup
     func setupCollectionView() {
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        collectionView.backgroundColor = .black
-        
+        collectionView.backgroundColor = .systemGroupedBackground
+
         collectionView.register(UINib(nibName: "UserInfoCell", bundle: nil), forCellWithReuseIdentifier: "UserInfoCell")
         collectionView.register(UINib(nibName: "LevelCell", bundle: nil), forCellWithReuseIdentifier: "LevelCell")
         collectionView.register(UINib(nibName: "StatCardCell", bundle: nil), forCellWithReuseIdentifier: "StatCardCell")
         collectionView.register(UINib(nibName: "SettingsCell", bundle: nil), forCellWithReuseIdentifier: "SettingsCell")
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "LogoutCell")
-        
+
         collectionView.dataSource = self
         collectionView.delegate = self
         view.addSubview(collectionView)
@@ -165,7 +153,7 @@ class ProfileViewController: UIViewController {
                 return section
             } else if sectionIndex == 3 {
                 var config = UICollectionLayoutListConfiguration(appearance: .insetGrouped)
-                config.backgroundColor = .black
+                config.backgroundColor = .systemGroupedBackground
                 return NSCollectionLayoutSection.list(using: config, layoutEnvironment: env)
             } else {
                 let item = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(60)))
@@ -220,22 +208,22 @@ class ProfileViewController: UIViewController {
     }
 }
 
-// Extensions
 extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func numberOfSections(in collectionView: UICollectionView) -> Int { return 5 }
-    
+
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return section == 2 ? 2 : (section == 3 ? settingsData.count : 1)
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.section == 0 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "UserInfoCell", for: indexPath) as! UserInfoCell
             cell.configure(name: self.userName, email: self.userEmail)
             if let img = self.userImage { cell.pfp.image = img }
             cell.didTapEdit = { [weak self] in self?.openEditProfile() }
+            applyCardStyle(to: cell)
             return cell
-            
+
         } else if indexPath.section == 1 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LevelCell", for: indexPath) as! LevelCell
             let manager = ProgressDataManager.shared
@@ -244,8 +232,9 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
                 currentXP: manager.currentLevelXP,
                 maxXP: manager.pointsPerLevel
             )
+            applyCardStyle(to: cell)
             return cell
-            
+
         } else if indexPath.section == 2 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StatCardCell", for: indexPath) as! StatCardCell
             if indexPath.item == 0 {
@@ -256,49 +245,62 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
                 let earnedCount = Badging.allMilestones.filter { $0.isEarned }.count
                 cell.configure(title: "Badges", value: "\(earnedCount) Earned", icon: "trophy.fill", color: .systemYellow)
             }
+            applyCardStyle(to: cell)
             return cell
-            
+
         } else if indexPath.section == 3 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SettingsCell", for: indexPath) as! SettingsCell
             let data = settingsData[indexPath.item]
             cell.configure(title: data.title, icon: data.icon, color: data.color, isSwitch: data.isSwitch)
             return cell
-            
+
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LogoutCell", for: indexPath)
             cell.contentView.subviews.forEach { $0.removeFromSuperview() }
-            let lbl = UILabel(frame: cell.bounds)
+            cell.backgroundColor = .secondarySystemGroupedBackground
+            cell.layer.cornerRadius = 12
+            cell.clipsToBounds = true
+            let lbl = UILabel(frame: cell.contentView.bounds)
+            lbl.autoresizingMask = [.flexibleWidth, .flexibleHeight]
             lbl.text = "Log Out"
             lbl.textColor = .systemRed
             lbl.textAlignment = .center
+            lbl.font = .systemFont(ofSize: 17, weight: .medium)
             cell.contentView.addSubview(lbl)
             return cell
         }
     }
-    
+
+    private func applyCardStyle(to cell: UICollectionViewCell) {
+        cell.layer.cornerRadius = 16
+        cell.clipsToBounds = false
+        cell.layer.shadowColor = UIColor.black.cgColor
+        let isDark = traitCollection.userInterfaceStyle == .dark
+        cell.layer.shadowOpacity = isDark ? 0.30 : 0.06
+        cell.layer.shadowOffset = CGSize(width: 0, height: 2)
+        cell.layer.shadowRadius = isDark ? 7 : 3
+    }
+
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-            collectionView.deselectItem(at: indexPath, animated: true)
-            
-            if indexPath.section == 1 {
-                // Level Card -> Push XP Info
-                let xpVC = XPInfoSheetViewController()
-                navigationController?.pushViewController(xpVC, animated: true)
-                
-            } else if indexPath.section == 2 {
-                // Stat Cards
-                if indexPath.item == 0 {
-                    let streaksVC = StreaksCalendarViewController()
-                    navigationController?.pushViewController(streaksVC, animated: true)
-                } else if indexPath.item == 1 {
-                    let badgesVC = EarnedBadgesViewController()
-                    navigationController?.pushViewController(badgesVC, animated: true)
-                }
-                
-            } else if indexPath.section == 4 {
-                // Log Out
-                handleLogout()
+        collectionView.deselectItem(at: indexPath, animated: true)
+
+        if indexPath.section == 1 {
+            let xpVC = XPInfoSheetViewController()
+            navigationController?.pushViewController(xpVC, animated: true)
+
+        } else if indexPath.section == 2 {
+            if indexPath.item == 0 {
+                let streaksVC = StreaksCalendarViewController()
+                navigationController?.pushViewController(streaksVC, animated: true)
+            } else if indexPath.item == 1 {
+                let badgesVC = EarnedBadgesViewController()
+                navigationController?.pushViewController(badgesVC, animated: true)
             }
+
+        } else if indexPath.section == 4 {
+            handleLogout()
         }
+    }
 }
 
 extension ProfileViewController: EditProfileDelegate {

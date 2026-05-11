@@ -17,7 +17,6 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
         navigationItem.title = "Badges"
         loadData()
         setupCollectionView()
@@ -41,7 +40,6 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
         let layout = createLayout()
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        collectionView.backgroundColor  = .black
         collectionView.dataSource       = self
         collectionView.delegate         = self
         collectionView.register(UINib(nibName: "BadgeCollectionViewCell", bundle: nil),

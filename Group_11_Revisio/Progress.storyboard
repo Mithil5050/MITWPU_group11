@@ -48,6 +48,7 @@
                                                     <constraint firstItem="u2V-jt-7yc" firstAttribute="leading" secondItem="utD-CW-oiC" secondAttribute="leading" id="4nd-io-Faf"/>
                                                     <constraint firstItem="u2V-jt-7yc" firstAttribute="trailing" secondItem="utD-CW-oiC" secondAttribute="trailing" id="CXY-NR-h3b"/>
                                                     <constraint firstAttribute="bottom" secondItem="u2V-jt-7yc" secondAttribute="bottom" id="J6T-FE-X9d"/>
+                                                    <constraint firstItem="utD-CW-oiC" firstAttribute="top" secondItem="QJR-me-9MO" secondAttribute="top" id="Rbq-Vp-DNm"/>
                                                     <constraint firstItem="u2V-jt-7yc" firstAttribute="top" secondItem="utD-CW-oiC" secondAttribute="bottom" constant="8" id="fDu-bP-QD3"/>
                                                     <constraint firstItem="u2V-jt-7yc" firstAttribute="trailing" secondItem="QJR-me-9MO" secondAttribute="trailingMargin" id="g7c-uN-r4S"/>
                                                     <constraint firstItem="u2V-jt-7yc" firstAttribute="leading" secondItem="QJR-me-9MO" secondAttribute="leadingMargin" id="tAL-UR-MBt"/>
@@ -202,9 +203,6 @@
                                                 </constraints>
                                             </view>
                                         </subviews>
-                                        <constraints>
-                                            <constraint firstItem="Aed-O3-tOe" firstAttribute="top" secondItem="IeX-RP-QwX" secondAttribute="top" constant="352" id="T5B-v0-q1b"/>
-                                        </constraints>
                                         <edgeInsets key="layoutMargins" top="8" left="8" bottom="8" right="8"/>
                                     </stackView>
                                 </subviews>
@@ -212,14 +210,12 @@
                                     <constraint firstItem="O8W-X8-qcb" firstAttribute="bottom" secondItem="IeX-RP-QwX" secondAttribute="bottom" id="61Y-O9-Jqt"/>
                                     <constraint firstItem="IeX-RP-QwX" firstAttribute="leading" secondItem="cUM-KL-7fJ" secondAttribute="leading" id="AnN-lF-1sM"/>
                                     <constraint firstItem="IeX-RP-QwX" firstAttribute="top" secondItem="cUM-KL-7fJ" secondAttribute="top" id="Ct2-FQ-dY4"/>
+                                    <constraint firstItem="IeX-RP-QwX" firstAttribute="bottom" secondItem="QWY-xq-HvK" secondAttribute="bottom" id="WXf-Pf-u3g"/>
                                     <constraint firstItem="IeX-RP-QwX" firstAttribute="width" secondItem="cUM-KL-7fJ" secondAttribute="width" id="Xy9-kg-D1v"/>
                                     <constraint firstItem="IeX-RP-QwX" firstAttribute="trailing" secondItem="O8W-X8-qcb" secondAttribute="trailing" constant="393" id="c9v-1b-sUJ"/>
                                     <constraint firstItem="IeX-RP-QwX" firstAttribute="top" secondItem="O8W-X8-qcb" secondAttribute="top" id="fVK-9U-gUr"/>
                                     <constraint firstItem="IeX-RP-QwX" firstAttribute="leading" secondItem="O8W-X8-qcb" secondAttribute="leading" id="fbi-pe-4EA"/>
                                     <constraint firstItem="IeX-RP-QwX" firstAttribute="width" secondItem="QWY-xq-HvK" secondAttribute="width" id="kHD-4i-kR4"/>
-                                    <constraint firstItem="IeX-RP-QwX" firstAttribute="height" secondItem="QWY-xq-HvK" secondAttribute="height" id="oqx-q5-RpD"/>
-                                    <constraint firstItem="O8W-X8-qcb" firstAttribute="bottom" secondItem="IeX-RP-QwX" secondAttribute="bottom" id="sr3-Fn-Rvn"/>
-                                    <constraint firstItem="IeX-RP-QwX" firstAttribute="height" secondItem="QWY-xq-HvK" secondAttribute="height" id="u0p-Be-sUb"/>
                                 </constraints>
                                 <edgeInsets key="layoutMargins" top="8" left="20" bottom="8" right="20"/>
                                 <viewLayoutGuide key="contentLayoutGuide" id="O8W-X8-qcb"/>

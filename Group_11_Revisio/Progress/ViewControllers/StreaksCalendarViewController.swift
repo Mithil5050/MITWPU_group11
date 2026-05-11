@@ -22,7 +22,7 @@ class StreaksCalendarViewController: UIViewController,
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
+        view.backgroundColor = .systemGroupedBackground
         navigationItem.title = "Streaks"
 
         setupLayout()
@@ -40,7 +40,24 @@ class StreaksCalendarViewController: UIViewController,
         calendarView?.reloadDecorations(forDateComponents: [], animated: true)
     }
 
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            applyCardShadow(to: streakInfoCardView)
+            applyCardShadow(to: calendarContainerView)
+        }
+    }
+
     deinit { NotificationCenter.default.removeObserver(self) }
+
+    private func applyCardShadow(to view: UIView) {
+        let isDark = traitCollection.userInterfaceStyle == .dark
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOpacity = isDark ? 0.30 : 0.06
+        view.layer.shadowOffset = CGSize(width: 0, height: 2)
+        view.layer.shadowRadius = isDark ? 8 : 3
+        view.layer.masksToBounds = false
+    }
 
     private func setupLayout() {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -64,15 +81,18 @@ class StreaksCalendarViewController: UIViewController,
             contentStack.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -32)
         ])
 
-        streakInfoCardView.backgroundColor   = UIColor.systemOrange.withAlphaComponent(0.1)
-        streakInfoCardView.layer.cornerRadius = 16
-        streakInfoCardView.clipsToBounds      = true
+        streakInfoCardView.backgroundColor    = UIColor.systemOrange.withAlphaComponent(0.12)
+        streakInfoCardView.layer.cornerRadius  = 16
+        streakInfoCardView.clipsToBounds       = false
+        applyCardShadow(to: streakInfoCardView)
         contentStack.addArrangedSubview(streakInfoCardView)
 
-        calendarContainerView.backgroundColor = .clear
+        calendarContainerView.backgroundColor   = .secondarySystemGroupedBackground
+        calendarContainerView.layer.cornerRadius = 16
+        calendarContainerView.clipsToBounds      = false
+        applyCardShadow(to: calendarContainerView)
         contentStack.addArrangedSubview(calendarContainerView)
     }
-
 
     private func buildInfoCard() {
 
@@ -87,8 +107,8 @@ class StreaksCalendarViewController: UIViewController,
         streakCountLabel.textColor = .label
 
         let topRow = UIStackView(arrangedSubviews: [streakCountLabel, flameImageView])
-        topRow.axis       = .horizontal
-        topRow.spacing    = 8
+        topRow.axis      = .horizontal
+        topRow.spacing   = 8
         topRow.alignment = .center
 
         streakSuffixLabel.font      = .systemFont(ofSize: 14, weight: .regular)
@@ -101,7 +121,7 @@ class StreaksCalendarViewController: UIViewController,
         let ruleLabel       = UILabel()
         ruleLabel.text      = "Earn at least 100 XP per day to keep your streak alive."
         ruleLabel.font      = .systemFont(ofSize: 13, weight: .regular)
-        ruleLabel.textColor = .tertiaryLabel
+        ruleLabel.textColor = .secondaryLabel
         ruleLabel.numberOfLines = 0
 
         let stack = UIStackView(arrangedSubviews: [topRow, streakSuffixLabel, divider, ruleLabel])
@@ -117,7 +137,7 @@ class StreaksCalendarViewController: UIViewController,
             stack.bottomAnchor.constraint(equalTo: streakInfoCardView.bottomAnchor, constant: -16)
         ])
     }
-    
+
 //  Streak display
     @objc private func refreshStreakDisplay() {
         DispatchQueue.main.async { [weak self] in
@@ -131,16 +151,17 @@ class StreaksCalendarViewController: UIViewController,
     private func setupCalendar() {
         calendarView = UICalendarView()
         calendarView.translatesAutoresizingMaskIntoConstraints = false
+        calendarView.backgroundColor = .clear
         calendarContainerView.addSubview(calendarView)
 
         let now = Date()
         calendarView.visibleDateComponents = Calendar.current.dateComponents([.year, .month], from: now)
 
         NSLayoutConstraint.activate([
-            calendarView.topAnchor.constraint(equalTo: calendarContainerView.topAnchor),
-            calendarView.leadingAnchor.constraint(equalTo: calendarContainerView.leadingAnchor),
-            calendarView.trailingAnchor.constraint(equalTo: calendarContainerView.trailingAnchor),
-            calendarView.bottomAnchor.constraint(equalTo: calendarContainerView.bottomAnchor)
+            calendarView.topAnchor.constraint(equalTo: calendarContainerView.topAnchor, constant: 8),
+            calendarView.leadingAnchor.constraint(equalTo: calendarContainerView.leadingAnchor, constant: 8),
+            calendarView.trailingAnchor.constraint(equalTo: calendarContainerView.trailingAnchor, constant: -8),
+            calendarView.bottomAnchor.constraint(equalTo: calendarContainerView.bottomAnchor, constant: -8)
         ])
 
         let selection = UICalendarSelectionSingleDate(delegate: self)
@@ -149,11 +170,11 @@ class StreaksCalendarViewController: UIViewController,
         calendarView.delegate = self
     }
 
-//Calendar delegate
+//  Calendar delegate
 
     func calendarView(_ calendarView: UICalendarView,
                       decorationFor dateComponents: DateComponents) -> UICalendarView.Decoration? {
-        let calendar  = Calendar.current
+        let calendar   = Calendar.current
         guard let date = calendar.date(from: dateComponents) else { return nil }
         let formatter  = ISO8601DateFormatter()
         let streakDates = UserDefaults.standard.stringArray(forKey: "streak_dot_dates") ?? []
