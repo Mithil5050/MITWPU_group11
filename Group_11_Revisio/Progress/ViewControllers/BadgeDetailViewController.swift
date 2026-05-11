@@ -97,7 +97,7 @@ class BadgeDetailViewController: UIViewController {
             largeBadgeImageView.image = UIImage(named: imageName)
         }
         
-        challengeDescriptionLabel.text = badge.detail
+        challengeDescriptionLabel.text = badge.displayDescription
         
         let completed = badge.isEarned
         challengeProgressView.progressTintColor = completed ? .systemGreen : .systemBlue
