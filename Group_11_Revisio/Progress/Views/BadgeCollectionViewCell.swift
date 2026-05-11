@@ -59,12 +59,13 @@ class BadgeCollectionViewCell: UICollectionViewCell {
         badgeImageView.isHidden   = true
 
         if section == .activeChallenges {
-            badgeTitleLabel.text  = "Challenges will appear here"
-            badgeDetailLabel.text = "Start learning to gain XP."
+            badgeTitleLabel.text  = "Ongoing Challenges will appear here"
+            badgeDetailLabel.text = "Start learning to gain Badges and XP."
         } else if section == .recentWins {
             badgeTitleLabel.text  = "Achievements will appear here"
-            badgeDetailLabel.text = "Your badges will appear here as you learn."
+            badgeDetailLabel.text = "Earn badges as you progress through your learning journey."
         }
+    
 
         badgeTitleLabel.isHidden      = false
         badgeTitleLabel.textColor     = .label           // adaptive: dark in light mode, light in dark mode

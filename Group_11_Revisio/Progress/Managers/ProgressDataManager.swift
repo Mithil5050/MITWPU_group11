@@ -20,7 +20,7 @@ class ProgressDataManager {
         return totalXP > 0 || userLevel > 1
     }
 
-    // XP the user currently holds toward the next level (the carry-over amount)
+    // XP the user currently holds towresrd the next level (the carry-over amount)
     var currentLevelXP: Int { return totalXP }
 
     // Convenience alias so existing call-sites that read `currentLevel` still compile
@@ -119,72 +119,46 @@ class ProgressDataManager {
             do {
                 let profile = try await SupabaseManager.shared.loadUserProfile()
 
-                let localXP    = UserDefaults.standard.integer(forKey: "user_total_xp")
+                // 1. Sync core stats - Trust Cloud completely
+                UserDefaults.standard.set(profile.totalXP,              forKey: "user_total_xp")
+                UserDefaults.standard.set(max(profile.currentLevel, 1), forKey: "user_current_level")
+                UserDefaults.standard.set(profile.currentStreak,        forKey: "user_current_streak")
 
-                if profile.totalXP >= localXP {
-                    // Supabase is ahead or equal — restore XP, level, streak from cloud
-                    UserDefaults.standard.set(profile.totalXP,              forKey: "user_total_xp")
-                    UserDefaults.standard.set(max(profile.currentLevel, 1), forKey: "user_current_level")
-                    UserDefaults.standard.set(profile.currentStreak,        forKey: "user_current_streak")
+                print("✅ Profile Overwritten — XP: \(profile.totalXP), Level: \(profile.currentLevel)")
 
-                    print("✅ Restored XP/Level/Streak — XP: \(profile.totalXP), Level: \(profile.currentLevel), Streak: \(profile.currentStreak)")
-                } else {
-                    // Local is ahead (offline progress) — push local up to reconcile
-                    await SupabaseManager.shared.syncXP(totalXP: localXP)
-                    print("⬆️ Local XP ahead (\(localXP) vs \(profile.totalXP)) — pushed local to Supabase")
-                }
+                // 2. Sync ALL badge stat counters - Overwrite local data to fix the "Ashika" leak
+                UserDefaults.standard.set(profile.statQuizzesDone,   forKey: "stat_quizzes_done")
+                UserDefaults.standard.set(profile.statHighQuizzes,    forKey: "stat_high_quizzes")
+                UserDefaults.standard.set(profile.statDailySolved,    forKey: "stat_daily_solved")
+                UserDefaults.standard.set(profile.statCardsViewed,    forKey: "stat_cards_viewed")
+                UserDefaults.standard.set(profile.statNotesGen,       forKey: "stat_notes_gen")
+                UserDefaults.standard.set(profile.statCheatGen,       forKey: "stat_cheat_gen")
+                UserDefaults.standard.set(profile.statQuestsDone,     forKey: "stat_quests_done")
+                UserDefaults.standard.set(profile.statWordfillDone,   forKey: "stat_wordfill_done")
+                UserDefaults.standard.set(profile.statConnectionsWin, forKey: "stat_connections_win")
+                UserDefaults.standard.set(profile.statFocusSessions,  forKey: "stat_focus_sessions")
+                UserDefaults.standard.set(profile.statMessagesSent,   forKey: "stat_messages_sent")
+                UserDefaults.standard.set(profile.statDocsUploaded,   forKey: "stat_docs_uploaded")
 
-                // ── Restore badge stat counters (take the higher of local vs cloud) ──
-                func restoreStat(key: String, cloudValue: Int) {
-                    let local = UserDefaults.standard.integer(forKey: key)
-                    if cloudValue > local {
-                        UserDefaults.standard.set(cloudValue, forKey: key)
-                    }
-                }
-                restoreStat(key: "stat_quizzes_done",   cloudValue: profile.statQuizzesDone)
-                restoreStat(key: "stat_high_quizzes",    cloudValue: profile.statHighQuizzes)
-                restoreStat(key: "stat_daily_solved",    cloudValue: profile.statDailySolved)
-                restoreStat(key: "stat_cards_viewed",    cloudValue: profile.statCardsViewed)
-                restoreStat(key: "stat_notes_gen",       cloudValue: profile.statNotesGen)
-                restoreStat(key: "stat_cheat_gen",       cloudValue: profile.statCheatGen)
-                restoreStat(key: "stat_quests_done",     cloudValue: profile.statQuestsDone)
-                restoreStat(key: "stat_wordfill_done",   cloudValue: profile.statWordfillDone)
-                restoreStat(key: "stat_connections_win", cloudValue: profile.statConnectionsWin)
-                restoreStat(key: "stat_focus_sessions",  cloudValue: profile.statFocusSessions)
-                restoreStat(key: "stat_messages_sent",   cloudValue: profile.statMessagesSent)
-                restoreStat(key: "stat_docs_uploaded",   cloudValue: profile.statDocsUploaded)
+                // 3. Overwrite Badge IDs - DO NOT use .union here
+                UserDefaults.standard.set(profile.earnedBadgeIds, forKey: "earned_badge_ids")
+                
+                // 4. Reset progress-only badges so they don't persist between users
+                UserDefaults.standard.set([], forKey: "unlocked_badge_ids")
 
-                // ── Restore earned badge IDs (union of local + cloud) ──
-                if !profile.earnedBadgeIds.isEmpty {
-                    var localIds = Set(UserDefaults.standard.stringArray(forKey: "earned_badge_ids") ?? [])
-                    let merged = localIds.union(profile.earnedBadgeIds)
-                    if merged != localIds {
-                        UserDefaults.standard.set(Array(merged), forKey: "earned_badge_ids")
-                        print("✅ Restored earned badge IDs from Supabase: \(profile.earnedBadgeIds)")
-                    }
-                }
+                // 5. Sync streak calendar dates
+                UserDefaults.standard.set(profile.streakDotDates, forKey: "streak_dot_dates")
 
-                // ── Restore streak calendar dot-dates (union of local + cloud) ──
-                if !profile.streakDotDates.isEmpty {
-                    var localDates = Set(UserDefaults.standard.stringArray(forKey: "streak_dot_dates") ?? [])
-                    let merged = localDates.union(profile.streakDotDates)
-                    if merged != localDates {
-                        UserDefaults.standard.set(Array(merged), forKey: "streak_dot_dates")
-                        print("✅ Restored streak dot-dates from Supabase: \(profile.streakDotDates.count) dates")
-                    }
-                }
-
+                // 6. Refresh the UI
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
                 }
 
             } catch {
-                // Silently fail — user keeps whatever local state exists
-                print("⚠️ Could not restore profile from Supabase: \(error)")
+                print("⚠️ Restore failed: \(error.localizedDescription)")
             }
         }
     }
-
     // MARK: - Counters (Badge Triggers)
 
     var totalQuizzesDone: Int {

@@ -1,7 +1,6 @@
 import UIKit
 import Supabase
 
-
 struct UserProfile: Decodable {
     let username: String
     let avatar_url: String?
@@ -61,44 +60,57 @@ class ProfileViewController: UIViewController {
     @objc private func reloadProfile() {
         fetchUserData()
     }
-
+    
     private func fetchUserData() {
-        Task {
-            do {
-                let user = try await supabase.auth.session.user
-                let userId = user.id.uuidString
-                let email = user.email ?? "No Email"
+            Task {
+                do {
+                    let user = try await supabase.auth.session.user
+                    let userId = user.id.uuidString
+                    let email = user.email ?? "No Email"
+                    
+                    // Set email immediately
+                    DispatchQueue.main.async { self.userEmail = email }
 
-                let profile: UserProfile = try await supabase
-                    .from("profiles")
-                    .select("username, avatar_url")
-                    .eq("id", value: userId)
-                    .single()
-                    .execute()
-                    .value
+                    // FIX: Ensure ProgressDataManager restores data for THIS specific user ID
+                    ProgressDataManager.shared.restoreFromSupabase()
 
-                DispatchQueue.main.async {
-                    self.userName = profile.username
-                    self.userEmail = email
-                    self.collectionView.reloadSections(IndexSet(integer: 0))
-                }
+                    do {
+                        let profile: UserProfile = try await supabase
+                            .from("profiles")
+                            .select("username, avatar_url")
+                            .eq("id", value: userId) // Correctly uses unique ID
+                            .single()
+                            .execute()
+                            .value
 
-                if let avatarString = profile.avatar_url {
-                    let cacheBuster = "?v=\(Date().timeIntervalSince1970)"
-                    if let url = URL(string: avatarString + cacheBuster) {
-                        downloadProfileImage(from: url)
+                        DispatchQueue.main.async {
+                            self.userName = profile.username
+                            self.collectionView.reloadSections(IndexSet(integer: 0))
+                        }
+
+                        if let avatarString = profile.avatar_url {
+                            let cacheBuster = "?v=\(Date().timeIntervalSince1970)"
+                            if let url = URL(string: avatarString + cacheBuster) {
+                                downloadProfileImage(from: url)
+                            }
+                        }
+                    } catch {
+                        let googleName = user.userMetadata["full_name"]?.value as? String ?? "New Student"
+                        DispatchQueue.main.async {
+                            self.userName = googleName
+                            self.collectionView.reloadSections(IndexSet(integer: 0))
+                        }
                     }
-                }
-            } catch {
-                print("❌ Error fetching user data: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    self.userName = "User Not Found"
-                    self.userEmail = "Offline"
-                    self.collectionView.reloadSections(IndexSet(integer: 0))
+                } catch {
+                    print("❌ Error: \(error.localizedDescription)")
+                    DispatchQueue.main.async {
+                        self.userName = "User Not Found"
+                        self.userEmail = "Offline"
+                        self.collectionView.reloadSections(IndexSet(integer: 0))
+                    }
                 }
             }
         }
-    }
 
     private func downloadProfileImage(from url: URL) {
         Task {
@@ -111,7 +123,7 @@ class ProfileViewController: UIViewController {
                     }
                 }
             } catch {
-                print("Failed to download profile picture: \(error.localizedDescription)")
+                print("Failed to download image: \(error.localizedDescription)")
             }
         }
     }
@@ -177,23 +189,43 @@ class ProfileViewController: UIViewController {
     }
 
     private func handleLogout() {
-        let alert = UIAlertController(title: "Log Out", message: "Are you sure you want to log out?", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Log Out", message: "Are you sure?", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Log Out", style: .destructive, handler: { _ in
+            // 1. Reset the local phone storage first
+            self.resetLocalData()
+            
             Task {
                 do {
                     try await supabase.auth.signOut()
                     DispatchQueue.main.async { self.transitionToLoginScreen() }
                 } catch {
-                    DispatchQueue.main.async {
-                        let errorAlert = UIAlertController(title: "Logout Failed", message: error.localizedDescription, preferredStyle: .alert)
-                        errorAlert.addAction(UIAlertAction(title: "OK", style: .default))
-                        self.present(errorAlert, animated: true)
-                    }
+                    print("Logout Failed: \(error)")
                 }
             }
         }))
         present(alert, animated: true)
+    }
+
+    private func resetLocalData() {
+        // These keys match the ones used in your ProgressDataManager
+        let keys = [
+            "user_total_xp",
+            "user_current_level",
+            "user_current_streak",
+            "earned_badge_ids",
+            "unlocked_badge_ids",
+            "stat_quizzes_done",
+            "stat_high_quizzes",
+            "stat_daily_solved",
+            "stat_cards_viewed"
+        ]
+        
+        keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
+        
+        // Reset the singleton so it doesn't hold old data in memory
+        ProgressDataManager.shared.totalXP = 0
+        ProgressDataManager.shared.userLevel = 1
     }
 
     private func transitionToLoginScreen() {
