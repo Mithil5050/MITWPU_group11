@@ -21,6 +21,15 @@ class ForgotPasswordViewController: UIViewController {
             target: self,
             action: #selector(closeTapped)
         )
+        
+        // MARK: - Keyboard Fix: Tap to dismiss
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tap)
+    }
+    
+    // Helper function to dismiss the keyboard when tapping the screen
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     private func configureUI() {

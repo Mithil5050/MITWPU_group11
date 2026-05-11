@@ -16,6 +16,15 @@ class LoginViewController: UIViewController {
         super.viewDidLoad()
         configureTextFields()
         addPasswordToggle(to: passwordTextField)
+        
+        // MARK: - Keyboard Fix: Tap to dismiss
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tap)
+    }
+    
+    // Helper function to dismiss the keyboard when tapping the screen
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
 
     // Supabase Log In Logic
@@ -28,15 +37,33 @@ class LoginViewController: UIViewController {
             return
         }
         
-        //  Clean up any invisible spaces iOS adds to the email
+        // Clean up any invisible spaces iOS adds to the email
         let cleanEmail = emailText.trimmingCharacters(in: .whitespacesAndNewlines)
         
         Task {
             do {
-                // Log in with Supabase
+                // 1. Log in with Supabase
                 try await supabase.auth.signIn(email: cleanEmail, password: password)
                 
-                // Success! Go to Home Page
+                // 2. Fetch the session to verify email status
+                let user = try await supabase.auth.session.user
+                
+                // 3. Block access if email not confirmed
+                guard user.emailConfirmedAt != nil else {
+                    try? await supabase.auth.signOut()
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(
+                            title: "Email Not Verified",
+                            message: "Please check your inbox and click the confirmation link before signing in.",
+                            preferredStyle: .alert
+                        )
+                        alert.addAction(UIAlertAction(title: "OK", style: .default))
+                        self.present(alert, animated: true)
+                    }
+                    return
+                }
+                
+                // 4. Success! Go to Home Page
                 DispatchQueue.main.async {
                     self.transitionToMainApp()
                 }
@@ -55,7 +82,7 @@ class LoginViewController: UIViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let tabBarVC = storyboard.instantiateViewController(withIdentifier: "MainTabBarController")
 
-        //  Restore XP/Level/Streak from Supabase before showing the app
+        // Restore XP/Level/Streak from Supabase before showing the app
         ProgressDataManager.shared.restoreFromSupabase()
 
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -65,7 +92,7 @@ class LoginViewController: UIViewController {
         UIView.transition(with: window, duration: 0.4, options: .transitionCrossDissolve, animations: nil, completion: nil)
     }
     
-    //  UI & Navigation Setup
+    // UI & Navigation Setup
     private func configureTextFields() {
         styleTextField(emailTextField)
         emailTextField.keyboardType = .emailAddress

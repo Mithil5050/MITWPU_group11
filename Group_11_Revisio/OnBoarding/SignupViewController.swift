@@ -28,6 +28,21 @@ class SignupViewController: UIViewController {
         configureSaveButton()
         
         saveButton.addTarget(self, action: #selector(handleSignUp), for: .touchUpInside)
+        
+        // MARK: Keyboard Fix 1 - Assign Delegates for 'Return' key
+        nameTextField.delegate = self
+        emailTextField.delegate = self
+        institutionTextField.delegate = self
+        passwordTextField.delegate = self
+        
+        // MARK: Keyboard Fix 2 - Tap to dismiss
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tap)
+    }
+    
+    // Helper function to dismiss the keyboard when tapping the screen
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     // MARK: - Sign Up Logic
@@ -45,19 +60,19 @@ class SignupViewController: UIViewController {
         
         Task {
             do {
-                // ✅ Pack the dictionary and send it in ONE call!
-                // Using .string() satisfies Supabase's AnyJSON requirement.
-                // The SQL trigger will automatically catch this and build the Profile.
+                // Updated with redirectTo to enable Deep Linking back to the app
                 let _ = try await supabase.auth.signUp(
                     email: email,
                     password: password,
                     data: [
                         "username": .string(name),
                         "institution": .string(institution)
-                    ]
+                    ],
+                    redirectTo: URL(string: "revisio://login-callback")
                 )
                 
-                // ✅ Show the Verification Pop-up and send them back to Login
+                
+                // Show the Verification Pop-up and send them back to Login
                 DispatchQueue.main.async {
                     let alert = UIAlertController(
                         title: "Check Your Email",
@@ -145,5 +160,14 @@ class SignupViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: false)
+    }
+}
+
+// MARK: - UITextFieldDelegate Extension
+extension SignupViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        // Tells the keyboard to hide when the 'Return' key is pressed
+        textField.resignFirstResponder()
+        return true
     }
 }
