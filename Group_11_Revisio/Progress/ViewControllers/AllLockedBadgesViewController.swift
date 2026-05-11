@@ -8,22 +8,27 @@
 import UIKit
 
 class AllLockedBadgesViewController: UIViewController,
-                                    UICollectionViewDataSource,
-                                    UICollectionViewDelegate {
-
+                                     UICollectionViewDataSource,
+                                     UICollectionViewDelegate {
 
     private var badges: [Badging.Badge] = Badging.allMilestones
     private var collectionView: UICollectionView!
 
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
+        // Adaptive: white in light mode, near-black in dark mode
+        view.backgroundColor = .systemGroupedBackground
         navigationItem.title = "All Milestones"
         setupCollectionView()
 
-        NotificationCenter.default.addObserver(self,
+        NotificationCenter.default.addObserver(
+            self,
             selector: #selector(refresh),
-            name: .xpDidUpdate, object: nil)
+            name: .xpDidUpdate,
+            object: nil
+        )
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -33,60 +38,76 @@ class AllLockedBadgesViewController: UIViewController,
 
     deinit { NotificationCenter.default.removeObserver(self) }
 
-//  Data refresh
+    // MARK: - Data Refresh
+
     @objc private func refresh() {
         badges = Badging.allMilestones
         collectionView?.reloadData()
     }
 
-//  Collection view setup
+    // MARK: - Collection View Setup
+
     private func setupCollectionView() {
-        collectionView = UICollectionView(frame: view.bounds,
-                                          collectionViewLayout: createLayout())
+        collectionView = UICollectionView(
+            frame: view.bounds,
+            collectionViewLayout: createLayout()
+        )
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        collectionView.backgroundColor  = .black
+        // Adaptive: matches the view background in both light and dark
+        collectionView.backgroundColor  = .systemGroupedBackground
         collectionView.dataSource       = self
         collectionView.delegate         = self
 
         collectionView.register(
             UINib(nibName: "BadgeCollectionViewCell", bundle: nil),
-            forCellWithReuseIdentifier: "BadgeCell")
+            forCellWithReuseIdentifier: "BadgeCell"
+        )
         collectionView.register(
             SectionHeaderView.self,
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-            withReuseIdentifier: "HeaderView")
+            withReuseIdentifier: "HeaderView"
+        )
 
         view.addSubview(collectionView)
     }
 
-    
+    // MARK: - Layout
+
     private func createLayout() -> UICollectionViewLayout {
-        let itemSize  = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5),
-                                               heightDimension: .absolute(160))
-        let item      = NSCollectionLayoutItem(layoutSize: itemSize)
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(0.5),
+            heightDimension: .absolute(160)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
         item.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 6, bottom: 6, trailing: 6)
 
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                               heightDimension: .absolute(160))
-        let group     = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .absolute(160)
+        )
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                heightDimension: .absolute(44))
+        let headerSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .absolute(44)
+        )
         let header = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: headerSize,
             elementKind: UICollectionView.elementKindSectionHeader,
-            alignment: .top)
+            alignment: .top
+        )
 
         let section = NSCollectionLayoutSection(group: group)
         section.boundarySupplementaryItems = [header]
         section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 10, bottom: 24, trailing: 10)
+
         return UICollectionViewCompositionalLayout(section: section)
     }
 
-// Sections = one per BadgeCategory
+    // MARK: - Helpers
 
+    // One section per BadgeCategory, preserving the order defined in BadgeCategory
     private var categories: [Badging.BadgeCategory] {
-        // Preserve the order defined in BadgeCategory
         return Badging.BadgeCategory.allCases.filter { category in
             badges.contains { $0.category == category }
         }
@@ -96,11 +117,11 @@ class AllLockedBadgesViewController: UIViewController,
         let category = categories[section]
         return badges
             .filter { $0.category == category }
-            .sorted { $0.tier.rawValue < $1.tier.rawValue }   // bronze → silver → gold
+            .sorted { $0.tier.rawValue < $1.tier.rawValue }  // bronze → silver → gold
     }
 
-//UICollectionViewDataSource
-        
+    // MARK: - UICollectionViewDataSource
+
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return categories.count
     }
@@ -113,7 +134,8 @@ class AllLockedBadgesViewController: UIViewController,
     func collectionView(_ collectionView: UICollectionView,
                         cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: "BadgeCell", for: indexPath) as! BadgeCollectionViewCell
+            withReuseIdentifier: "BadgeCell", for: indexPath
+        ) as! BadgeCollectionViewCell
         let badge = badges(for: indexPath.section)[indexPath.item]
         cell.badgeCardView.isHidden = false
         cell.configure(with: badge, forSection: .allMilestones)
@@ -126,9 +148,12 @@ class AllLockedBadgesViewController: UIViewController,
         let header = collectionView.dequeueReusableSupplementaryView(
             ofKind: kind,
             withReuseIdentifier: "HeaderView",
-            for: indexPath) as! SectionHeaderView
-        header.titleLabel.text = categories[indexPath.section].rawValue
-        header.showAllHandler  = nil   // no "Show All" button here
+            for: indexPath
+        ) as! SectionHeaderView
+
+        header.titleLabel.text      = categories[indexPath.section].rawValue
+        header.titleLabel.textColor = .label   // adaptive: dark in light mode, white in dark mode
+        header.showAllHandler       = nil      // no "Show All" button on this screen
         return header
     }
 }

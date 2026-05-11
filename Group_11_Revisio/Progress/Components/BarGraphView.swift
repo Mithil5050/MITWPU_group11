@@ -53,7 +53,6 @@ struct BarChartView: View {
                         .foregroundColor(.secondary)
                     Text(getTotalHours(for: currentIdx))
                         .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
                 }
                 
                 Spacer()

@@ -16,8 +16,10 @@ class StatCardCell: UICollectionViewCell {
     override func awakeFromNib() {
              super.awakeFromNib()
              bgView.layer.cornerRadius = 16
-             bgView.backgroundColor = UIColor(white: 0.11, alpha: 1.0)
+             bgView.backgroundColor = .secondarySystemGroupedBackground
              bgView.isUserInteractionEnabled = false
+             titleLabel.textColor = .secondaryLabel
+             valueLabel.textColor = .label
          }
 
          func configure(title: String, value: String, icon: String, color: UIColor) {
@@ -25,7 +27,5 @@ class StatCardCell: UICollectionViewCell {
              valueLabel.text    = value
              iconView.image     = UIImage(systemName: icon)
              iconView.tintColor = color
-             bgView.backgroundColor = UIColor(white: 0.11, alpha: 1.0)
          }
      }
-

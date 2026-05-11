@@ -11,149 +11,131 @@ import UIKit
 protocol MonthlyBadgeCellDelegate: AnyObject {
     func didTapShowAllButton()
     func didTapMonthlyBadgeCard()
-    func didTapXPInfo()    
+    func didTapXPInfo()
 }
+
 class MonthlyBadgeCollectionViewCell: UICollectionViewCell {
-    
-    
+
     @IBOutlet weak var monthlyBadgeImageView: UIImageView!
     @IBOutlet weak var xpLabel: UILabel!
-    
     @IBOutlet weak var xpProgressBar: UIProgressView!
-    
     @IBOutlet weak var xpValueLabel: UILabel!
-    
     @IBOutlet weak var monthlyBadgeContainerView: UIView!
-    
+
     weak var delegate: MonthlyBadgeCellDelegate?
 
     // Tag guards the ⓘ button from being added twice on cell reuse
-       private let infoButtonTag = 8_002
+    private let infoButtonTag = 8_002
 
-       override func awakeFromNib() {
-           super.awakeFromNib()
-           setupAppleLayout()
-           setupCardStyle()
-           setupImageTapGesture()
-           setupInfoButton()
-       }
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        setupAppleLayout()
+        setupCardStyle()
+        setupImageTapGesture()
+        setupInfoButton()
+    }
 
-       private func setupAppleLayout() {
-           xpLabel.font      = .systemFont(ofSize: 22, weight: .semibold)
-           xpLabel.textColor = .white
+    private func setupAppleLayout() {
+        // Use adaptive semantic colors so text is visible in both light and dark mode
+        xpLabel.font      = .systemFont(ofSize: 22, weight: .semibold)
+        xpLabel.textColor = .label               // black in light, white in dark
 
-           xpValueLabel.font      = .systemFont(ofSize: 14, weight: .regular)
-           xpValueLabel.textColor = .systemGray
+        xpValueLabel.font      = .systemFont(ofSize: 14, weight: .regular)
+        xpValueLabel.textColor = .secondaryLabel // adaptive grey
 
-           xpProgressBar.layer.cornerRadius = 4
-           xpProgressBar.clipsToBounds      = true
-           xpProgressBar.progressTintColor  = .systemBlue
-           xpProgressBar.trackTintColor     = UIColor.systemBlue.withAlphaComponent(0.2)
+        xpProgressBar.layer.cornerRadius = 4
+        xpProgressBar.clipsToBounds      = true
+        xpProgressBar.progressTintColor  = .systemBlue
+        xpProgressBar.trackTintColor     = UIColor.systemBlue.withAlphaComponent(0.2)
 
-           if let sub = xpProgressBar.subviews.last {
-               sub.layer.cornerRadius = 4
-               sub.clipsToBounds = true
-           }
-       }
+        if let sub = xpProgressBar.subviews.last {
+            sub.layer.cornerRadius = 4
+            sub.clipsToBounds = true
+        }
+    }
 
-       func configure(with badge: Badging.Badge) {
-           let manager    = ProgressDataManager.shared
-           let currentXP  = manager.currentLevelXP
-           let requiredXP = manager.requiredXPForCurrentLevel
-           let level      = manager.userLevel
+    func configure(with badge: Badging.Badge) {
+        let manager    = ProgressDataManager.shared
+        let currentXP  = manager.currentLevelXP
+        let requiredXP = manager.requiredXPForCurrentLevel
 
-           xpLabel.text   = "Xp Progress"
-           xpValueLabel.text = "\(currentXP) / \(requiredXP) XP"
+        xpLabel.text      = "Xp Progress"
+        xpValueLabel.text = "\(currentXP) / \(requiredXP) XP"
 
-           if let image = UIImage(named: "awards_monthly_main") {
-               monthlyBadgeImageView.image    = image
-               monthlyBadgeImageView.alpha    = 1.0
-               monthlyBadgeImageView.isHidden = false
-           } else {
-               monthlyBadgeImageView.image     = UIImage(systemName: "lock.fill")
-               monthlyBadgeImageView.tintColor = .systemGray
-               monthlyBadgeImageView.alpha     = 0.3
-           }
-           contentView.bringSubviewToFront(monthlyBadgeImageView)
+        if let image = UIImage(named: "awards_monthly_main") {
+            monthlyBadgeImageView.image    = image
+            monthlyBadgeImageView.alpha    = 1.0
+            monthlyBadgeImageView.isHidden = false
+        } else {
+            monthlyBadgeImageView.image     = UIImage(systemName: "lock.fill")
+            monthlyBadgeImageView.tintColor = .systemGray
+            monthlyBadgeImageView.alpha     = 0.3
+        }
+        contentView.bringSubviewToFront(monthlyBadgeImageView)
 
-           xpProgressBar.setProgress(0, animated: false)
-           UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
-               self.xpProgressBar.setProgress(manager.progressToNextLevel, animated: true)
-           }
-       }
+        xpProgressBar.setProgress(0, animated: false)
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
+            self.xpProgressBar.setProgress(manager.progressToNextLevel, animated: true)
+        }
+    }
 
-    // ⓘ Button
-       private func setupInfoButton() {
-           guard contentView.viewWithTag(infoButtonTag) == nil else { return }
+    // MARK: - ⓘ Button
 
-           let button = UIButton(type: .system)
-           button.tag = infoButtonTag
-           button.setImage(UIImage(systemName: "info.circle"), for: .normal)
-           button.tintColor = UIColor.white.withAlphaComponent(0.6)
-           button.translatesAutoresizingMaskIntoConstraints = false
-           button.addTarget(self, action: #selector(infoTapped), for: .touchUpInside)
+    private func setupInfoButton() {
+        guard contentView.viewWithTag(infoButtonTag) == nil else { return }
 
-           contentView.addSubview(button)
-           NSLayoutConstraint.activate([
-               button.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-               button.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
-               button.widthAnchor.constraint(equalToConstant: 26),
-               button.heightAnchor.constraint(equalToConstant: 26)
-           ])
-       }
+        let button = UIButton(type: .system)
+        button.tag = infoButtonTag
+        button.setImage(UIImage(systemName: "info.circle"), for: .normal)
+        button.tintColor = .secondaryLabel   // adaptive: visible in both themes
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(infoTapped), for: .touchUpInside)
 
-       @objc private func infoTapped() {
-           delegate?.didTapXPInfo()
-       }
+        contentView.addSubview(button)
+        NSLayoutConstraint.activate([
+            button.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            button.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
+            button.widthAnchor.constraint(equalToConstant: 26),
+            button.heightAnchor.constraint(equalToConstant: 26)
+        ])
+    }
 
-    // Badge image tap
-       private func setupImageTapGesture() {
-           monthlyBadgeImageView.isUserInteractionEnabled = true
-           let tap = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
-           monthlyBadgeImageView.addGestureRecognizer(tap)
-       }
+    @objc private func infoTapped() {
+        delegate?.didTapXPInfo()
+    }
 
-       @objc private func imageTapped() {
-           delegate?.didTapMonthlyBadgeCard()
-       }
+    // MARK: - Badge image tap
 
+    private func setupImageTapGesture() {
+        monthlyBadgeImageView.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
+        monthlyBadgeImageView.addGestureRecognizer(tap)
+    }
 
-       private func setupCardStyle() {
-           backgroundColor              = .clear
-           contentView.backgroundColor  = .clear
+    @objc private func imageTapped() {
+        delegate?.didTapMonthlyBadgeCard()
+    }
 
-           let blurEffect = UIBlurEffect(style: .systemThinMaterialDark)
-           let blurView   = UIVisualEffectView(effect: blurEffect)
-           blurView.frame = bounds
-           blurView.autoresizingMask  = [.flexibleWidth, .flexibleHeight]
-           blurView.layer.cornerRadius = 16
-           blurView.clipsToBounds      = true
+    // MARK: - Card Style
 
-           contentView.insertSubview(blurView, at: 0)
-       }
-   }
+    private func setupCardStyle() {
+        backgroundColor             = .clear
+        contentView.backgroundColor = .clear
 
+        // Adaptive blur — light frosted in light mode, dark frosted in dark mode
+        let blurEffect = UIBlurEffect(style: .systemThinMaterial)
+        let blurView   = UIVisualEffectView(effect: blurEffect)
+        blurView.frame = bounds
+        blurView.autoresizingMask   = [.flexibleWidth, .flexibleHeight]
+        blurView.layer.cornerRadius = 16
+        blurView.clipsToBounds      = true
+        contentView.insertSubview(blurView, at: 0)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        // Subtle shadow so the card lifts off the background in light mode
+        layer.masksToBounds = false
+        layer.shadowColor   = UIColor.black.cgColor
+        layer.shadowOpacity = 0.12
+        layer.shadowRadius  = 8
+        layer.shadowOffset  = CGSize(width: 0, height: 4)
+    }
+}

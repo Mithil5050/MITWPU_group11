@@ -29,14 +29,15 @@ class LevelCell: UICollectionViewCell {
 
         private func setupUI() {
             bgView.layer.cornerRadius = 16
-            bgView.backgroundColor = UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0)
+            bgView.backgroundColor = .secondarySystemGroupedBackground
             
-            // 🛑 CRITICAL FIX: Force inner views to ignore touches so the CollectionView gets them!
             bgView.isUserInteractionEnabled = false
             levelBadgeContainer.isUserInteractionEnabled = false
 
             levelLabel.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+            levelLabel.textColor = .label
             xpLabel.font    = UIFont.systemFont(ofSize: 12, weight: .regular)
+            xpLabel.textColor = .secondaryLabel
 
             progressBar.layer.cornerRadius = 4
             progressBar.clipsToBounds      = true
