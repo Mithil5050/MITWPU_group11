@@ -63,7 +63,7 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
     }
 
     private func setupEmptyState() {
-        emptyLabel.text = "No badges earned yet.\nKeep studying to earn them!"
+        emptyLabel.text = "Earned Badges will appear here.\n Keep learning!"
         emptyLabel.font = .systemFont(ofSize: 16, weight: .regular)
         emptyLabel.textColor = .secondaryLabel
         emptyLabel.textAlignment = .center
