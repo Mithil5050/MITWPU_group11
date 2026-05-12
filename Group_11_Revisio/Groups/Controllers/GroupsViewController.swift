@@ -130,15 +130,27 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
             guard let self = self else { completion(false); return }
             let groupToDelete = self.myGroups[indexPath.row]
-            self.myGroups.remove(at: indexPath.row)
-            self.lastMessages.removeValue(forKey: groupToDelete.id)
-            self.groupsTableView.beginUpdates()
-            self.groupsTableView.deleteRows(at: [indexPath], with: .automatic)
-            self.groupsTableView.endUpdates()
-            completion(true)
             Task {
-                do { try await SupabaseManager.shared.deleteGroup(id: groupToDelete.id) }
-                catch { print("Failed to delete group: \(error)") }
+                do {
+                    try await SupabaseManager.shared.deleteGroup(id: groupToDelete.id)
+                    await MainActor.run {
+                        self.myGroups.remove(at: indexPath.row)
+                        self.lastMessages.removeValue(forKey: groupToDelete.id)
+                        self.groupsTableView.beginUpdates()
+                        self.groupsTableView.deleteRows(at: [indexPath], with: .automatic)
+                        self.groupsTableView.endUpdates()
+                        completion(true)
+                    }
+                } catch {
+                    await MainActor.run {
+                        completion(false)
+                        let alert = UIAlertController(title: "Delete Failed",
+                                                      message: (error as NSError).localizedDescription,
+                                                      preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "OK", style: .default))
+                        self.present(alert, animated: true)
+                    }
+                }
             }
         })
         present(alert, animated: true)

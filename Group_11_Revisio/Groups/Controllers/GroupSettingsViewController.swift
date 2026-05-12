@@ -352,10 +352,14 @@ class GroupSettingsViewController: UIViewController {
                     .eq("user_id",  value: uid)
                     .eq("group_id", value: gid)
                     .execute()
-            } catch { print("leave: \(error)") }
+                await MainActor.run {
+                    self.delegate?.didLeaveGroup(self.group)
+                    self.navigationController?.popToRootViewController(animated: true)
+                }
+            } catch {
+                await MainActor.run { self.showUpdateError(error) }
+            }
         }
-        delegate?.didLeaveGroup(group)
-        navigationController?.popToRootViewController(animated: true)
     }
 }
 
@@ -565,6 +569,7 @@ extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegat
             lbl.textColor     = .secondaryLabel
             lbl.font          = .systemFont(ofSize: 15)
             lbl.textAlignment = .center
+            lbl.numberOfLines = 0
             tableView.backgroundView = lbl
             tableView.separatorStyle = .none
         } else {
