@@ -93,6 +93,13 @@ class ContinueLearningCollectionViewCell: UICollectionViewCell {
     private let emptyContainer: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = UIColor { traitCollection in
+            if traitCollection.userInterfaceStyle == .dark {
+                return .secondarySystemGroupedBackground
+            } else {
+                return UIColor(red: 245/255, green: 245/255, blue: 245/255, alpha: 1.0)
+            }
+        }
         view.isHidden = true
         return view
     }()

@@ -1,10 +1,10 @@
 {
   "images" : [
     {
+      "filename" : "appicon.png",
       "idiom" : "universal",
       "platform" : "ios",
-      "size" : "1024x1024",
-      "filename" : "app_icon_1024.png"
+      "size" : "1024x1024"
     },
     {
       "appearances" : [
@@ -13,10 +13,10 @@
           "value" : "dark"
         }
       ],
+      "filename" : "appicon 1.png",
       "idiom" : "universal",
       "platform" : "ios",
-      "size" : "1024x1024",
-      "filename" : "app_icon_1024.png"
+      "size" : "1024x1024"
     },
     {
       "appearances" : [
@@ -25,10 +25,10 @@
           "value" : "tinted"
         }
       ],
+      "filename" : "appicon 2.png",
       "idiom" : "universal",
       "platform" : "ios",
-      "size" : "1024x1024",
-      "filename" : "app_icon_1024.png"
+      "size" : "1024x1024"
     }
   ],
   "info" : {

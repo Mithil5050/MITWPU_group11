@@ -72,31 +72,24 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     private let aiFloatingButton: UIButton = {
         let btn = UIButton(type: .custom)
         btn.translatesAutoresizingMaskIntoConstraints = false
-        
-        guard let originalImage = UIImage(named: "exora_icon") else {
-            btn.setImage(UIImage(systemName: "sparkles"), for: .normal)
-            return btn
-        }
-        
-        let targetSize = CGSize(width: 45, height: 45)
-        let renderer = UIGraphicsImageRenderer(size: targetSize)
-        let resizedImage = renderer.image { _ in
-            originalImage.draw(in: CGRect(origin: .zero, size: targetSize))
-        }
-        
-        var config = UIButton.Configuration.filled()
-        config.baseBackgroundColor = .label
-        config.cornerStyle = .capsule
-        config.image = resizedImage.withRenderingMode(.alwaysOriginal)
-        config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-        
-        btn.configuration = config
-        
+
+        let image = UIImage(named: "Chatbot") ?? UIImage(systemName: "sparkles")
+        btn.setImage(image, for: .normal)
+        btn.imageView?.contentMode = .scaleAspectFit
+        btn.contentVerticalAlignment = .fill
+        btn.contentHorizontalAlignment = .fill
+        btn.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+
+        btn.backgroundColor = .clear
+        btn.layer.cornerRadius = 30
+        btn.layer.masksToBounds = false
+        btn.layer.borderWidth = 2
+        btn.layer.borderColor = UIColor.white.withAlphaComponent(0.35).cgColor
         btn.layer.shadowColor = UIColor.black.cgColor
         btn.layer.shadowOpacity = 0.3
         btn.layer.shadowOffset = CGSize(width: 0, height: 4)
-        btn.layer.shadowRadius = 6
-        
+        btn.layer.shadowRadius = 10
+
         return btn
     }()
     
@@ -489,7 +482,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
                 
-                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.85), heightDimension: .estimated(210))
+                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.85), heightDimension: .estimated(190))
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
                 
                 let section = NSCollectionLayoutSection(group: group)
