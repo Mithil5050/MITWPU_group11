@@ -5,8 +5,9 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
     // MARK: - UI Components
     private let resultImageView: UIImageView = {
         let iv = UIImageView()
-        iv.contentMode = .scaleAspectFit
+        iv.contentMode = .scaleAspectFill
         iv.image = UIImage(named: "GoodMarks")
+        iv.clipsToBounds = true
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
@@ -51,14 +52,6 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         return l
     }()
     
-    private let weakestTopicLabel: UILabel = {
-        let l = UILabel()
-        l.font = .systemFont(ofSize: 15, weight: .medium)
-        l.textColor = .white
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
-    }()
-    
     private let accuracyLabel: UILabel = {
         let l = UILabel()
         l.font = .systemFont(ofSize: 15, weight: .regular)
@@ -75,13 +68,29 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         return l
     }()
     
-    private let recommendationLabel: UILabel = {
+    // Summary Navigation Option
+    private let summaryContainer: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor.white.withAlphaComponent(0.05)
+        v.layer.cornerRadius = 16
+        v.translatesAutoresizingMaskIntoConstraints = false
+        return v
+    }()
+    
+    private let summaryLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .regular)
-        l.textColor = .systemIndigo
-        l.numberOfLines = 0
+        l.text = "View Session Summary"
+        l.font = .systemFont(ofSize: 16, weight: .medium)
+        l.textColor = .white
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
+    }()
+    
+    private let summaryChevron: UIImageView = {
+        let iv = UIImageView(image: UIImage(systemName: "chevron.right", withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)))
+        iv.tintColor = .systemGray
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        return iv
     }()
     
     private let challengeButton: UIButton = {
@@ -112,6 +121,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
     var totalCount: Int = 0
     var isChallengeResult: Bool = false
     var flashcardSummary: [(term: String, definition: String)] = []
+    var sessionDuration: TimeInterval = 300 // Default 5 mins if not passed
     
     var onSaveAndExit: (() -> Void)?
     var onChallengeMode: (() -> Void)?
@@ -127,17 +137,19 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         scoreLabel.text = "You mastered all \(knownCount) cards!"
         challengeButton.isHidden = isChallengeResult
         
-        let weakest = flashcardSummary.first?.term ?? "None"
-        weakestTopicLabel.text = "• Weakest Topic: \(weakest)"
-        
         let accuracy = totalCount > 0 ? Int((Double(knownCount) / Double(totalCount)) * 100) : 0
         accuracyLabel.text = "• Accuracy: \(accuracy)%"
-        studyTimeLabel.text = "• Study Time: 5 minutes"
-        recommendationLabel.text = "Recommendation: Start a challenge to strengthen your understanding of \(weakest)."
+        
+        let minutes = Int(sessionDuration) / 60
+        let seconds = Int(sessionDuration) % 60
+        if minutes > 0 {
+            studyTimeLabel.text = "• Study Time: \(minutes)m \(seconds)s"
+        } else {
+            studyTimeLabel.text = "• Study Time: \(seconds)s"
+        }
         
         if isChallengeResult {
             insightsTitleLabel.text = "Challenge Summary"
-            recommendationLabel.text = "Great job! You've successfully completed the challenge for these terms."
         }
     }
     
@@ -148,32 +160,34 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         view.addSubview(insightsCard)
         
         insightsCard.addSubview(insightsTitleLabel)
-        insightsCard.addSubview(weakestTopicLabel)
         insightsCard.addSubview(accuracyLabel)
         insightsCard.addSubview(studyTimeLabel)
-        insightsCard.addSubview(recommendationLabel)
+        insightsCard.addSubview(summaryContainer)
+        
+        summaryContainer.addSubview(summaryLabel)
+        summaryContainer.addSubview(summaryChevron)
         
         view.addSubview(challengeButton)
         view.addSubview(exitButton)
         
         // MARK: - Constraints
         NSLayoutConstraint.activate([
-            // Push everything UP
-            resultImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            resultImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            resultImageView.widthAnchor.constraint(equalToConstant: 320),
-            resultImageView.heightAnchor.constraint(equalToConstant: 260),
+            // Hero Image Section
+            resultImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            resultImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            resultImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            resultImageView.heightAnchor.constraint(equalToConstant: 320),
             
             // Congratulations
-            headerLabel.topAnchor.constraint(equalTo: resultImageView.bottomAnchor, constant: 16),
+            headerLabel.topAnchor.constraint(equalTo: resultImageView.bottomAnchor, constant: 12),
             headerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             // Subtitle
-            scoreLabel.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 8),
+            scoreLabel.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 4),
             scoreLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             // Insights Card
-            insightsCard.topAnchor.constraint(equalTo: scoreLabel.bottomAnchor, constant: 24),
+            insightsCard.topAnchor.constraint(equalTo: scoreLabel.bottomAnchor, constant: 20),
             insightsCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             insightsCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             
@@ -181,19 +195,24 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
             insightsTitleLabel.topAnchor.constraint(equalTo: insightsCard.topAnchor, constant: 20),
             insightsTitleLabel.leadingAnchor.constraint(equalTo: insightsCard.leadingAnchor, constant: 20),
             
-            weakestTopicLabel.topAnchor.constraint(equalTo: insightsTitleLabel.bottomAnchor, constant: 12),
-            weakestTopicLabel.leadingAnchor.constraint(equalTo: insightsTitleLabel.leadingAnchor),
-            
-            accuracyLabel.topAnchor.constraint(equalTo: weakestTopicLabel.bottomAnchor, constant: 6),
-            accuracyLabel.leadingAnchor.constraint(equalTo: insightsTitleLabel.leadingAnchor),
+            accuracyLabel.topAnchor.constraint(equalTo: insightsTitleLabel.bottomAnchor, constant: 12),
+            accuracyLabel.leadingAnchor.constraint(equalTo: insightsTitleLabel.leadingAnchor, constant: 12),
             
             studyTimeLabel.topAnchor.constraint(equalTo: accuracyLabel.bottomAnchor, constant: 6),
-            studyTimeLabel.leadingAnchor.constraint(equalTo: insightsTitleLabel.leadingAnchor),
+            studyTimeLabel.leadingAnchor.constraint(equalTo: accuracyLabel.leadingAnchor),
             
-            recommendationLabel.topAnchor.constraint(equalTo: studyTimeLabel.bottomAnchor, constant: 12),
-            recommendationLabel.leadingAnchor.constraint(equalTo: insightsTitleLabel.leadingAnchor),
-            recommendationLabel.trailingAnchor.constraint(equalTo: insightsCard.trailingAnchor, constant: -20),
-            recommendationLabel.bottomAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: -20),
+            // Summary Container Row
+            summaryContainer.topAnchor.constraint(equalTo: studyTimeLabel.bottomAnchor, constant: 20),
+            summaryContainer.leadingAnchor.constraint(equalTo: insightsCard.leadingAnchor, constant: 16),
+            summaryContainer.trailingAnchor.constraint(equalTo: insightsCard.trailingAnchor, constant: -16),
+            summaryContainer.heightAnchor.constraint(equalToConstant: 54),
+            summaryContainer.bottomAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: -16),
+            
+            summaryLabel.centerYAnchor.constraint(equalTo: summaryContainer.centerYAnchor),
+            summaryLabel.leadingAnchor.constraint(equalTo: summaryContainer.leadingAnchor, constant: 16),
+            
+            summaryChevron.centerYAnchor.constraint(equalTo: summaryContainer.centerYAnchor),
+            summaryChevron.trailingAnchor.constraint(equalTo: summaryContainer.trailingAnchor, constant: -16),
             
             // Buttons
             exitButton.leadingAnchor.constraint(equalTo: insightsCard.leadingAnchor),
@@ -203,11 +222,11 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         
         if isChallengeResult {
             NSLayoutConstraint.activate([
-                exitButton.topAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: 30)
+                exitButton.topAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: 24)
             ])
         } else {
             NSLayoutConstraint.activate([
-                challengeButton.topAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: 24),
+                challengeButton.topAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: 20),
                 challengeButton.leadingAnchor.constraint(equalTo: insightsCard.leadingAnchor),
                 challengeButton.trailingAnchor.constraint(equalTo: insightsCard.trailingAnchor),
                 challengeButton.heightAnchor.constraint(equalToConstant: 54),
@@ -219,11 +238,9 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         challengeButton.addTarget(self, action: #selector(challengeTapped), for: .touchUpInside)
         exitButton.addTarget(self, action: #selector(exitTapped), for: .touchUpInside)
         
-        if isChallengeResult {
-            let tap = UITapGestureRecognizer(target: self, action: #selector(showSummary))
-            insightsCard.addGestureRecognizer(tap)
-            insightsCard.isUserInteractionEnabled = true
-        }
+        let tap = UITapGestureRecognizer(target: self, action: #selector(showSummary))
+        summaryContainer.addGestureRecognizer(tap)
+        summaryContainer.isUserInteractionEnabled = true
     }
     
     @objc private func showSummary() {

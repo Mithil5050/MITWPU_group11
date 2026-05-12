@@ -392,13 +392,20 @@ class GenerationViewController: UIViewController {
                 instruction = """
                 Generate exactly \(selectedCount) flashcards covering the most important concepts.
                 The difficulty should be \(diffString).
+                
+                STRICTLY FOLLOW THESE RULES:
+                1. FRONT: Must be a CONCISE TERM or CONCEPT (e.g., 'Mitochondria', 'Photosynthesis', 'Civil War').
+                2. NO QUESTIONS: Do NOT use questions on the front (e.g., avoid 'What is...?' or 'Explain...').
+                3. BACK: Provide a clear, educational definition or explanation.
+                4. KEYWORD: Extract a single essential word from the 'front' term (lowercase, no parentheses).
+                
                 STRICTLY use this EXACT JSON format:
                 {
                   "flashcards": [
                     {
-                      "front": "Term or concept here (Short, 1-3 words)",
-                      "back": "Definition or explanation here",
-                      "keyword": "A single essential word from the 'front' term (lowercase, no parentheses). For example if front is 'Work (Physics)', keyword should be 'work'."
+                      "front": "Concise Term (1-3 words)",
+                      "back": "Detailed Definition",
+                      "keyword": "lowercase_keyword"
                     }
                   ]
                 }
