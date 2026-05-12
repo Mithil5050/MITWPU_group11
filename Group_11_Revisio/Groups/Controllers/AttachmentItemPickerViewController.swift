@@ -138,7 +138,18 @@ class AttachmentItemPickerViewController: UIViewController {
         case "Notes":      return topic.notesContent      ?? topic.largeContentBody ?? topic.name
         case "Cheatsheet": return topic.cheatsheetContent ?? topic.largeContentBody ?? topic.name
         case "Flashcards": return topic.largeContentBody  ?? topic.name
-        case "Quiz":       return topic.largeContentBody  ?? topic.name
+        case "Quiz":
+            if let body = topic.largeContentBody, !body.isEmpty { return body }
+            if let questions = topic.quizQuestions, !questions.isEmpty {
+                return questions.map { q in
+                    var options = q.answers
+                    while options.count < 4 { options.append("-") }
+                    let safeOptions = options.prefix(4).joined(separator: "|")
+                    let hint = q.hint.isEmpty ? "No Hint" : q.hint
+                    return "\(q.questionText)|\(safeOptions)|\(q.correctAnswerIndex)|\(hint)"
+                }.joined(separator: "\n")
+            }
+            return topic.name
         default:           return topic.largeContentBody  ?? topic.name
         }
     }

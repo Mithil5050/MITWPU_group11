@@ -1063,12 +1063,35 @@ extension ChatViewController: MessageCellDelegate {
             topic.notesContent = payload
         case "Cheatsheet":
             topic.cheatsheetContent = payload
-        case "Flashcards", "Quiz":
+        case "Quiz":
+            topic.largeContentBody = payload
+            let parsed = parseQuizQuestions(from: payload)
+            topic.quizQuestions = parsed.isEmpty ? nil : parsed
+        case "Flashcards":
             topic.largeContentBody = payload
         default:
             topic.largeContentBody = payload
         }
         return topic
+    }
+
+    private func parseQuizQuestions(from content: String) -> [QuizQuestion] {
+        let lines = content.components(separatedBy: "\n")
+        return lines.compactMap { line in
+            let parts = line.components(separatedBy: "|")
+            guard parts.count >= 6 else { return nil }
+            let answers = Array(parts[1...4])
+            let correctIndex = Int(parts[5]) ?? 0
+            let hint = parts.count > 6 ? parts[6] : "Focus on core concepts."
+            return QuizQuestion(
+                questionText: parts[0],
+                answers: answers,
+                correctAnswerIndex: max(0, min(correctIndex, answers.count - 1)),
+                userAnswerIndex: nil,
+                isFlagged: false,
+                hint: hint
+            )
+        }
     }
 
     private func openStudyMaterialViewer(for topic: Topic) -> Bool {
