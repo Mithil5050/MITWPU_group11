@@ -175,7 +175,18 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         cardView?.isHidden = true
         cardLabel?.isHidden = true
 
-        if let name = currentTopic?.name { self.title = name }
+        if let name = currentTopic?.name {
+            // Use a multi-line custom title view so long names never get truncated
+            let titleLabel = UILabel()
+            titleLabel.text = name
+            titleLabel.numberOfLines = 2
+            titleLabel.textAlignment = .center
+            titleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+            titleLabel.textColor = .white
+            titleLabel.lineBreakMode = .byWordWrapping
+            titleLabel.sizeToFit()
+            navigationItem.titleView = titleLabel
+        }
 
         if let body = currentTopic?.largeContentBody, !body.isEmpty {
             unpackFlashcards(from: body)

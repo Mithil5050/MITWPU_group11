@@ -30,7 +30,17 @@ class QuizSessionViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = sourceName
+        // Multi-line title so long names never truncate
+        let titleLabel = UILabel()
+        titleLabel.text = sourceName
+        titleLabel.numberOfLines = 2
+        titleLabel.textAlignment = .center
+        titleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+        titleLabel.textColor = .white
+        titleLabel.lineBreakMode = .byWordWrapping
+        titleLabel.sizeToFit()
+        navigationItem.titleView = titleLabel
+
         self.view.backgroundColor = .black
         
         loadData()

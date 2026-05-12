@@ -2,6 +2,36 @@ import Foundation
 import UIKit
 import Supabase
 
+// MARK: - Date Utilities
+extension Date {
+    /// Returns an ISO 8601 string representation for storage
+    var iso8601String: String {
+        return ISO8601DateFormatter().string(from: self)
+    }
+    
+    /// Returns a human-readable relative time string
+    var relativeString: String {
+        let seconds = Int(Date().timeIntervalSince(self))
+        if seconds < 60 { return "Just now" }
+        if seconds < 3600 { let m = seconds / 60; return "\(m) minute\(m == 1 ? "" : "s") ago" }
+        if seconds < 86400 { let h = seconds / 3600; return "\(h) hour\(h == 1 ? "" : "s") ago" }
+        if seconds < 172800 { return "Yesterday" }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return formatter.string(from: self)
+    }
+}
+
+extension String {
+    /// If this string is an ISO 8601 date, returns a relative time. Otherwise returns self as-is.
+    var asRelativeTime: String {
+        if let date = ISO8601DateFormatter().date(from: self) {
+            return date.relativeString
+        }
+        return self // Legacy strings like "Just now" pass through unchanged
+    }
+}
+
 // MARK: - Models
 enum StudyItem: Codable {
     case topic(Topic)
@@ -69,9 +99,10 @@ class DataManager {
         
         let cleanSourceName = (sourceName ?? name).replacingOccurrences(of: ".txt", with: "").replacingOccurrences(of: "Link_", with: "")
         
+        let now = Date().iso8601String
         let newTopic = Topic(
             name: name,
-            lastAccessed: "Just now",
+            lastAccessed: now,
             materialType: type,
             parentSubjectName: folder,
             quizQuestions: questions,
@@ -79,7 +110,7 @@ class DataManager {
             notesContent: finalNotes,
             cheatsheetContent: finalCheatsheet,
             sourceName: cleanSourceName,
-            createdDate: createdDate ?? "Just now"
+            createdDate: now
         )
         
         addTopic(to: folder, topic: newTopic)

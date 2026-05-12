@@ -59,7 +59,16 @@ class CheatsheetViewController: UIViewController {
     // MARK: - Content Loading & Management
     func displayContent() {
         guard let topic = currentTopic else { return }
-        title = topic.name
+        // Multi-line title so long names never truncate
+        let titleLabel = UILabel()
+        titleLabel.text = topic.name
+        titleLabel.numberOfLines = 2
+        titleLabel.textAlignment = .center
+        titleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+        titleLabel.textColor = .label
+        titleLabel.lineBreakMode = .byWordWrapping
+        titleLabel.sizeToFit()
+        navigationItem.titleView = titleLabel
         
         var textToDisplay = ""
         if let directContent = topic.cheatsheetContent, !directContent.isEmpty {

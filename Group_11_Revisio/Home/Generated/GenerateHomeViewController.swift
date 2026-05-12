@@ -457,14 +457,20 @@ class GenerateHomeViewController: UIViewController {
             switch selectedMaterialType {
             case .flashcards:
                 instruction = """
-                Generate exactly \(selectedCount) flashcards.
+                Generate exactly \(selectedCount) flashcards covering the most important concepts.
                 
-                RULES:
-                1. 'deckTitle': Provide a clean, human-readable name (e.g., "Mole Concept").
-                2. NO HYPHENS: Do not break words with hyphens (e.g., use "aqueous", NOT "aque-ous").
-                3. For each card: provide 'front', 'back', and one 'keyword' from the back.
+                STRICTLY FOLLOW THESE RULES:
+                1. FRONT (term): Must be a CONCISE TERM or CONCEPT only (e.g., 'Mitochondria', 'Photosynthesis', 'Civil War').
+                2. NO QUESTIONS on the front: NEVER use 'What is...?', 'Define...', 'Explain...', or any question/instruction form. ONLY nouns, terms, or concepts.
+                3. BACK (definition): Provide a clear, educational definition or explanation of the front term.
+                4. KEYWORD: A single essential word from the front term (lowercase).
+                5. 'deckTitle': Provide a clean, human-readable name (e.g., "Mole Concept").
+                6. NO HYPHENS: Do not break words with hyphens mid-word.
                 
-                Format: {"deckTitle": "Name", "flashcards": [{"front": "T", "back": "D", "keyword": "K"}]}
+                CORRECT example: front="Polysaccharide", back="A carbohydrate whose molecules consist of a number of sugar molecules bonded together."
+                INCORRECT example: front="Define polysaccharide." ← this is FORBIDDEN.
+                
+                Format: {"deckTitle": "Name", "flashcards": [{"front": "Term (1-3 words)", "back": "Definition", "keyword": "keyword"}]}
                 """
             case .cheatsheet:
                 instruction = "You are an expert tutor creating a beautifully formatted Cheatsheet. DO NOT output JSON. Output ONLY plain text. You MUST use double line breaks to separate sections. You MUST use bullet points for lists."
@@ -542,24 +548,24 @@ class GenerateHomeViewController: UIViewController {
     private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
         self.resetUI(sender)
         let subjectName = self.contextSubjectTitle ?? "General Study"
-        var finalTopicName = topicName
-           if let aiTitle = self.parseTitleFromJSON(generatedContent) {
-               finalTopicName = aiTitle
-           } else {
-              
-               finalTopicName = topicName
-                   .replacingOccurrences(of: ".txt", with: "")
-                   .replacingOccurrences(of: ".pdf", with: "")
-                   .replacingOccurrences(of: ".docx", with: "")
-                   .replacingOccurrences(of: "Note_", with: "")
-                   .replacingOccurrences(of: "Link_", with: "")
-                   .replacingOccurrences(of: "Source_", with: "")
-                   .replacingOccurrences(of: "Doc_", with: "")
-                   .replacingOccurrences(of: "_", with: " ")
-                   .replacingOccurrences(of: "-", with: " ")
-                   .trimmingCharacters(in: .whitespaces)
-                   .capitalized
-           }
+        
+        // Clean the source name (strip extensions, prefixes, underscores)
+        let cleanSource = topicName
+            .replacingOccurrences(of: ".txt", with: "")
+            .replacingOccurrences(of: ".pdf", with: "")
+            .replacingOccurrences(of: ".docx", with: "")
+            .replacingOccurrences(of: "Note_", with: "")
+            .replacingOccurrences(of: "Link_", with: "")
+            .replacingOccurrences(of: "Source_", with: "")
+            .replacingOccurrences(of: "Doc_", with: "")
+            .replacingOccurrences(of: "_", with: " ")
+            .replacingOccurrences(of: "-", with: " ")
+            .trimmingCharacters(in: .whitespaces)
+            .capitalized
+        
+        // Material name = "SourceName MaterialType" e.g. "English Flashcards"
+        let materialName = "\(cleanSource) \(selectedMaterialType.description)"
+        
         if self.selectedMaterialType == .notes {
             ProgressDataManager.shared.totalNotesGenerated += 1
         } else if self.selectedMaterialType == .cheatsheet {
@@ -589,7 +595,7 @@ class GenerateHomeViewController: UIViewController {
                 self.showError("AI generated an empty quiz. Please try again.")
                 return
             }
-            newTopic = DataManager.shared.saveGeneratedTopic(name: finalTopicName, subject: subjectName, type: "Quiz", questions: parsedQuestions, sourceName: finalTopicName, createdDate: "Just now")
+            newTopic = DataManager.shared.saveGeneratedTopic(name: materialName, subject: subjectName, type: "Quiz", questions: parsedQuestions, sourceName: cleanSource)
         } else if self.selectedMaterialType == .flashcards {
             let parsedFlashcards = self.parseFlashcardsJSON(generatedContent)
             if parsedFlashcards.isEmpty {
@@ -597,17 +603,17 @@ class GenerateHomeViewController: UIViewController {
                 return
             }
             let serializedCards = parsedFlashcards.map { "\($0.safeFront)|\($0.safeBack)|\($0.safeKeyword)" }.joined(separator: "\n")
-            newTopic = DataManager.shared.saveGeneratedTopic(name: finalTopicName, subject: subjectName, type: "Flashcards", notes: serializedCards, sourceName: topicName, createdDate: "Just now")
+            newTopic = DataManager.shared.saveGeneratedTopic(name: materialName, subject: subjectName, type: "Flashcards", notes: serializedCards, sourceName: cleanSource)
         } else {
             var finalText = generatedContent.trimmingCharacters(in: .whitespacesAndNewlines)
             if finalText.hasPrefix("```markdown") {
                 finalText = finalText.replacingOccurrences(of: "```markdown", with: "").replacingOccurrences(of: "```", with: "")
             }
-            newTopic = DataManager.shared.saveGeneratedTopic(name: finalTopicName, subject: subjectName, type: self.selectedMaterialType.description, notes: finalText, sourceName: topicName, createdDate: "Just now")
+            newTopic = DataManager.shared.saveGeneratedTopic(name: materialName, subject: subjectName, type: self.selectedMaterialType.description, notes: finalText, sourceName: cleanSource)
         }
         
         if let savedTopic = newTopic {
-            self.navigateToResult(type: self.selectedMaterialType, topic: savedTopic, sourceName: finalTopicName)
+            self.navigateToResult(type: self.selectedMaterialType, topic: savedTopic, sourceName: cleanSource)
             Task { await RevisioManager.shared.earnXP(amount: 5, reason: "Material Generated") }
         } else {
             self.showError("Failed to save content.")

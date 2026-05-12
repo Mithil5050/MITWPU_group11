@@ -35,7 +35,17 @@ class QuizStartViewController: UIViewController {
         let cleanName = displayName.replacingOccurrences(of: " Quiz", with: "")
         
         quizTitleLabel.text = "\(cleanName) Quiz"
-        self.title = cleanName
+        // Multi-line title so long names never truncate
+        let navTitleLabel = UILabel()
+        navTitleLabel.text = cleanName
+        navTitleLabel.numberOfLines = 2
+        navTitleLabel.textAlignment = .center
+        navTitleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+        navTitleLabel.textColor = .label
+        navTitleLabel.lineBreakMode = .byWordWrapping
+        navTitleLabel.sizeToFit()
+        navigationItem.titleView = navTitleLabel
+
         
         rulesTextView.text = generateRulesText()
     }

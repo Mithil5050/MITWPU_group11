@@ -394,10 +394,14 @@ class GenerationViewController: UIViewController {
                 The difficulty should be \(diffString).
                 
                 STRICTLY FOLLOW THESE RULES:
-                1. FRONT: Must be a CONCISE TERM or CONCEPT (e.g., 'Mitochondria', 'Photosynthesis', 'Civil War').
-                2. NO QUESTIONS: Do NOT use questions on the front (e.g., avoid 'What is...?' or 'Explain...').
-                3. BACK: Provide a clear, educational definition or explanation.
+                1. FRONT (term): Must be a CONCISE TERM or CONCEPT only (e.g., 'Mitochondria', 'Photosynthesis', 'Civil War').
+                2. NO QUESTIONS on the front: NEVER use 'What is...?', 'Define...', 'Explain...', or any question/instruction form. ONLY nouns, terms, or concepts.
+                3. BACK (definition): Provide a clear, educational definition or explanation of the front term.
                 4. KEYWORD: Extract a single essential word from the 'front' term (lowercase, no parentheses).
+                
+                CORRECT example: front="Polysaccharide", back="A carbohydrate whose molecules consist of a number of sugar molecules bonded together."
+                INCORRECT example: front="Define polysaccharide." ← this is FORBIDDEN.
+                INCORRECT example: front="What is photosynthesis?" ← this is FORBIDDEN.
                 
                 STRICTLY use this EXACT JSON format:
                 {
@@ -536,7 +540,24 @@ class GenerationViewController: UIViewController {
         
         let folder = self.parentSubjectName ?? "General Study"
         var savedTopic: Topic?
-
+        
+        // Clean the source name (strip file extensions, prefixes, underscores)
+        let cleanSource = topicName
+            .replacingOccurrences(of: ".txt", with: "")
+            .replacingOccurrences(of: ".pdf", with: "")
+            .replacingOccurrences(of: ".docx", with: "")
+            .replacingOccurrences(of: "Note_", with: "")
+            .replacingOccurrences(of: "Link_", with: "")
+            .replacingOccurrences(of: "Source_", with: "")
+            .replacingOccurrences(of: "Doc_", with: "")
+            .replacingOccurrences(of: "_", with: " ")
+            .replacingOccurrences(of: "-", with: " ")
+            .trimmingCharacters(in: .whitespaces)
+            .capitalized
+        
+        // Material name = "SourceName MaterialType" e.g. "English Flashcards"
+        let materialName = "\(cleanSource) \(currentGenerationType.description)"
+        
         if let items = self.sourceItems {
             for item in items {
                 if let url = item as? URL {
@@ -556,14 +577,14 @@ class GenerationViewController: UIViewController {
         if self.currentGenerationType == .quiz {
             let questions = self.parseQuizJSON(generatedContent)
             if questions.isEmpty { self.showError("AI generated invalid quiz data."); return }
-            savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: "Quiz", questions: questions, sourceName: topicName, createdDate: "Just now")
+            savedTopic = DataManager.shared.saveGeneratedTopic(name: materialName, subject: folder, type: "Quiz", questions: questions, sourceName: cleanSource)
             
         } else if self.currentGenerationType == .flashcards {
             let parsedCards = self.parseFlashcardsJSON(generatedContent)
             if parsedCards.isEmpty { self.showError("AI generated invalid flashcard data."); return }
             
             let serialized = parsedCards.map { "\($0.safeFront)|\($0.safeBack)|\($0.safeKeyword)" }.joined(separator: "\n")
-            savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: "Flashcards", notes: serialized, sourceName: topicName, createdDate: "Just now")
+            savedTopic = DataManager.shared.saveGeneratedTopic(name: materialName, subject: folder, type: "Flashcards", notes: serialized, sourceName: cleanSource)
             
         } else {
            
@@ -573,11 +594,11 @@ class GenerationViewController: UIViewController {
                 finalText = finalText.replacingOccurrences(of: "```", with: "")
             }
             
-            savedTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: folder, type: self.currentGenerationType.description, notes: finalText, sourceName: topicName, createdDate: "Just now")
+            savedTopic = DataManager.shared.saveGeneratedTopic(name: materialName, subject: folder, type: self.currentGenerationType.description, notes: finalText, sourceName: cleanSource)
         }
 
         if let finalTopic = savedTopic {
-            let payload = (topic: finalTopic, sourceName: topicName)
+            let payload = (topic: finalTopic, sourceName: cleanSource)
             self.performNavigation(type: self.currentGenerationType, payload: payload)
             
             Task { await RevisioManager.shared.earnXP(amount: 5, reason: "Material Generated") }
