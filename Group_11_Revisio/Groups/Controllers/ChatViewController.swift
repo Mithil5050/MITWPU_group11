@@ -526,10 +526,21 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
     }
 
     private func startDictation() {
-        recognitionTask?.cancel(); recognitionTask = nil
+        if audioEngine.isRunning {
+            stopDictation()
+        }
+        recognitionTask?.cancel()
+        recognitionTask = nil
+
         let session = AVAudioSession.sharedInstance()
-        try? session.setCategory(.record, mode: .measurement, options: .duckOthers)
-        try? session.setActive(true, options: .notifyOthersOnDeactivation)
+        do {
+            try session.setCategory(.playAndRecord, mode: .measurement,
+                                    options: [.duckOthers, .defaultToSpeaker])
+            try session.setActive(true, options: .notifyOthersOnDeactivation)
+        } catch {
+            print("❌ audio session start failed: \(error)")
+            return
+        }
 
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         guard let req = recognitionRequest,
@@ -537,6 +548,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         req.shouldReportPartialResults = true
 
         let inputNode = audioEngine.inputNode
+        inputNode.removeTap(onBus: 0)
         recognitionTask = rec.recognitionTask(with: req) { [weak self] result, error in
             guard let self = self else { return }
             if let result = result {
@@ -551,18 +563,29 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
             self?.recognitionRequest?.append(buf)
         }
         audioEngine.prepare()
-        try? audioEngine.start()
-        isRecording = true
-        micButton.tintColor = .systemRed
+        do {
+            try audioEngine.start()
+            isRecording = true
+            micButton.tintColor = .systemRed
+        } catch {
+            print("❌ audio engine start failed: \(error)")
+            stopDictation()
+        }
     }
 
     private func stopDictation() {
-        audioEngine.stop()
+        if audioEngine.isRunning { audioEngine.stop() }
         audioEngine.inputNode.removeTap(onBus: 0)
         recognitionRequest?.endAudio()
-        recognitionRequest = nil; recognitionTask = nil
+        recognitionRequest = nil
+        recognitionTask?.cancel()
+        recognitionTask = nil
         isRecording = false
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        } catch {
+            print("❌ audio session stop failed: \(error)")
+        }
         micButton.tintColor = .systemGray
         let hasText = !(messageInputBar.inputTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
         if !hasText {
