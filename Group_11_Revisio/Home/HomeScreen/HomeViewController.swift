@@ -489,7 +489,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
                 
-                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.85), heightDimension: .estimated(180))
+                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.85), heightDimension: .estimated(210))
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
                 
                 let section = NSCollectionLayoutSection(group: group)
@@ -671,6 +671,25 @@ extension HomeViewController: ContinueLearningCellDelegate {
         else if typeLower.contains("flashcard") { performSegue(withIdentifier: showFlashcardsSegueID, sender: topic) }
         else if typeLower.contains("cheatsheet") { performSegue(withIdentifier: showCheatsheetSegueID, sender: topic) }
         else { performSegue(withIdentifier: showNotesDetailSegueID, sender: topic) }
+    }
+    
+    func didTapStartLearning() {
+        if let uploadSectionIndex = HomeSection.allCases.firstIndex(of: .uploadContent) {
+            collectionView.scrollToItem(at: IndexPath(item: 0, section: uploadSectionIndex), at: .centeredVertically, animated: true)
+            
+            // Briefly pulse the upload card to draw attention
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                if let cell = self.collectionView.cellForItem(at: IndexPath(item: 0, section: uploadSectionIndex)) {
+                    UIView.animate(withDuration: 0.3, animations: {
+                        cell.transform = CGAffineTransform(scaleX: 1.03, y: 1.03)
+                    }) { _ in
+                        UIView.animate(withDuration: 0.3) {
+                            cell.transform = .identity
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -10,7 +10,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="HiAlexCollectionViewCell" customModule="Group_11_Revisio" customModuleProvider="target">
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="HiAlexCollectionViewCell" customModule="MITWPU_group11_" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="370" height="138"/>
             <autoresizingMask key="autoresizingMask"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
@@ -20,7 +20,7 @@
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uAA-C9-8id">
                         <rect key="frame" x="0.0" y="13" width="370" height="124"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pEI-84-TK2" customClass="GradientView" customModule="Group_11_Revisio" customModuleProvider="target">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pEI-84-TK2" customClass="GradientView" customModule="MITWPU_group11_" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="-12" width="370" height="136"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Daily Challenge" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kfd-zb-NWZ">
@@ -60,7 +60,7 @@
                                     <constraint firstItem="Kfd-zb-NWZ" firstAttribute="top" secondItem="pEI-84-TK2" secondAttribute="top" constant="20" id="sCW-03-ADT"/>
                                 </constraints>
                             </view>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" image="IMG_5173-removebg-preview" translatesAutoresizingMaskIntoConstraints="NO" id="k4o-IY-NIR">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="k4o-IY-NIR">
                                 <rect key="frame" x="226" y="-16" width="144" height="149"/>
                                 <constraints>
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="135" id="7rJ-cJ-rkV"/>
@@ -99,7 +99,6 @@
         </collectionViewCell>
     </objects>
     <resources>
-        <image name="IMG_5173-removebg-preview" width="500" height="500"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
