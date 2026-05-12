@@ -12,6 +12,8 @@ class FlashcardSummaryViewController: UIViewController, UITableViewDataSource, U
         return tv
     }()
     
+    private let blueColor = UIColor(red: 0.57, green: 0.76, blue: 0.94, alpha: 1.0)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Session Summary"
@@ -37,8 +39,8 @@ class FlashcardSummaryViewController: UIViewController, UITableViewDataSource, U
     private func setupHeader() {
         let headerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 50))
         let label = UILabel()
-        label.text = "LIST OF TERMS"
-        label.font = .systemFont(ofSize: 13, weight: .semibold) // Native iOS style
+        label.text = "List of Terms"
+        label.font = .systemFont(ofSize: 13, weight: .bold) // Stronger white header
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(label)
@@ -56,50 +58,45 @@ class FlashcardSummaryViewController: UIViewController, UITableViewDataSource, U
         return summaryItems.count
     }
     
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 76 
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .default, reuseIdentifier: "TermCell")
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TermCell") ?? UITableViewCell(style: .default, reuseIdentifier: "TermCell")
         cell.backgroundColor = .clear
         cell.selectionStyle = .none
         
+        // Clean up subviews to prevent overlapping on reuse
         cell.contentView.subviews.forEach { $0.removeFromSuperview() }
         
         let item = summaryItems[indexPath.row]
         
-        // Card Container
+        // Card Container (Themed to Term Blue)
         let container = UIView()
-        container.backgroundColor = UIColor.white.withAlphaComponent(0.08)
-        container.layer.cornerRadius = 14
+        container.backgroundColor = blueColor.withAlphaComponent(0.12)
+        container.layer.cornerRadius = 16
+        container.layer.borderWidth = 1
+        container.layer.borderColor = blueColor.withAlphaComponent(0.4).cgColor
         container.translatesAutoresizingMaskIntoConstraints = false
         cell.contentView.addSubview(container)
         
         let termLabel = UILabel()
         termLabel.text = item.term
-        termLabel.font = .systemFont(ofSize: 17, weight: .medium) // Native feel
+        termLabel.font = .systemFont(ofSize: 18, weight: .semibold)
         termLabel.textColor = .white
         termLabel.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(termLabel)
         
-        let arrow = UIImageView(image: UIImage(systemName: "chevron.right"))
-        arrow.tintColor = .systemGray
-        arrow.contentMode = .scaleAspectFit
-        arrow.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(arrow)
-        
         NSLayoutConstraint.activate([
-            container.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 5),
-            container.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -5),
+            container.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 6),
+            container.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -6),
             container.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
             container.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
             
             termLabel.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-            termLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
-            termLabel.trailingAnchor.constraint(equalTo: arrow.leadingAnchor, constant: -8),
-            termLabel.heightAnchor.constraint(equalToConstant: 50),
-            
-            arrow.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-            arrow.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
-            arrow.widthAnchor.constraint(equalToConstant: 12),
-            arrow.heightAnchor.constraint(equalToConstant: 12)
+            termLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
+            termLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20)
         ])
         
         return cell
@@ -119,7 +116,3 @@ class FlashcardSummaryViewController: UIViewController, UITableViewDataSource, U
         present(detailVC, animated: true)
     }
 }
-
-
-
-

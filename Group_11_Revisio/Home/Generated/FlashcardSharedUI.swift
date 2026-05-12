@@ -156,7 +156,17 @@ class FlashcardDetailOverlayVC: UIViewController {
         UIView.transition(with: cardContainer, duration: 0.4, options: [.transitionFlipFromRight, .showHideTransitionViews], animations: {
             self.contentLabel.text = self.isShowingTerm ? self.term : self.definition
             self.contentLabel.font = .systemFont(ofSize: self.isShowingTerm ? 24 : 18, weight: self.isShowingTerm ? .bold : .medium)
-            self.cardContainer.backgroundColor = self.isShowingTerm ? UIColor(hex: "1C1C1E") : UIColor.systemIndigo.withAlphaComponent(0.2)
+            
+            // Background color logic: Term is Dark Grey, Definition is themed Purple
+            self.cardContainer.backgroundColor = self.isShowingTerm ? 
+                UIColor(hex: "1C1C1E") : 
+                UIColor.systemPurple.withAlphaComponent(0.15)
+            
+            // Optional: Add border color to match
+            self.cardContainer.layer.borderColor = self.isShowingTerm ?
+                UIColor.white.withAlphaComponent(0.1).cgColor :
+                UIColor.systemPurple.withAlphaComponent(0.4).cgColor
+            self.cardContainer.layer.borderWidth = 1
         }, completion: nil)
     }
     

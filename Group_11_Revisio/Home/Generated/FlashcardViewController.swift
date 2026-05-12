@@ -159,6 +159,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
     private var isAnimating = false
     private var isShowingSuccessState = false
     private var lastLayoutSize: CGSize = .zero
+    private var sessionStartTime: Date? = Date()
 
     // Carousel slot configs
     private struct SlotCfg {
@@ -819,6 +820,10 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         vc.totalCount = originalDeckSize
         vc.isChallengeResult = isChallengePhase
         vc.flashcardSummary = self.flashcards.map { ($0.term, $0.definition) }
+        
+        if let startTime = sessionStartTime {
+            vc.sessionDuration = Date().timeIntervalSince(startTime)
+        }
         
         vc.onChallengeMode = { [weak self] in self?.didSelectChallengeMode() }
         vc.onSaveAndExit = { [weak self] in self?.didSelectSaveAndExit() }
