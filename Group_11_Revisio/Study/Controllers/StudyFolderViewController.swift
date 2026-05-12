@@ -5,16 +5,43 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
     private let studyTableView = UITableView(frame: .zero, style: .plain)
     private var subjectNames: [String] = []
 
-    private let emptyLabel: UILabel = {
+    // MARK: - Empty State Views
+    private let emptyStateView: UIView = {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.isHidden = true
+        return v
+    }()
+
+    private let emptyMascotImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.image = UIImage(named: "bot_pencil")
+        iv.contentMode = .scaleAspectFit
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        return iv
+    }()
+
+    private let emptyTitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Add folder"
-        label.textColor = .secondaryLabel
+        label.text = "No Folders Yet"
+        label.textColor = .white
         label.textAlignment = .center
-        label.font = .systemFont(ofSize: 18, weight: .medium)
+        label.font = .systemFont(ofSize: 24, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.isHidden = true
         return label
     }()
+
+    private let emptySubtitleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Create a folder to organize\nyour study materials"
+        label.textColor = .lightGray
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 16, weight: .regular)
+        label.numberOfLines = 2
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
 
     private var materialUpdateToken: NSObjectProtocol?
     private var folderUpdateToken: NSObjectProtocol?
@@ -42,19 +69,24 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
     private func setupUI() {
         view.backgroundColor = .systemBackground
         view.addSubview(studyTableView)
-        view.addSubview(emptyLabel)
-        
+
+        // Empty state
+        view.addSubview(emptyStateView)
+        emptyStateView.addSubview(emptyMascotImageView)
+        emptyStateView.addSubview(emptyTitleLabel)
+        emptyStateView.addSubview(emptySubtitleLabel)
+
         studyTableView.translatesAutoresizingMaskIntoConstraints = false
         studyTableView.layer.cornerRadius = 12.0
         studyTableView.clipsToBounds = true
         studyTableView.dataSource = self
         studyTableView.delegate = self
         studyTableView.register(UITableViewCell.self, forCellReuseIdentifier: "StudyCell")
-        
+
         if #available(iOS 15.0, *) {
             studyTableView.sectionHeaderTopPadding = 0
         }
-        
+
         studyTableView.contentInsetAdjustmentBehavior = .never
     }
 
@@ -66,8 +98,25 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
             studyTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             studyTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
 
-            emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            // Empty state container
+            emptyStateView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            emptyStateView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -20),
+            emptyStateView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
+            emptyStateView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
+
+            emptyMascotImageView.centerXAnchor.constraint(equalTo: emptyStateView.centerXAnchor),
+            emptyMascotImageView.topAnchor.constraint(equalTo: emptyStateView.topAnchor),
+            emptyMascotImageView.widthAnchor.constraint(equalToConstant: 160),
+            emptyMascotImageView.heightAnchor.constraint(equalToConstant: 160),
+
+            emptyTitleLabel.topAnchor.constraint(equalTo: emptyMascotImageView.bottomAnchor, constant: 20),
+            emptyTitleLabel.leadingAnchor.constraint(equalTo: emptyStateView.leadingAnchor),
+            emptyTitleLabel.trailingAnchor.constraint(equalTo: emptyStateView.trailingAnchor),
+
+            emptySubtitleLabel.topAnchor.constraint(equalTo: emptyTitleLabel.bottomAnchor, constant: 10),
+            emptySubtitleLabel.leadingAnchor.constraint(equalTo: emptyStateView.leadingAnchor),
+            emptySubtitleLabel.trailingAnchor.constraint(equalTo: emptyStateView.trailingAnchor),
+            emptySubtitleLabel.bottomAnchor.constraint(equalTo: emptyStateView.bottomAnchor)
         ])
     }
 
@@ -83,17 +132,16 @@ class StudyFolderViewController: UIViewController, UITableViewDataSource, UITabl
     }
 
     private func fetchFolderNames() {
-        
         self.subjectNames = Array(DataManager.shared.savedMaterials.keys).sorted()
 
         if subjectNames.isEmpty {
             studyTableView.isHidden = true
-            emptyLabel.isHidden = false
+            emptyStateView.isHidden = false
         } else {
             studyTableView.isHidden = false
-            emptyLabel.isHidden = true
+            emptyStateView.isHidden = true
         }
-        
+
         studyTableView.reloadData()
     }
 

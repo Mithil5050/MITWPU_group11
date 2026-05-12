@@ -14,7 +14,7 @@ class DiagramGameViewController: UIViewController {
     var diagramImageToPlay: UIImage?
     
     private let diagramImageView = UIImageView()
-    private var loadingOverlay: UIView?
+    private var loadingOverlayView: GameLoadingOverlayView?
     private var targetBoxes: [TargetBoxView] = []
     private var words: [String] = []
     private var hiddenWords: Set<String> = []
@@ -96,81 +96,17 @@ class DiagramGameViewController: UIViewController {
     
     // MARK: - Loading Overlay
     private func showLoadingOverlay() {
-        let overlay = UIView()
-        overlay.backgroundColor = UIColor(red: 0.07, green: 0.07, blue: 0.18, alpha: 0.96)
-        overlay.layer.cornerRadius = 16
-        overlay.translatesAutoresizingMaskIntoConstraints = false
-        overlay.alpha = 0
-        view.addSubview(overlay)
-        
-        NSLayoutConstraint.activate([
-            overlay.topAnchor.constraint(equalTo: view.topAnchor),
-            overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            overlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            overlay.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-        
-        // Brain/scan icon
-        let iconLabel = UILabel()
-        iconLabel.text = "🧠"
-        iconLabel.font = .systemFont(ofSize: 52)
-        iconLabel.textAlignment = .center
-        iconLabel.translatesAutoresizingMaskIntoConstraints = false
-        overlay.addSubview(iconLabel)
-        
-        // Spinner
-        let spinner = UIActivityIndicatorView(style: .large)
-        spinner.color = UIColor(red: 0.55, green: 0.7, blue: 1.0, alpha: 1.0)
-        spinner.startAnimating()
-        spinner.translatesAutoresizingMaskIntoConstraints = false
-        overlay.addSubview(spinner)
-        
-        // Status label
-        let statusLabel = UILabel()
-        statusLabel.text = "Scanning diagram..."
-        statusLabel.font = .systemFont(ofSize: 16, weight: .semibold)
-        statusLabel.textColor = UIColor(red: 0.7, green: 0.8, blue: 1.0, alpha: 1.0)
-        statusLabel.textAlignment = .center
-        statusLabel.translatesAutoresizingMaskIntoConstraints = false
-        statusLabel.tag = 99 // Used to update text later
-        overlay.addSubview(statusLabel)
-        
-        let subLabel = UILabel()
-        subLabel.text = "AI is identifying labels"
-        subLabel.font = .systemFont(ofSize: 13, weight: .regular)
-        subLabel.textColor = UIColor(white: 1.0, alpha: 0.4)
-        subLabel.textAlignment = .center
-        subLabel.translatesAutoresizingMaskIntoConstraints = false
-        overlay.addSubview(subLabel)
-        
-        NSLayoutConstraint.activate([
-            iconLabel.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
-            iconLabel.centerYAnchor.constraint(equalTo: overlay.centerYAnchor, constant: -70),
-            spinner.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
-            spinner.topAnchor.constraint(equalTo: iconLabel.bottomAnchor, constant: 20),
-            statusLabel.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
-            statusLabel.topAnchor.constraint(equalTo: spinner.bottomAnchor, constant: 16),
-            subLabel.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
-            subLabel.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 6)
-        ])
-        
-        // Pulse animation on the brain
-        UIView.animate(withDuration: 0.9, delay: 0, options: [.repeat, .autoreverse], animations: {
-            iconLabel.transform = CGAffineTransform(scaleX: 1.12, y: 1.12)
-        })
-        
-        UIView.animate(withDuration: 0.25) { overlay.alpha = 1.0 }
-        self.loadingOverlay = overlay
+        let overlay = GameLoadingOverlayView(
+            title: "Scanning diagram...",
+            subtitle: "AI is identifying labels"
+        )
+        overlay.show(in: view)
+        loadingOverlayView = overlay
     }
-    
+
     private func hideLoadingOverlay() {
-        guard let overlay = loadingOverlay else { return }
-        UIView.animate(withDuration: 0.4, delay: 0, options: .curveEaseOut, animations: {
-            overlay.alpha = 0
-        }) { _ in
-            overlay.removeFromSuperview()
-            self.loadingOverlay = nil
-        }
+        loadingOverlayView?.hide()
+        loadingOverlayView = nil
     }
     
     private func getCGImageOrientation(_ uiOrientation: UIImage.Orientation) -> CGImagePropertyOrientation {

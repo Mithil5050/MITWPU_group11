@@ -39,9 +39,10 @@ class WordFillViewController: UIViewController {
     private var userAnswers: [String?] = []
     
     // Loading UI
-    private let loadingOverlay = UIView()
-    private let loadingIndicator = UIActivityIndicatorView(style: .large)
-    private let loadingLabel = UILabel()
+    private lazy var loadingOverlayView = GameLoadingOverlayView(
+        title: "Crafting your Word Fill from \(currentTopic?.name ?? "General Knowledge")...",
+        subtitle: "AI is generating your questions"
+    )
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -76,36 +77,7 @@ class WordFillViewController: UIViewController {
     }
     
     private func setupLoadingOverlay() {
-        loadingOverlay.backgroundColor = .systemBackground
-        loadingOverlay.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(loadingOverlay)
-        
-        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
-        loadingIndicator.color = .systemBlue
-        loadingIndicator.startAnimating()
-        loadingOverlay.addSubview(loadingIndicator)
-        
-        loadingLabel.text = "Crafting your Word Fill from \(currentTopic?.name ?? "General Knowledge")..."
-        loadingLabel.font = .systemFont(ofSize: 16, weight: .medium)
-        loadingLabel.textColor = .secondaryLabel
-        loadingLabel.textAlignment = .center
-        loadingLabel.numberOfLines = 0
-        loadingLabel.translatesAutoresizingMaskIntoConstraints = false
-        loadingOverlay.addSubview(loadingLabel)
-        
-        NSLayoutConstraint.activate([
-            loadingOverlay.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            loadingOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            loadingOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            loadingOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            loadingIndicator.centerXAnchor.constraint(equalTo: loadingOverlay.centerXAnchor),
-            loadingIndicator.centerYAnchor.constraint(equalTo: loadingOverlay.centerYAnchor, constant: -20),
-            
-            loadingLabel.topAnchor.constraint(equalTo: loadingIndicator.bottomAnchor, constant: 16),
-            loadingLabel.leadingAnchor.constraint(equalTo: loadingOverlay.leadingAnchor, constant: 32),
-            loadingLabel.trailingAnchor.constraint(equalTo: loadingOverlay.trailingAnchor, constant: -32)
-        ])
+        loadingOverlayView.show(in: view)
     }
 
     // MARK: - ✅ AI GENERATION LOGIC
@@ -200,10 +172,7 @@ class WordFillViewController: UIViewController {
     }
 
     private func hideLoadingAndStartGame() {
-        UIView.animate(withDuration: 0.3, animations: {
-            self.loadingOverlay.alpha = 0
-        }) { _ in
-            self.loadingOverlay.removeFromSuperview()
+        loadingOverlayView.hide {
             self.loadQuestion()
             self.startTimer()
         }

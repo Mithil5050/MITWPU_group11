@@ -33,9 +33,10 @@ class DailyChallengeViewController: UIViewController {
     private var currentGuess = ""
 
     // Loading UI
-    private let loadingOverlay = UIView()
-    private let loadingIndicator = UIActivityIndicatorView(style: .large)
-    private let loadingLabel = UILabel()
+    private let loadingOverlayView = GameLoadingOverlayView(
+        title: "Loading today's puzzle...",
+        subtitle: "AI is crafting your challenge"
+    )
     
     // MARK: - Daily State Management
     private let defaults = UserDefaults.standard
@@ -82,36 +83,7 @@ class DailyChallengeViewController: UIViewController {
     }
     
     private func setupLoadingOverlay() {
-        loadingOverlay.backgroundColor = .systemBackground
-        loadingOverlay.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(loadingOverlay)
-        
-        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
-        loadingIndicator.color = .systemBlue
-        loadingIndicator.startAnimating()
-        loadingOverlay.addSubview(loadingIndicator)
-        
-        loadingLabel.text = "Loading today's puzzle..."
-        loadingLabel.font = .systemFont(ofSize: 16, weight: .medium)
-        loadingLabel.textColor = .secondaryLabel
-        loadingLabel.textAlignment = .center
-        loadingLabel.numberOfLines = 0
-        loadingLabel.translatesAutoresizingMaskIntoConstraints = false
-        loadingOverlay.addSubview(loadingLabel)
-        
-        NSLayoutConstraint.activate([
-            loadingOverlay.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            loadingOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            loadingOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            loadingOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            loadingIndicator.centerXAnchor.constraint(equalTo: loadingOverlay.centerXAnchor),
-            loadingIndicator.centerYAnchor.constraint(equalTo: loadingOverlay.centerYAnchor, constant: -20),
-            
-            loadingLabel.topAnchor.constraint(equalTo: loadingIndicator.bottomAnchor, constant: 16),
-            loadingLabel.leadingAnchor.constraint(equalTo: loadingOverlay.leadingAnchor, constant: 32),
-            loadingLabel.trailingAnchor.constraint(equalTo: loadingOverlay.trailingAnchor, constant: -32)
-        ])
+        loadingOverlayView.show(in: view)
     }
 
     // MARK: - ✅ DAILY GENERATION LOGIC
@@ -133,13 +105,13 @@ class DailyChallengeViewController: UIViewController {
         } else {
             // It's a new day! Reset completion and generate a new word.
             defaults.set(false, forKey: completedKey)
-            loadingLabel.text = "Generating your puzzle from Study Materials..."
+            loadingOverlayView.updateTitle("Generating your puzzle from Study Materials...")
             generateWordleFromStudyMaterials()
         }
     }
     
     private func showAlreadyPlayedAlert() {
-        loadingOverlay.removeFromSuperview()
+        loadingOverlayView.hide()
         let alert = UIAlertController(
             title: "Come back tomorrow!",
             message: "You have already completed the Daily Wordle for today. Great job staying consistent!",
@@ -225,12 +197,7 @@ class DailyChallengeViewController: UIViewController {
         self.engine = WordleEngine(answer: word)
         self.hints = hints.isEmpty ? ["No hints available for this word."] : hints
         self.wordDefinition = definition
-        
-        UIView.animate(withDuration: 0.3, animations: {
-            self.loadingOverlay.alpha = 0
-        }) { _ in
-            self.loadingOverlay.removeFromSuperview()
-        }
+        loadingOverlayView.hide()
     }
     
     private func cleanJSONText(_ json: String) -> String {
@@ -521,40 +488,24 @@ class DailyChallengeViewController: UIViewController {
     }
     
     private func endGame(won: Bool) {
-            
-            isGameOver = true
-            
-            // ✅ MARK GAME AS COMPLETED FOR TODAY
-            defaults.set(true, forKey: completedKey)
-            
-            if won {
-                // ✅ NEW: Trigger the streak logic ONLY on a win
-                ProgressDataManager.shared.completeDailyChallenge()
-                
-                let emitter = CAEmitterLayer()
-                emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: 0)
-                emitter.emitterShape = .line
-                emitter.emitterSize = CGSize(width: view.bounds.width, height: 1)
-                let cell = CAEmitterCell()
-                cell.birthRate = 5
-                cell.lifetime = 5.0
-                cell.velocity = 100
-                cell.scale = 0.1
-                cell.contents = UIImage(systemName: "circle.fill")?.cgImage
-                cell.color = UIColor.systemYellow.cgColor
-                emitter.emitterCells = [cell]
-                view.layer.addSublayer(emitter)
-                
-                Task { await RevisioManager.shared.earnXP(amount: 15, reason: "Won Daily Wordle") }
-                ProgressDataManager.shared.logSession(minutes: 2.0, category: "Games")
-            }
-            
-            let sheet = LearnMoreViewController(
-                word: engine.revealedAnswer.uppercased(),
-                definition: wordDefinition
-            )
-            sheet.modalPresentationStyle = .overFullScreen
-            sheet.modalTransitionStyle = .crossDissolve
-            present(sheet, animated: true)
+        isGameOver = true
+        defaults.set(true, forKey: completedKey)
+
+        if won {
+            ProgressDataManager.shared.completeDailyChallenge()
+            Task { await RevisioManager.shared.earnXP(amount: 15, reason: "Won Daily Wordle") }
+            ProgressDataManager.shared.logSession(minutes: 2.0, category: "Games")
         }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            let sheet = LearnMoreViewController(
+                word: self.engine.revealedAnswer.uppercased(),
+                definition: self.wordDefinition,
+                didWin: won
+            )
+            sheet.modalPresentationStyle = .fullScreen
+            sheet.modalTransitionStyle = .crossDissolve
+            self.present(sheet, animated: true)
+        }
+    }
 }
