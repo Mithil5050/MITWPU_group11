@@ -21,12 +21,15 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
         tableView.backgroundColor = .clear
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 52
         
         tableView.tableHeaderView = createHeaderView()
     }
 
     func createHeaderView() -> UIView {
         let headerView = UIView()
+        headerView.backgroundColor = .clear
         
         let container = UIView()
         container.backgroundColor = iconColor.withAlphaComponent(0.12)
@@ -105,7 +108,8 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
                 cell.detailTextLabel?.text = sourceName
             case 2:
                 cell.textLabel?.text = "Created"
-                cell.detailTextLabel?.text = dateCreated
+                // Use asRelativeTime to properly format ISO timestamps
+                cell.detailTextLabel?.text = dateCreated.asRelativeTime
             default: break
             }
             return cell

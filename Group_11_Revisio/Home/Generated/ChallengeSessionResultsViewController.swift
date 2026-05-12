@@ -158,89 +158,89 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         view.addSubview(headerLabel)
         view.addSubview(scoreLabel)
         view.addSubview(insightsCard)
-        
+        view.addSubview(challengeButton)
+        view.addSubview(exitButton)
+
         insightsCard.addSubview(insightsTitleLabel)
         insightsCard.addSubview(accuracyLabel)
         insightsCard.addSubview(studyTimeLabel)
-        insightsCard.addSubview(summaryContainer)
-        
-        summaryContainer.addSubview(summaryLabel)
-        summaryContainer.addSubview(summaryChevron)
-        
-        view.addSubview(challengeButton)
-        view.addSubview(exitButton)
-        
-        // MARK: - Constraints
+
+        // MARK: - Shared Constraints
         NSLayoutConstraint.activate([
-            // Hero Image Section
+            // Hero Image — below status bar
             resultImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             resultImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             resultImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            resultImageView.heightAnchor.constraint(equalToConstant: 320),
-            
-            // Congratulations
-            headerLabel.topAnchor.constraint(equalTo: resultImageView.bottomAnchor, constant: 12),
+            resultImageView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.30),
+
+            headerLabel.topAnchor.constraint(equalTo: resultImageView.bottomAnchor, constant: 20),
             headerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            // Subtitle
-            scoreLabel.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 4),
+
+            scoreLabel.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 6),
             scoreLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            // Insights Card
-            insightsCard.topAnchor.constraint(equalTo: scoreLabel.bottomAnchor, constant: 20),
+
+            insightsCard.topAnchor.constraint(equalTo: scoreLabel.bottomAnchor, constant: 24),
             insightsCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             insightsCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
-            
-            // Inside Insights Card
+
             insightsTitleLabel.topAnchor.constraint(equalTo: insightsCard.topAnchor, constant: 20),
             insightsTitleLabel.leadingAnchor.constraint(equalTo: insightsCard.leadingAnchor, constant: 20),
-            
+
             accuracyLabel.topAnchor.constraint(equalTo: insightsTitleLabel.bottomAnchor, constant: 12),
             accuracyLabel.leadingAnchor.constraint(equalTo: insightsTitleLabel.leadingAnchor, constant: 12),
-            
+
             studyTimeLabel.topAnchor.constraint(equalTo: accuracyLabel.bottomAnchor, constant: 6),
             studyTimeLabel.leadingAnchor.constraint(equalTo: accuracyLabel.leadingAnchor),
-            
-            // Summary Container Row
-            summaryContainer.topAnchor.constraint(equalTo: studyTimeLabel.bottomAnchor, constant: 20),
-            summaryContainer.leadingAnchor.constraint(equalTo: insightsCard.leadingAnchor, constant: 16),
-            summaryContainer.trailingAnchor.constraint(equalTo: insightsCard.trailingAnchor, constant: -16),
-            summaryContainer.heightAnchor.constraint(equalToConstant: 54),
-            summaryContainer.bottomAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: -16),
-            
-            summaryLabel.centerYAnchor.constraint(equalTo: summaryContainer.centerYAnchor),
-            summaryLabel.leadingAnchor.constraint(equalTo: summaryContainer.leadingAnchor, constant: 16),
-            
-            summaryChevron.centerYAnchor.constraint(equalTo: summaryContainer.centerYAnchor),
-            summaryChevron.trailingAnchor.constraint(equalTo: summaryContainer.trailingAnchor, constant: -16),
-            
-            // Buttons
-            exitButton.leadingAnchor.constraint(equalTo: insightsCard.leadingAnchor),
-            exitButton.trailingAnchor.constraint(equalTo: insightsCard.trailingAnchor),
-            exitButton.heightAnchor.constraint(equalToConstant: 54)
+
+            // Buttons always at safe area bottom
+            exitButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            exitButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            exitButton.heightAnchor.constraint(equalToConstant: 54),
+            exitButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
         ])
-        
+
         if isChallengeResult {
+            // Challenge mode: show "View Session Summary" row inside the card
+            insightsCard.addSubview(summaryContainer)
+            summaryContainer.addSubview(summaryLabel)
+            summaryContainer.addSubview(summaryChevron)
+
             NSLayoutConstraint.activate([
-                exitButton.topAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: 24)
+                summaryContainer.topAnchor.constraint(equalTo: studyTimeLabel.bottomAnchor, constant: 20),
+                summaryContainer.leadingAnchor.constraint(equalTo: insightsCard.leadingAnchor, constant: 16),
+                summaryContainer.trailingAnchor.constraint(equalTo: insightsCard.trailingAnchor, constant: -16),
+                summaryContainer.heightAnchor.constraint(equalToConstant: 54),
+                summaryContainer.bottomAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: -16),
+
+                summaryLabel.centerYAnchor.constraint(equalTo: summaryContainer.centerYAnchor),
+                summaryLabel.leadingAnchor.constraint(equalTo: summaryContainer.leadingAnchor, constant: 16),
+
+                summaryChevron.centerYAnchor.constraint(equalTo: summaryContainer.centerYAnchor),
+                summaryChevron.trailingAnchor.constraint(equalTo: summaryContainer.trailingAnchor, constant: -16),
             ])
+
+            let tap = UITapGestureRecognizer(target: self, action: #selector(showSummary))
+            summaryContainer.addGestureRecognizer(tap)
+            summaryContainer.isUserInteractionEnabled = true
+
         } else {
+            // Normal mode: card closes after studyTimeLabel, no summary row
             NSLayoutConstraint.activate([
-                challengeButton.topAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: 20),
-                challengeButton.leadingAnchor.constraint(equalTo: insightsCard.leadingAnchor),
-                challengeButton.trailingAnchor.constraint(equalTo: insightsCard.trailingAnchor),
+                studyTimeLabel.bottomAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: -20),
+            ])
+
+            // Start Challenge sits just above Save & Exit
+            challengeButton.isHidden = false
+            NSLayoutConstraint.activate([
+                challengeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+                challengeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
                 challengeButton.heightAnchor.constraint(equalToConstant: 54),
-                
-                exitButton.topAnchor.constraint(equalTo: challengeButton.bottomAnchor, constant: 12)
+                challengeButton.bottomAnchor.constraint(equalTo: exitButton.topAnchor, constant: -12),
             ])
         }
-        
+
         challengeButton.addTarget(self, action: #selector(challengeTapped), for: .touchUpInside)
         exitButton.addTarget(self, action: #selector(exitTapped), for: .touchUpInside)
-        
-        let tap = UITapGestureRecognizer(target: self, action: #selector(showSummary))
-        summaryContainer.addGestureRecognizer(tap)
-        summaryContainer.isUserInteractionEnabled = true
     }
     
     @objc private func showSummary() {

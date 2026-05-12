@@ -44,7 +44,7 @@ class MaterialViewCell: UITableViewCell {
         switch item {
         case .topic(let topic):
             rawName = topic.name
-            subtitleLabel.text = "\(topic.materialType) • \(topic.lastAccessed)"
+            subtitleLabel.text = "\(topic.materialType) • \(topic.lastAccessed.asRelativeTime)"
             
             switch topic.materialType {
             case "Quiz":

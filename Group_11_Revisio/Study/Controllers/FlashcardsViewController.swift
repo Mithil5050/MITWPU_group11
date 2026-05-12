@@ -169,7 +169,16 @@ class FlashcardsViewController: UIViewController, AddFlashcardsDelegate, UITextF
                 .replacingOccurrences(of: "Note_", with: "")
                 .replacingOccurrences(of: "Link_", with: "")
                 .replacingOccurrences(of: "_", with: " ")
-            self.title = clean
+            // Multi-line title so long names like "Carbohydrates Flashcards" never get truncated
+            let titleLabel = UILabel()
+            titleLabel.text = clean
+            titleLabel.numberOfLines = 2
+            titleLabel.textAlignment = .center
+            titleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+            titleLabel.textColor = .white
+            titleLabel.lineBreakMode = .byWordWrapping
+            titleLabel.sizeToFit()
+            navigationItem.titleView = titleLabel
         }
 
         if let body = currentTopic?.largeContentBody, !body.isEmpty {

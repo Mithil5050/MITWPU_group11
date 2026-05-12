@@ -41,7 +41,17 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
                                    .replacingOccurrences(of: "_", with: " ")
                                    .trimmingCharacters(in: .whitespaces)
         
-        self.title = cleanTitle
+        // Multi-line title so long names never truncate
+        let navTitleLabel = UILabel()
+        navTitleLabel.text = cleanTitle
+        navTitleLabel.numberOfLines = 2
+        navTitleLabel.textAlignment = .center
+        navTitleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+        navTitleLabel.textColor = .label
+        navTitleLabel.lineBreakMode = .byWordWrapping
+        navTitleLabel.sizeToFit()
+        navigationItem.titleView = navTitleLabel
+
         
         let updatedQuestions = QuizManager.getQuestions(for: rawQuizName)
         

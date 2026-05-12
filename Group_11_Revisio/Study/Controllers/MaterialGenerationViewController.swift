@@ -38,7 +38,17 @@ class MaterialGenerationViewController: UIViewController {
     }
     func displayGeneratedContent() {
         
-        self.title = contentData?.name ?? "Material"
+        // Multi-line title so long names never truncate
+        let titleLabel = UILabel()
+        titleLabel.text = contentData?.name ?? "Material"
+        titleLabel.numberOfLines = 2
+        titleLabel.textAlignment = .center
+        titleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+        titleLabel.textColor = .label
+        titleLabel.lineBreakMode = .byWordWrapping
+        titleLabel.sizeToFit()
+        navigationItem.titleView = titleLabel
+
         
         guard let topic = contentData else { return }
 

@@ -27,7 +27,16 @@ class InstructionViewController: UIViewController {
     func setupLabels() {
         let displayName = sourceNameForQuiz ?? quizTopic?.name ?? "Quiz"
         titleLabel.text = "\(displayName) Quiz"
-        self.title = displayName
+        // Multi-line title so long names never truncate
+        let navTitleLabel = UILabel()
+        navTitleLabel.text = displayName
+        navTitleLabel.numberOfLines = 2
+        navTitleLabel.textAlignment = .center
+        navTitleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+        navTitleLabel.textColor = .label
+        navTitleLabel.lineBreakMode = .byWordWrapping
+        navTitleLabel.sizeToFit()
+        navigationItem.titleView = navTitleLabel
         
         instructionsTextView.text = getInstructionsText()
     }
