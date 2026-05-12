@@ -115,14 +115,14 @@ private final class BadgeUnlockPopupView: UIView {
         ])
 
         // Tier badge (small pill in corner of image)
-        card.addSubview(tierView)
-        tierView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            tierView.trailingAnchor.constraint(equalTo: badgeImageView.trailingAnchor, constant: 6),
-            tierView.bottomAnchor.constraint(equalTo: badgeImageView.bottomAnchor, constant: 6),
-            tierView.widthAnchor.constraint(equalToConstant: 32),
-            tierView.heightAnchor.constraint(equalToConstant: 32),
-        ])
+//        card.addSubview(tierView)
+//        tierView.translatesAutoresizingMaskIntoConstraints = false
+//        NSLayoutConstraint.activate([
+//            tierView.trailingAnchor.constraint(equalTo: badgeImageView.trailingAnchor, constant: 6),
+//            tierView.bottomAnchor.constraint(equalTo: badgeImageView.bottomAnchor, constant: 6),
+//            tierView.widthAnchor.constraint(equalToConstant: 32),
+//            tierView.heightAnchor.constraint(equalToConstant: 32),
+//        ])
 
         // Headline ("Badge Earned!" / "Badge Unlocked")
         card.addSubview(headlineLabel)
