@@ -848,8 +848,14 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
     @objc func handleSave() {
         let folder = parentSubjectName ?? "Study"
 
+        let elapsedMinutes: Double
+        if let start = sessionStartTime {
+            elapsedMinutes = Date().timeIntervalSince(start) / 60.0
+        } else {
+            elapsedMinutes = Double(self.flashcards.count) * 0.5
+        }
         ProgressDataManager.shared.logSession(
-            minutes: Double(self.flashcards.count) * 0.5,
+            minutes: max(elapsedMinutes, 1.0),
             category: "Study"
         )
 

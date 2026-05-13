@@ -20,6 +20,7 @@ class ConnectionsViewController: UIViewController {
     private var words: [WordModel] = []
     
     private var didWin: Bool = false
+    private var gameStartTime: Date?
     private var mistakesRemaining: Int = 4 {
         didSet { updateMistakesLabel() }
     }
@@ -183,6 +184,7 @@ class ConnectionsViewController: UIViewController {
     }
     
     private func hideLoadingAndStartGame() {
+        gameStartTime = Date()
         loadingOverlayView.hide {
             self.collectionView.reloadData()
         }
@@ -339,6 +341,10 @@ class ConnectionsViewController: UIViewController {
             // ✅ We pass the dynamic AI categories to the results screen
             destVC.categories = self.categories
             destVC.resultTitle = didWin ? "Great Job!" : "Better luck next time!"
+            // Pass actual elapsed time for accurate progress logging
+            if let start = gameStartTime {
+                destVC.elapsedMinutes = Date().timeIntervalSince(start) / 60.0
+            }
         }
     }
     

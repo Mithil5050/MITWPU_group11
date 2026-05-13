@@ -6,6 +6,7 @@ class ConnectionsResultsViewController: UIViewController {
     // ✅ Now defaults to empty, perfectly accepting the AI categories passed from the game
     var categories: [CategoryModel] = []
     var resultTitle: String = "Great Job!"
+    var elapsedMinutes: Double = 2.0
     
     // MARK: - UI Elements
     
@@ -51,8 +52,8 @@ class ConnectionsResultsViewController: UIViewController {
         setupAppearance()
         setupLayout()
         buildCategoryCards()
-        // Log session for progress chart
-        ProgressDataManager.shared.logSession(minutes: 2.0, category: "Games")
+        // Log session for progress chart using actual elapsed time
+        ProgressDataManager.shared.logSession(minutes: max(elapsedMinutes, 1.0), category: "Games")
     }
     
     // MARK: - Setup
