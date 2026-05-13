@@ -16,6 +16,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
     private let searchController = UISearchController(searchResultsController: nil)
     private var filteredGroups: [Group] = []
     private var isSearching: Bool = false
+    private weak var floatingMascot: UIImageView? // ref to run animation
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,12 +38,71 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         Task { await loadGroups() }
     }
 
+    // MARK: - Empty State
+    private func makeEmptyStateView() -> UIView {
+        let bg = UIView(frame: groupsTableView.bounds)
+        bg.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+        // Mascot
+        let mascot = UIImageView(image: UIImage(named: "bot_pencil"))
+        mascot.contentMode = .scaleAspectFit
+        mascot.translatesAutoresizingMaskIntoConstraints = false
+        floatingMascot = mascot
+
+        // Title
+        let title = UILabel()
+        title.text = "No Groups Yet!"
+        title.font = .systemFont(ofSize: 24, weight: .bold)
+        title.textColor = .label
+        title.textAlignment = .center
+        title.translatesAutoresizingMaskIntoConstraints = false
+
+        // Subtitle
+        let subtitle = UILabel()
+        subtitle.text = "Study is better together \nJoin or create a group to get started."
+        subtitle.font = .systemFont(ofSize: 15, weight: .regular)
+        subtitle.textColor = .secondaryLabel
+        subtitle.textAlignment = .center
+        subtitle.numberOfLines = 0
+        subtitle.translatesAutoresizingMaskIntoConstraints = false
+
+        // Stack
+        let stack = UIStackView(arrangedSubviews: [mascot, title, subtitle])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 12
+        stack.translatesAutoresizingMaskIntoConstraints = false
+
+        bg.addSubview(stack)
+        NSLayoutConstraint.activate([
+            mascot.widthAnchor.constraint(equalToConstant: 140),
+            mascot.heightAnchor.constraint(equalToConstant: 140),
+
+            stack.centerXAnchor.constraint(equalTo: bg.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: bg.centerYAnchor, constant: -20),
+            stack.leadingAnchor.constraint(greaterThanOrEqualTo: bg.leadingAnchor, constant: 32),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: bg.trailingAnchor, constant: -32),
+        ])
+
+        return bg
+    }
+
+    private func startMascotFloat() {
+        guard let mascot = floatingMascot else { return }
+        mascot.layer.removeAllAnimations()
+        UIView.animate(
+            withDuration: 1.6, delay: 0,
+            options: [.repeat, .autoreverse, .allowUserInteraction]
+        ) { mascot.transform = CGAffineTransform(translationX: 0, y: -10) }
+    }
+
     private func loadGroups() async {
         do {
             let groups = try await SupabaseManager.shared.fetchGroups()
             await MainActor.run {
                 myGroups = groups
                 groupsTableView.reloadData()
+                updateEmptyState()
             }
             await loadLastMessages()
         } catch {
@@ -62,13 +122,27 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
                 lastMessages[groupId] = msg
             }
         }
-        await MainActor.run { groupsTableView.reloadData() }
+        await MainActor.run {
+            groupsTableView.reloadData()
+            updateEmptyState()
+        }
     }
 
     func didUpdateGroup(_ group: Group) {
         if let index = myGroups.firstIndex(where: { $0.id == group.id }) {
             myGroups[index] = group
             groupsTableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+        }
+    }
+
+    // MARK: - Empty State
+    private func updateEmptyState() {
+        let isEmpty = myGroups.isEmpty && !isSearching
+        if isEmpty {
+            groupsTableView.backgroundView = makeEmptyStateView()
+            startMascotFloat()
+        } else {
+            groupsTableView.backgroundView = nil
         }
     }
 
@@ -169,6 +243,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
         groupsTableView.beginUpdates()
         groupsTableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
         groupsTableView.endUpdates()
+        updateEmptyState()
         Task {
             let msg = await SupabaseManager.shared.fetchLastMessage(for: group.id)
             await MainActor.run {
@@ -194,6 +269,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
             filteredGroups = myGroups.filter { $0.name.lowercased().contains(searchText) }
         }
         groupsTableView.reloadData()
+        updateEmptyState()
     }
 }
 
@@ -207,6 +283,7 @@ extension GroupsViewController: CreateGroupDelegate {
         groupsTableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
         groupsTableView.endUpdates()
         groupsTableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+        updateEmptyState()
     }
 }
 
@@ -220,6 +297,7 @@ extension GroupsViewController: LeaveGroupDelegate {
             groupsTableView.beginUpdates()
             groupsTableView.deleteRows(at: [IndexPath(row: idx, section: 0)], with: .automatic)
             groupsTableView.endUpdates()
+            updateEmptyState()
         }
     }
 }

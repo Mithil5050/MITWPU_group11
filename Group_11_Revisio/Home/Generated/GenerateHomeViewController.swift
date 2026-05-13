@@ -442,7 +442,7 @@ class GenerateHomeViewController: UIViewController {
         let materialName = selectedMaterialType.description
         let overlayMessage: String
         switch selectedMaterialType {
-        case .quiz:       overlayMessage = "Crafting your quiz questions...\nThis may take a moment ☕"
+        case .quiz:       overlayMessage = "Crafting your quiz questions...\nThis may take a moment"
         case .flashcards: overlayMessage = "Building your flashcards...\nSit tight!"
         case .notes:      overlayMessage = "Writing your study notes...\nAlmost there!"
         case .cheatsheet: overlayMessage = "Preparing your cheatsheet...\nHang on!"
@@ -501,8 +501,12 @@ class GenerateHomeViewController: UIViewController {
                 )
                 
                 DispatchQueue.main.async {
-                    self.hideGenerationOverlay()
-                    self.handleSuccess(generatedContent: generatedContent, topicName: topicName, sender: sender)
+                    self.hideGenerationOverlayWithCelebration(
+                        statusText: "\(self.selectedMaterialType.description) Ready!",
+                        subtitle: "Your content has been generated 🎉"
+                    ) {
+                        self.handleSuccess(generatedContent: generatedContent, topicName: topicName, sender: sender)
+                    }
                 }
                 
             } catch {

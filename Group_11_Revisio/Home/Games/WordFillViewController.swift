@@ -47,6 +47,7 @@ class WordFillViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        installQuitConfirmation() // ✅ Guard against accidental exits
         setupUI()
         setupLoadingOverlay()
         generateWordFill() // ✅ Calls AI before starting timer

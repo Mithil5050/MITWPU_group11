@@ -127,4 +127,36 @@ final class GameLoadingOverlayView: UIView {
             completion?()
         }
     }
+
+    /// Transition from loading → celebration (pirouette → wave → cheer),
+    /// then auto-dismiss after the hold duration.
+    func completeWithCelebration(
+        statusText: String = "All Done!",
+        subtitle: String = "Your content is ready 🎉",
+        holdDuration: TimeInterval = 1.8,
+        completion: (() -> Void)? = nil
+    ) {
+        // Stop spinner & idle float
+        spinner.stopAnimating()
+        mascotImageView.layer.removeAllAnimations()
+        mascotImageView.transform = .identity
+
+        // Fade out loading text
+        UIView.animate(withDuration: 0.2) {
+            self.titleLabel.alpha = 0
+            self.subtitleLabel.alpha = 0
+            self.spinner.alpha = 0
+        }
+
+        // Play the celebration on top
+        let celebration = MascotCelebrationView(
+            statusText: statusText,
+            subtitle: subtitle
+        )
+        celebration.play(in: self, holdDuration: holdDuration) { [weak self] in
+            celebration.dismiss {
+                self?.hide(completion: completion)
+            }
+        }
+    }
 }

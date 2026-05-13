@@ -12,36 +12,53 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
-        
+
         let window = UIWindow(windowScene: windowScene)
         self.window = window
-        
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        
-        window.rootViewController = storyboard.instantiateInitialViewController()
+
+        // Show animated splash immediately
+        let splash = SplashViewController()
+        window.rootViewController = splash
         window.makeKeyAndVisible()
-        
+
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+
+        // Minimum splash display time (seconds)
+        let minimumSplashDuration: TimeInterval = 2.8
+
         Task {
-            do {
-                _ = try await SupabaseManager.shared.client.auth.session
-                
-                // ✅ User already has an active session — restore their XP/Level/Streak
-                // before the tab bar appears so UI is correct from the first frame
-                ProgressDataManager.shared.restoreFromSupabase()
-                
-                DispatchQueue.main.async {
+            // Run auth check and minimum timer in parallel
+            async let authResult: Bool = {
+                do {
+                    _ = try await SupabaseManager.shared.client.auth.session
+                    ProgressDataManager.shared.restoreFromSupabase()
+                    return true   // logged in
+                } catch {
+                    return false  // not logged in
+                }
+            }()
+
+            async let timerDone: Void = {
+                try? await Task.sleep(nanoseconds: UInt64(minimumSplashDuration * 1_000_000_000))
+            }()
+
+            // Wait for BOTH to finish before we transition
+            let (isLoggedIn, _) = await (authResult, timerDone)
+
+            DispatchQueue.main.async {
+                splash.stopPlayback()
+
+                if isLoggedIn {
                     let tabBarVC = storyboard.instantiateViewController(withIdentifier: "MainTabBarController")
                     window.rootViewController = tabBarVC
-                    UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil, completion: nil)
-                }
-            } catch {
-                DispatchQueue.main.async {
+                } else {
                     let onboardingVC = storyboard.instantiateViewController(withIdentifier: "OnboardingViewController")
                     let nav = UINavigationController(rootViewController: onboardingVC)
                     nav.isNavigationBarHidden = true
                     window.rootViewController = nav
-                    UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil, completion: nil)
                 }
+
+                UIView.transition(with: window, duration: 0.4, options: .transitionCrossDissolve, animations: nil, completion: nil)
             }
         }
     }
