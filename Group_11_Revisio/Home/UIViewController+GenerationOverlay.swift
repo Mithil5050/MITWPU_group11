@@ -103,4 +103,54 @@ extension UIViewController {
             }
         }
     }
+
+    /// Plays the mascot pirouette → wave → cheer celebration on the
+    /// generation overlay, then auto-dismisses it.
+    func hideGenerationOverlayWithCelebration(
+        statusText: String = "All Done!",
+        subtitle: String = "Your content is ready 🎉",
+        completion: (() -> Void)? = nil
+    ) {
+        guard let windowScene = UIApplication.shared.connectedScenes
+                .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+              let window = windowScene.windows.first(where: { $0.isKeyWindow }),
+              let overlay = window.viewWithTag(9999) else {
+            completion?()
+            return
+        }
+
+        // Fade out the spinner + text inside the overlay card
+        for sub in overlay.subviews {
+            // The card is the first subview
+            for cardChild in sub.subviews {
+                if cardChild is UIActivityIndicatorView {
+                    (cardChild as? UIActivityIndicatorView)?.stopAnimating()
+                }
+                if cardChild is UILabel || cardChild is UIActivityIndicatorView {
+                    UIView.animate(withDuration: 0.2) { cardChild.alpha = 0 }
+                }
+                // Stop the idle float animation on the mascot
+                if cardChild is UIImageView {
+                    cardChild.layer.removeAllAnimations()
+                    cardChild.transform = .identity
+                }
+            }
+        }
+
+        // Play the celebration
+        let celebration = MascotCelebrationView(
+            statusText: statusText,
+            subtitle: subtitle
+        )
+        celebration.play(in: overlay, holdDuration: 1.8) {
+            celebration.dismiss {
+                UIView.animate(withDuration: 0.25, animations: {
+                    overlay.alpha = 0
+                }) { _ in
+                    overlay.removeFromSuperview()
+                    completion?()
+                }
+            }
+        }
+    }
 }

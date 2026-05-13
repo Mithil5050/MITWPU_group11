@@ -259,7 +259,10 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             
             let recentTopics = Array(incompleteTasks.prefix(5))
             self.learningItems = recentTopics
-            DispatchQueue.main.async { self.collectionView.reloadData() }
+            DispatchQueue.main.async {
+                self.collectionView.collectionViewLayout.invalidateLayout()
+                self.collectionView.reloadData()
+            }
         }
     
     // MARK: - Setup
@@ -337,11 +340,11 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         profileButton.layer.masksToBounds = true
         profileButton.addTarget(self, action: #selector(profileButtonTapped(_:)), for: .touchUpInside)
         
-        // Level + Streak views
+        // Level + Streak views (tappable — opens profile)
         let levelView = makeStatView(
             icon: "shield",
             value: "\(ProgressDataManager.shared.currentLevel)",
-            iconColor: UIColor(red: 0.39, green: 0.40, blue: 0.94, alpha: 1.0)
+            iconColor: UIColor(red: 0.25, green: 0.52, blue: 1.0, alpha: 1.0)  // Blue
         )
         let streakView = makeStatView(
             icon: "flame",
@@ -349,8 +352,33 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
             iconColor: UIColor(red: 1.0, green: 0.55, blue: 0.15, alpha: 1.0)
         )
         
+        // Wrap stat views in tappable buttons
+        let levelButton = UIButton(type: .system)
+        levelButton.addSubview(levelView)
+        levelView.isUserInteractionEnabled = false
+        levelView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            levelView.topAnchor.constraint(equalTo: levelButton.topAnchor),
+            levelView.bottomAnchor.constraint(equalTo: levelButton.bottomAnchor),
+            levelView.leadingAnchor.constraint(equalTo: levelButton.leadingAnchor),
+            levelView.trailingAnchor.constraint(equalTo: levelButton.trailingAnchor),
+        ])
+        levelButton.addTarget(self, action: #selector(profileButtonTapped(_:)), for: .touchUpInside)
+        
+        let streakButton = UIButton(type: .system)
+        streakButton.addSubview(streakView)
+        streakView.isUserInteractionEnabled = false
+        streakView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            streakView.topAnchor.constraint(equalTo: streakButton.topAnchor),
+            streakView.bottomAnchor.constraint(equalTo: streakButton.bottomAnchor),
+            streakView.leadingAnchor.constraint(equalTo: streakButton.leadingAnchor),
+            streakView.trailingAnchor.constraint(equalTo: streakButton.trailingAnchor),
+        ])
+        streakButton.addTarget(self, action: #selector(profileButtonTapped(_:)), for: .touchUpInside)
+        
         // Single grouped view: [🛡 5  🔥 0  Avatar]
-        let rightStack = UIStackView(arrangedSubviews: [levelView, streakView, profileButton])
+        let rightStack = UIStackView(arrangedSubviews: [levelButton, streakButton, profileButton])
         rightStack.axis = .horizontal
         rightStack.spacing = 14
         rightStack.alignment = .center
@@ -479,18 +507,31 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
                 return section
                 
             case .continueLearning:
-                let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
+                let isSingleCard = learningItems.count <= 1
+
+                let itemSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .fractionalHeight(1.0)
+                )
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
-                
-                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.85), heightDimension: .estimated(190))
+
+                let groupWidth: NSCollectionLayoutDimension = isSingleCard
+                    ? .fractionalWidth(1.0)   // full width — one card fills the section
+                    : .fractionalWidth(0.85)  // peek — multiple cards scroll
+
+                let groupSize = NSCollectionLayoutSize(
+                    widthDimension: groupWidth,
+                    heightDimension: .estimated(195)
+                )
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-                
+
                 let section = NSCollectionLayoutSection(group: group)
-                section.orthogonalScrollingBehavior = .groupPaging
+                section.orthogonalScrollingBehavior = isSingleCard ? .none : .groupPaging
                 section.interGroupSpacing = 16
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: horizontalPadding, bottom: 16, trailing: horizontalPadding)
                 section.boundarySupplementaryItems = [headerItem]
                 return section
+
                 
             case .quickGames:
                 let size = NSCollectionLayoutSize(widthDimension: itemWidth, heightDimension: .absolute(130))

@@ -45,7 +45,7 @@ class ConnectionsLaunchingScreenViewController: UIViewController {
     
     private func setupUIElements() {
         // Mascot
-        mascotImageView.image = UIImage(named: "bot_find")
+        mascotImageView.image = UIImage(named: "Gemini_Generated_Image_y6xx8iy6xx8iy6xx-removebg-preview")
         mascotImageView.contentMode = .scaleAspectFit
         mascotImageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mascotImageView)

@@ -26,6 +26,7 @@ class DiagramGameViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        installQuitConfirmation() // ✅ Guard against accidental exits
         setupDiagramImage()
         setupGame()
     }

@@ -74,6 +74,7 @@ class ConnectionsViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        installQuitConfirmation() // ✅ Guard against accidental exits
         
         if let topicName = currentTopic?.name {
             self.title = "Connections: \(topicName)"

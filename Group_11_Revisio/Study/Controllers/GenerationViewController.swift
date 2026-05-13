@@ -492,8 +492,12 @@ class GenerationViewController: UIViewController {
                 )
                 
                 DispatchQueue.main.async {
-                    self.hideGenerationOverlay()
-                    self.handleSuccess(generatedContent: generatedText, topicName: topicName, sender: sender)
+                    self.hideGenerationOverlayWithCelebration(
+                        statusText: "\(self.currentGenerationType.description) Ready!",
+                        subtitle: "Your content has been generated 🎉"
+                    ) {
+                        self.handleSuccess(generatedContent: generatedText, topicName: topicName, sender: sender)
+                    }
                 }
                 
             } catch {
