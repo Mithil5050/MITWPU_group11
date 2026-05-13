@@ -31,6 +31,7 @@ class DailyChallengeViewController: UIViewController {
     private var revealUsed = false
     private var progressScore: Float = 0.0
     private var currentGuess = ""
+    private var gameStartTime: Date?
 
     // Loading UI
     private let loadingOverlayView = GameLoadingOverlayView(
@@ -198,6 +199,7 @@ class DailyChallengeViewController: UIViewController {
         self.engine = WordleEngine(answer: word)
         self.hints = hints.isEmpty ? ["No hints available for this word."] : hints
         self.wordDefinition = definition
+        self.gameStartTime = Date()
         loadingOverlayView.hide()
     }
     
@@ -495,7 +497,13 @@ class DailyChallengeViewController: UIViewController {
         if won {
             ProgressDataManager.shared.completeDailyChallenge()
             Task { await RevisioManager.shared.earnXP(amount: 15, reason: "Won Daily Wordle") }
-            ProgressDataManager.shared.logSession(minutes: 2.0, category: "Games")
+            let elapsedMinutes: Double
+            if let start = gameStartTime {
+                elapsedMinutes = Date().timeIntervalSince(start) / 60.0
+            } else {
+                elapsedMinutes = 2.0
+            }
+            ProgressDataManager.shared.logSession(minutes: max(elapsedMinutes, 1.0), category: "Games")
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {

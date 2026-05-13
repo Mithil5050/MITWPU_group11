@@ -30,7 +30,7 @@ class StudyChartModel: ObservableObject {
     @Published var dailyHistory: [[StudyData]] = [[]]
     @Published var weeklyHistory: [[StudyData]] = [[]]
     
-    init() { loadDummyData() }
+    init() { }
     
     func loadDummyData() {
         guard let url = Bundle.main.url(forResource: "ProgressLogData", withExtension: "json"),

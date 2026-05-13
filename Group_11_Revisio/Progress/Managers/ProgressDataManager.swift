@@ -20,7 +20,7 @@ class ProgressDataManager {
         return totalXP > 0 || userLevel > 1
     }
 
-    // XP the user currently holds towresrd the next level (the carry-over amount)
+    // XP the user currently holds toward the next level (the carry-over amount)
     var currentLevelXP: Int { return totalXP }
 
     // Convenience alias so existing call-sites that read `currentLevel` still compile
@@ -40,7 +40,7 @@ class ProgressDataManager {
     var pointsPerLevel: Int { return requiredXPForCurrentLevel }
 
     // Carry-over XP toward the next level.
-    // posts .xpDidUpdate for UI refresh, and syncs to Supabase.
+    // Posts .xpDidUpdate for UI refresh, and syncs to Supabase.
     var totalXP: Int {
         get { UserDefaults.standard.integer(forKey: "user_total_xp") }
         set {
@@ -79,8 +79,10 @@ class ProgressDataManager {
         6: 1700, 7: 2300, 8: 3000, 9: 3800, 10: 4700
     ]
 
+    // MARK: - Add XP
+
     func addXP(amount: Int, reason: String = "XP Earned") {
-        var carryXP = totalXP + amount
+        var carryXP      = totalXP + amount
         var workingLevel = userLevel
         let startingLevel = workingLevel
 
@@ -94,6 +96,18 @@ class ProgressDataManager {
 
         // Persist carry-over XP (fires .xpDidUpdate + Supabase sync via the setter)
         self.totalXP = carryXP
+
+        // ── STREAK DOT FIX ──────────────────────────────────────────────────────────
+        // Track today's accumulated XP. The moment it crosses 100 XP, mark today as a
+        // streak day so the calendar shows an orange dot.
+        // This covers all XP sources (quizzes, flashcards, notes, etc.),
+        // not just completeDailyChallenge.
+        let previousTodayXP = todayXP
+        todayXP = previousTodayXP + amount
+        if previousTodayXP < 100 && todayXP >= 100 {
+            markTodayAsStreakDay()
+        }
+        // ────────────────────────────────────────────────────────────────────────────
 
         // If level changed, persist and post a single "UserLeveledUp" notification
         if workingLevel > startingLevel {
@@ -113,20 +127,21 @@ class ProgressDataManager {
         return requiredXPForCurrentLevel
     }
 
-    // MARK: - Restore XP + Level + Streak + Badge Stats from Supabase on login / cold launch
+    // MARK: - Restore from Supabase on login / cold launch
+
     func restoreFromSupabase() {
         Task {
             do {
                 let profile = try await SupabaseManager.shared.loadUserProfile()
 
-                // 1. Sync core stats - Trust Cloud completely
+                // 1. Sync core stats — trust cloud completely
                 UserDefaults.standard.set(profile.totalXP,              forKey: "user_total_xp")
                 UserDefaults.standard.set(max(profile.currentLevel, 1), forKey: "user_current_level")
                 UserDefaults.standard.set(profile.currentStreak,        forKey: "user_current_streak")
 
                 print("✅ Profile Overwritten — XP: \(profile.totalXP), Level: \(profile.currentLevel)")
 
-                // 2. Sync ALL badge stat counters - Overwrite local data to fix the "Ashika" leak
+                // 2. Sync ALL badge stat counters — overwrite local data
                 UserDefaults.standard.set(profile.statQuizzesDone,   forKey: "stat_quizzes_done")
                 UserDefaults.standard.set(profile.statHighQuizzes,    forKey: "stat_high_quizzes")
                 UserDefaults.standard.set(profile.statDailySolved,    forKey: "stat_daily_solved")
@@ -140,13 +155,13 @@ class ProgressDataManager {
                 UserDefaults.standard.set(profile.statMessagesSent,   forKey: "stat_messages_sent")
                 UserDefaults.standard.set(profile.statDocsUploaded,   forKey: "stat_docs_uploaded")
 
-                // 3. Overwrite Badge IDs - DO NOT use .union here
+                // 3. Overwrite Badge IDs — do NOT use .union here
                 UserDefaults.standard.set(profile.earnedBadgeIds, forKey: "earned_badge_ids")
-                
+
                 // 4. Reset progress-only badges so they don't persist between users
                 UserDefaults.standard.set([], forKey: "unlocked_badge_ids")
 
-                // 5. Sync streak calendar dates
+                // 5. Sync streak calendar dot-dates from cloud
                 UserDefaults.standard.set(profile.streakDotDates, forKey: "streak_dot_dates")
 
                 // 6. Refresh the UI
@@ -159,6 +174,7 @@ class ProgressDataManager {
             }
         }
     }
+
     // MARK: - Counters (Badge Triggers)
 
     var totalQuizzesDone: Int {
@@ -258,6 +274,28 @@ class ProgressDataManager {
         }
     }
 
+    // MARK: - Streak Dot Date Tracking
+
+    /// Writes today's ISO date string into the "streak_dot_dates" array in UserDefaults.
+    /// The calendar decoration delegate reads from this key to paint orange dots.
+    /// Safe to call multiple times in a day — deduplicates automatically.
+    func markTodayAsStreakDay() {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]          // e.g. "2026-05-13"
+        let todayString = formatter.string(from: Date())
+
+        var dates = Set(UserDefaults.standard.stringArray(forKey: "streak_dot_dates") ?? [])
+        guard !dates.contains(todayString) else { return } // already marked today
+
+        dates.insert(todayString)
+        UserDefaults.standard.set(Array(dates), forKey: "streak_dot_dates")
+
+        // Sync updated dot-dates to Supabase so they survive reinstalls
+        Task { await SupabaseManager.shared.syncUserStats() }
+
+        print("🟠 Streak dot marked for \(todayString). Total dot-dates: \(dates.count)")
+    }
+
     // MARK: - Streak Logic
 
     var currentStreak: Int {
@@ -281,7 +319,7 @@ class ProgressDataManager {
 
     func completeDailyChallenge() {
         let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
+        let today    = calendar.startOfDay(for: Date())
 
         if let lastDate = lastChallengeCompletionDate {
             let lastStart = calendar.startOfDay(for: lastDate)
@@ -293,13 +331,19 @@ class ProgressDataManager {
             if calendar.isDate(lastStart, inSameDayAs: yesterday) {
                 currentStreak += 1   // consecutive day — extend streak
             } else {
-                currentStreak = 1    // gap in streak — reset
+                currentStreak = 1    // gap — reset
             }
         } else {
             currentStreak = 1        // first-ever completion
         }
 
         lastChallengeCompletionDate = today
+
+        // ── STREAK DOT FIX ──────────────────────────────────────────────────────────
+        // Always mark today as a streak dot when the daily challenge is completed,
+        // regardless of whether 100 XP has been accumulated yet via addXP().
+        markTodayAsStreakDay()
+        // ────────────────────────────────────────────────────────────────────────────
 
         // Award 100 XP for today's streak day (once per calendar day)
         if let lastXPDate = lastStreakXPDate, calendar.isDate(lastXPDate, inSameDayAs: today) {
@@ -311,6 +355,8 @@ class ProgressDataManager {
 
         totalDailyChallengesSolved += 1
     }
+
+    // MARK: - Badge ID Storage
 
     // IDs of badges that have been unlocked (put in progress). Stored in UserDefaults.
     private var unlockedBadgeIDs: Set<String> {
@@ -327,6 +373,8 @@ class ProgressDataManager {
         }
     }
 
+    // MARK: - Badge Unlock Checks
+
     private func checkBadgeUnlocks(for category: Badging.BadgeCategory, newValue: Int) {
         guard newValue > 0 else { return }
 
@@ -341,7 +389,7 @@ class ProgressDataManager {
         for (index, badge) in badgesInCategory.enumerated() {
             guard badge.goalValue > 0 else { continue }
 
-            // ── UNLOCK: badge becomes visible and enters "in progress"
+            // UNLOCK: badge becomes visible and enters "in progress"
             let shouldUnlock: Bool
             if index == 0 {
                 // Bronze: first ever attempt in this category
@@ -406,6 +454,7 @@ class ProgressDataManager {
     }
 
     // MARK: - Session Logging for Progress Chart
+
     func logSession(minutes: Double, category: String) {
         let entry = LogHistoryItem(
             id: UUID().uuidString,
@@ -427,14 +476,16 @@ class ProgressDataManager {
     }
 
     private func loadSessionHistory() {
-        guard let data = UserDefaults.standard.data(forKey: "session_history_v1"),
+        guard let data   = UserDefaults.standard.data(forKey: "session_history_v1"),
               let loaded = try? JSONDecoder().decode([LogHistoryItem].self, from: data) else { return }
         history = loaded
     }
 
     private func persistXPHistory() {
         let fmt = ISO8601DateFormatter()
-        let raw = xpHistory.map { ["desc": $0.description, "amt": "\($0.amount)", "date": fmt.string(from: $0.date)] }
+        let raw = xpHistory.map {
+            ["desc": $0.description, "amt": "\($0.amount)", "date": fmt.string(from: $0.date)]
+        }
         if let data = try? JSONEncoder().encode(raw) {
             UserDefaults.standard.set(data, forKey: "xp_history_v1")
         }
@@ -442,6 +493,8 @@ class ProgressDataManager {
 
     private init() { loadSessionHistory() }
 }
+
+// MARK: - Notification Name
 
 extension Notification.Name {
     static let xpDidUpdate = Notification.Name("xpDidUpdate")
