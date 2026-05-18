@@ -119,7 +119,7 @@ class SupabaseManager {
         if let topic = attachment.topic {
             let encoded = topic.materialType
                 .addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? topic.materialType
-            fileUrl = "revisio://material/\(encoded)/\(topic.id.uuidString)"
+            fileUrl = "reviseq://material/\(encoded)/\(topic.id.uuidString)"
         } else {
             fileUrl = attachment.displayName
         }
@@ -576,7 +576,7 @@ let supabase = SupabaseManager.shared.client
 //
 //    // MARK: - 5. Send Attachment (study material or file from document/photo picker)
 //    // file_type: "document" | "image" | "link"
-//    // For Topics:   file_url = "revisio://material/<materialType>/<topicId>"
+//    // For Topics:   file_url = "reviseq://material/<materialType>/<topicId>"
 //    // For Sources:  file_url = source.name (no actual URL stored locally)
 //    // For real uploads (photo/doc) the caller builds the insert directly after uploading to Storage
 //    func sendAttachment(groupId: String,
@@ -589,7 +589,7 @@ let supabase = SupabaseManager.shared.client
 //        if let topic = attachment.topic {
 //            let encoded = topic.materialType
 //                .addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? topic.materialType
-//            fileUrl = "revisio://material/\(encoded)/\(topic.id.uuidString)"
+//            fileUrl = "reviseq://material/\(encoded)/\(topic.id.uuidString)"
 //        } else {
 //            fileUrl = attachment.displayName
 //        }

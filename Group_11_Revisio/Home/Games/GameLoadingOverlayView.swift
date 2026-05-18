@@ -1,6 +1,6 @@
 import UIKit
 
-/// A reusable, premium loading overlay for all Revisio game screens.
+/// A reusable, premium loading overlay for all ReviseQ game screens.
 /// Features the bot mascot, animated pulse, spinner, and customizable message.
 final class GameLoadingOverlayView: UIView {
 

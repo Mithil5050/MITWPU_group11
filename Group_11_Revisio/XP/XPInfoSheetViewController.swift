@@ -84,7 +84,7 @@ class XPInfoSheetViewController: UIViewController {
         contentStack.addArrangedSubview(headingStack)
 
         contentStack.addArrangedSubview(makeBody(
-            "XP measures your learning activity across Revisio. " +
+            "XP measures your learning activity across ReviseQ. " +
             "The more you study, the faster you level up."
         ))
         
