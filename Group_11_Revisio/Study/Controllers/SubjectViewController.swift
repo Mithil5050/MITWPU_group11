@@ -959,11 +959,11 @@ extension SubjectViewController: UIDocumentPickerDelegate, UIImagePickerControll
 }
 extension SubjectViewController: QLPreviewControllerDataSource {
     func numberOfPreviewItems(in controller: QLPreviewController) -> Int {
-        return 1
+        return currentPreviewURL == nil ? 0 : 1
     }
 
     func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {
-        return currentPreviewURL! as QLPreviewItem
+        return (currentPreviewURL ?? URL(fileURLWithPath: "")) as QLPreviewItem
     }
 }
 
