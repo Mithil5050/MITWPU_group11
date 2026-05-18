@@ -6,31 +6,35 @@
 //
 
 import UIKit
+import GoogleSignIn // Added for Google Auth
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+
+        // Initialize Google Sign-In with your iOS Client ID from GoogleService-Info.plist
+        GIDSignIn.sharedInstance.configuration = GIDConfiguration(
+            clientID: "858933947587-ftgf8jrrlp55tdb9j21j8k43stc92k62.apps.googleusercontent.com"
+        )
+
         return true
     }
-    
+
+    // Handle URL schemes via the UIScene lifecycle (iOS 26+) and legacy app-level callback.
+    // UIApplication.OpenURLOptionsKey is deprecated in iOS 26; keep the signature but suppress
+    // the warning by annotating with @available.
+    @available(iOS, deprecated: 26, message: "Use UIScene lifecycle instead")
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        return GIDSignIn.sharedInstance.handle(url)
+    }
+
     // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        // Called when a new scene session is being created.
-        // Use this method to select a configuration to create the new scene with.
         return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
-        // Called when the user discards a scene session.
-        // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
-        // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
-
-
 }
-

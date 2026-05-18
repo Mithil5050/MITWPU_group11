@@ -2,6 +2,36 @@ import Foundation
 import UIKit
 import Supabase
 
+// MARK: - Date Utilities
+extension Date {
+    /// Returns an ISO 8601 string representation for storage
+    var iso8601String: String {
+        return ISO8601DateFormatter().string(from: self)
+    }
+
+    /// Returns a human-readable relative time string
+    var relativeString: String {
+        let seconds = Int(Date().timeIntervalSince(self))
+        if seconds < 60 { return "Just now" }
+        if seconds < 3600 { let m = seconds / 60; return "\(m) minute\(m == 1 ? "" : "s") ago" }
+        if seconds < 86400 { let h = seconds / 3600; return "\(h) hour\(h == 1 ? "" : "s") ago" }
+        if seconds < 172800 { return "Yesterday" }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return formatter.string(from: self)
+    }
+}
+
+extension String {
+    /// If this string is an ISO 8601 date, returns a relative time. Otherwise returns self as-is.
+    var asRelativeTime: String {
+        if let date = ISO8601DateFormatter().date(from: self) {
+            return date.relativeString
+        }
+        return self // Legacy strings like "Just now" pass through unchanged
+    }
+}
+
 // MARK: - Models
 enum StudyItem: Codable {
     case topic(Topic)
@@ -12,22 +42,22 @@ class DataManager {
     static let materialsKey = "Materials"
     static let sourcesKey = "Sources"
     static let shared = DataManager()
-    
+
     var savedMaterials: [String: [String: [StudyItem]]] = [:]
-    
+
     var groupMessages: [String: [Message]] = [:]
-    
+
     // ✅ 1. CREATE A SERIAL QUEUE: This stops saves from racing and overwriting each other.
     private let diskQueue = DispatchQueue(label: "com.app.datamanager.diskQueue", qos: .utility)
-    
+
     private var fileURL: URL {
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         return documentDirectory.appendingPathComponent("StudyData.json")
     }
-    
+
     private init() {
         loadFromDisk()
-        
+
         if savedMaterials.isEmpty {
             DispatchQueue.main.async {
                 self.setupDefaultData()
@@ -35,7 +65,7 @@ class DataManager {
             }
         }
     }
-    
+
     // MARK: - Save AI Content Function
     func saveGeneratedTopic(name: String,
                             subject: String,
@@ -44,21 +74,21 @@ class DataManager {
                             questions: [QuizQuestion]? = nil,
                             sourceName: String? = nil,
                             createdDate: String? = nil) -> Topic {
-        
+
         let folder = subject.isEmpty ? "General Study" : subject
-        
+
         var finalLargeBody: String = ""
-        var finalNotes: String? = nil
-        var finalCheatsheet: String? = nil
-        
+        var finalNotes: String?
+        var finalCheatsheet: String?
+
         if type == "Quiz", let quizData = questions, !quizData.isEmpty {
             finalLargeBody = quizData.map { q in
                 var options = q.answers
                 while options.count < 4 { options.append("-") }
                 let safeOptions = options.prefix(4).joined(separator: "|")
-                return "\(q.questionText)|\(safeOptions)|\(q.correctAnswerIndex)|\(q.hint ?? "No Hint")"
+                return "\(q.questionText)|\(safeOptions)|\(q.correctAnswerIndex)|\(q.hint)"
             }.joined(separator: "\n")
-            
+
         } else if type == "Flashcards" {
             finalLargeBody = notes ?? ""
         } else if type == "Cheatsheet" {
@@ -66,12 +96,13 @@ class DataManager {
         } else {
             finalNotes = notes
         }
-        
+
         let cleanSourceName = (sourceName ?? name).replacingOccurrences(of: ".txt", with: "").replacingOccurrences(of: "Link_", with: "")
-        
+
+        let now = Date().iso8601String
         let newTopic = Topic(
             name: name,
-            lastAccessed: "Just now",
+            lastAccessed: now,
             materialType: type,
             parentSubjectName: folder,
             quizQuestions: questions,
@@ -79,9 +110,9 @@ class DataManager {
             notesContent: finalNotes,
             cheatsheetContent: finalCheatsheet,
             sourceName: cleanSourceName,
-            createdDate: createdDate ?? "Just now"
+            createdDate: now
         )
-        
+
         addTopic(to: folder, topic: newTopic)
         print("💾 DataManager: Successfully saved \(type): \(name)")
         return newTopic
@@ -113,34 +144,34 @@ class DataManager {
             return score(t1.lastAccessed) < score(t2.lastAccessed)
         }
     }
-    
+
     // MARK: - File Import Logic
     func importFile(url: URL, subject: String) {
         let fileManager = FileManager.default
         let docDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let destURL = docDir.appendingPathComponent(url.lastPathComponent)
-        
+
         do {
             if fileManager.fileExists(atPath: destURL.path) {
                 try fileManager.removeItem(at: destURL)
             }
-            
+
             let accessing = url.startAccessingSecurityScopedResource()
             try fileManager.copyItem(at: url, to: destURL)
             if accessing { url.stopAccessingSecurityScopedResource() }
-            
+
             let attr = try? fileManager.attributesOfItem(atPath: destURL.path)
             let fileSize = attr?[.size] as? Int64 ?? 0
             let sizeString = ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file)
-            
+
             let newSource = Source(
                 name: url.lastPathComponent,
                 fileType: url.pathExtension.uppercased(),
                 size: sizeString
             )
-            
+
             saveContent(subject: subject, content: newSource)
-            
+
         } catch {
             print("❌ Error importing file: \(error)")
         }
@@ -148,37 +179,37 @@ class DataManager {
     // MARK: - Manual Source Addition
     func addSource(to subjectName: String, source: Source) {
         let folder = subjectName.isEmpty ? "General Study" : subjectName
-        
+
         // 1. Ensure the folder exists
         if savedMaterials[folder] == nil {
             addFolder(name: folder)
         }
-        
+
         // 2. Wrap the source into the StudyItem enum
         let newItem = StudyItem.source(source)
-        
+
         // 3. Update the specific "Sources" list for this subject
         var subjectData = savedMaterials[folder]!
         var sources = subjectData[DataManager.sourcesKey] ?? []
-        
+
         // 4. (Optional) Prevent duplicates by name
         sources.removeAll { item in
             if case .source(let s) = item { return s.name == source.name }
             return false
         }
-        
+
         sources.append(newItem)
-        
+
         // 5. Save back to memory and disk
         subjectData[DataManager.sourcesKey] = sources
         savedMaterials[folder] = subjectData
-        
+
         saveToDisk()
-        
+
         // 6. Refresh the UI instantly
         postUpdateNotification()
     }
-    
+
     // MARK: - Folder Management
     func addFolder(name: String) {
         if savedMaterials.keys.contains(name) { return }
@@ -189,31 +220,31 @@ class DataManager {
         saveToDisk()
         postUpdateNotification()
     }
-    
+
     func deleteFolder(name: String) {
         savedMaterials.removeValue(forKey: name)
         saveToDisk()
         postUpdateNotification()
     }
-    
+
     func createNewSubjectFolder(name: String) { addFolder(name: name) }
     func deleteSubjectFolder(name: String) { deleteFolder(name: name) }
-    
-    //MARK: - Group messages
+
+    // MARK: - Group messages
     func loadMessages(for groupId: String) async {
-        
+
         do {
             let messages = try await SupabaseManager.shared.fetchMessages(for: groupId)
-            
+
             groupMessages[groupId] = messages
-            
+
             print("✅ Messages loaded for group:", groupId)
-            
+
         } catch {
             print("❌ Failed to fetch messages:", error)
         }
     }
-    
+
     // MARK: - ✅ 2. BULLETPROOF PERSISTENCE
     func saveToDisk() {
         let dataToSave = savedMaterials
@@ -230,7 +261,7 @@ class DataManager {
             }
         }
     }
-    
+
     func loadFromDisk() {
         guard FileManager.default.fileExists(atPath: fileURL.path) else { return }
         do {
@@ -240,40 +271,40 @@ class DataManager {
             print("❌ Error loading: \(error)")
         }
     }
-    
+
     // MARK: - Topic Management
     func addTopic(to subjectName: String, topic: Topic) {
         let folder = subjectName.isEmpty ? "General Study" : subjectName
-        
+
         if savedMaterials[folder] == nil {
             addFolder(name: folder)
         }
-        
+
         var subjectData = savedMaterials[folder]!
         var materials = subjectData[DataManager.materialsKey] ?? []
-        
+
         materials.removeAll { item in
             if case .topic(let t) = item {
                 return t.name == topic.name && t.materialType == topic.materialType
             }
             return false
         }
-        
+
         materials.append(.topic(topic))
-        
+
         subjectData[DataManager.materialsKey] = materials
         savedMaterials[folder] = subjectData
-        
+
         postUpdateNotification()
         saveToDisk()
-        
+
         Task { await SupabaseManager.shared.backupTopic(topic) }
     }
-    
+
     func saveContent(subject: String, content: Any) {
         let segmentKey: String
         let wrappedItem: StudyItem
-        
+
         if let topic = content as? Topic {
             segmentKey = DataManager.materialsKey
             wrappedItem = .topic(topic)
@@ -281,37 +312,37 @@ class DataManager {
             segmentKey = DataManager.sourcesKey
             wrappedItem = .source(source)
         } else { return }
-        
+
         if savedMaterials[subject] == nil {
             addFolder(name: subject)
         }
-        
+
         if segmentKey == DataManager.sourcesKey, let source = content as? Source {
             savedMaterials[subject]?[segmentKey]?.removeAll(where: { item in
                 if case .source(let s) = item { return s.name == source.name }
                 return false
             })
         }
-        
+
         savedMaterials[subject]?[segmentKey]?.append(wrappedItem)
         postUpdateNotification()
         saveToDisk()
     }
-    
+
     func renameSubject(oldName: String, newName: String) {
         guard oldName != newName, let data = savedMaterials[oldName] else { return }
         savedMaterials[newName] = data
         savedMaterials.removeValue(forKey: oldName)
-        
+
         postUpdateNotification()
         saveToDisk()
     }
-    
+
     func deleteItems(subjectName: String, items: [Any]) {
         guard var subjectData = savedMaterials[subjectName] else { return }
         var materials = subjectData[DataManager.materialsKey] ?? []
         var sources = subjectData[DataManager.sourcesKey] ?? []
-        
+
         for item in items {
             if let topic = item as? Topic {
                 materials.removeAll { if case .topic(let t) = $0 {
@@ -323,19 +354,19 @@ class DataManager {
                 }; return false }
             }
         }
-        
+
         subjectData[DataManager.materialsKey] = materials
         subjectData[DataManager.sourcesKey] = sources
         savedMaterials[subjectName] = subjectData
-        
+
         postUpdateNotification()
         saveToDisk()
     }
-    
+
     func moveItems(items: [Any], from sourceSubject: String, to destinationSubject: String) {
         guard sourceSubject != destinationSubject else { return }
         deleteItems(subjectName: sourceSubject, items: items)
-        
+
         for item in items {
             if var topic = item as? Topic {
                 topic.parentSubjectName = destinationSubject
@@ -345,7 +376,7 @@ class DataManager {
             }
         }
     }
-    
+
     // MARK: - Content Getters & Updaters
     func getTopic(subjectName: String, topicName: String, type: String? = nil) -> Topic? {
         guard let materials = savedMaterials[subjectName]?[DataManager.materialsKey] else { return nil }
@@ -362,13 +393,13 @@ class DataManager {
         }
         return nil
     }
-    
+
     func getDetailedContent(for subjectName: String, topicName: String) -> String {
         guard let subjectData = savedMaterials[subjectName],
               let materials = subjectData[DataManager.materialsKey] else {
             return "Content not found."
         }
-        
+
         for item in materials {
             if case .topic(let topic) = item, topic.name == topicName {
                 if let cheatsheet = topic.cheatsheetContent, !cheatsheet.isEmpty { return cheatsheet }
@@ -383,7 +414,7 @@ class DataManager {
     func updateTopic(subjectName: String, topic: Topic) {
         guard var subjectData = savedMaterials[subjectName] else { return }
         var materials = subjectData[DataManager.materialsKey] ?? []
-        
+
         if let index = materials.firstIndex(where: { item in
             if case .topic(let t) = item { return t.name == topic.name && t.materialType == topic.materialType }
             return false
@@ -391,20 +422,20 @@ class DataManager {
             materials[index] = .topic(topic)
             subjectData[DataManager.materialsKey] = materials
             savedMaterials[subjectName] = subjectData
-            
+
             postUpdateNotification()
             saveToDisk()
-            
+
             Task { await SupabaseManager.shared.backupTopic(topic) }
         }
     }
-    
+
     func updateTopicContent(subject: String, topicName: String, newText: String, type: String = "Notes") {
         guard var materials = savedMaterials[subject]?[DataManager.materialsKey] else { return }
-        
+
         for (index, item) in materials.enumerated() {
             if case .topic(var topic) = item, topic.name == topicName {
-                
+
                 if type == "Notes" {
                     topic.notesContent = newText
                 } else if type == "Cheatsheet" {
@@ -412,23 +443,23 @@ class DataManager {
                 } else {
                     topic.largeContentBody = newText
                 }
-                
+
                 materials[index] = .topic(topic)
                 savedMaterials[subject]?[DataManager.materialsKey] = materials
                 saveToDisk()
-                
+
                 Task { await SupabaseManager.shared.backupTopic(topic) }
                 break
             }
         }
     }
-    
+
     func renameMaterial(subjectName: String, item: Any, newName: String) {
         guard var subjectDict = savedMaterials[subjectName] else { return }
         let keys = [DataManager.materialsKey, DataManager.sourcesKey]
-        
+
         for key in keys {
-            if var items = subjectDict[key] as? [StudyItem] {
+            if var items = subjectDict[key] {
                 if let index = items.firstIndex(where: { existingItem in
                     switch (existingItem, item) {
                     case (.topic(let t1), let t2 as Topic): return t1.name == t2.name && t1.materialType == t2.materialType
@@ -446,11 +477,11 @@ class DataManager {
                         source.name = newName
                         updatedItem = .source(source)
                     }
-                    
+
                     items[index] = updatedItem
                     subjectDict[key] = items
                     savedMaterials[subjectName] = subjectDict
-                    
+
                     postUpdateNotification()
                     saveToDisk()
                     return
@@ -458,7 +489,7 @@ class DataManager {
             }
         }
     }
-    
+
     // ✅ 3. MAIN THREAD NOTIFICATION HELPER
     // Guarantees that when the UI listens for updates, it refreshes instantly on the main thread
     private func postUpdateNotification() {
@@ -467,7 +498,7 @@ class DataManager {
             NotificationCenter.default.post(name: .didUpdateStudyFolders, object: nil)
         }
     }
-    
+
     private func setupDefaultData() {
         // Empty by design
     }

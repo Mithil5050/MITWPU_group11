@@ -43,6 +43,7 @@
                                         <color key="highlightedColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </label>
                                 </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="prog" secondAttribute="trailing" id="R3l-sK-ehR"/>
                                 </constraints>
@@ -56,7 +57,7 @@
                                 </constraints>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" white="0.10000000000000001" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="1MU-jv-TIv" secondAttribute="trailing" constant="15" id="KZe-zI-V41"/>
                             <constraint firstItem="jzo-t4-jh4" firstAttribute="centerY" secondItem="bgView" secondAttribute="centerY" id="RKC-wj-lHD"/>

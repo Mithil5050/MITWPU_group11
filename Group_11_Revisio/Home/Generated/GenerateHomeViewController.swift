@@ -9,34 +9,38 @@ struct HomeParsedAIFlashcard: Codable {
     let back: String?
     let term: String?
     let definition: String?
-    
+    let keyword: String?
+
     var safeFront: String {
         return front ?? term ?? "Term"
     }
     var safeBack: String {
         return back ?? definition ?? "Definition"
     }
+    var safeKeyword: String {
+        return keyword ?? safeFront // fallback to front term if not generated
+    }
 }
 
 @IBDesignable
 class TappableCardView: UIControl {
-    
+
     private let stackView = UIStackView()
     private let iconImageView = UIImageView()
     private let titleLabel = UILabel()
     private var highlightColor: UIColor = .systemBlue
     private var defaultBackgroundColor: UIColor = .secondarySystemGroupedBackground
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
     }
-    
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupView()
     }
-    
+
     private func setupView() {
         self.backgroundColor = defaultBackgroundColor
         self.layer.cornerRadius = 16
@@ -44,29 +48,29 @@ class TappableCardView: UIControl {
         self.layer.shadowOpacity = 0.05
         self.layer.shadowOffset = CGSize(width: 0, height: 2)
         self.layer.shadowRadius = 4
-        
+
         iconImageView.contentMode = .scaleAspectFit
         NSLayoutConstraint.activate([
             iconImageView.widthAnchor.constraint(equalToConstant: 40),
             iconImageView.heightAnchor.constraint(equalToConstant: 40)
         ])
-        
+
         titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         titleLabel.textColor = .label
         titleLabel.numberOfLines = 1
         titleLabel.textAlignment = .center
-        
+
         stackView.axis = .vertical
         stackView.spacing = 10
         stackView.alignment = .center
         stackView.isUserInteractionEnabled = false
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        
+
         stackView.addArrangedSubview(iconImageView)
         stackView.addArrangedSubview(titleLabel)
-        
+
         addSubview(stackView)
-        
+
         NSLayoutConstraint.activate([
             stackView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
             stackView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
@@ -74,7 +78,7 @@ class TappableCardView: UIControl {
             stackView.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: -8)
         ])
     }
-    
+
     func configure(iconName: String, title: String, iconColor: UIColor) {
         let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)
         iconImageView.image = UIImage(systemName: iconName, withConfiguration: config)
@@ -82,7 +86,7 @@ class TappableCardView: UIControl {
         iconImageView.tintColor = iconColor
         self.highlightColor = iconColor
     }
-    
+
     override var isSelected: Bool {
         didSet {
             self.backgroundColor = defaultBackgroundColor
@@ -90,7 +94,7 @@ class TappableCardView: UIControl {
             self.layer.borderColor = isSelected ? highlightColor.cgColor : nil
         }
     }
-    
+
     override var isHighlighted: Bool {
         didSet {
             UIView.animate(withDuration: 0.1) {
@@ -99,19 +103,19 @@ class TappableCardView: UIControl {
             }
         }
     }
-    
+
     override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
         isHighlighted = true
         return true
     }
-    
+
     override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
         isHighlighted = false
         if let touch = touch, bounds.contains(touch.location(in: self)) {
             sendActions(for: .touchUpInside)
         }
     }
-    
+
     override func cancelTracking(with event: UIEvent?) {
         isHighlighted = false
     }
@@ -125,7 +129,7 @@ class GenerateHomeViewController: UIViewController {
     var selectedMaterialType: GenerationType = .none
     var inputSourceData: [Any]?
     var contextSubjectTitle: String?
-    
+
     var selectedCount: Int = 10
     var selectedTime: Int = 15
     var currentDifficulty: DifficultyLevel = .medium
@@ -135,7 +139,7 @@ class GenerateHomeViewController: UIViewController {
     }
 
     @IBOutlet weak var startCreationButton: UIButton!
-    
+
     @IBOutlet weak var quizCardView: TappableCardView!
     @IBOutlet weak var flashcardsCardView: TappableCardView!
     @IBOutlet weak var notesCardView: TappableCardView!
@@ -144,40 +148,40 @@ class GenerateHomeViewController: UIViewController {
     @IBOutlet weak var quizConfigurationView: UIView!
     @IBOutlet weak var flashcardConfigurationView: UIView!
     @IBOutlet weak var defaultConfigurationPlaceholder: UIView!
-    
+
     private let flashcardCountStepper = UIStepper()
     private let flashcardCountLabel = UILabel()
-    
+
     private let quizCountStepper = UIStepper()
     private let quizCountLabel = UILabel()
     private let quizTimerStepper = UIStepper()
     private let quizTimerLabel = UILabel()
-    
+
     private let easyButton = UIButton(type: .system)
     private let mediumButton = UIButton(type: .system)
     private let hardButton = UIButton(type: .system)
     private var allDifficultyButtons: [UIButton] = []
-    
+
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCards()
         setupProgrammaticUI()
-        
+
         startCreationButton.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        
+
         handleCardSelection(selectedCard: quizCardView, type: .quiz)
         updateDifficultyUI()
         setupLoadingIndicator()
     }
-    
+
     private func setupLoadingIndicator() {
         loadingIndicator.hidesWhenStopped = true
         loadingIndicator.color = .systemBlue
         loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(loadingIndicator)
-        
+
         NSLayoutConstraint.activate([
             loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
@@ -189,90 +193,90 @@ class GenerateHomeViewController: UIViewController {
         let flashcardColor = UIColor(hex: "5AC8FA")
         let notesColor = UIColor(hex: "FF9F0A")
         let cheatsheetColor = UIColor(hex: "BF5AF2")
-        
+
         quizCardView.configure(iconName: "timer", title: "Quiz", iconColor: quizColor)
         flashcardsCardView.configure(iconName: "rectangle.on.rectangle.angled", title: "Flashcards", iconColor: flashcardColor)
         notesCardView.configure(iconName: "book.pages", title: "Notes", iconColor: notesColor)
         cheatsheetCardView.configure(iconName: "list.clipboard", title: "Cheatsheet", iconColor: cheatsheetColor)
-        
+
         quizCardView.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             self.handleCardSelection(selectedCard: self.quizCardView, type: .quiz)
         }, for: .touchUpInside)
-        
+
         flashcardsCardView.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             self.handleCardSelection(selectedCard: self.flashcardsCardView, type: .flashcards)
         }, for: .touchUpInside)
-        
+
         notesCardView.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             self.handleCardSelection(selectedCard: self.notesCardView, type: .notes)
         }, for: .touchUpInside)
-        
+
         cheatsheetCardView.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             self.handleCardSelection(selectedCard: self.cheatsheetCardView, type: .cheatsheet)
         }, for: .touchUpInside)
-        
+
         startCreationButton.layer.cornerRadius = 14
     }
-    
+
     private func setupProgrammaticUI() {
         guard let quizConfigView = quizConfigurationView,
               let flashcardConfigView = flashcardConfigurationView else { return }
-        
+
         quizConfigView.subviews.forEach { $0.removeFromSuperview() }
         flashcardConfigView.subviews.forEach { $0.removeFromSuperview() }
-        
+
         quizCountStepper.minimumValue = 5
         quizCountStepper.maximumValue = 30
         quizCountStepper.stepValue = 5
         quizCountStepper.value = Double(selectedCount)
         quizCountLabel.text = "\(selectedCount)"
         quizCountStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
-        
+
         quizTimerStepper.minimumValue = 5
         quizTimerStepper.maximumValue = 60
         quizTimerStepper.stepValue = 5
         quizTimerStepper.value = Double(selectedTime)
         quizTimerLabel.text = "\(selectedTime)"
         quizTimerStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
-        
+
         let qSettingsTitle = createTitleLabel("Settings")
         let qCountRow = createConfigRow(title: "Number of questions", stepper: quizCountStepper, label: quizCountLabel)
         let qTimeRow = createConfigRow(title: "Time Limit (minutes)", stepper: quizTimerStepper, label: quizTimerLabel)
-        
+
         let quizStack = UIStackView(arrangedSubviews: [qSettingsTitle, qCountRow, qTimeRow])
         quizStack.axis = .vertical
         quizStack.spacing = 24
         quizStack.translatesAutoresizingMaskIntoConstraints = false
-        
+
         quizConfigView.addSubview(quizStack)
         NSLayoutConstraint.activate([
             quizStack.leadingAnchor.constraint(equalTo: quizConfigView.leadingAnchor, constant: 4),
             quizStack.trailingAnchor.constraint(equalTo: quizConfigView.trailingAnchor, constant: -4),
             quizStack.topAnchor.constraint(equalTo: quizConfigView.topAnchor, constant: 8)
         ])
-        
+
         flashcardCountStepper.minimumValue = 5
         flashcardCountStepper.maximumValue = 30
         flashcardCountStepper.stepValue = 5
         flashcardCountStepper.value = Double(selectedCount)
         flashcardCountLabel.text = "\(selectedCount)"
         flashcardCountStepper.addTarget(self, action: #selector(stepperValueChanged(_:)), for: .valueChanged)
-        
+
         let fcSettingsTitle = createTitleLabel("Settings")
         let fcCountRow = createConfigRow(title: "Number of flashcards", stepper: flashcardCountStepper, label: flashcardCountLabel)
         let diffTitle = createTitleLabel("Level of Difficulty", font: .systemFont(ofSize: 16, weight: .regular))
         let fcDiffStack = createDifficultyRow()
-        
+
         let fcMainStack = UIStackView(arrangedSubviews: [fcSettingsTitle, fcCountRow, diffTitle, fcDiffStack])
         fcMainStack.axis = .vertical
         fcMainStack.spacing = 16
         fcMainStack.setCustomSpacing(24, after: fcCountRow)
         fcMainStack.translatesAutoresizingMaskIntoConstraints = false
-        
+
         flashcardConfigView.addSubview(fcMainStack)
         NSLayoutConstraint.activate([
             fcMainStack.leadingAnchor.constraint(equalTo: flashcardConfigView.leadingAnchor, constant: 4),
@@ -280,7 +284,7 @@ class GenerateHomeViewController: UIViewController {
             fcMainStack.topAnchor.constraint(equalTo: flashcardConfigView.topAnchor, constant: 8)
         ])
     }
-    
+
     private func createTitleLabel(_ text: String, font: UIFont = .systemFont(ofSize: 17, weight: .semibold)) -> UILabel {
         let lbl = UILabel()
         lbl.text = text
@@ -288,34 +292,34 @@ class GenerateHomeViewController: UIViewController {
         lbl.textColor = .label
         return lbl
     }
-    
+
     private func createConfigRow(title: String, stepper: UIStepper, label: UILabel) -> UIStackView {
         let titleLabel = UILabel()
         titleLabel.text = title
         titleLabel.font = .systemFont(ofSize: 16, weight: .regular)
-        
+
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
         label.widthAnchor.constraint(equalToConstant: 30).isActive = true
-        
+
         let rightStack = UIStackView(arrangedSubviews: [label, stepper])
         rightStack.spacing = 12
         rightStack.alignment = .center
-        
+
         let mainStack = UIStackView(arrangedSubviews: [titleLabel, rightStack])
         mainStack.axis = .horizontal
         mainStack.distribution = .equalSpacing
         mainStack.alignment = .center
         return mainStack
     }
-    
+
     private func createDifficultyRow() -> UIStackView {
         easyButton.setTitle("Easy", for: .normal)
         mediumButton.setTitle("Medium", for: .normal)
         hardButton.setTitle("Hard", for: .normal)
-        
+
         allDifficultyButtons = [easyButton, mediumButton, hardButton]
-        
+
         for btn in allDifficultyButtons {
             btn.layer.cornerRadius = 8
             btn.clipsToBounds = true
@@ -323,7 +327,7 @@ class GenerateHomeViewController: UIViewController {
             btn.addTarget(self, action: #selector(difficultyButtonTapped(_:)), for: .touchUpInside)
             btn.heightAnchor.constraint(equalToConstant: 34).isActive = true
         }
-        
+
         let stack = UIStackView(arrangedSubviews: allDifficultyButtons)
         stack.axis = .horizontal
         stack.distribution = .fillEqually
@@ -335,7 +339,7 @@ class GenerateHomeViewController: UIViewController {
         for button in allDifficultyButtons {
             button.backgroundColor = UIColor.secondarySystemFill
             button.setTitleColor(UIColor.systemGray, for: .normal)
-            
+
             let title = button.title(for: .normal)
             if title == "Easy" && currentDifficulty == .easy {
                 button.backgroundColor = UIColor.systemGreen
@@ -352,22 +356,22 @@ class GenerateHomeViewController: UIViewController {
 
     private func handleCardSelection(selectedCard: TappableCardView, type: GenerationType) {
         self.selectedMaterialType = type
-        
+
         let allCards = [quizCardView, flashcardsCardView, notesCardView, cheatsheetCardView]
         allCards.forEach { $0?.isSelected = ($0 === selectedCard) }
-        
+
         quizConfigurationView.isHidden = (type != .quiz)
         flashcardConfigurationView.isHidden = (type != .flashcards)
-        
+
         let isPlaceholderVisible = (type == .notes || type == .cheatsheet)
         defaultConfigurationPlaceholder.isHidden = !isPlaceholderVisible
-        
+
         if type == .quiz {
             selectedCount = Int(quizCountStepper.value)
         } else if type == .flashcards {
             selectedCount = Int(flashcardCountStepper.value)
         }
-        
+
         let title = (type == .none) ? "Start Creation" : "Generate \(type.description)"
         startCreationButton.setTitle(title, for: .normal)
     }
@@ -387,18 +391,16 @@ class GenerateHomeViewController: UIViewController {
         let generator = UISelectionFeedbackGenerator()
         generator.selectionChanged()
     }
-    
+
     @objc func difficultyButtonTapped(_ sender: UIButton) {
         let title = sender.title(for: .normal)
-        if title == "Easy" { currentDifficulty = .easy }
-        else if title == "Medium" { currentDifficulty = .medium }
-        else if title == "Hard" { currentDifficulty = .hard }
-        
+        if title == "Easy" { currentDifficulty = .easy } else if title == "Medium" { currentDifficulty = .medium } else if title == "Hard" { currentDifficulty = .hard }
+
         UIView.animate(withDuration: 0.2) {
             self.updateDifficultyUI()
         }
     }
-    
+
     @IBAction func startCreationButtonTapped(_ sender: UIButton) {
         if let lastTime = Self.lastGenerationTime {
             let timeSinceLast = Date().timeIntervalSince(lastTime)
@@ -408,20 +410,16 @@ class GenerateHomeViewController: UIViewController {
                 return
             }
         }
-        
+
         Self.lastGenerationTime = Date()
 
         guard let sourceItem = inputSourceData?.first else {
             showError("No source material found.")
             return
         }
-        
+
         var topicName = "General"
-        if let topic = sourceItem as? Topic { topicName = topic.name }
-        else if let source = sourceItem as? Source { topicName = source.name }
-        else if let str = sourceItem as? String { topicName = str }
-        else if let url = sourceItem as? URL { topicName = url.lastPathComponent }
-        else if let studyContent = sourceItem as? StudyContent { topicName = studyContent.filename }
+        if let topic = sourceItem as? Topic { topicName = topic.name } else if let source = sourceItem as? Source { topicName = source.name } else if let str = sourceItem as? String { topicName = str } else if let url = sourceItem as? URL { topicName = url.lastPathComponent } else if let studyContent = sourceItem as? StudyContent { topicName = studyContent.filename }
 
         let difficultyString: String
         switch currentDifficulty {
@@ -429,34 +427,64 @@ class GenerateHomeViewController: UIViewController {
         case .medium: difficultyString = "Medium"
         case .hard: difficultyString = "Hard"
         }
-        
+
         sender.isEnabled = false
-        sender.setTitle("Processing...", for: .normal)
-        loadingIndicator.startAnimating()
+        sender.setTitle("Generating...", for: .normal)
         view.isUserInteractionEnabled = false
-        
+
+        // Show mascot loading overlay
+        let materialName = selectedMaterialType.description
+        let overlayMessage: String
+        switch selectedMaterialType {
+        case .quiz:       overlayMessage = "Crafting your quiz questions...\nThis may take a moment"
+        case .flashcards: overlayMessage = "Building your flashcards...\nSit tight!"
+        case .notes:      overlayMessage = "Writing your study notes...\nAlmost there!"
+        case .cheatsheet: overlayMessage = "Preparing your cheatsheet...\nHang on!"
+        case .none:       overlayMessage = "Our AI is generating your \(materialName)..."
+        }
+        showGenerationOverlay(message: overlayMessage)
+
         Task {
             let extractedText = await ContentExtractor.shared.extractContent(from: sourceItem)
-            
+
             var instruction = ""
             switch selectedMaterialType {
             case .flashcards:
-                instruction = "Generate exactly \(selectedCount) flashcards covering the most important concepts. The difficulty should be \(difficultyString). STRICTLY use this EXACT JSON format: { \"flashcards\": [ { \"front\": \"Term or concept here\", \"back\": \"Definition or explanation here\" } ] }"
+                instruction = """
+                Generate exactly \(selectedCount) flashcards covering the most important concepts.
+
+                STRICTLY FOLLOW THESE RULES:
+                1. FRONT (term): Must be a CONCISE TERM or CONCEPT only (e.g., 'Mitochondria', 'Photosynthesis', 'Civil War').
+                2. NO QUESTIONS on the front: NEVER use 'What is...?', 'Define...', 'Explain...', or any question/instruction form. ONLY nouns, terms, or concepts.
+                3. BACK (definition): Provide a clear, educational definition or explanation of the front term.
+                4. KEYWORD: A single essential word from the front term (lowercase).
+                5. 'deckTitle': Provide a clean, human-readable name (e.g., "Mole Concept").
+                6. NO HYPHENS: Do not break words with hyphens mid-word.
+
+                CORRECT example: front="Polysaccharide", back="A carbohydrate whose molecules consist of a number of sugar molecules bonded together."
+                INCORRECT example: front="Define polysaccharide." ← this is FORBIDDEN.
+
+                Format: {"deckTitle": "Name", "flashcards": [{"front": "Term (1-3 words)", "back": "Definition", "keyword": "keyword"}]}
+                """
             case .cheatsheet:
                 instruction = "You are an expert tutor creating a beautifully formatted Cheatsheet. DO NOT output JSON. Output ONLY plain text. You MUST use double line breaks to separate sections. You MUST use bullet points for lists."
             case .notes:
                 instruction = "You are an expert tutor creating detailed Study Notes. DO NOT output JSON. Output ONLY plain text. You MUST use double line breaks to separate paragraphs and sections. You MUST use bullet points for lists."
             case .quiz:
-                instruction = "Generate exactly \(selectedCount) quiz questions in JSON format. The test is designed to be solved within a \(selectedTime) minute limit. STRICTLY use this EXACT JSON format: { \"questions\": [ { \"question\": \"Question text here?\", \"options\": [\"Option 1\", \"Option 2\", \"Option 3\", \"Option 4\"], \"answer\": \"Option 1\", \"hint\": \"Explanation here\" } ] }"
+                instruction = """
+                Generate exactly \(selectedCount) quiz questions.
+
+                RULES:
+                1. 'quizTitle': Provide a clean, human-readable name.
+                2. NO HYPHENS: Do not break words with hyphens mid-line.
+
+                Format: {"quizTitle": "Name", "questions": [{"question": "Q", "options": ["A","B","C","D"], "answer": "A", "hint": "H"}]}
+                """
             default: break
             }
-            
+
             let safeText = String(extractedText.prefix(15000))
             let finalPrompt = "\(instruction)\n\nCONTEXT:\n\(safeText)\n\nTOPIC REQUEST: \(topicName)"
-            
-            await MainActor.run {
-                sender.setTitle("Generating AI Content...", for: .normal)
-            }
 
             do {
                 let generatedContent = try await generateContentWithSmartWait(
@@ -465,20 +493,22 @@ class GenerateHomeViewController: UIViewController {
                     count: selectedCount,
                     difficulty: difficultyString
                 )
-                
+
                 DispatchQueue.main.async {
+                    self.hideGenerationOverlay()
                     self.handleSuccess(generatedContent: generatedContent, topicName: topicName, sender: sender)
                 }
-                
+
             } catch {
                 DispatchQueue.main.async {
+                    self.hideGenerationOverlay()
                     self.resetUI(sender)
                     self.showError("AI Error: \(error.localizedDescription)")
                 }
             }
         }
     }
-    
+
     private func generateContentWithSmartWait(topic: String, type: String, count: Int, difficulty: String, attempt: Int = 1) async throws -> String {
         do {
             return try await AIContentManager.shared.generateContent(
@@ -490,7 +520,7 @@ class GenerateHomeViewController: UIViewController {
         } catch {
             let errorString = error.localizedDescription.lowercased()
             let isQuotaError = errorString.contains("quota") || errorString.contains("limit") || errorString.contains("429") || errorString.contains("500") || errorString.contains("exceeded")
-            
+
             if attempt < 3 {
                 if isQuotaError {
                     for i in (1...70).reversed() {
@@ -508,17 +538,34 @@ class GenerateHomeViewController: UIViewController {
             }
         }
     }
-    
+
     private func handleSuccess(generatedContent: String, topicName: String, sender: UIButton) {
         self.resetUI(sender)
         let subjectName = self.contextSubjectTitle ?? "General Study"
-        
+
+        // Clean the source name (strip extensions, prefixes, underscores)
+        let cleanSource = topicName
+            .replacingOccurrences(of: ".txt", with: "")
+            .replacingOccurrences(of: ".pdf", with: "")
+            .replacingOccurrences(of: ".docx", with: "")
+            .replacingOccurrences(of: "Note_", with: "")
+            .replacingOccurrences(of: "Link_", with: "")
+            .replacingOccurrences(of: "Source_", with: "")
+            .replacingOccurrences(of: "Doc_", with: "")
+            .replacingOccurrences(of: "_", with: " ")
+            .replacingOccurrences(of: "-", with: " ")
+            .trimmingCharacters(in: .whitespaces)
+            .capitalized
+
+        // Material name = "SourceName MaterialType" e.g. "English Flashcards"
+        let materialName = "\(cleanSource) \(selectedMaterialType.description)"
+
         if self.selectedMaterialType == .notes {
             ProgressDataManager.shared.totalNotesGenerated += 1
         } else if self.selectedMaterialType == .cheatsheet {
             ProgressDataManager.shared.totalCheatsheetsGenerated += 1
         }
-        
+
         if let items = self.inputSourceData {
             for item in items {
                 if let url = item as? URL {
@@ -534,7 +581,7 @@ class GenerateHomeViewController: UIViewController {
                 }
             }
         }
-        
+
         var newTopic: Topic?
         if self.selectedMaterialType == .quiz {
             let parsedQuestions = self.parseQuizJSON(generatedContent)
@@ -542,39 +589,38 @@ class GenerateHomeViewController: UIViewController {
                 self.showError("AI generated an empty quiz. Please try again.")
                 return
             }
-            newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: "Quiz", questions: parsedQuestions, sourceName: topicName, createdDate: "Just now")
+            newTopic = DataManager.shared.saveGeneratedTopic(name: materialName, subject: subjectName, type: "Quiz", questions: parsedQuestions, sourceName: cleanSource)
         } else if self.selectedMaterialType == .flashcards {
             let parsedFlashcards = self.parseFlashcardsJSON(generatedContent)
             if parsedFlashcards.isEmpty {
                 self.showError("AI generated empty flashcards. Please try again.")
                 return
             }
-            let serializedCards = parsedFlashcards.map { "\($0.safeFront)|\($0.safeBack)" }.joined(separator: "\n")
-            newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: "Flashcards", notes: serializedCards, sourceName: topicName, createdDate: "Just now")
+            let serializedCards = parsedFlashcards.map { "\($0.safeFront)|\($0.safeBack)|\($0.safeKeyword)" }.joined(separator: "\n")
+            newTopic = DataManager.shared.saveGeneratedTopic(name: materialName, subject: subjectName, type: "Flashcards", notes: serializedCards, sourceName: cleanSource)
         } else {
             var finalText = generatedContent.trimmingCharacters(in: .whitespacesAndNewlines)
             if finalText.hasPrefix("```markdown") {
                 finalText = finalText.replacingOccurrences(of: "```markdown", with: "").replacingOccurrences(of: "```", with: "")
             }
-            newTopic = DataManager.shared.saveGeneratedTopic(name: topicName, subject: subjectName, type: self.selectedMaterialType.description, notes: finalText, sourceName: topicName, createdDate: "Just now")
+            newTopic = DataManager.shared.saveGeneratedTopic(name: materialName, subject: subjectName, type: self.selectedMaterialType.description, notes: finalText, sourceName: cleanSource)
         }
-        
+
         if let savedTopic = newTopic {
-            self.navigateToResult(type: self.selectedMaterialType, topic: savedTopic, sourceName: topicName)
+            self.navigateToResult(type: self.selectedMaterialType, topic: savedTopic, sourceName: cleanSource)
             Task { await RevisioManager.shared.earnXP(amount: 5, reason: "Material Generated") }
         } else {
             self.showError("Failed to save content.")
         }
     }
-    
+
     private func resetUI(_ sender: UIButton) {
-        self.loadingIndicator.stopAnimating()
         self.view.isUserInteractionEnabled = true
         sender.isEnabled = true
         let title = (selectedMaterialType == .none) ? "Start Creation" : "Generate \(selectedMaterialType.description)"
         sender.setTitle(title, for: .normal)
     }
-    
+
     private func showError(_ message: String) {
         let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
@@ -604,8 +650,7 @@ class GenerateHomeViewController: UIViewController {
                 dest.quizTimeLimit = self.selectedTime
                 dest.quizQuestionCount = self.selectedCount
             }
-        }
-        else if segue.identifier == "HomeToFlashcardView" {
+        } else if segue.identifier == "HomeToFlashcardView" {
             if let dest = segue.destination as? FlashcardViewController, let topic = sender as? Topic {
                 dest.currentTopic = topic
                 dest.parentSubjectName = self.parentSubjectName()
@@ -613,32 +658,30 @@ class GenerateHomeViewController: UIViewController {
                 dest.currentTopic = topic
                 dest.parentSubjectName = self.parentSubjectName()
             }
-        }
-        else if segue.identifier == "HomeToNotesView" {
+        } else if segue.identifier == "HomeToNotesView" {
             if let dest = segue.destination as? NotesViewController, let topic = sender as? Topic {
                 dest.currentTopic = topic
                 dest.parentSubjectName = self.parentSubjectName()
             }
-        }
-        else if segue.identifier == "HomeToCheatsheetView" {
+        } else if segue.identifier == "HomeToCheatsheetView" {
             if let dest = segue.destination as? CheatsheetViewController, let topic = sender as? Topic {
                 dest.currentTopic = topic
                 dest.parentSubjectName = self.parentSubjectName()
             }
         }
     }
-    
+
     private func parentSubjectName() -> String {
         return self.contextSubjectTitle ?? "General Study"
     }
 }
 
 extension GenerateHomeViewController {
-    
+
     func parseQuizJSON(_ jsonString: String) -> [QuizQuestion] {
         let cleanString = cleanJSONText(jsonString)
         guard let data = cleanString.data(using: .utf8) else { return [] }
-        
+
         struct AIResponse: Codable {
             struct AIQuestion: Codable {
                 let question: String
@@ -648,7 +691,7 @@ extension GenerateHomeViewController {
             }
             let questions: [AIQuestion]
         }
-        
+
         let decoder = JSONDecoder()
         if let wrapper = try? decoder.decode(AIResponse.self, from: data) {
             return wrapper.questions.map { aiQ in
@@ -660,17 +703,17 @@ extension GenerateHomeViewController {
         }
         return []
     }
-    
+
     func parseFlashcardsJSON(_ jsonString: String) -> [HomeParsedAIFlashcard] {
         let cleanString = cleanJSONText(jsonString)
         guard let data = cleanString.data(using: .utf8) else { return [] }
-        
+
         let decoder = JSONDecoder()
-        
+
         if let cards = try? decoder.decode([HomeParsedAIFlashcard].self, from: data) {
             return cards
         }
-        
+
         struct AIWrapper: Codable {
             let flashcards: [HomeParsedAIFlashcard]
         }
@@ -679,25 +722,33 @@ extension GenerateHomeViewController {
         }
         return []
     }
-    
+
     private func cleanJSONText(_ json: String) -> String {
         var clean = json
         if clean.contains("```json") { clean = clean.replacingOccurrences(of: "```json", with: "") }
         clean = clean.replacingOccurrences(of: "```", with: "")
-        
+
         if let startIndex = clean.firstIndex(of: "{") {
             clean = String(clean[startIndex...])
         } else if let startIndex = clean.firstIndex(of: "[") {
             clean = String(clean[startIndex...])
         }
-        
+
         if let endIndex = clean.lastIndex(of: "}") {
             clean = String(clean[...endIndex])
         } else if let endIndex = clean.lastIndex(of: "]") {
             clean = String(clean[...endIndex])
         }
-        
+
         return clean.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    private func parseTitleFromJSON(_ jsonString: String) -> String? {
+        let clean = cleanJSONText(jsonString)
+        guard let data = clean.data(using: .utf8) else { return nil }
+        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            return json["deckTitle"] as? String ?? json["quizTitle"] as? String
+        }
+        return nil
     }
 }
 

@@ -9,30 +9,30 @@ import Supabase
 class GroupSettingsViewController: UIViewController {
 
     @IBOutlet weak var segmentedControl: UISegmentedControl!
-    @IBOutlet weak var infoView:  UIView!
-    @IBOutlet weak var docsView:  UIView!
+    @IBOutlet weak var infoView: UIView!
+    @IBOutlet weak var docsView: UIView!
     @IBOutlet weak var mediaView: UIView!
     @IBOutlet weak var linksView: UIView!
 
-    @IBOutlet weak var groupImageView:    UIImageView!
-    @IBOutlet weak var groupNameLabel:    UILabel!
+    @IBOutlet weak var groupImageView: UIImageView!
+    @IBOutlet weak var groupNameLabel: UILabel!
     @IBOutlet weak var membersCountLabel: UILabel!
 
     @IBOutlet weak var membersCollectionView: UICollectionView!
-    @IBOutlet weak var docsCollectionView:    UICollectionView!
-    @IBOutlet weak var mediaCollectionView:   UICollectionView!
-    @IBOutlet weak var linksTableView:        UITableView!
-    @IBOutlet weak var hideAlertsSwitch:      UISwitch!
+    @IBOutlet weak var docsCollectionView: UICollectionView!
+    @IBOutlet weak var mediaCollectionView: UICollectionView!
+    @IBOutlet weak var linksTableView: UITableView!
+    @IBOutlet weak var hideAlertsSwitch: UISwitch!
 
     var group: Group!
-    weak var delegate:       LeaveGroupDelegate?
+    weak var delegate: LeaveGroupDelegate?
     weak var updateDelegate: GroupUpdateDelegate?
 
-    private var members:   [SupabaseManager.GroupMember] = []
+    private var members: [SupabaseManager.GroupMember] = []
     private var inviteCode = ""
-    private var documents:  [SupabaseManager.GroupFile] = []
+    private var documents: [SupabaseManager.GroupFile] = []
     private var mediaFiles: [SupabaseManager.GroupFile] = []
-    private var linkFiles:  [SupabaseManager.GroupFile] = []
+    private var linkFiles: [SupabaseManager.GroupFile] = []
     private var imageCache: [String: UIImage] = [:]
 
     override func viewDidLoad() {
@@ -88,6 +88,12 @@ class GroupSettingsViewController: UIViewController {
         refreshAvatarImage()
     }
 
+    // Reload files every time this screen becomes visible so newly sent docs/images show up
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        Task { await loadFiles() }
+    }
+
     // loads from URL or falls back to the default icon
     private func refreshAvatarImage() {
         if let urlString = group.avatarUrl, !urlString.isEmpty,
@@ -139,13 +145,26 @@ class GroupSettingsViewController: UIViewController {
     }
 
     private func removeAvatar() {
+        let previousUrl = group.avatarUrl
         group.avatarUrl           = nil
         groupImageView.image      = UIImage(systemName: "person.3.fill")
         groupImageView.tintColor  = .systemGray3
         updateDelegate?.didUpdateGroup(group)
         Task {
-            do { try await SupabaseManager.shared.updateGroupAvatar(id: group.id, avatarUrl: nil) }
-            catch { print("removeAvatar: \(error)") }
+            do {
+                let updated = try await SupabaseManager.shared
+                    .updateGroupAvatar(id: group.id, avatarUrl: nil)
+                await MainActor.run {
+                    self.group = updated
+                    self.updateDelegate?.didUpdateGroup(updated)
+                }
+            } catch {
+                await MainActor.run {
+                    self.group.avatarUrl = previousUrl
+                    self.refreshAvatarImage()
+                    self.showUpdateError(error)
+                }
+            }
         }
     }
 
@@ -173,13 +192,27 @@ class GroupSettingsViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak self] _ in
             guard let self = self,
                   let name = alert.textFields?.first?.text, !name.isEmpty else { return }
-            self.group.name        = name
+            let oldName = self.group.name
+            self.group.name          = name
             self.groupNameLabel.text = name
             self.updateDelegate?.didUpdateGroup(self.group)
             Task {
-                do { try await SupabaseManager.shared.updateGroup(id: self.group.id,
-                                                                   newName: name) }
-                catch { print("rename: \(error)") }
+                do {
+                    let updated = try await SupabaseManager.shared
+                        .updateGroup(id: self.group.id, newName: name)
+                    await MainActor.run {
+                        self.group = updated
+                        self.groupNameLabel.text = updated.name
+                        self.updateDelegate?.didUpdateGroup(updated)
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.group.name = oldName
+                        self.groupNameLabel.text = oldName
+                        self.updateDelegate?.didUpdateGroup(self.group)
+                        self.showUpdateError(error)
+                    }
+                }
             }
         })
         present(alert, animated: true)
@@ -223,7 +256,7 @@ class GroupSettingsViewController: UIViewController {
                 docsCollectionView.reloadData()
                 mediaCollectionView.reloadData()
                 linksTableView.reloadData()
-                applyEmptyState(docsCollectionView,  isEmpty: documents.isEmpty,
+                applyEmptyState(docsCollectionView, isEmpty: documents.isEmpty,
                                 message: "No documents shared yet")
                 applyEmptyState(mediaCollectionView, isEmpty: mediaFiles.isEmpty,
                                 message: "No media shared yet")
@@ -244,6 +277,15 @@ class GroupSettingsViewController: UIViewController {
         } else {
             cv.backgroundView = nil
         }
+    }
+
+    private func showUpdateError(_ error: Error) {
+        let message = (error as NSError).localizedDescription
+        let alert = UIAlertController(title: "Update Failed",
+                                      message: message,
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 
     // remote image with in-memory cache
@@ -307,13 +349,17 @@ class GroupSettingsViewController: UIViewController {
                 guard let uid = SupabaseManager.shared.client.auth.currentUser?.id,
                       let gid = UUID(uuidString: group.id) else { return }
                 try await SupabaseManager.shared.client.from("group_members").delete()
-                    .eq("user_id",  value: uid)
+                    .eq("user_id", value: uid)
                     .eq("group_id", value: gid)
                     .execute()
-            } catch { print("leave: \(error)") }
+                await MainActor.run {
+                    self.delegate?.didLeaveGroup(self.group)
+                    self.navigationController?.popToRootViewController(animated: true)
+                }
+            } catch {
+                await MainActor.run { self.showUpdateError(error) }
+            }
         }
-        delegate?.didLeaveGroup(group)
-        navigationController?.popToRootViewController(animated: true)
     }
 }
 
@@ -331,6 +377,7 @@ extension GroupSettingsViewController:
                       ?? info[.originalImage] as? UIImage,
               let data = img.jpegData(compressionQuality: 0.7) else { return }
 
+        let previousUrl = group.avatarUrl
         groupImageView.image    = img
         groupImageView.tintColor = nil
 
@@ -338,11 +385,19 @@ extension GroupSettingsViewController:
             do {
                 let url = try await SupabaseManager.shared.uploadGroupAvatar(
                     groupId: group.id, imageData: data)
-                group.avatarUrl = url
-                try await SupabaseManager.shared.updateGroupAvatar(
+                let updated = try await SupabaseManager.shared.updateGroupAvatar(
                     id: group.id, avatarUrl: url)
-                updateDelegate?.didUpdateGroup(group)
-            } catch { print("uploadGroupAvatar: \(error)") }
+                await MainActor.run {
+                    self.group = updated
+                    self.updateDelegate?.didUpdateGroup(updated)
+                }
+            } catch {
+                await MainActor.run {
+                    self.group.avatarUrl = previousUrl
+                    self.refreshAvatarImage()
+                    self.showUpdateError(error)
+                }
+            }
         }
     }
 
@@ -358,9 +413,9 @@ extension GroupSettingsViewController:
 
     func collectionView(_ cv: UICollectionView,
                         numberOfItemsInSection section: Int) -> Int {
-        if cv == membersCollectionView  { return members.count + 1 }
-        if cv == docsCollectionView     { return documents.count   }
-        if cv == mediaCollectionView    { return mediaFiles.count  }
+        if cv == membersCollectionView { return members.count + 1 }
+        if cv == docsCollectionView { return documents.count   }
+        if cv == mediaCollectionView { return mediaFiles.count  }
         return 0
     }
 
@@ -449,11 +504,20 @@ extension GroupSettingsViewController:
         if cv == docsCollectionView {
             let file = documents[ip.item]
             guard let url = URL(string: file.fileUrl) else { return }
-            let vc  = DocumentPreviewViewController()
-            vc.documentURL = url
-            let nav = UINavigationController(rootViewController: vc)
-            nav.modalPresentationStyle = .fullScreen
-            present(nav, animated: true)
+            // QLPreviewController needs a local file — download to temp first
+            URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
+                guard let data = data else { return }
+                let tmp = FileManager.default.temporaryDirectory
+                    .appendingPathComponent(file.fileName)
+                try? data.write(to: tmp)
+                DispatchQueue.main.async {
+                    let vc  = DocumentPreviewViewController()
+                    vc.documentURL = tmp
+                    let nav = UINavigationController(rootViewController: vc)
+                    nav.modalPresentationStyle = .fullScreen
+                    self?.present(nav, animated: true)
+                }
+            }.resume()
         }
     }
 
@@ -481,7 +545,7 @@ extension GroupSettingsViewController:
     func collectionView(_ cv: UICollectionView,
                         layout _: UICollectionViewLayout,
                         minimumLineSpacingForSectionAt _: Int) -> CGFloat {
-        if cv == docsCollectionView  { return 6 }
+        if cv == docsCollectionView { return 6 }
         if cv == mediaCollectionView { return 8 }
         return 0
     }
@@ -505,6 +569,7 @@ extension GroupSettingsViewController: UITableViewDataSource, UITableViewDelegat
             lbl.textColor     = .secondaryLabel
             lbl.font          = .systemFont(ofSize: 15)
             lbl.textAlignment = .center
+            lbl.numberOfLines = 0
             tableView.backgroundView = lbl
             tableView.separatorStyle = .none
         } else {

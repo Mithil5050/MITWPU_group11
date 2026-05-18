@@ -24,13 +24,11 @@ class SettingsCell: UICollectionViewCell {
     }
 
     private func setupUI() {
-        // Match the Dark Card aesthetic
-        self.backgroundColor = UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0)
-        
-        // Initial State
-        titleLabel.textColor = .white
+        self.backgroundColor = .secondarySystemGroupedBackground
+
+        titleLabel.textColor = .label
         titleLabel.font = .systemFont(ofSize: 16, weight: .regular)
-        
+
         switchControl.onTintColor = .systemGreen
         chevronView.tintColor = .systemGray
     }
@@ -40,7 +38,7 @@ class SettingsCell: UICollectionViewCell {
         titleLabel.text = title
         iconView.image = UIImage(systemName: icon)
         iconView.tintColor = color
-        
+
         if isSwitch {
             switchControl.isHidden = false
             chevronView.isHidden = true

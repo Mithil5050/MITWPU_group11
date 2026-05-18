@@ -6,9 +6,10 @@ class ConnectionsResultsViewController: UIViewController {
     // ✅ Now defaults to empty, perfectly accepting the AI categories passed from the game
     var categories: [CategoryModel] = []
     var resultTitle: String = "Great Job!"
-    
+    var elapsedMinutes: Double = 2.0
+
     // MARK: - UI Elements
-    
+
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.text = resultTitle
@@ -18,7 +19,7 @@ class ConnectionsResultsViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
+
     private let stackView: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
@@ -27,7 +28,7 @@ class ConnectionsResultsViewController: UIViewController {
         stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
     }()
-    
+
     private lazy var homeButton: UIButton = {
         var config = UIButton.Configuration.filled()
         config.title = "Back to Home"
@@ -35,11 +36,11 @@ class ConnectionsResultsViewController: UIViewController {
         config.baseForegroundColor = .systemBackground
         config.cornerStyle = .capsule
         config.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 24, bottom: 14, trailing: 24)
-        
+
         let action = UIAction { [weak self] _ in
             self?.navigationController?.popToRootViewController(animated: true)
         }
-        
+
         let btn = UIButton(configuration: config, primaryAction: action)
         btn.translatesAutoresizingMaskIntoConstraints = false
         return btn
@@ -51,56 +52,58 @@ class ConnectionsResultsViewController: UIViewController {
         setupAppearance()
         setupLayout()
         buildCategoryCards()
+        // Log session for progress chart using actual elapsed time
+        ProgressDataManager.shared.logSession(minutes: max(elapsedMinutes, 1.0), category: "Games")
     }
-    
+
     // MARK: - Setup
     private func setupAppearance() {
         view.backgroundColor = .systemBackground
         titleLabel.text = resultTitle
-        
+
         // Hide the back button so they have to use "Back to Home"
         navigationItem.hidesBackButton = true
     }
-    
+
     private func setupLayout() {
         view.addSubview(titleLabel)
         view.addSubview(stackView)
         view.addSubview(homeButton)
-        
+
         let safeArea = view.safeAreaLayoutGuide
-        
+
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 40),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
+
             stackView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 40),
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            
+
             homeButton.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor, constant: -40),
             homeButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             homeButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
-    
+
     private func buildCategoryCards() {
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        
+
         for category in categories {
             let cardView = createCard(for: category)
             stackView.addArrangedSubview(cardView)
-            
+
             cardView.heightAnchor.constraint(equalToConstant: 80).isActive = true
         }
     }
-    
+
     private func createCard(for category: CategoryModel) -> UIView {
         let container = UIView()
         container.backgroundColor = getPastelColor(for: category.color)
         container.layer.cornerRadius = 12
         container.clipsToBounds = true
         container.translatesAutoresizingMaskIntoConstraints = false
-        
+
         let catTitle = UILabel()
         catTitle.text = category.title.uppercased()
         catTitle.font = .systemFont(ofSize: 16, weight: .black)
@@ -109,7 +112,7 @@ class ConnectionsResultsViewController: UIViewController {
         catTitle.numberOfLines = 1
         catTitle.adjustsFontSizeToFitWidth = true
         catTitle.translatesAutoresizingMaskIntoConstraints = false
-        
+
         let wordsLabel = UILabel()
         wordsLabel.text = category.words.joined(separator: ", ")
         wordsLabel.font = .systemFont(ofSize: 14, weight: .medium)
@@ -117,25 +120,25 @@ class ConnectionsResultsViewController: UIViewController {
         wordsLabel.textAlignment = .center
         wordsLabel.numberOfLines = 2
         wordsLabel.translatesAutoresizingMaskIntoConstraints = false
-        
+
         container.addSubview(catTitle)
         container.addSubview(wordsLabel)
-        
+
         NSLayoutConstraint.activate([
             catTitle.centerXAnchor.constraint(equalTo: container.centerXAnchor),
             catTitle.centerYAnchor.constraint(equalTo: container.centerYAnchor, constant: -12),
             catTitle.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 8),
             catTitle.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
-            
+
             wordsLabel.topAnchor.constraint(equalTo: catTitle.bottomAnchor, constant: 4),
             wordsLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 8),
             wordsLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
             wordsLabel.centerXAnchor.constraint(equalTo: container.centerXAnchor)
         ])
-        
+
         return container
     }
-    
+
     // MARK: - Helpers
     private func getPastelColor(for color: UIColor) -> UIColor {
         switch color {

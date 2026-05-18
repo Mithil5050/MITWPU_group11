@@ -78,6 +78,8 @@ class RevisioManager: ObservableObject {
                 streakDates.append(key)
                 UserDefaults.standard.set(streakDates, forKey: "streak_dot_dates")
             }
+            // Push updated dot-dates to Supabase so they survive reinstalls
+            Task { await SupabaseManager.shared.syncUserStats() }
         }
     }
 

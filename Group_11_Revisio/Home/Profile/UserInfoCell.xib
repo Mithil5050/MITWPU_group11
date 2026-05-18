@@ -59,7 +59,7 @@
                                 </state>
                             </button>
                         </subviews>
-                        <color key="backgroundColor" red="0.10980392160000001" green="0.10980392160000001" blue="0.1176470588" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="stack" firstAttribute="centerY" secondItem="card" secondAttribute="centerY" id="1"/>
                             <constraint firstItem="stack" firstAttribute="leading" secondItem="pfp" secondAttribute="trailing" constant="16" id="2"/>

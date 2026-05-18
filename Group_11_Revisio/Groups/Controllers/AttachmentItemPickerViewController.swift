@@ -30,7 +30,7 @@ class AttachmentItemPickerViewController: UIViewController {
 
     private let tableView         = UITableView(frame: .zero, style: .insetGrouped)
     private var materialItems: [StudyItem] = []
-    private var sourceItems:   [StudyItem] = []
+    private var sourceItems: [StudyItem] = []
     private var selectedPaths: Set<IndexPath> = []
 
     private let segmentedControl  = UISegmentedControl(items: ["Materials", "Sources"])
@@ -46,7 +46,7 @@ class AttachmentItemPickerViewController: UIViewController {
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Send (\(selectedPaths.count))",
-            style: .done, target: self, action: #selector(sendTapped)
+            style: .plain, target: self, action: #selector(sendTapped)
         )
         navigationItem.rightBarButtonItem?.isEnabled = false
     }
@@ -106,23 +106,21 @@ class AttachmentItemPickerViewController: UIViewController {
             case .topic(let topic):
                 attachments.append(SentAttachment(
                     displayName: "\(topic.name) · \(topic.materialType)",
-                    content:     packedContent(for: topic),
-                    fileType:    "document",
-                    topic:       topic,
-                    source:      nil
+                    content: packedContent(for: topic),
+                    fileType: "document",
+                    topic: topic,
+                    source: nil
                 ))
             case .source(let source):
                 let ft = source.fileType.lowercased()
                 let fileType: String
-                if ["jpg","jpeg","png","gif","heic","image"].contains(ft) { fileType = "image" }
-                else if ["link","url","http","https"].contains(ft)        { fileType = "link" }
-                else                                                       { fileType = "document" }
+                if ["jpg", "jpeg", "png", "gif", "heic", "image"].contains(ft) { fileType = "image" } else if ["link", "url", "http", "https"].contains(ft) { fileType = "link" } else { fileType = "document" }
                 attachments.append(SentAttachment(
                     displayName: source.name,
-                    content:     source.name,
-                    fileType:    fileType,
-                    topic:       nil,
-                    source:      source
+                    content: source.name,
+                    fileType: fileType,
+                    topic: nil,
+                    source: source
                 ))
             }
         }
@@ -138,7 +136,18 @@ class AttachmentItemPickerViewController: UIViewController {
         case "Notes":      return topic.notesContent      ?? topic.largeContentBody ?? topic.name
         case "Cheatsheet": return topic.cheatsheetContent ?? topic.largeContentBody ?? topic.name
         case "Flashcards": return topic.largeContentBody  ?? topic.name
-        case "Quiz":       return topic.largeContentBody  ?? topic.name
+        case "Quiz":
+            if let body = topic.largeContentBody, !body.isEmpty { return body }
+            if let questions = topic.quizQuestions, !questions.isEmpty {
+                return questions.map { q in
+                    var options = q.answers
+                    while options.count < 4 { options.append("-") }
+                    let safeOptions = options.prefix(4).joined(separator: "|")
+                    let hint = q.hint.isEmpty ? "No Hint" : q.hint
+                    return "\(q.questionText)|\(safeOptions)|\(q.correctAnswerIndex)|\(hint)"
+                }.joined(separator: "\n")
+            }
+            return topic.name
         default:           return topic.largeContentBody  ?? topic.name
         }
     }

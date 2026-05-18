@@ -1,4 +1,3 @@
-
 //
 //  EarnedBadgesViewController.swift
 //  Group_11_Revisio
@@ -17,8 +16,7 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
-        navigationItem.title = "Earned Badges"
+        navigationItem.title = "Badges"
         loadData()
         setupCollectionView()
         setupEmptyState()
@@ -41,7 +39,6 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
         let layout = createLayout()
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        collectionView.backgroundColor  = .black
         collectionView.dataSource       = self
         collectionView.delegate         = self
         collectionView.register(UINib(nibName: "BadgeCollectionViewCell", bundle: nil),
@@ -65,47 +62,46 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
     }
 
     private func setupEmptyState() {
-        emptyLabel.text = "No badges earned yet.\nKeep studying to unlock them!"
+        emptyLabel.text = "Earned Badges will appear here.\n Keep learning!"
         emptyLabel.font = .systemFont(ofSize: 16, weight: .regular)
         emptyLabel.textColor = .secondaryLabel
         emptyLabel.textAlignment = .center
         emptyLabel.numberOfLines = 0
         emptyLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        //Badge Image View
+
+        // Badge Image View
         let badgeImageView = UIImageView()
         let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .regular)
         badgeImageView.image = UIImage(systemName: "trophy", withConfiguration: config)
         badgeImageView.tintColor = .secondaryLabel
         badgeImageView.contentMode = .scaleAspectFit
         badgeImageView.translatesAutoresizingMaskIntoConstraints = false
-        
-    
+
+
         view.addSubview(emptyLabel)
         view.addSubview(badgeImageView)
-        
-        
+
+
         NSLayoutConstraint.activate([
             // Center the label in the view
             emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -20),
-            emptyLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
-            emptyLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
-            
-            
+            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            emptyLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
+
+
             badgeImageView.topAnchor.constraint(equalTo: emptyLabel.bottomAnchor, constant: 12),
             badgeImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             badgeImageView.widthAnchor.constraint(equalToConstant: 40),
             badgeImageView.heightAnchor.constraint(equalToConstant: 40)
         ])
-        
-        
+
+
         let noBadges = earnedBadges.isEmpty
         emptyLabel.isHidden = !noBadges
         badgeImageView.isHidden = !noBadges
     }
 
-//UICollectionViewDataSource
+// UICollectionViewDataSource
 
     func collectionView(_ collectionView: UICollectionView,
                         numberOfItemsInSection section: Int) -> Int {

@@ -203,5 +203,5 @@ final class WordleEngine {
     func reset() {
         attempts = 0
     }
-    
+
 }
