@@ -6,14 +6,14 @@ struct Topic: Codable, Identifiable {
     var lastAccessed: String
     var materialType: String
     var parentSubjectName: String
-    
+
     var quizQuestions: [QuizQuestion]?
-    
+
     var largeContentBody: String?
     var notesContent: String?
     var cheatsheetContent: String?
     var attempts: [QuizAttempt]?
-    
+
     var sourceName: String?
     var createdDate: String?
     var currentProgressIndex: Int?
@@ -22,7 +22,7 @@ struct Topic: Codable, Identifiable {
     var safeAttempts: [QuizAttempt] {
         return attempts ?? []
     }
-    
+
     private enum CodingKeys: String, CodingKey {
         case id
         case name
@@ -39,7 +39,7 @@ struct Topic: Codable, Identifiable {
         case currentProgressIndex
         case totalItemsCount
     }
-    
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
@@ -47,7 +47,7 @@ struct Topic: Codable, Identifiable {
         self.lastAccessed = try container.decode(String.self, forKey: .lastAccessed)
         self.materialType = try container.decode(String.self, forKey: .materialType)
         self.parentSubjectName = try container.decode(String.self, forKey: .parentSubjectName)
-        
+
         self.quizQuestions = try container.decodeIfPresent([QuizQuestion].self, forKey: .quizQuestions)
         self.largeContentBody = try container.decodeIfPresent(String.self, forKey: .largeContentBody)
         self.notesContent = try container.decodeIfPresent(String.self, forKey: .notesContent)
@@ -58,7 +58,7 @@ struct Topic: Codable, Identifiable {
         self.currentProgressIndex = try container.decodeIfPresent(Int.self, forKey: .currentProgressIndex)
         self.totalItemsCount = try container.decodeIfPresent(Int.self, forKey: .totalItemsCount)
     }
-    
+
     init(id: UUID = UUID(),
          name: String,
          lastAccessed: String = "Just now",
@@ -73,7 +73,7 @@ struct Topic: Codable, Identifiable {
          createdDate: String? = nil,
          currentProgressIndex: Int? = nil,
          totalItemsCount: Int? = nil) {
-        
+
         self.id = id
         self.name = name
         self.lastAccessed = lastAccessed
@@ -97,11 +97,11 @@ struct QuizAttempt: Codable {
     let score: Int
     let totalQuestions: Int
     let summaryData: String
-    
+
     var percentage: Double {
         return totalQuestions > 0 ? (Double(score) / Double(totalQuestions)) * 100 : 0.0
     }
-    
+
     var dateString: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

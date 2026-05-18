@@ -15,10 +15,10 @@ import AVFoundation
 // Sidecar keyed by messageId. Stores file info AND raw content so
 // study material can be previewed without a network call.
 private struct MessageMeta {
-    let fileType:    String?
-    let fileUrl:     String?
-    let fileName:    String?
-    let content:     String?   // raw packed content (notes text / quiz JSON / flashcard JSON)
+    let fileType: String?
+    let fileUrl: String?
+    let fileName: String?
+    let content: String?   // raw packed content (notes text / quiz JSON / flashcard JSON)
     let materialType: String?  // "Notes" | "Cheatsheet" | "Flashcards" | "Quiz"
 }
 
@@ -196,14 +196,14 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
 
     var currentUser = ChatSender(senderId: "unknown", displayName: "Me")
     private var chatMessages: [ChatMessage] = []
-    private var messageMeta:  [String: MessageMeta] = [:]
+    private var messageMeta: [String: MessageMeta] = [:]
     private var senderNameCache: [String: String] = [:]
     private var realtimeChannel: RealtimeChannelV2?
 
     // Speech
     private let speechRecognizer     = SFSpeechRecognizer(locale: Locale.current)
-    private var recognitionRequest:  SFSpeechAudioBufferRecognitionRequest?
-    private var recognitionTask:     SFSpeechRecognitionTask?
+    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine          = AVAudioEngine()
     private var isRecording          = false
 
@@ -239,7 +239,10 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         messagesCollectionView.scrollsToTop = false
         messagesCollectionView.contentInsetAdjustmentBehavior = .always
 
-        Task { await loadMessages(); await subscribeToMessages() }
+        Task {
+            await loadMessages()
+            await subscribeToMessages()
+        }
     }
 
     // MARK: - Input bar
@@ -360,18 +363,18 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
             // Derive materialType from fileName ("Recursion · Notes" → "Notes")
             let mt = extractMaterialType(from: msg.fileName)
             messageMeta[cm.messageId] = MessageMeta(
-                fileType:     msg.fileType,
-                fileUrl:      msg.fileUrl,
-                fileName:     msg.fileName,
-                content:      msg.content,
+                fileType: msg.fileType,
+                fileUrl: msg.fileUrl,
+                fileName: msg.fileName,
+                content: msg.content,
                 materialType: mt)
         }
         built.sort { $0.sentDate < $1.sentDate }
 
-        await MainActor.run {
-            chatMessages = built
-            messagesCollectionView.reloadData()
-            messagesCollectionView.scrollToLastItem(animated: false)
+        DispatchQueue.main.async {
+            self.chatMessages = built
+            self.messagesCollectionView.reloadData()
+            self.messagesCollectionView.scrollToLastItem(animated: false)
         }
     }
 
@@ -432,10 +435,10 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         let a = NSMutableAttributedString(string: text)
         let r = NSRange(text.startIndex..., in: text)
         a.addAttributes([
-            .foregroundColor:                    color,
-            .underlineColor:                     color,
-            .underlineStyle:                     NSUnderlineStyle.single.rawValue,
-            .font:                               UIFont.systemFont(ofSize: 15),
+            .foregroundColor: color,
+            .underlineColor: color,
+            .underlineStyle: NSUnderlineStyle.single.rawValue,
+            .font: UIFont.systemFont(ofSize: 15),
             NSAttributedString.Key("customURL"): url
         ], range: r)
         return a
@@ -460,12 +463,12 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
 
     private func subscribeToMessages() async {
         guard let groupId = group?.id else { return }
-        let channel = await SupabaseManager.shared.client.realtimeV2
+        let channel = SupabaseManager.shared.client.realtimeV2
             .channel("messages:\(groupId)")
-        let changes = await channel.postgresChange(
+        let changes = channel.postgresChange(
             InsertAction.self, schema: "public", table: "messages",
-            filter: "group_id=eq.\(groupId)")
-        await channel.subscribe()
+            filter: .eq("group_id", value: groupId))
+        _ = try? await channel.subscribeWithError()
         realtimeChannel = channel
 
         for await change in changes {
@@ -502,11 +505,12 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
             let meta = MessageMeta(fileType: fileType, fileUrl: fileUrl, fileName: fileName,
                                    content: content, materialType: mt)
 
-            await MainActor.run {
-                chatMessages.append(cm)
-                messageMeta[id] = meta
-                messagesCollectionView.reloadData()
-                messagesCollectionView.scrollToLastItem(animated: true)
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.chatMessages.append(cm)
+                self.messageMeta[id] = meta
+                self.messagesCollectionView.reloadData()
+                self.messagesCollectionView.scrollToLastItem(animated: true)
             }
         }
     }
@@ -514,8 +518,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
     // MARK: - Dictation
 
     private func handleMicTapped() {
-        if isRecording { stopDictation() }
-        else {
+        if isRecording { stopDictation() } else {
             SFSpeechRecognizer.requestAuthorization { [weak self] status in
                 DispatchQueue.main.async {
                     guard status == .authorized else { return }
@@ -627,7 +630,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
             }
 
         case .attributedText(let attr):
-            var found: URL? = nil
+            var found: URL?
             attr.enumerateAttribute(NSAttributedString.Key("customURL"),
                                     in: NSRange(location: 0, length: attr.length)) { v, _, _ in
                 if let u = v as? URL { found = u }
@@ -654,8 +657,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
 
         alert.addAction(UIAlertAction(title: "Copy", style: .default) { _ in
-            if case .text(let t) = cm.kind { UIPasteboard.general.string = t }
-            else if case .attributedText(let a) = cm.kind { UIPasteboard.general.string = a.string }
+            if case .text(let t) = cm.kind { UIPasteboard.general.string = t } else if case .attributedText(let a) = cm.kind { UIPasteboard.general.string = a.string }
         })
 
         if cm.sender.senderId == currentUser.senderId {
@@ -674,8 +676,7 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         messagesCollectionView.reloadData()
         Task {
             do { try await SupabaseManager.shared.deleteMessage(id: cm.messageId,
-                                                                 senderId: currentUser.senderId) }
-            catch { print("❌ unsend: \(error)") }
+                                                                 senderId: currentUser.senderId) } catch { print("❌ unsend: \(error)") }
         }
     }
 
@@ -719,8 +720,7 @@ extension ChatViewController: AttachmentSendDelegate {
                                               materialType: mt)
             Task {
                 do { try await SupabaseManager.shared.sendAttachment(
-                    groupId: groupId, senderId: currentUser.senderId, attachment: att) }
-                catch { print("❌ sendAttachment: \(error)") }
+                    groupId: groupId, senderId: currentUser.senderId, attachment: att) } catch { print("❌ sendAttachment: \(error)") }
             }
         }
         messagesCollectionView.reloadData()
@@ -764,10 +764,10 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
                     .insert(ImageInsert(group_id: gid, sender_id: sid, content: "📷 Image",
                                         file_url: publicUrl, file_name: "Image",
                                         file_type: "image")).execute()
-                await MainActor.run {
-                    self.messageMeta[msgId] = MessageMeta(fileType: "image", fileUrl: publicUrl,
-                                                          fileName: "Image", content: nil,
-                                                          materialType: nil)
+                DispatchQueue.main.async { [weak self] in
+                    self?.messageMeta[msgId] = MessageMeta(fileType: "image", fileUrl: publicUrl,
+                                                           fileName: "Image", content: nil,
+                                                           materialType: nil)
                 }
             } catch { print("❌ image upload: \(error)") }
         }
@@ -818,10 +818,10 @@ extension ChatViewController: UIDocumentPickerDelegate {
                     .insert(DocInsert(group_id: gid, sender_id: sid, content: fileName,
                                       file_url: publicUrl, file_name: fileName,
                                       file_type: "document")).execute()
-                await MainActor.run {
-                    self.messageMeta[msgId] = MessageMeta(fileType: "document", fileUrl: publicUrl,
-                                                          fileName: fileName, content: nil,
-                                                          materialType: nil)
+                DispatchQueue.main.async { [weak self] in
+                    self?.messageMeta[msgId] = MessageMeta(fileType: "document", fileUrl: publicUrl,
+                                                           fileName: fileName, content: nil,
+                                                           materialType: nil)
                 }
             } catch { print("❌ doc upload: \(error)") }
         }
@@ -984,8 +984,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
         guard let groupId = group?.id else { return }
         Task {
             do { try await SupabaseManager.shared.sendMessage(
-                groupId: groupId, senderId: currentUser.senderId, text: trimmed) }
-            catch { print("❌ sendMessage: \(error)") }
+                groupId: groupId, senderId: currentUser.senderId, text: trimmed) } catch { print("❌ sendMessage: \(error)") }
         }
     }
     func inputBar(_ inputBar: InputBarAccessoryView, textViewTextDidChangeTo text: String) {
@@ -1022,8 +1021,7 @@ extension ChatViewController: MessageCellDelegate {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         alert.addAction(UIAlertAction(title: "Copy", style: .default) { _ in
-            if case .text(let t) = cm.kind { UIPasteboard.general.string = t }
-            else if case .attributedText(let a) = cm.kind { UIPasteboard.general.string = a.string }
+            if case .text(let t) = cm.kind { UIPasteboard.general.string = t } else if case .attributedText(let a) = cm.kind { UIPasteboard.general.string = a.string }
         })
         if cm.sender.senderId == currentUser.senderId {
             alert.addAction(UIAlertAction(title: "Unsend", style: .destructive) { [weak self] _ in
@@ -1207,10 +1205,10 @@ private struct LocalImageMediaItem: MediaItem {
 }
 
 private class RemoteImageMediaItem: NSObject, MediaItem {
-    var url:   URL?
+    var url: URL?
     var image: UIImage?
     var placeholderImage: UIImage { UIImage(systemName: "photo") ?? UIImage() }
-    var size:  CGSize { CGSize(width: 200, height: 150) }
+    var size: CGSize { CGSize(width: 200, height: 150) }
     weak var collectionView: MessagesCollectionView?
 
     init(urlString: String?, collectionView: MessagesCollectionView? = nil) {

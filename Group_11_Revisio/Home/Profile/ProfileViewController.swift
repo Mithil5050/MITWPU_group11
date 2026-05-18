@@ -60,14 +60,14 @@ class ProfileViewController: UIViewController {
     @objc private func reloadProfile() {
         fetchUserData()
     }
-    
+
     private func fetchUserData() {
             Task {
                 do {
                     let user = try await supabase.auth.session.user
                     let userId = user.id.uuidString
                     let email = user.email ?? "No Email"
-                    
+
                     // Set email immediately
                     DispatchQueue.main.async { self.userEmail = email }
 
@@ -194,7 +194,7 @@ class ProfileViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Log Out", style: .destructive, handler: { _ in
             // 1. Reset the local phone storage first
             self.resetLocalData()
-            
+
             Task {
                 do {
                     try await supabase.auth.signOut()
@@ -220,9 +220,9 @@ class ProfileViewController: UIViewController {
             "stat_daily_solved",
             "stat_cards_viewed"
         ]
-        
+
         keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
-        
+
         // Reset the singleton so it doesn't hold old data in memory
         ProgressDataManager.shared.totalXP = 0
         ProgressDataManager.shared.userLevel = 1

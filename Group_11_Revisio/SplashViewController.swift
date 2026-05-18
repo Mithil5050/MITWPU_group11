@@ -78,7 +78,7 @@ final class SplashViewController: UIViewController {
 
             // Tagline
             subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 6),
-            subtitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            subtitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
 

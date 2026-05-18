@@ -1,7 +1,6 @@
-
 import Foundation
-struct Source :Codable {
+struct Source: Codable {
     var name: String
     let fileType: String
-    let size: String     
+    let size: String
 }

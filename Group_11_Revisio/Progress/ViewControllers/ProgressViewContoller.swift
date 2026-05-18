@@ -10,25 +10,25 @@ import SwiftUI
 import Charts
 
 class ProgressViewContoller: UIViewController {
-    
-    
+
+
     @IBOutlet weak var scrollView: UIScrollView!
-    
+
     @IBOutlet weak var chartContainerView: UIView!
     @IBOutlet weak var hoursStudiedHeaderLabel: UILabel!
-    
+
     @IBOutlet weak var achievementsHeaderLabel: UILabel!
     @IBOutlet weak var streaksCard: UIView!
     @IBOutlet weak var streaksLabel: UILabel!
     @IBOutlet weak var streaksCountLabel: UILabel!
 
     @IBOutlet weak var streaksDateLabel: UILabel!
-    
+
     @IBOutlet weak var awardsCard: UIView!
     @IBOutlet weak var awardsLabel: UILabel!
     @IBOutlet weak var monthNameLabel: UILabel!
     @IBOutlet weak var mainMonthBagdeImageView: UIImageView!
-    
+
             private let legendStackView = UIStackView()
             var studyModel = StudyChartModel()
             private var hostingController: UIHostingController<BarChartView>?
@@ -110,26 +110,24 @@ class ProgressViewContoller: UIViewController {
             // Overlay transparent button for Streaks Chevron (44x44 Hit Test Area)
             let streaksButton = UIButton(type: .system)
             streaksButton.backgroundColor = .clear
-            streaksButton.showsTouchWhenHighlighted = true
             streaksButton.translatesAutoresizingMaskIntoConstraints = false
             streaksButton.addTarget(self, action: #selector(streaksChevronTapped), for: .touchUpInside)
             streaksCard.addSubview(streaksButton)
-            
+
             NSLayoutConstraint.activate([
                 streaksButton.trailingAnchor.constraint(equalTo: streaksCard.trailingAnchor),
                 streaksButton.topAnchor.constraint(equalTo: streaksCard.topAnchor),
                 streaksButton.widthAnchor.constraint(equalToConstant: 44),
                 streaksButton.heightAnchor.constraint(equalToConstant: 44)
             ])
-            
+
             // Overlay transparent button for Awards Chevron (44x44 Hit Test Area)
             let awardsButton = UIButton(type: .system)
             awardsButton.backgroundColor = .clear
-            awardsButton.showsTouchWhenHighlighted = true
             awardsButton.translatesAutoresizingMaskIntoConstraints = false
             awardsButton.addTarget(self, action: #selector(awardsChevronTapped), for: .touchUpInside)
             awardsCard.addSubview(awardsButton)
-            
+
             NSLayoutConstraint.activate([
                 awardsButton.trailingAnchor.constraint(equalTo: awardsCard.trailingAnchor),
                 awardsButton.topAnchor.constraint(equalTo: awardsCard.topAnchor),

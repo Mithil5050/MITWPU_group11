@@ -1,51 +1,51 @@
 import UIKit
 
 class MaterialViewCell: UITableViewCell {
-    
+
     @IBOutlet weak var iconImageView: UIImageView!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
     @IBOutlet weak var iconContainerView: UIView!
     var onInfoButtonTapped: (() -> Void)?
-    
+
     override func awakeFromNib() {
         super.awakeFromNib()
-        
+
         self.selectionStyle = .default
-        
+
         let clearView = UIView()
         clearView.backgroundColor = .clear
         self.selectedBackgroundView = clearView
-        
+
         self.backgroundColor = .clear
-        
+
         self.contentView.backgroundColor = .systemGray6
         self.contentView.layer.cornerRadius = 12
-        
+
         self.contentView.layer.borderWidth = 0.5
         self.contentView.layer.borderColor = UIColor.separator.cgColor
-        
+
         self.contentView.clipsToBounds = true
-        
+
         titleLabel.numberOfLines = 2
         titleLabel.lineBreakMode = .byWordWrapping
         titleLabel.allowsDefaultTighteningForTruncation = true
     }
-    
+
     @IBAction func infoButtonAction(_ sender: UIButton) {
         onInfoButtonTapped?()
     }
-    
+
     func configure(with item: StudyItem) {
         let symbolname: String
         let iconColor: UIColor
         let rawName: String
-        
+
         switch item {
         case .topic(let topic):
             rawName = topic.name
             subtitleLabel.text = "\(topic.materialType) • \(topic.lastAccessed.asRelativeTime)"
-            
+
             switch topic.materialType {
             case "Quiz":
                 symbolname = "timer"
@@ -63,13 +63,13 @@ class MaterialViewCell: UITableViewCell {
                 symbolname = "doc.text.fill"
                 iconColor = .systemGray
             }
-            
+
         case .source(let source):
             rawName = source.name
             iconColor = .systemIndigo
-            
+
             let type = source.fileType.uppercased()
-            
+
             if type == "LINK" || type == "URL" {
                 symbolname = "link"
                 subtitleLabel.text = "Web Link"
@@ -87,25 +87,25 @@ class MaterialViewCell: UITableViewCell {
                 subtitleLabel.text = "\(type) • \(source.size)"
             }
         }
-        
+
         let cleanName = rawName.replacingOccurrences(of: ".txt", with: "")
                                .replacingOccurrences(of: "Note_", with: "")
                                .replacingOccurrences(of: "Link_", with: "")
                                .replacingOccurrences(of: "Image_", with: "")
                                .replacingOccurrences(of: "_", with: " ")
                                .trimmingCharacters(in: .whitespaces)
-        
+
         titleLabel.text = cleanName
-        
+
         iconImageView.image = UIImage(systemName: symbolname)
         iconImageView.tintColor = iconColor
         iconContainerView.backgroundColor = iconColor.withAlphaComponent(0.15)
         iconContainerView.layer.cornerRadius = 8
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
-        
+
         let bottomGap: CGFloat = 6
         contentView.frame = CGRect(
             x: 0,
@@ -117,7 +117,7 @@ class MaterialViewCell: UITableViewCell {
 
     override func setEditing(_ editing: Bool, animated: Bool) {
         super.setEditing(editing, animated: animated)
-        
+
         if animated {
             UIView.animate(withDuration: 0.3) {
                 self.applyInternalShift(isEditing: editing)

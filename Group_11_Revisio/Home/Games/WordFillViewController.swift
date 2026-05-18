@@ -24,20 +24,20 @@ class WordFillViewController: UIViewController {
     @IBOutlet weak var progressLabel: UILabel!
     @IBOutlet weak var progressView: UIProgressView!
     @IBOutlet weak var questionLabel: UILabel!
-    
+
     @IBOutlet var optionButtons: [UIButton]!
     @IBOutlet var Gamecard: UIView!
 
     // MARK: - Properties
     var currentTopic: Topic? // ✅ Passed from Launch Screen
-    
+
     private var questions: [Question] = []
     private var currentQuestionIndex = 0
     private var timer: Timer?
     private var secondsRemaining = 60
     private var isProcessingAnswer = false
     private var userAnswers: [String?] = []
-    
+
     // Loading UI
     private lazy var loadingOverlayView = GameLoadingOverlayView(
         title: "Crafting your Word Fill from \(currentTopic?.name ?? "General Knowledge")...",
@@ -60,12 +60,12 @@ class WordFillViewController: UIViewController {
         } else {
             self.title = "Word Fill"
         }
-        
+
         // MARK: Card Style
         Gamecard.layer.cornerRadius = 24
         Gamecard.layer.cornerCurve = .continuous
         Gamecard.backgroundColor = UIColor(red: 145/255, green: 193/255, blue: 239/255, alpha: 1.0)
-        
+
         // MARK: Button Style
         for button in optionButtons {
             button.layer.cornerRadius = 20
@@ -76,7 +76,7 @@ class WordFillViewController: UIViewController {
             button.titleLabel?.textAlignment = .center
         }
     }
-    
+
     private func setupLoadingOverlay() {
         loadingOverlayView.show(in: view)
     }
@@ -84,16 +84,15 @@ class WordFillViewController: UIViewController {
     // MARK: - ✅ AI GENERATION LOGIC
     private func generateWordFill() {
         Task {
-            let topicName = currentTopic?.name ?? "General Knowledge"
             let contentBody = currentTopic?.largeContentBody ?? currentTopic?.notesContent ?? currentTopic?.cheatsheetContent ?? ""
             let safeContent = String(contentBody.prefix(15000))
-            
+
             let prompt = """
             Create a "Word Fill" (fill-in-the-blank) game based on the following study material.
             Generate EXACTLY 5 fill-in-the-blank questions.
             Each question MUST have a sentence with a "________" (blank) where the missing word goes.
             Provide exactly 4 multiple choice options, with one being the exact correct answer.
-            
+
             STRICTLY use this EXACT JSON format (do not add conversational text or markdown):
             {
               "questions": [
@@ -104,11 +103,11 @@ class WordFillViewController: UIViewController {
                 }
               ]
             }
-            
+
             STUDY MATERIAL:
             \(safeContent.isEmpty ? "General educational facts and trivia." : safeContent)
             """
-            
+
             do {
                 let jsonResponse = try await AIContentManager.shared.generateContent(
                     topic: prompt,
@@ -116,22 +115,22 @@ class WordFillViewController: UIViewController {
                     count: 5,
                     difficulty: "Medium"
                 )
-                
+
                 let cleanJSON = cleanJSONText(jsonResponse)
                 guard let data = cleanJSON.data(using: .utf8) else { throw URLError(.cannotDecodeContentData) }
-                
+
                 let decoder = JSONDecoder()
                 let result = try decoder.decode(AIWordFillResponse.self, from: data)
-                
+
                 self.questions = result.questions.map {
                     Question(text: $0.text, options: $0.options, correctAnswer: $0.correctAnswer)
                 }
                 self.userAnswers = Array(repeating: nil, count: self.questions.count)
-                
+
                 DispatchQueue.main.async {
                     self.hideLoadingAndStartGame()
                 }
-                
+
             } catch {
                 print("⚠️ AI Word Fill Failed: \(error.localizedDescription). Using fallback.")
                 DispatchQueue.main.async {
@@ -141,7 +140,7 @@ class WordFillViewController: UIViewController {
             }
         }
     }
-    
+
     private func cleanJSONText(_ json: String) -> String {
         var clean = json
         if clean.contains("```json") { clean = clean.replacingOccurrences(of: "```json", with: "") }
@@ -150,7 +149,7 @@ class WordFillViewController: UIViewController {
         if let endIndex = clean.lastIndex(of: "}") { clean = String(clean[...endIndex]) }
         return clean.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
+
     private func loadFallbackQuestions() {
         questions = [
             Question(text: "A column that uniquely identifies every tuple in a relation is known as a ________",
@@ -183,11 +182,11 @@ class WordFillViewController: UIViewController {
         guard !questions.isEmpty else { return }
         isProcessingAnswer = false
         let currentQuestion = questions[currentQuestionIndex]
-        
+
         questionLabel.text = currentQuestion.text
         progressLabel.text = "Question \(currentQuestionIndex + 1)/\(questions.count)"
         progressView.setProgress(Float(currentQuestionIndex + 1) / Float(questions.count), animated: true)
-        
+
         for (index, button) in optionButtons.enumerated() {
             if index < currentQuestion.options.count {
                 button.setTitle(currentQuestion.options[index], for: .normal)
@@ -195,7 +194,7 @@ class WordFillViewController: UIViewController {
             } else {
                 button.isHidden = true
             }
-            
+
             // MARK: - RESET STATE
             button.backgroundColor = .systemBackground
             button.setTitleColor(.label, for: .normal)
@@ -209,13 +208,13 @@ class WordFillViewController: UIViewController {
     @IBAction func optionTapped(_ sender: UIButton) {
         guard !isProcessingAnswer else { return }
         isProcessingAnswer = true
-        
+
         guard let userAnswer = sender.titleLabel?.text else { return }
         let currentQuestion = questions[currentQuestionIndex]
         let correctAnswer = currentQuestion.correctAnswer
-        
+
         userAnswers[currentQuestionIndex] = userAnswer
-        
+
         optionButtons.forEach { $0.isEnabled = false }
 
         // MARK: - SELECTION STYLE
@@ -229,7 +228,7 @@ class WordFillViewController: UIViewController {
             sender.layer.borderColor = UIColor.systemRed.cgColor
             highlightCorrectAnswer(correctAnswer)
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
             self?.moveToNextQuestion()
         }
@@ -257,31 +256,31 @@ class WordFillViewController: UIViewController {
     }
 
     private func showFinalResults() {
-        
+
         ProgressDataManager.shared.totalWordFillsDone += 1
         timer?.invalidate()
-        
+
         let (result, summaryItems) = processQuizData()
-        
+
         // Award XP
         Task { await RevisioManager.shared.earnXP(amount: 15, reason: "Played Word Fill") }
         let elapsed = Double(60 - secondsRemaining) / 60.0
         ProgressDataManager.shared.logSession(minutes: max(elapsed, 1.0), category: "Games")
-        
+
         performSegue(withIdentifier: "NavigateToResults", sender: (result, summaryItems))
     }
-    
+
     private func processQuizData() -> (FinalQuizResult, [QuizSummaryItem]) {
         var score = 0
         var details: [QuestionResultDetail] = []
         var summaryItems: [QuizSummaryItem] = []
-        
+
         for (index, question) in questions.enumerated() {
             let userAnswerText = userAnswers[index]
             let isCorrect = (userAnswerText == question.correctAnswer)
-            
+
             if isCorrect { score += 1 }
-            
+
             let detail = QuestionResultDetail(
                 questionText: question.text,
                 wasCorrect: isCorrect,
@@ -290,10 +289,10 @@ class WordFillViewController: UIViewController {
                 isFlagged: false
             )
             details.append(detail)
-            
+
             let correctIndex = question.options.firstIndex(of: question.correctAnswer) ?? 0
             let userIndex = question.options.firstIndex(of: userAnswerText ?? "")
-            
+
             let item = QuizSummaryItem(
                 questionText: question.text,
                 userAnswerIndex: userIndex,
@@ -304,7 +303,7 @@ class WordFillViewController: UIViewController {
             )
             summaryItems.append(item)
         }
-        
+
         let elapsed = TimeInterval(60 - secondsRemaining)
         let finalResult = FinalQuizResult(
             finalScore: score,
@@ -313,7 +312,7 @@ class WordFillViewController: UIViewController {
             sourceName: currentTopic?.name ?? "Word Fill Game",
             details: details
         )
-        
+
         return (finalResult, summaryItems)
     }
 
@@ -332,13 +331,13 @@ class WordFillViewController: UIViewController {
             }
         }
     }
-    
+
     // MARK: - Navigation Prepare
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "NavigateToResults" {
             if let destVC = segue.destination as? QuizResultsViewController,
                let (result, summaryItems) = sender as? (FinalQuizResult, [QuizSummaryItem]) {
-                
+
                 destVC.finalResult = result
                 destVC.summaryData = summaryItems
                 destVC.parentFolder = "Games"

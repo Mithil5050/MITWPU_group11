@@ -62,8 +62,7 @@ class SupabaseManager {
         }
         let dto = TopicDTO(id: topic.id, user_id: userId, name: topic.name,
                            subject: topic.parentSubjectName, type: topic.materialType, content: topic)
-        do { try await client.from("topics").upsert(dto).execute() }
-        catch { print("❌ Topic Backup Failed: \(error)") }
+        do { try await client.from("topics").upsert(dto).execute() } catch { print("❌ Topic Backup Failed: \(error)") }
     }
 
     // MARK: - 3. Fetch Messages
@@ -130,8 +129,8 @@ class SupabaseManager {
         }
         try await client.from("messages")
             .insert(AttachInsert(group_id: gid, sender_id: sid,
-                                 content:   attachment.content,
-                                 file_url:  fileUrl,
+                                 content: attachment.content,
+                                 file_url: fileUrl,
                                  file_name: attachment.displayName,
                                  file_type: attachment.fileType))
             .execute()
@@ -372,7 +371,7 @@ class SupabaseManager {
         let statDocsUploaded: Int
         let earnedBadgeIds: [String]
         let streakDotDates: [String]
-        
+
         enum CodingKeys: String, CodingKey {
             case totalXP = "total_xp", currentLevel = "current_level", currentStreak = "current_streak"
             case statQuizzesDone = "stat_quizzes_done", statHighQuizzes = "stat_high_quizzes"
@@ -406,7 +405,7 @@ class SupabaseManager {
             .single()
             .execute()
             .value
-            
+
         return profile
     }
 
@@ -440,20 +439,20 @@ class SupabaseManager {
         do {
             try await client.from("profiles")
                 .update(StatsUpdate(
-                    stat_quizzes_done:    mgr.totalQuizzesDone,
-                    stat_high_quizzes:    mgr.totalHighLevelQuizzes,
-                    stat_daily_solved:    mgr.totalDailyChallengesSolved,
-                    stat_cards_viewed:    mgr.totalFlashcardsViewed,
-                    stat_notes_gen:       mgr.totalNotesGenerated,
-                    stat_cheat_gen:       mgr.totalCheatsheetsGenerated,
-                    stat_quests_done:     mgr.totalQuestsCompleted,
-                    stat_wordfill_done:   mgr.totalWordFillsDone,
+                    stat_quizzes_done: mgr.totalQuizzesDone,
+                    stat_high_quizzes: mgr.totalHighLevelQuizzes,
+                    stat_daily_solved: mgr.totalDailyChallengesSolved,
+                    stat_cards_viewed: mgr.totalFlashcardsViewed,
+                    stat_notes_gen: mgr.totalNotesGenerated,
+                    stat_cheat_gen: mgr.totalCheatsheetsGenerated,
+                    stat_quests_done: mgr.totalQuestsCompleted,
+                    stat_wordfill_done: mgr.totalWordFillsDone,
                     stat_connections_win: mgr.totalConnectionsWon,
-                    stat_focus_sessions:  mgr.totalFocusSessions,
-                    stat_messages_sent:   mgr.totalMessagesSent,
-                    stat_docs_uploaded:   mgr.totalDocumentsUploaded,
-                    earned_badge_ids:     earnedIds,
-                    streak_dot_dates:     dotDates
+                    stat_focus_sessions: mgr.totalFocusSessions,
+                    stat_messages_sent: mgr.totalMessagesSent,
+                    stat_docs_uploaded: mgr.totalDocumentsUploaded,
+                    earned_badge_ids: earnedIds,
+                    streak_dot_dates: dotDates
                 ))
                 .eq("id", value: userId)
                 .execute()
@@ -470,10 +469,10 @@ let supabase = SupabaseManager.shared.client
 ////  Group_11_Revisio
 ////
 //
-//import Foundation
-//import Supabase
+// import Foundation
+// import Supabase
 //
-//class SupabaseManager {
+// class SupabaseManager {
 //    static let shared = SupabaseManager()
 //
 //    private let projectURL = URL(string: "https://mdtphliezfsqiqbgceen.supabase.co")!
@@ -963,7 +962,7 @@ let supabase = SupabaseManager.shared.client
 //            print("❌ syncUserStats failed: \(error)")
 //        }
 //    }
-//}
+// }
 //
 //// ✅ Global shortcut used by Auth screens
-//let supabase = SupabaseManager.shared.client
+// let supabase = SupabaseManager.shared.client

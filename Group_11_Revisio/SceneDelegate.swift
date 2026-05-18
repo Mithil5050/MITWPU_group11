@@ -29,22 +29,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         Task {
             // Run auth check and minimum timer in parallel
-            async let authResult: Bool = {
-                do {
-                    _ = try await SupabaseManager.shared.client.auth.session
-                    ProgressDataManager.shared.restoreFromSupabase()
-                    return true   // logged in
-                } catch {
-                    return false  // not logged in
+            let isLoggedIn = await withTaskGroup(of: Bool?.self) { group in
+                group.addTask {
+                    do {
+                        _ = try await SupabaseManager.shared.client.auth.session
+                        await ProgressDataManager.shared.restoreFromSupabase()
+                        return true
+                    } catch {
+                        return false
+                    }
                 }
-            }()
+                group.addTask {
+                    try? await Task.sleep(nanoseconds: UInt64(minimumSplashDuration * 1_000_000_000))
+                    return nil  // timer task always returns nil
+                }
 
-            async let timerDone: Void = {
-                try? await Task.sleep(nanoseconds: UInt64(minimumSplashDuration * 1_000_000_000))
-            }()
-
-            // Wait for BOTH to finish before we transition
-            let (isLoggedIn, _) = await (authResult, timerDone)
+                var loggedIn = false
+                for await result in group {
+                    if let r = result { loggedIn = r }
+                }
+                return loggedIn
+            }
 
             DispatchQueue.main.async {
                 splash.stopPlayback()

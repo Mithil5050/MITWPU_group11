@@ -57,7 +57,7 @@ class DocumentPreviewViewController: UIViewController {
     @objc private func closeTapped() {
         dismiss(animated: true)
     }
-    
+
     @objc private func shareDocument() {
         guard let documentURL = documentURL else { return }
 

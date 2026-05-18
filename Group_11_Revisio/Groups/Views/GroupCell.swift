@@ -20,10 +20,6 @@ class GroupCell: UITableViewCell {
         self.selectionStyle = .none
     }
 
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-    }
-
     // Called from GroupsViewController — pass nil/empty for default icon
     func configureAvatar(_ avatarUrl: String?) {
         if let urlString = avatarUrl, !urlString.isEmpty, let url = URL(string: urlString) {

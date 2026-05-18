@@ -11,10 +11,6 @@ class CreateGroupViewController: UIViewController {
 
     @IBOutlet weak var groupNameTextField: UITextField!
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-    }
-
     @IBAction func generateButtonTapped(_ sender: UIButton) {
         let nameText = groupNameTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let groupName = nameText.isEmpty ? "New Group" : nameText

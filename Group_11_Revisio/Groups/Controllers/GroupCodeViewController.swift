@@ -19,7 +19,7 @@ class GroupCodeViewController: UIViewController {
     private var inviteCode: String = ""
 
     var isFromCreateGroup: Bool = true
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -46,7 +46,7 @@ class GroupCodeViewController: UIViewController {
             shareButton.layer.cornerRadius = shareButton.bounds.height / 2
             shareButton.clipsToBounds = true
         }
-    
+
     private func setCustomBackAsClose() {
         let closeItem = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeWholeFlow))
         navigationItem.leftBarButtonItem = closeItem
@@ -54,7 +54,7 @@ class GroupCodeViewController: UIViewController {
 
         // MARK: - Update UI text
         private func updateLabels() {
-            
+
             if isFromCreateGroup {
                 groupCreatedLabel.text = "Group \"\(groupName)\" Created"
             } else {
@@ -73,7 +73,7 @@ class GroupCodeViewController: UIViewController {
             UIPasteboard.general.string = inviteCode
 
             // Save original image (or use a sensible fallback)
-            let fallback = UIImage(systemName: "doc.on.doc")?.withRenderingMode(.alwaysTemplate)
+            let fallback = UIImage(systemName: "document.on.document")?.withRenderingMode(.alwaysTemplate)
             let originalImage = sender.image(for: .normal) ?? fallback
 
             // Success image
@@ -117,7 +117,7 @@ class GroupCodeViewController: UIViewController {
 
                 present(ac, animated: true)
     }
-    
+
     @objc private func closeWholeFlow() {
         // This dismisses the entire modal navigation controller
         dismiss(animated: true)

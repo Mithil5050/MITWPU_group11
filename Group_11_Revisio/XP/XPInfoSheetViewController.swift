@@ -15,7 +15,7 @@ class XPInfoSheetViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        
+
         // dynamic navigation title based on current level
         let manager = ProgressDataManager.shared
         navigationItem.title = "Level \(manager.userLevel)"
@@ -57,7 +57,7 @@ class XPInfoSheetViewController: UIViewController {
         ))
 
         contentStack.addArrangedSubview(makeDivider())
-        
+
         // "How XP Works" 
         let mainHeadingLabel = UILabel()
         mainHeadingLabel.text = "How XP Works"
@@ -87,18 +87,18 @@ class XPInfoSheetViewController: UIViewController {
             "XP measures your learning activity across ReviseQ. " +
             "The more you study, the faster you level up."
         ))
-        
+
         // How XP is earned
         contentStack.addArrangedSubview(makeDivider())
         contentStack.addArrangedSubview(makeHeading("How You Earn XP"))
 
         let earningItems: [(String, UIColor, String)] = [
-            ("checkmark.circle.fill", .systemIndigo,  "Completing a quiz"),
-            ("rectangle.on.rectangle.angled",  .systemIndigo, "Reviewing flashcards"),
-            ("doc.text.fill",            .systemIndigo,   "Generating AI notes or cheatsheets"),
-            ("flame.fill",                     .systemIndigo, "Maintaining your daily streak (+100 XP / day)"),
-            ("trophy.fill",                    .systemIndigo, "Unlocking and earning badges"),
-            ("target",                          .systemIndigo,   "Completing quests and practice sessions")
+            ("checkmark.circle.fill", .systemIndigo, "Completing a quiz"),
+            ("rectangle.on.rectangle.angled", .systemIndigo, "Reviewing flashcards"),
+            ("doc.text.fill", .systemIndigo, "Generating AI notes or cheatsheets"),
+            ("flame.fill", .systemIndigo, "Maintaining your daily streak (+100 XP / day)"),
+            ("trophy.fill", .systemIndigo, "Unlocking and earning badges"),
+            ("target", .systemIndigo, "Completing quests and practice sessions")
         ]
 
         for (icon, color, text) in earningItems {

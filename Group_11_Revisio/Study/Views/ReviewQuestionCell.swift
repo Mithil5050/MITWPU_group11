@@ -1,28 +1,17 @@
-
 import UIKit
 
 class ReviewQuestionCell: UITableViewCell {
-    
+
     @IBOutlet weak var QuestionLabel: UILabel!
-    
+
     @IBOutlet weak var userAnswerLabel: UILabel!
-    
+
     @IBOutlet weak var correctAnswerLabel: UILabel!
-    
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        
-    }
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-    }
     func configure(with detail: QuestionResultDetail, index: Int) {
 
         QuestionLabel.numberOfLines = 0
         QuestionLabel.text = "Q\(index + 1). \(detail.questionText)"
-        
+
         let userAnswerText = detail.selectedAnswer ?? "N/A"
         userAnswerLabel.text = "Your answer: \(userAnswerText)"
 

@@ -25,14 +25,6 @@
 			</array>
 		</dict>
 	</array>
-	<key>CFBundleDisplayName</key>
-	<string>ReviseQ</string>
-	<key>UIUserInterfaceStyle</key>
-	<string>Dark</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Allow microphone access for voice messages.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Allow speech recognition to convert voice to text.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

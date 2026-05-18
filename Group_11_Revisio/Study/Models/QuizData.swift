@@ -8,7 +8,7 @@ struct QuizQuestion: Codable {
     let questionText: String
     let answers: [String]
     let correctAnswerIndex: Int
-    var userAnswerIndex: Int? = nil
+    var userAnswerIndex: Int?
     var isFlagged: Bool = false
     var hint: String
 }
@@ -22,7 +22,7 @@ let allQuizSources: [SourceTopic] = [
 ]
 
 struct QuizManager {
-    
+
     static let quizDataBySource: [String: [QuizQuestion]] = [
         "Limits ": [
                     QuizQuestion(
@@ -74,7 +74,7 @@ struct QuizManager {
                         hint: "For limits at infinity of rational functions, compare the leading coefficients of the highest power."
                     )
                 ],
-        
+
         "Taylor Series PDF": [
             QuizQuestion(
                 questionText: "What is the formula for the Taylor Series expansion around a point 'a'?",
@@ -101,7 +101,7 @@ struct QuizManager {
                 hint: "The formula fundamentally requires derivatives to exist."
             )
         ],
-        
+
         "Prof. Leonard Channel": [
             QuizQuestion(
                 questionText: "If Prof. Leonard discusses L'Hpital's Rule, what kind of indeterminate form must the limit have?",
@@ -128,7 +128,7 @@ struct QuizManager {
                 hint: "Think of an ending point or final value."
             )
         ],
-        
+
         "Derivative Rules Cheat": [
             QuizQuestion(
                 questionText: "The derivative of a constant (e.g., f(x) = 5) is always:",
@@ -210,7 +210,7 @@ struct QuizManager {
             )
         ]
     ]
-    
+
     static func getQuestions(for sourceName: String) -> [QuizQuestion] {
         return quizDataBySource[sourceName] ?? []
     }

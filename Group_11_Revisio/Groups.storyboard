@@ -459,7 +459,7 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="u76-6E-PPc">
-                        <barButtonItem key="leftBarButtonItem" style="plain" systemItem="cancel" id="TGp-tZ-trg">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="TGp-tZ-trg">
                             <connections>
                                 <action selector="closeButtonTapped:" destination="Azk-wC-QxV" id="acz-TW-mMR"/>
                             </connections>
@@ -528,7 +528,7 @@
                                         </constraints>
                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="plain" image="doc.on.doc" catalog="system"/>
+                                        <buttonConfiguration key="configuration" style="plain" image="document.on.document" catalog="system"/>
                                         <userDefinedRuntimeAttributes>
                                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
                                                 <integer key="value" value="22"/>
@@ -1023,27 +1023,10 @@
             <point key="canvasLocation" x="-2315.2671755725191" y="-273.23943661971833"/>
         </scene>
         <!--Navigation Controller-->
-        <scene sceneID="u6s-e0-TBp">
-            <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="nJw-M7-Du4" sceneMemberID="viewController">
-                    <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="37x-Di-ikF">
-                        <rect key="frame" x="0.0" y="124" width="402" height="54"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </navigationBar>
-                    <nil name="viewControllers"/>
-                    <connections>
-                        <segue destination="2VZ-bf-bOu" kind="relationship" relationship="rootViewController" id="jdp-86-mjV"/>
-                    </connections>
-                </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="t9g-SQ-4VI" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-2316.4179104477612" y="486.72768878718534"/>
-        </scene>
     </scenes>
     <resources>
         <image name="arrow.up.circle.fill" catalog="system" width="128" height="123"/>
-        <image name="doc.on.doc" catalog="system" width="116" height="128"/>
+        <image name="document.on.document" catalog="system" width="116" height="128"/>
         <image name="person.2" catalog="system" width="128" height="87"/>
         <image name="person.3.fill" catalog="system" width="128" height="66"/>
         <image name="plus.circle" catalog="system" width="128" height="123"/>

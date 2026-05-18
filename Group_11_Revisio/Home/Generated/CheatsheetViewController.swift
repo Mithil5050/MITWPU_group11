@@ -1,19 +1,19 @@
 import UIKit
 
 class CheatsheetViewController: UIViewController {
-    
+
     // MARK: - Outlets
     @IBOutlet weak var contentView: UITextView!
     @IBOutlet var optionsBarButton: UIBarButtonItem!
     @IBOutlet var editDoneBarButton: UIBarButtonItem!
-    
+
     // MARK: - Data Properties
     var currentTopic: Topic?
     var parentSubjectName: String?
-    
+
     private var isEditingMode: Bool = false
     private var sessionStartDate: Date?
-    
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -21,7 +21,7 @@ class CheatsheetViewController: UIViewController {
         contentView.delegate = self
         setupNavigationButtons()
         displayContent()
-        
+
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -39,7 +39,7 @@ class CheatsheetViewController: UIViewController {
         }
         sessionStartDate = nil
     }
-    
+
     // MARK: - Content Loading & Management
     func displayContent() {
         guard let topic = currentTopic else { return }
@@ -53,7 +53,7 @@ class CheatsheetViewController: UIViewController {
         titleLabel.lineBreakMode = .byWordWrapping
         titleLabel.sizeToFit()
         navigationItem.titleView = titleLabel
-        
+
         var textToDisplay = ""
         if let directContent = topic.cheatsheetContent, !directContent.isEmpty {
             textToDisplay = directContent
@@ -64,14 +64,14 @@ class CheatsheetViewController: UIViewController {
         if !textToDisplay.isEmpty {
             let fullAttributedString = NSMutableAttributedString(string: textToDisplay)
             let range = NSRange(location: 0, length: textToDisplay.utf16.count)
-            
+
             // Slightly smaller base font for cheatsheet tables
             fullAttributedString.addAttribute(.font, value: UIFont.monospacedSystemFont(ofSize: 14, weight: .regular), range: range)
             fullAttributedString.addAttribute(.foregroundColor, value: UIColor.label, range: range)
 
             let lines = textToDisplay.components(separatedBy: "\n")
             var currentOffset = 0
-            
+
             for line in lines {
                 if line.hasPrefix("##") || line.hasPrefix("###") {
                     let lineRange = NSRange(location: currentOffset, length: line.utf16.count)
@@ -80,25 +80,25 @@ class CheatsheetViewController: UIViewController {
                 }
                 currentOffset += line.utf16.count + 1
             }
-            
+
             contentView.attributedText = fullAttributedString
         } else {
             showPlaceholder()
         }
     }
-    
+
     // ✅ NEW: Markdown Renderer
     private func renderMarkdown(text: String) -> NSAttributedString {
         do {
             var options = AttributedString.MarkdownParsingOptions()
             options.interpretedSyntax = .full
-            
+
             var attributedString = try AttributedString(markdown: text, options: options)
-            
+
             // Set Styling
             attributedString.font = .systemFont(ofSize: 16) // Slightly smaller for dense cheatsheets
             attributedString.foregroundColor = .label
-            
+
             return NSAttributedString(attributedString)
         } catch {
             return NSAttributedString(string: text, attributes: [
@@ -107,23 +107,23 @@ class CheatsheetViewController: UIViewController {
             ])
         }
     }
-    
+
     private func showPlaceholder() {
         contentView.text = "Paste or type your cheatsheet here..."
         contentView.textColor = .secondaryLabel
         contentView.font = .systemFont(ofSize: 16)
     }
-    
+
     func saveChanges() {
         guard let topic = currentTopic,
               let subject = parentSubjectName,
               let updatedText = contentView.text else { return }
-        
+
         if updatedText == "Paste or type your cheatsheet here..." { return }
-        
+
         DataManager.shared.updateTopicContent(subject: subject, topicName: topic.name, newText: updatedText)
     }
-    
+
     // MARK: - Navigation Bar Actions
     func setupNavigationButtons() {
         guard let editButton = editDoneBarButton,
@@ -132,22 +132,22 @@ class CheatsheetViewController: UIViewController {
         editButton.target = self
         editButton.action = #selector(editButtonTapped)
         editButton.menu = nil
-        
+
         optionsButton.target = nil
         optionsButton.action = nil
         optionsButton.menu = buildOptionsMenu()
-      
+
         navigationItem.rightBarButtonItems = [editButton, optionsButton]
         updateUIForState()
     }
-    
+
     func buildOptionsMenu() -> UIMenu {
         let shareAction = UIAction(title: "Share Cheatsheet", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
             self?.shareContent(self!.editDoneBarButton)
         }
         let pinAction = UIAction(title: "Pin Cheatsheet", image: UIImage(systemName: "pin.fill")) { _ in print("Action: Pin Toggled") }
         let deleteAction = UIAction(title: "Delete Cheatsheet", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in print("Action: Delete Cheatsheet") }
-        
+
         return UIMenu(title: "", children: [UIMenu(title: "Actions", options: .displayInline, children: [shareAction, pinAction]), UIMenu(title: "", options: .displayInline, children: [deleteAction])])
     }
 
@@ -157,13 +157,13 @@ class CheatsheetViewController: UIViewController {
         activityVC.popoverPresentationController?.barButtonItem = sender
         present(activityVC, animated: true)
     }
- 
+
     @objc func editButtonTapped() {
         if isEditingMode { saveChanges() }
         isEditingMode.toggle()
         updateUIForState()
     }
-    
+
     @IBAction func saveButtonTapped(_ sender: Any) {
         saveChanges()
         if isEditingMode {
@@ -173,7 +173,7 @@ class CheatsheetViewController: UIViewController {
         view.endEditing(true)
         showSaveConfirmation()
     }
-    
+
     func showSaveConfirmation() {
         let folderName = parentSubjectName ?? "Files"
         let alert = UIAlertController(title: "Saved!", message: "Material has been successfully saved to '\(folderName)' in Study tab.", preferredStyle: .alert)

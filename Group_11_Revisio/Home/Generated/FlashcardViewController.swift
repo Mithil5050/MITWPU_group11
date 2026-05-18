@@ -38,7 +38,7 @@ private class CardSlotView: UIView {
 
     private func setup() {
         backgroundColor = UIColor(red: 0.13, green: 0.15, blue: 0.24, alpha: 1.0)
-        
+
         // Add subtle gradient
         let gradient = CAGradientLayer()
         gradient.colors = [
@@ -50,7 +50,7 @@ private class CardSlotView: UIView {
         gradient.cornerRadius = 20
         gradient.frame = bounds
         layer.insertSublayer(gradient, at: 0)
-        
+
         layer.cornerRadius = 20
         layer.borderWidth = 3.0
         layer.masksToBounds = false
@@ -79,7 +79,7 @@ private class CardSlotView: UIView {
         layer.shadowOpacity = 0.6
         layer.shadowOffset = .zero
         layer.shadowRadius = 10
-        
+
         if let grad = layer.sublayers?.first as? CAGradientLayer {
             grad.frame = bounds
         }
@@ -132,10 +132,10 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         tf.layer.masksToBounds = true
         tf.layer.borderWidth = 1.5
         tf.layer.borderColor = UIColor.systemPurple.withAlphaComponent(0.8).cgColor
-        
+
         let placeholderAttributes: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor.lightGray]
         tf.attributedPlaceholder = NSAttributedString(string: "Type keyword here...", attributes: placeholderAttributes)
-        
+
         tf.isHidden = true
         tf.autocorrectionType = .no
         tf.autocapitalizationType = .none
@@ -166,8 +166,8 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         let yOff: CGFloat; let scale: CGFloat; let alpha: CGFloat; let xRotDeg: CGFloat; let zOff: CGFloat
     }
     private let cfgPrev  = SlotCfg(yOff: -90, scale: 0.92, alpha: 0.45, xRotDeg: 0, zOff: -80)
-    private let cfgFront = SlotCfg(yOff:    0, scale: 1.00, alpha: 1.00, xRotDeg: 0, zOff: 100)
-    private let cfgNext  = SlotCfg(yOff:   90, scale: 0.92, alpha: 0.45, xRotDeg: 0, zOff: -80)
+    private let cfgFront = SlotCfg(yOff: 0, scale: 1.00, alpha: 1.00, xRotDeg: 0, zOff: 100)
+    private let cfgNext  = SlotCfg(yOff: 90, scale: 0.92, alpha: 0.45, xRotDeg: 0, zOff: -80)
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -193,7 +193,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         } else if let fallback = currentTopic?.notesContent, !fallback.isEmpty {
             unpackFlashcards(from: fallback)
         }
-        
+
         // Resume from saved progress
         if let topic = currentTopic {
             if let savedIndex = topic.currentProgressIndex,
@@ -201,7 +201,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
                savedIndex < total {
                 currentCardIndex = savedIndex
             }
-            
+
             // Always start in Normal Mode from Home, unless state is changed via results
             isChallengePhase = false
             isTermDisplayed = true
@@ -222,7 +222,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
             UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addFlashcardTapped)),
             UIBarButtonItem(image: UIImage(systemName: "info.circle"), style: .plain, target: self, action: #selector(showInstructions))
         ]
-        
+
         // Custom Back Button for Exit Warning
         let backAction = UIAction { [weak self] _ in
             self?.showExitWarning()
@@ -230,11 +230,11 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), primaryAction: backAction)
         navigationController?.interactivePopGestureRecognizer?.isEnabled = false
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         navigationController?.interactivePopGestureRecognizer?.isEnabled = true
-        
+
         // Save current progress before quitting
         if var topic = currentTopic, !flashcards.isEmpty {
             let knownCount = globalCardStates.values.filter { $0 == true }.count
@@ -351,7 +351,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
 
         let card = flashcards[currentCardIndex]
         frontCard.configure(isTerm: isTermDisplayed, text: isTermDisplayed ? card.term : card.definition)
-        
+
         if isShowingSuccessState {
             frontCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.8)
             frontCard.layer.borderColor = UIColor.systemGreen.cgColor
@@ -359,7 +359,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         } else {
             frontCard.backgroundColor = UIColor(red: 0.13, green: 0.15, blue: 0.24, alpha: 1.0)
         }
-        
+
         frontCard.layer.borderWidth = 2.8
 
         if currentCardIndex > 0 {
@@ -622,10 +622,10 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
                     nextRound.append(card)
                 }
             }
-            
+
             isAnimating = false
             frontCard.isHidden = true
-            
+
             if nextRound.isEmpty {
                 showResultsScreen()
             } else {
@@ -664,13 +664,13 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         // Mark as known for results
         let term = flashcards[currentCardIndex].term
         globalCardStates[term] = true
-        
+
         challengeTextField.text = ""
         challengeTextField.resignFirstResponder()
         UISelectionFeedbackGenerator().selectionChanged()
-        
+
         isShowingSuccessState = true
-        
+
         UIView.animate(withDuration: 0.25, animations: {
             self.frontCard.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.8)
             self.frontCard.layer.borderColor = UIColor.systemGreen.cgColor
@@ -678,7 +678,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         }, completion: { _ in
             self.isTermDisplayed = true // Reveal the term briefly
             self.refreshCarousel(animated: true)
-            
+
             // Wait 1.2s then advance
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
                 guard let self = self else { return }
@@ -697,17 +697,17 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
             textField.resignFirstResponder()
             return true
         }
-        
+
         let text = (textField.text ?? "").trimmingCharacters(in: .whitespaces)
         let card = flashcards[currentCardIndex]
         let kw = card.keyword.isEmpty ? card.term.lowercased() : card.keyword.lowercased()
-        
+
         if isAnswerCorrect(text, kw: kw) {
             challengeModeSuccess()
         } else {
             shakeCard()
         }
-        
+
         textField.resignFirstResponder()
         return true
     }
@@ -732,7 +732,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
             challengeTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             challengeTextField.widthAnchor.constraint(equalToConstant: 250),
             challengeTextField.heightAnchor.constraint(equalToConstant: 44),
-            
+
             countLabel.topAnchor.constraint(equalTo: challengeTextField.bottomAnchor, constant: 16),
             countLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
@@ -747,26 +747,26 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
             UIView.animate(withDuration: 0.3) {
                 let navBarBottom = self.view.safeAreaInsets.top + 44
                 let kbTop = self.view.frame.height - kbFrame.height
-                
+
                 // Calculate available height for the card (with buffers for gaps and text field)
                 let reservedHeight: CGFloat = 44 + 30 + 20 // TF height + Gap + Bottom buffer
                 let availableForCard = kbTop - navBarBottom - reservedHeight
-                
+
                 let containerHeight = self.carouselContainer.frame.height
                 var scale = min(0.85, availableForCard / containerHeight)
                 scale = max(0.55, scale) // Sane minimum
-                
+
                 let currentCenterY = self.carouselContainer.center.y
                 let translationY = (navBarBottom + 10) + (containerHeight * scale / 2) - currentCenterY
-                
+
                 self.carouselContainer.transform = CGAffineTransform(translationX: 0, y: translationY).scaledBy(x: scale, y: scale)
-                
+
                 let visualBottom = currentCenterY + translationY + (containerHeight * scale / 2)
                 let tfTargetTop = visualBottom + 30
-                
+
                 let tfMove = self.challengeTextField.frame.minY - tfTargetTop
                 self.challengeTextField.transform = CGAffineTransform(translationX: 0, y: -tfMove)
-                
+
                 self.countLabel.alpha = 0
             }
         }
@@ -798,7 +798,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
                 ("xmark.circle.fill", "Swipe Left to Review Later")
             ]
         }
-        
+
         let instructionVC = FlashcardInstructionsViewController()
         instructionVC.instructions = items
         instructionVC.modalPresentationStyle = .overFullScreen
@@ -815,8 +815,7 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         var loaded: [Flashcard] = []
         for line in content.components(separatedBy: "\n") where !line.isEmpty {
             let p = line.components(separatedBy: "|")
-            if p.count >= 3 { loaded.append(Flashcard(term: p[0], definition: p[1], keyword: p[2])) }
-            else if p.count == 2 { loaded.append(Flashcard(term: p[0], definition: p[1], keyword: p[0])) }
+            if p.count >= 3 { loaded.append(Flashcard(term: p[0], definition: p[1], keyword: p[2])) } else if p.count == 2 { loaded.append(Flashcard(term: p[0], definition: p[1], keyword: p[0])) }
         }
         if !loaded.isEmpty {
             flashcards = loaded
@@ -831,14 +830,14 @@ class FlashcardViewController: UIViewController, AddFlashcardDelegate, UITextFie
         vc.totalCount = originalDeckSize
         vc.isChallengeResult = isChallengePhase
         vc.flashcardSummary = self.flashcards.map { ($0.term, $0.definition) }
-        
+
         if let startTime = sessionStartTime {
             vc.sessionDuration = Date().timeIntervalSince(startTime)
         }
-        
+
         vc.onChallengeMode = { [weak self] in self?.didSelectChallengeMode() }
         vc.onSaveAndExit = { [weak self] in self?.didSelectSaveAndExit() }
-        
+
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
         nav.modalTransitionStyle = .crossDissolve
@@ -986,5 +985,3 @@ extension FlashcardViewController: HomeFlashcardResultsDelegate {
 
     func didSelectSaveAndExit() { handleSave() }
 }
-
-

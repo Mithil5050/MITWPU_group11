@@ -25,10 +25,10 @@ class SettingsCell: UICollectionViewCell {
 
     private func setupUI() {
         self.backgroundColor = .secondarySystemGroupedBackground
-        
+
         titleLabel.textColor = .label
         titleLabel.font = .systemFont(ofSize: 16, weight: .regular)
-        
+
         switchControl.onTintColor = .systemGreen
         chevronView.tintColor = .systemGray
     }
@@ -38,7 +38,7 @@ class SettingsCell: UICollectionViewCell {
         titleLabel.text = title
         iconView.image = UIImage(systemName: icon)
         iconView.tintColor = color
-        
+
         if isSwitch {
             switchControl.isHidden = false
             chevronView.isHidden = true
