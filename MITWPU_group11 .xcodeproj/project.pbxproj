@@ -16,16 +16,16 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		546963BE2ED6CB31001C03B8 /* MITWPU_group11 .app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MITWPU_group11 .app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		546963BE2ED6CB31001C03B8 /* ReviseQ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReviseQ.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		546963D02ED6CB32001C03B8 /* Exceptions for "Group_11_Revisio" folder in "MITWPU_group11 " target */ = {
+		546963D02ED6CB32001C03B8 /* Exceptions for "Group_11_Revisio" folder in "ReviseQ" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 546963BD2ED6CB31001C03B8 /* MITWPU_group11  */;
+			target = 546963BD2ED6CB31001C03B8 /* ReviseQ */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -33,7 +33,7 @@
 		546963C02ED6CB31001C03B8 /* Group_11_Revisio */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				546963D02ED6CB32001C03B8 /* Exceptions for "Group_11_Revisio" folder in "MITWPU_group11 " target */,
+				546963D02ED6CB32001C03B8 /* Exceptions for "Group_11_Revisio" folder in "ReviseQ" target */,
 			);
 			path = Group_11_Revisio;
 			sourceTree = "<group>";
@@ -69,7 +69,7 @@
 		546963BF2ED6CB31001C03B8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				546963BE2ED6CB31001C03B8 /* MITWPU_group11 .app */,
+				546963BE2ED6CB31001C03B8 /* ReviseQ.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -84,9 +84,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		546963BD2ED6CB31001C03B8 /* MITWPU_group11  */ = {
+		546963BD2ED6CB31001C03B8 /* ReviseQ */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 546963D12ED6CB32001C03B8 /* Build configuration list for PBXNativeTarget "MITWPU_group11 " */;
+			buildConfigurationList = 546963D12ED6CB32001C03B8 /* Build configuration list for PBXNativeTarget "ReviseQ" */;
 			buildPhases = (
 				546963BA2ED6CB31001C03B8 /* Sources */,
 				546963BB2ED6CB31001C03B8 /* Frameworks */,
@@ -99,7 +99,7 @@
 			fileSystemSynchronizedGroups = (
 				546963C02ED6CB31001C03B8 /* Group_11_Revisio */,
 			);
-			name = "MITWPU_group11 ";
+			name = ReviseQ;
 			packageProductDependencies = (
 				5490EA1E2EF2AE8200EDE4AB /* MessageKit */,
 				5490EA212EF2AE9900EDE4AB /* InputBarAccessoryView */,
@@ -109,7 +109,7 @@
 				566A13B52FB2EECA004B1117 /* GoogleSignInSwift */,
 			);
 			productName = Group_11_Revisio;
-			productReference = 546963BE2ED6CB31001C03B8 /* MITWPU_group11 .app */;
+			productReference = 546963BE2ED6CB31001C03B8 /* ReviseQ.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -148,7 +148,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				546963BD2ED6CB31001C03B8 /* MITWPU_group11  */,
+				546963BD2ED6CB31001C03B8 /* ReviseQ */,
 			);
 		};
 /* End PBXProject section */
@@ -375,7 +375,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		546963D12ED6CB32001C03B8 /* Build configuration list for PBXNativeTarget "MITWPU_group11 " */ = {
+		546963D12ED6CB32001C03B8 /* Build configuration list for PBXNativeTarget "ReviseQ" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				546963D22ED6CB32001C03B8 /* Debug */,

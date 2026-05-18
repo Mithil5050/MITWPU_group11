@@ -8,10 +8,10 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.mit.revisio</string>
+			<string>com.mit.reviseq</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>revisio</string>
+				<string>reviseq</string>
 			</array>
 		</dict>
 		<dict>
@@ -25,6 +25,10 @@
 			</array>
 		</dict>
 	</array>
+	<key>CFBundleDisplayName</key>
+	<string>ReviseQ</string>
+	<key>UIUserInterfaceStyle</key>
+	<string>Dark</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Allow microphone access for voice messages.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
