@@ -16,7 +16,7 @@ class OnboardingPage1ViewController: UIViewController {
     @IBOutlet weak var pageControl: UIPageControl!
     @IBOutlet weak var actionButton: UIButton!
     @IBOutlet weak var skipButton: UIButton!
-    
+
     // MARK: - Data Model
     private struct OnboardingPage {
         let imageName: String
@@ -71,23 +71,15 @@ class OnboardingPage1ViewController: UIViewController {
         } else {
             actionButton.setTitle("Next", for: .normal)
         }
-        
+
         skipButton.isHidden = (index == pages.count - 1)
     }
-    
-    private func goToLogin() {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
 
-        guard let loginVC = storyboard.instantiateViewController(
-            withIdentifier: "LoginViewController"
-        ) as? LoginViewController else {
-            return
-        }
-
-        // Prevent back navigation to onboarding
-        navigationController?.setViewControllers([loginVC], animated: true)
+    private func goToPersonalization() {
+        let personalizationVC = PersonalizationViewController()
+        navigationController?.setViewControllers([personalizationVC], animated: true)
     }
-    
+
 
     // MARK: - Actions
     @IBAction func actionButtonTapped(_ sender: UIButton) {
@@ -95,14 +87,14 @@ class OnboardingPage1ViewController: UIViewController {
                 currentPageIndex += 1
                 updateUI(for: currentPageIndex)
             } else {
-                goToLogin()
+                goToPersonalization()
             }
     }
 
     @IBAction func skipTapped(_ sender: UIButton) {
-        goToLogin()
+        goToPersonalization()
     }
-    
+
     @IBAction func pageControlChanged(_ sender: UIPageControl) {
         currentPageIndex = sender.currentPage
         updateUI(for: currentPageIndex)

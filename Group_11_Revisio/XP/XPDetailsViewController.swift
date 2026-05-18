@@ -65,7 +65,7 @@ class XPDetailsViewController: UIViewController {
 
         contentView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(contentView)
-        
+
         let widthConstraint = contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
         widthConstraint.priority = .required
 
@@ -81,7 +81,7 @@ class XPDetailsViewController: UIViewController {
         contentStack.spacing = 20
         contentStack.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(contentStack)
-        
+
         NSLayoutConstraint.activate([
             contentStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
             contentStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
@@ -176,7 +176,7 @@ class XPDetailsViewController: UIViewController {
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        
+
         coordinator.animate(alongsideTransition: { _ in
             self.view.setNeedsUpdateConstraints()
             // We reload data to trigger intrinsic content size updates

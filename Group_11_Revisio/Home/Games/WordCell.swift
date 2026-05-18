@@ -11,7 +11,7 @@
 import UIKit
 
 class WordCell: UICollectionViewCell {
-    
+
     // MARK: UI Components
     private let wordLabel: UILabel = {
         let label = UILabel()
@@ -20,24 +20,24 @@ class WordCell: UICollectionViewCell {
         label.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         return label
     }()
-    
+
     // MARK: Initialization
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     // MARK: Setup
     private func setupViews() {
         self.layer.cornerRadius = 12
         self.layer.masksToBounds = true
-        
+
         contentView.addSubview(wordLabel)
-        
+
         NSLayoutConstraint.activate([
             wordLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             wordLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
@@ -45,11 +45,11 @@ class WordCell: UICollectionViewCell {
             wordLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -4)
         ])
     }
-    
+
     // MARK: Configuration
     func configure(with word: WordModel) {
         wordLabel.text = word.text
-        
+
         if word.isGuessed {
             self.backgroundColor = .clear
             self.wordLabel.textColor = .clear

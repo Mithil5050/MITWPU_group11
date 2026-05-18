@@ -13,28 +13,28 @@ class MonthlyChallengeDetailViewController: UIViewController {
     @IBOutlet weak var challengeTitleLabel: UILabel!
     @IBOutlet weak var challengeDescriptionLabel: UILabel!
     @IBOutlet weak var challengeProgressView: UIProgressView!
-    
+
     override func viewDidLoad() {
                 super.viewDidLoad()
                 navigationItem.title = "Monthly Challenge"
                 setupUI()
             }
-     
+
         private func setupUI() {
                 let target = 10
                 let earned = ProgressDataManager.shared.earnedBadgeCount
                 let monthName = currentMonthName()
                 let completed = earned >= target
-     
+
                 largeBadgeImageView.contentMode = .scaleAspectFit
                 largeBadgeImageView.image = UIImage(named: "awards_monthly_main")
                 largeBadgeImageView.alpha = completed ? 1.0 : 0.5
-     
+
                 challengeTitleLabel.text = monthName
                 challengeTitleLabel.font = UIFont.systemFont(ofSize: 22, weight: .bold)
                 challengeTitleLabel.textColor = .label
                 challengeTitleLabel.textAlignment = .center
-     
+
                 if completed {
                     challengeDescriptionLabel.text = "You've completed the \(monthName) Challenge! You earned \(earned) badge\(earned == 1 ? "" : "s") this month. 🎉"
                 } else {
@@ -45,7 +45,7 @@ class MonthlyChallengeDetailViewController: UIViewController {
                 challengeDescriptionLabel.textColor = .secondaryLabel
                 challengeDescriptionLabel.textAlignment = .center
                 challengeDescriptionLabel.numberOfLines = 0
-     
+
                 let progress = min(Float(earned) / Float(target), 1.0)
                 challengeProgressView.progressTintColor = completed ? .systemGreen : .systemBlue
                 challengeProgressView.trackTintColor = .systemGray5
@@ -57,12 +57,12 @@ class MonthlyChallengeDetailViewController: UIViewController {
                     self.challengeProgressView.setProgress(progress, animated: true)
                 }
             }
-     
+
         private func currentMonthName() -> String {
             let formatter = DateFormatter()
             formatter.dateFormat = "MMMM"
             return formatter.string(from: Date())
         }
         }
-        
-     
+
+

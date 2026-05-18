@@ -48,7 +48,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
     weak var delegate: EditProfileDelegate?
     var currentName: String?
     var currentImage: UIImage?
-    
+
     // We use this to track if the user actually picked a new photo
     private var didChangePhoto = false
 
@@ -59,7 +59,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         setupNavigationBar()
         setupLayout()
         configureInitialData()
-        
+
         changePhotoButton.addTarget(self, action: #selector(changePhotoTapped), for: .touchUpInside)
     }
 
@@ -102,7 +102,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         picker.allowsEditing = true
         present(picker, animated: true)
     }
-    
+
     @objc private func cancelTapped() {
         dismiss(animated: true)
     }
@@ -114,24 +114,24 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
             present(alert, animated: true)
             return
         }
-        
+
         // Disable the save button so they don't spam it while uploading
         navigationItem.rightBarButtonItem?.isEnabled = false
         changePhotoButton.setTitle("Saving...", for: .normal)
-        
+
         Task {
             do {
                 // 1. Get the current user
                 let user = try await supabase.auth.session.user
                 let userId = user.id.uuidString
-                var finalAvatarURL: String? = nil
-                
+                var finalAvatarURL: String?
+
                 // 2. Did they pick a new photo? If so, upload it!
                 if didChangePhoto, let imageToUpload = profileImageView.image,
                    let imageData = imageToUpload.jpegData(compressionQuality: 0.5) {
-                    
+
                     let filePath = "\(userId).jpg"
-                    
+
                     // Upload to Storage
                     try await supabase.storage
                         .from("avatars")
@@ -140,29 +140,29 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
                             file: imageData,
                             options: FileOptions(contentType: "image/jpeg", upsert: true)
                         )
-                    
+
                     // Get the public URL
                     finalAvatarURL = try supabase.storage.from("avatars").getPublicURL(path: filePath).absoluteString
                 }
-                
+
                 // 3. Update the 'profiles' database table
                 let updateData = ProfileUpdateParams(username: newName, avatar_url: finalAvatarURL)
-                
+
                 try await supabase
                     .from("profiles")
                     .update(updateData)
                     .eq("id", value: userId)
                     .execute()
-                
+
                 // 4. Success! Tell the Profile & Home screens to update
                 DispatchQueue.main.async {
                     //  Broadcast update to all listeners (Home & Profile ViewControllers)
                     NotificationCenter.default.post(name: NSNotification.Name("ProfileDidUpdate"), object: nil)
-                    
+
                     self.delegate?.didUpdateProfile(name: newName, image: self.profileImageView.image)
                     self.dismiss(animated: true)
                 }
-                
+
             } catch {
                 DispatchQueue.main.async {
                     self.navigationItem.rightBarButtonItem?.isEnabled = true
@@ -176,7 +176,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
     }
 
     //  UIImagePickerControllerDelegate
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         if let editedImage = info[.editedImage] as? UIImage {
             profileImageView.image = editedImage
             didChangePhoto = true

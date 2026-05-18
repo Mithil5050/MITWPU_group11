@@ -81,7 +81,7 @@ class GroupsViewController: UIViewController, UITableViewDataSource, UITableView
             stack.centerXAnchor.constraint(equalTo: bg.centerXAnchor),
             stack.centerYAnchor.constraint(equalTo: bg.centerYAnchor, constant: -20),
             stack.leadingAnchor.constraint(greaterThanOrEqualTo: bg.leadingAnchor, constant: 32),
-            stack.trailingAnchor.constraint(lessThanOrEqualTo: bg.trailingAnchor, constant: -32),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: bg.trailingAnchor, constant: -32)
         ])
 
         return bg

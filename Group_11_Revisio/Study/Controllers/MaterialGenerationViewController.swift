@@ -1,14 +1,13 @@
-
 import UIKit
 
 class MaterialGenerationViewController: UIViewController {
-    
+
     @IBOutlet weak var contentView: UITextView!
-    
+
     @IBOutlet weak var optionsBarButton: UIBarButtonItem!
-    
+
     @IBOutlet weak var editDoneBarButton: UIBarButtonItem!
-    
+
     @IBOutlet weak var saveButton: UIButton!
     var contentData: Topic?
     var parentSubjectName: String?
@@ -18,26 +17,26 @@ class MaterialGenerationViewController: UIViewController {
         super.viewDidLoad()
         contentView.isEditable = false
                 contentView.delegate = self
-                
+
                 setupNavigationButtons()
                 displayGeneratedContent()
 
                 saveButton.layer.cornerRadius = 12
 
     }
-    
+
     @IBAction func saveTapped(_ sender: Any) {
         saveChanges()
 
             if let topic = contentData, let subject = parentSubjectName {
-                
+
                 DataManager.shared.addTopic(to: subject, topic: topic)
             }
 
             self.navigationController?.popViewController(animated: true)
     }
     func displayGeneratedContent() {
-        
+
         // Multi-line title so long names never truncate
         let titleLabel = UILabel()
         titleLabel.text = contentData?.name ?? "Material"
@@ -49,7 +48,7 @@ class MaterialGenerationViewController: UIViewController {
         titleLabel.sizeToFit()
         navigationItem.titleView = titleLabel
 
-        
+
         guard let topic = contentData else { return }
 
         if materialType == "Notes" {
@@ -57,7 +56,7 @@ class MaterialGenerationViewController: UIViewController {
         } else if materialType == "Cheatsheet" {
             contentView.text = topic.cheatsheetContent
         } else {
-           
+
             contentView.text = topic.largeContentBody
         }
     }
@@ -67,9 +66,9 @@ class MaterialGenerationViewController: UIViewController {
 
             editButton.target = self
             editButton.action = #selector(editButtonTapped)
-            
+
             optionsButton.menu = buildOptionsMenu()
-            
+
             navigationItem.rightBarButtonItems = [editButton, optionsButton]
             updateUIForState()
         }
@@ -78,9 +77,9 @@ class MaterialGenerationViewController: UIViewController {
             let shareAction = UIAction(title: "Share Material", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
                 self?.shareContent(self!.optionsBarButton)
             }
-            
+
             let pinAction = UIAction(title: "Pin to Top", image: UIImage(systemName: "pin.fill")) { _ in }
-            
+
             let utilityGroup = UIMenu(title: "Actions", options: .displayInline, children: [shareAction, pinAction])
             return UIMenu(title: "", children: [utilityGroup])
         }

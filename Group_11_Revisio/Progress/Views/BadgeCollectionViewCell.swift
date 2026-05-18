@@ -38,10 +38,10 @@ class BadgeCollectionViewCell: UICollectionViewCell {
 
         badgeTitleLabel.numberOfLines  = 0
         badgeDetailLabel.numberOfLines = 0
-        
+
         // Remove progress bar entirely and use default 4pt stack spacing
         badgeProgressBar.removeFromSuperview()
-        
+
         // Shrink the badge icon to 60x60
         badgeImageView.constraints.forEach { constraint in
             if constraint.firstAttribute == .width || constraint.firstAttribute == .height {
@@ -65,7 +65,7 @@ class BadgeCollectionViewCell: UICollectionViewCell {
             badgeTitleLabel.text  = "Achievements will appear here"
             badgeDetailLabel.text = "Earn badges as you progress through your learning journey."
         }
-    
+
 
         badgeTitleLabel.isHidden      = false
         badgeTitleLabel.textColor     = .label           // adaptive: dark in light mode, light in dark mode

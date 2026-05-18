@@ -30,7 +30,7 @@ class AttachmentItemPickerViewController: UIViewController {
 
     private let tableView         = UITableView(frame: .zero, style: .insetGrouped)
     private var materialItems: [StudyItem] = []
-    private var sourceItems:   [StudyItem] = []
+    private var sourceItems: [StudyItem] = []
     private var selectedPaths: Set<IndexPath> = []
 
     private let segmentedControl  = UISegmentedControl(items: ["Materials", "Sources"])
@@ -106,23 +106,21 @@ class AttachmentItemPickerViewController: UIViewController {
             case .topic(let topic):
                 attachments.append(SentAttachment(
                     displayName: "\(topic.name) · \(topic.materialType)",
-                    content:     packedContent(for: topic),
-                    fileType:    "document",
-                    topic:       topic,
-                    source:      nil
+                    content: packedContent(for: topic),
+                    fileType: "document",
+                    topic: topic,
+                    source: nil
                 ))
             case .source(let source):
                 let ft = source.fileType.lowercased()
                 let fileType: String
-                if ["jpg","jpeg","png","gif","heic","image"].contains(ft) { fileType = "image" }
-                else if ["link","url","http","https"].contains(ft)        { fileType = "link" }
-                else                                                       { fileType = "document" }
+                if ["jpg", "jpeg", "png", "gif", "heic", "image"].contains(ft) { fileType = "image" } else if ["link", "url", "http", "https"].contains(ft) { fileType = "link" } else { fileType = "document" }
                 attachments.append(SentAttachment(
                     displayName: source.name,
-                    content:     source.name,
-                    fileType:    fileType,
-                    topic:       nil,
-                    source:      source
+                    content: source.name,
+                    fileType: fileType,
+                    topic: nil,
+                    source: source
                 ))
             }
         }

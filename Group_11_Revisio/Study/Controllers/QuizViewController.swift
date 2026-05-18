@@ -1,21 +1,21 @@
 import UIKit
 
 class QuizViewController: UIViewController, UINavigationControllerDelegate {
-    
+
     @IBOutlet weak var questionLabel: UILabel!
     @IBOutlet var answerButtons: [UIButton]!
     @IBOutlet var previousButton: UIButton!
     @IBOutlet var nextButton: UIButton!
     @IBOutlet var timerLabel: UILabel!
     @IBOutlet weak var progressBar: UIProgressView!
-    
+
     var quizTopic: Topic?
     var parentSubjectName: String?
     var allQuestions: [QuizQuestion] = []
     var selectedSourceName: String?
     var currentQuestionIndex = 0
     var score = 0
-    
+
     var timeLimitInMinutes: Int = 15
     private var countdownTimer: Timer?
     private var timeRemaining = 0
@@ -34,13 +34,13 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
 
     private func setupInitialData() {
         let rawQuizName = selectedSourceName ?? quizTopic?.name ?? "Quiz"
-        
+
         let cleanTitle = rawQuizName.replacingOccurrences(of: ".txt", with: "")
                                    .replacingOccurrences(of: "Note_", with: "")
                                    .replacingOccurrences(of: "Link_", with: "")
                                    .replacingOccurrences(of: "_", with: " ")
                                    .trimmingCharacters(in: .whitespaces)
-        
+
         // Multi-line title so long names never truncate
         let navTitleLabel = UILabel()
         navTitleLabel.text = cleanTitle
@@ -52,9 +52,9 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
         navTitleLabel.sizeToFit()
         navigationItem.titleView = navTitleLabel
 
-        
+
         let updatedQuestions = QuizManager.getQuestions(for: rawQuizName)
-        
+
         if !updatedQuestions.isEmpty {
             self.allQuestions = updatedQuestions
         } else if let quizQuestions = quizTopic?.quizQuestions, !quizQuestions.isEmpty {
@@ -67,7 +67,7 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
     private func setupUI() {
         questionLabel.numberOfLines = 0
         questionLabel.lineBreakMode = .byWordWrapping
-        
+
         setupAnswerButtons()
         setupNavigationBarButtons()
         progressBar.progress = 0.0
@@ -81,10 +81,10 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
             config.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
             config.titleAlignment = .leading
             button.configuration = config
-            
+
             button.titleLabel?.numberOfLines = 0
             button.titleLabel?.lineBreakMode = .byWordWrapping
-            
+
             button.layer.cornerRadius = 12
             button.layer.borderWidth = 1.0
             button.layer.borderColor = UIColor.systemGray4.cgColor
@@ -134,20 +134,20 @@ class QuizViewController: UIViewController, UINavigationControllerDelegate {
         updateFlagButtonAppearance()
         questionLabel.text = question.questionText
         resetAnswerButtonAppearance()
-        
+
         if let savedIndex = question.userAnswerIndex {
             let selectedButton = answerButtons[savedIndex]
             selectedButton.backgroundColor = UIColor.systemGray4
             selectedButton.layer.borderColor = UIColor.systemBlue.cgColor
             selectedButton.layer.borderWidth = 2.0
         }
-        
+
         previousButton.isHidden = (currentQuestionIndex == 0)
         let isLastQuestion = (currentQuestionIndex == allQuestions.count - 1)
         nextButton.setTitle(isLastQuestion ? "Finish" : "Next", for: .normal)
         nextButton.removeTarget(nil, action: nil, for: .allEvents)
         nextButton.addTarget(self, action: isLastQuestion ? #selector(finishQuizTapped) : #selector(goToNextQuestion), for: .touchUpInside)
-        
+
         let prefixes = ["A.", "B.", "C.", "D."]
         for (index, button) in answerButtons.enumerated() {
             button.setTitle("\(prefixes[index]) \(question.answers[index])", for: .normal)

@@ -1,13 +1,12 @@
-
 import Foundation
-struct QuestionResultDetail:Codable {
+struct QuestionResultDetail: Codable {
     let questionText: String
     let wasCorrect: Bool
     let selectedAnswer: String?
     let correctAnswerFullText: String
     let isFlagged: Bool
     var correctOptionLetter: String {
-           
+
             guard let firstChar = correctAnswerFullText.first else {
                 return "N/A"
             }
@@ -15,7 +14,7 @@ struct QuestionResultDetail:Codable {
             return String(firstChar)
         }
 }
-struct FinalQuizResult:Codable{
+struct FinalQuizResult: Codable {
     let finalScore: Int
     let totalQuestions: Int
     let timeElapsed: TimeInterval

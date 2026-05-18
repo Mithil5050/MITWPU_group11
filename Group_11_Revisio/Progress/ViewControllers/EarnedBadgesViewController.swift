@@ -1,4 +1,3 @@
-
 //
 //  EarnedBadgesViewController.swift
 //  Group_11_Revisio
@@ -69,40 +68,40 @@ class EarnedBadgesViewController: UIViewController, UICollectionViewDataSource, 
         emptyLabel.textAlignment = .center
         emptyLabel.numberOfLines = 0
         emptyLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        //Badge Image View
+
+        // Badge Image View
         let badgeImageView = UIImageView()
         let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .regular)
         badgeImageView.image = UIImage(systemName: "trophy", withConfiguration: config)
         badgeImageView.tintColor = .secondaryLabel
         badgeImageView.contentMode = .scaleAspectFit
         badgeImageView.translatesAutoresizingMaskIntoConstraints = false
-        
-    
+
+
         view.addSubview(emptyLabel)
         view.addSubview(badgeImageView)
-        
-        
+
+
         NSLayoutConstraint.activate([
             // Center the label in the view
             emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             emptyLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            
-            
+
+
             badgeImageView.topAnchor.constraint(equalTo: emptyLabel.bottomAnchor, constant: 12),
             badgeImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             badgeImageView.widthAnchor.constraint(equalToConstant: 40),
             badgeImageView.heightAnchor.constraint(equalToConstant: 40)
         ])
-        
-        
+
+
         let noBadges = earnedBadges.isEmpty
         emptyLabel.isHidden = !noBadges
         badgeImageView.isHidden = !noBadges
     }
 
-//UICollectionViewDataSource
+// UICollectionViewDataSource
 
     func collectionView(_ collectionView: UICollectionView,
                         numberOfItemsInSection section: Int) -> Int {

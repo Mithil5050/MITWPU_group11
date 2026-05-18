@@ -7,7 +7,7 @@ class LoginViewController: UIViewController {
 
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         configureTextFields()
@@ -15,7 +15,7 @@ class LoginViewController: UIViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tap)
     }
-    
+
     @objc func dismissKeyboard() {
         view.endEditing(true)
     }
@@ -28,14 +28,14 @@ class LoginViewController: UIViewController {
             present(alert, animated: true)
             return
         }
-        
+
         let cleanEmail = emailText.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
         Task {
             do {
                 try await supabase.auth.signIn(email: cleanEmail, password: password)
                 let user = try await supabase.auth.session.user
-                
+
                 guard user.emailConfirmedAt != nil else {
                     try? await supabase.auth.signOut()
                     DispatchQueue.main.async {
@@ -45,7 +45,7 @@ class LoginViewController: UIViewController {
                     }
                     return
                 }
-                
+
                 DispatchQueue.main.async { self.transitionToMainApp() }
             } catch {
                 DispatchQueue.main.async {
@@ -56,7 +56,7 @@ class LoginViewController: UIViewController {
             }
         }
     }
-    
+
     private func transitionToMainApp() {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let tabBarVC = storyboard.instantiateViewController(withIdentifier: "MainTabBarController")
@@ -66,7 +66,7 @@ class LoginViewController: UIViewController {
         window.rootViewController = tabBarVC
         UIView.transition(with: window, duration: 0.4, options: .transitionCrossDissolve, animations: nil, completion: nil)
     }
-    
+
     private func configureTextFields() {
         styleTextField(emailTextField)
         emailTextField.keyboardType = .emailAddress
@@ -74,7 +74,7 @@ class LoginViewController: UIViewController {
         styleTextField(passwordTextField)
         passwordTextField.isSecureTextEntry = true
     }
-    
+
     private func styleTextField(_ textField: UITextField) {
         textField.layer.cornerRadius = 14
         textField.backgroundColor = UIColor(red: 40/255, green: 44/255, blue: 55/255, alpha: 0.85)
@@ -83,7 +83,7 @@ class LoginViewController: UIViewController {
         textField.leftView = padding
         textField.leftViewMode = .always
     }
-    
+
     private func addPasswordToggle(to textField: UITextField) {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "eye.slash"), for: .normal)
@@ -94,7 +94,7 @@ class LoginViewController: UIViewController {
         textField.rightView = container
         textField.rightViewMode = .always
     }
-    
+
     @objc private func togglePasswordVisibility() {
         passwordTextField.isSecureTextEntry.toggle()
     }
@@ -112,13 +112,13 @@ class LoginViewController: UIViewController {
                 try await supabase.auth.signInWithIdToken(
                     credentials: .init(provider: .google, idToken: idToken, accessToken: accessToken)
                 )
-                
+
                 let user = try await supabase.auth.session.user
                 let googleName = user.userMetadata["full_name"]?.value as? String ?? "New Student"
-                
+
                 // Ensure profile exists in the 'profiles' table
                 do {
-                    let _ = try await supabase.from("profiles").select("id").eq("id", value: user.id).single().execute()
+                    _ = try await supabase.from("profiles").select("id").eq("id", value: user.id).single().execute()
                 } catch {
                     let newProfileData: [String: AnyJSON] = [
                         "id": .string(user.id.uuidString),
@@ -142,7 +142,7 @@ class LoginViewController: UIViewController {
             }
         }
     }
-    
+
     @IBAction func appleSignInTapped(_ sender: UIButton) { startAppleSignIn() }
 
     private func startAppleSignIn() {

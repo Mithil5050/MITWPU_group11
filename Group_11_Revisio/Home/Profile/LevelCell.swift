@@ -13,13 +13,13 @@ protocol LevelCellDelegate: AnyObject {
 }
 
 class LevelCell: UICollectionViewCell {
-    
+
     @IBOutlet weak var progressBar: UIProgressView!
     @IBOutlet weak var levelLabel: UILabel!
     @IBOutlet weak var xpLabel: UILabel!
     @IBOutlet weak var bgView: UIView!
     @IBOutlet weak var levelBadgeContainer: UIView!
-    
+
         private let badgeView = LevelBadgeView()
 
         override func awakeFromNib() {
@@ -30,7 +30,7 @@ class LevelCell: UICollectionViewCell {
         private func setupUI() {
             bgView.layer.cornerRadius = 16
             bgView.backgroundColor = .secondarySystemGroupedBackground
-            
+
             bgView.isUserInteractionEnabled = false
             levelBadgeContainer.isUserInteractionEnabled = false
 

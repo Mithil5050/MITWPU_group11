@@ -44,7 +44,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
                 result.append((activeBadge, activeBadge.progress))
             }
         }
-        
+
         // Sort original results by progress
         var finalSelection = result
             .sorted { $0.progress > $1.progress }
@@ -58,7 +58,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
             let bronzeFillers = milestones.filter { badge in
                 return badge.tier == .bronze && !badge.isEarned && !existingIds.contains(badge.id)
             }
-            
+
             let needed = milestonePreviewCount - finalSelection.count
             finalSelection.append(contentsOf: bronzeFillers.prefix(needed))
         }
@@ -134,7 +134,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
     }
 
     private func createLayout() -> UICollectionViewLayout {
-        return UICollectionViewCompositionalLayout { [weak self] (sectionIndex, env) -> NSCollectionLayoutSection? in
+        return UICollectionViewCompositionalLayout { [weak self] (sectionIndex, _) -> NSCollectionLayoutSection? in
             guard let self = self,
                   let sectionType = AwardsSection(rawValue: sectionIndex) else { return nil }
 
@@ -207,7 +207,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let sectionType = AwardsSection(rawValue: indexPath.section)!
-        
+
         switch sectionType {
         case .feature:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MonthlyFeatureCell", for: indexPath) as! MonthlyBadgeCollectionViewCell
@@ -247,7 +247,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let sectionType = AwardsSection(rawValue: indexPath.section)!
         var selectedBadge: Badging.Badge?
-        
+
         switch sectionType {
         case .feature:
             didTapMonthlyBadgeCard()
@@ -259,7 +259,7 @@ class AwardsViewController: UIViewController, UICollectionViewDataSource, UIColl
         case .allMilestones:
             selectedBadge = previewMilestones[indexPath.row]
         }
-        
+
         if let badge = selectedBadge {
             let vc = BadgeDetailViewController()
             vc.badge = badge
