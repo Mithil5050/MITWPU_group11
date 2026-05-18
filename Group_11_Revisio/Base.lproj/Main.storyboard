@@ -504,7 +504,7 @@
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstItem="wBr-JB-bPz" firstAttribute="top" secondItem="viA-Vo-S2f" secondAttribute="top" constant="100" id="0cM-br-je9"/>
+                                    <constraint firstItem="wBr-JB-bPz" firstAttribute="top" secondItem="viA-Vo-S2f" secondAttribute="top" constant="160" id="0cM-br-je9"/>
                                     <constraint firstItem="wBr-JB-bPz" firstAttribute="centerX" secondItem="viA-Vo-S2f" secondAttribute="centerX" id="DKq-vG-9eH"/>
                                     <constraint firstAttribute="trailing" secondItem="wBr-JB-bPz" secondAttribute="trailing" constant="24" id="Oyk-cq-8s9"/>
                                     <constraint firstItem="wBr-JB-bPz" firstAttribute="leading" secondItem="viA-Vo-S2f" secondAttribute="leading" constant="24" id="hag-dv-QdI"/>
