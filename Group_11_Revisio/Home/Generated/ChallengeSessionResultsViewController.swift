@@ -1,7 +1,7 @@
 import UIKit
 
 class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-    
+
     // MARK: - UI Components
     private let resultImageView: UIImageView = {
         let iv = UIImageView()
@@ -11,7 +11,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
-    
+
     private let headerLabel: UILabel = {
         let l = UILabel()
         l.text = "Congratulations!"
@@ -21,7 +21,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
-    
+
     private let scoreLabel: UILabel = {
         let l = UILabel()
         l.font = .systemFont(ofSize: 20, weight: .medium)
@@ -30,7 +30,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
-    
+
     // Performance Insights Card
     private let insightsCard: UIView = {
         let v = UIView()
@@ -42,7 +42,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
-    
+
     private let insightsTitleLabel: UILabel = {
         let l = UILabel()
         l.text = "Performance Insights"
@@ -51,7 +51,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
-    
+
     private let accuracyLabel: UILabel = {
         let l = UILabel()
         l.font = .systemFont(ofSize: 15, weight: .regular)
@@ -59,7 +59,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
-    
+
     private let studyTimeLabel: UILabel = {
         let l = UILabel()
         l.font = .systemFont(ofSize: 15, weight: .regular)
@@ -67,7 +67,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
-    
+
     // Summary Navigation Option
     private let summaryContainer: UIView = {
         let v = UIView()
@@ -76,7 +76,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
-    
+
     private let summaryLabel: UILabel = {
         let l = UILabel()
         l.text = "View Session Summary"
@@ -85,14 +85,14 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
-    
+
     private let summaryChevron: UIImageView = {
         let iv = UIImageView(image: UIImage(systemName: "chevron.right", withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)))
         iv.tintColor = .systemGray
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
-    
+
     private let challengeButton: UIButton = {
         let b = UIButton(type: .system)
         b.backgroundColor = .systemIndigo
@@ -104,7 +104,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         b.isHidden = true
         return b
     }()
-    
+
     private let exitButton: UIButton = {
         let b = UIButton(type: .system)
         b.backgroundColor = UIColor.white.withAlphaComponent(0.12)
@@ -115,31 +115,31 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         b.translatesAutoresizingMaskIntoConstraints = false
         return b
     }()
-    
+
     // Properties
     var knownCount: Int = 0
     var totalCount: Int = 0
     var isChallengeResult: Bool = false
     var flashcardSummary: [(term: String, definition: String)] = []
     var sessionDuration: TimeInterval = 300 // Default 5 mins if not passed
-    
+
     var onSaveAndExit: (() -> Void)?
     var onChallengeMode: (() -> Void)?
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
         setupUI()
         updateData()
     }
-    
+
     private func updateData() {
         scoreLabel.text = "You mastered all \(knownCount) cards!"
         challengeButton.isHidden = isChallengeResult
-        
+
         let accuracy = totalCount > 0 ? Int((Double(knownCount) / Double(totalCount)) * 100) : 0
         accuracyLabel.text = "• Accuracy: \(accuracy)%"
-        
+
         let minutes = Int(sessionDuration) / 60
         let seconds = Int(sessionDuration) % 60
         if minutes > 0 {
@@ -147,12 +147,12 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         } else {
             studyTimeLabel.text = "• Study Time: \(seconds)s"
         }
-        
+
         if isChallengeResult {
             insightsTitleLabel.text = "Challenge Summary"
         }
     }
-    
+
     private func setupUI() {
         view.addSubview(resultImageView)
         view.addSubview(headerLabel)
@@ -196,7 +196,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
             exitButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             exitButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             exitButton.heightAnchor.constraint(equalToConstant: 54),
-            exitButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            exitButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
         ])
 
         if isChallengeResult {
@@ -216,7 +216,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
                 summaryLabel.leadingAnchor.constraint(equalTo: summaryContainer.leadingAnchor, constant: 16),
 
                 summaryChevron.centerYAnchor.constraint(equalTo: summaryContainer.centerYAnchor),
-                summaryChevron.trailingAnchor.constraint(equalTo: summaryContainer.trailingAnchor, constant: -16),
+                summaryChevron.trailingAnchor.constraint(equalTo: summaryContainer.trailingAnchor, constant: -16)
             ])
 
             let tap = UITapGestureRecognizer(target: self, action: #selector(showSummary))
@@ -226,7 +226,7 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
         } else {
             // Normal mode: card closes after studyTimeLabel, no summary row
             NSLayoutConstraint.activate([
-                studyTimeLabel.bottomAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: -20),
+                studyTimeLabel.bottomAnchor.constraint(equalTo: insightsCard.bottomAnchor, constant: -20)
             ])
 
             // Start Challenge sits just above Save & Exit
@@ -235,28 +235,28 @@ class ChallengeSessionResultsViewController: UIViewController, UITableViewDataSo
                 challengeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
                 challengeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
                 challengeButton.heightAnchor.constraint(equalToConstant: 54),
-                challengeButton.bottomAnchor.constraint(equalTo: exitButton.topAnchor, constant: -12),
+                challengeButton.bottomAnchor.constraint(equalTo: exitButton.topAnchor, constant: -12)
             ])
         }
 
         challengeButton.addTarget(self, action: #selector(challengeTapped), for: .touchUpInside)
         exitButton.addTarget(self, action: #selector(exitTapped), for: .touchUpInside)
     }
-    
+
     @objc private func showSummary() {
         let summaryVC = FlashcardSummaryViewController()
         summaryVC.summaryItems = flashcardSummary
         navigationController?.pushViewController(summaryVC, animated: true)
     }
-    
+
     @objc private func challengeTapped() {
         dismiss(animated: true) { self.onChallengeMode?() }
     }
-    
+
     @objc private func exitTapped() {
         dismiss(animated: true) { self.onSaveAndExit?() }
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { return 0 }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell { return UITableViewCell() }
 }

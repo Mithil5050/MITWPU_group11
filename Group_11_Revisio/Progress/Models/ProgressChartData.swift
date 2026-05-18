@@ -7,7 +7,7 @@ struct StudyData: Identifiable, Codable, Hashable {
     let label: String
     var studyMinutes: Double = 0
     var gamesMinutes: Double = 0
-    
+
     var totalMinutes: Double {
         studyMinutes + gamesMinutes
     }
@@ -29,9 +29,9 @@ struct LogDataWrapper: Codable {
 class StudyChartModel: ObservableObject {
     @Published var dailyHistory: [[StudyData]] = [[]]
     @Published var weeklyHistory: [[StudyData]] = [[]]
-    
+
     init() { }
-    
+
     func loadDummyData() {
         guard let url = Bundle.main.url(forResource: "ProgressLogData", withExtension: "json"),
               let data = try? Data(contentsOf: url) else { return }
@@ -46,7 +46,7 @@ class StudyChartModel: ObservableObject {
         let calendar = Calendar.current
         let now = Date()
         var dailyPages: [[StudyData]] = []
-        
+
         for offset in 0..<14 {
             let targetDate = calendar.date(byAdding: .day, value: -13 + offset, to: now)!
             let startOfTargetDay = calendar.startOfDay(for: targetDate)
@@ -65,7 +65,7 @@ class StudyChartModel: ObservableObject {
             }
             dailyPages.append(slots.values.sorted { $0.label < $1.label })
         }
-        
+
         var weeklyPages: [[StudyData]] = []
         let daysOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         let dateFormatter = DateFormatter()

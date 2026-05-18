@@ -82,7 +82,7 @@ private final class BadgeUnlockPopupView: UIView {
         NSLayoutConstraint.activate([
             card.centerXAnchor.constraint(equalTo: centerXAnchor),
             card.centerYAnchor.constraint(equalTo: centerYAnchor),
-            card.widthAnchor.constraint(equalToConstant: 300),
+            card.widthAnchor.constraint(equalToConstant: 300)
         ])
 
         // Ribbon (floats above card top edge)
@@ -90,7 +90,7 @@ private final class BadgeUnlockPopupView: UIView {
         ribbonLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             ribbonLabel.centerXAnchor.constraint(equalTo: card.centerXAnchor),
-            ribbonLabel.centerYAnchor.constraint(equalTo: card.topAnchor),
+            ribbonLabel.centerYAnchor.constraint(equalTo: card.topAnchor)
         ])
 
         // Spark container (sits behind card so sparks can overflow)
@@ -100,7 +100,7 @@ private final class BadgeUnlockPopupView: UIView {
             sparkContainer.centerXAnchor.constraint(equalTo: card.centerXAnchor),
             sparkContainer.centerYAnchor.constraint(equalTo: card.topAnchor, constant: 50),
             sparkContainer.widthAnchor.constraint(equalToConstant: 300),
-            sparkContainer.heightAnchor.constraint(equalToConstant: 300),
+            sparkContainer.heightAnchor.constraint(equalToConstant: 300)
         ])
         sparkContainer.isUserInteractionEnabled = false
 
@@ -111,7 +111,7 @@ private final class BadgeUnlockPopupView: UIView {
             badgeImageView.topAnchor.constraint(equalTo: card.topAnchor, constant: 40),
             badgeImageView.centerXAnchor.constraint(equalTo: card.centerXAnchor),
             badgeImageView.widthAnchor.constraint(equalToConstant: 136),
-            badgeImageView.heightAnchor.constraint(equalToConstant: 136),
+            badgeImageView.heightAnchor.constraint(equalToConstant: 136)
         ])
 
         // Tier badge (small pill in corner of image)
@@ -130,7 +130,7 @@ private final class BadgeUnlockPopupView: UIView {
         NSLayoutConstraint.activate([
             headlineLabel.topAnchor.constraint(equalTo: badgeImageView.bottomAnchor, constant: 20),
             headlineLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 20),
-            headlineLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -20),
+            headlineLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -20)
         ])
 
         // Badge title
@@ -139,7 +139,7 @@ private final class BadgeUnlockPopupView: UIView {
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: headlineLabel.bottomAnchor, constant: 6),
             titleLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 20),
-            titleLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -20),
+            titleLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -20)
         ])
 
         // Detail text
@@ -148,7 +148,7 @@ private final class BadgeUnlockPopupView: UIView {
         NSLayoutConstraint.activate([
             detailLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
             detailLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 20),
-            detailLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -20),
+            detailLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -20)
         ])
 
         // CTA button
@@ -159,7 +159,7 @@ private final class BadgeUnlockPopupView: UIView {
             ctaButton.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 20),
             ctaButton.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -20),
             ctaButton.heightAnchor.constraint(equalToConstant: 50),
-            ctaButton.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -24),
+            ctaButton.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -24)
         ])
     }
 
@@ -429,7 +429,7 @@ private final class TierBadgeView: UIView {
         label.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             label.centerXAnchor.constraint(equalTo: centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: centerYAnchor),
+            label.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }
     required init?(coder: NSCoder) { fatalError() }

@@ -1,19 +1,18 @@
-
 import UIKit
 
 class MaterialDetailViewController: UIViewController {
 
     @IBOutlet weak var contentView: UITextView!
-    
+
     @IBOutlet var optionsBarButton: UIBarButtonItem!
-    
+
     @IBOutlet var editDoneBarButton: UIBarButtonItem!
-    
+
     var materialType: String?
     var materialName: String?
     var contentData: Topic?
     var parentSubjectName: String?
-    
+
     private var isEditingMode: Bool = false
     private var studyTimer: Timer?
     private let studyThreshold: TimeInterval = 60.0
@@ -22,21 +21,21 @@ class MaterialDetailViewController: UIViewController {
         super.viewDidLoad()
 
         contentView.isEditable = false
-        
+
         setupNavigationButtons()
-        
+
         displayContent()
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         studyTimer?.invalidate()
-        
+
         print(" Focus Timer Started: 60 Seconds")
 
         let timer = Timer(timeInterval: studyThreshold, repeats: false) { [weak self] _ in
             guard let self = self else { return }
-            
+
             Task { @MainActor in
                 await RevisioManager.shared.earnXP(amount: 10, reason: "Deep Study Focus")
                 print(" Success: 1 Minute Focus Reward Given")
@@ -50,15 +49,15 @@ class MaterialDetailViewController: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-      
+
         studyTimer?.invalidate()
         studyTimer = nil
     }
-    
+
     func displayContent() {
-        
+
         title = materialName ?? materialType
-        
+
         guard let topic = contentData else {
             contentView.text = "Topic not found."
             return
@@ -69,12 +68,12 @@ class MaterialDetailViewController: UIViewController {
         } else if materialType == "Cheatsheet" {
             contentView.text = topic.cheatsheetContent
         } else {
-          
+
             if let subject = parentSubjectName {
                 contentView.text = DataManager.shared.getDetailedContent(for: subject, topicName: topic.name)
             }
         }
-        
+
         updateUIForState()
     }
 
@@ -107,7 +106,7 @@ class MaterialDetailViewController: UIViewController {
         optionsButton.target = nil
         optionsButton.action = nil
         optionsButton.menu = buildOptionsMenu()
-      
+
         navigationItem.rightBarButtonItems = [editButton, optionsButton]
 
         updateUIForState()
@@ -116,7 +115,7 @@ class MaterialDetailViewController: UIViewController {
     func buildOptionsMenu() -> UIMenu {
 
         let shareAction = UIAction(title: "Share Material", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
-            
+
             self?.shareContent(self!.editDoneBarButton)
         }
 
@@ -129,12 +128,12 @@ class MaterialDetailViewController: UIViewController {
 
         let utilityGroup = UIMenu(title: "Actions", options: .displayInline, children: [shareAction, pinAction])
         let destructiveGroup = UIMenu(title: "", options: .displayInline, children: [deleteAction])
-        
+
         return UIMenu(title: "", children: [utilityGroup, destructiveGroup])
     }
 
     @IBAction func shareContent(_ sender: UIBarButtonItem) {
-        
+
         let textToShare = contentView?.text ?? materialName ?? "Study Material"
         let activityVC = UIActivityViewController(activityItems: [textToShare], applicationActivities: nil)
         activityVC.popoverPresentationController?.barButtonItem = sender
@@ -142,7 +141,7 @@ class MaterialDetailViewController: UIViewController {
     }
 
     @objc func editButtonTapped() {
-        
+
         if isEditingMode {
             saveChanges()
         }
@@ -153,19 +152,19 @@ class MaterialDetailViewController: UIViewController {
     }
 
     func updateUIForState() {
-        
+
         guard let editButton = editDoneBarButton,
               let optionsButton = optionsBarButton else { return }
 
         if isEditingMode {
-            
+
             editButton.image = UIImage(systemName: "checkmark")
             editButton.title = nil
             contentView.isEditable = true
             contentView.becomeFirstResponder()
-            
+
         } else {
-            
+
             editButton.image = nil
             editButton.title = "Edit"
             contentView.isEditable = false

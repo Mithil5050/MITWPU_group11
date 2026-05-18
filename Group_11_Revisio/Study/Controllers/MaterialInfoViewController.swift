@@ -3,7 +3,7 @@ import UIKit
 class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     @IBOutlet weak var tableView: UITableView!
-    
+
     var materialName: String = ""
     var materialType: String = ""
     var sourceName: String = ""
@@ -16,27 +16,27 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         view.backgroundColor = .systemGroupedBackground
         tableView.backgroundColor = .clear
         tableView.delegate = self
         tableView.dataSource = self
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 52
-        
+
         tableView.tableHeaderView = createHeaderView()
     }
 
     func createHeaderView() -> UIView {
         let headerView = UIView()
         headerView.backgroundColor = .clear
-        
+
         let container = UIView()
         container.backgroundColor = iconColor.withAlphaComponent(0.12)
         container.layer.cornerRadius = 16
         container.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(container)
-        
+
         let imageView = UIImageView()
         let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .semibold)
         imageView.image = UIImage(systemName: iconName, withConfiguration: config)
@@ -44,42 +44,42 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(imageView)
-        
+
         let titleLabel = UILabel()
         titleLabel.text = materialName
         titleLabel.font = .systemFont(ofSize: 22, weight: .bold)
         titleLabel.textColor = .label
         titleLabel.textAlignment = .center
-        
+
         titleLabel.numberOfLines = 0
         titleLabel.lineBreakMode = .byWordWrapping
-        
+
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(titleLabel)
-        
+
         NSLayoutConstraint.activate([
             container.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 20),
             container.centerXAnchor.constraint(equalTo: headerView.centerXAnchor),
             container.widthAnchor.constraint(equalToConstant: 72),
             container.heightAnchor.constraint(equalToConstant: 72),
-            
+
             imageView.centerXAnchor.constraint(equalTo: container.centerXAnchor),
             imageView.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-            
+
             titleLabel.topAnchor.constraint(equalTo: container.bottomAnchor, constant: 16),
             titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 20),
             titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -20),
-            
+
             titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -20)
         ])
-        
+
         let targetSize = CGSize(width: view.frame.width, height: UIView.layoutFittingCompressedSize.height)
         let estimatedSize = headerView.systemLayoutSizeFitting(targetSize,
                                                               withHorizontalFittingPriority: .required,
                                                               verticalFittingPriority: .fittingSizeLevel)
-        
+
         headerView.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: estimatedSize.height)
-        
+
         return headerView
     }
 
@@ -98,7 +98,7 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
             cell.textLabel?.font = .preferredFont(forTextStyle: .body)
             cell.detailTextLabel?.font = .preferredFont(forTextStyle: .body)
             cell.detailTextLabel?.textColor = .secondaryLabel
-            
+
             switch indexPath.row {
             case 0:
                 cell.textLabel?.text = "Material Type"
@@ -116,7 +116,7 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "ActionCell", for: indexPath)
             cell.textLabel?.font = .preferredFont(forTextStyle: .body)
-            
+
             if indexPath.row == 0 {
                 cell.textLabel?.text = "Rename"
                 cell.textLabel?.textColor = .systemBlue
@@ -148,7 +148,7 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
         alert.addAction(UIAlertAction(title: "Rename", style: .default) { _ in
             guard let newName = alert.textFields?.first?.text, !newName.isEmpty,
                   let item = self.originalItem, let subject = self.parentSubject else { return }
-            
+
             DataManager.shared.renameMaterial(subjectName: subject, item: item, newName: newName)
             self.materialName = newName
             self.tableView.tableHeaderView = self.createHeaderView()
@@ -162,7 +162,7 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
         let alert = UIAlertController(title: "Delete Material", message: "This item will be permanently removed.", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { _ in
             guard let item = self.originalItem, let subject = self.parentSubject else { return }
-            
+
             let itemToDelete: Any
             if let studyItem = item as? StudyItem {
                 switch studyItem {
@@ -172,7 +172,7 @@ class MaterialInfoViewController: UIViewController, UITableViewDataSource, UITab
             } else {
                 itemToDelete = item
             }
-            
+
             DataManager.shared.deleteItems(subjectName: subject, items: [itemToDelete])
             NotificationCenter.default.post(name: .didUpdateStudyMaterials, object: nil)
             self.dismiss(animated: true)

@@ -75,7 +75,7 @@ class ProgressDataManager {
     }
 
     private let levelRequirements: [Int: Int] = [
-        1: 250, 2: 400, 3: 600,  4: 850,  5: 1200,
+        1: 250, 2: 400, 3: 600, 4: 850, 5: 1200,
         6: 1700, 7: 2300, 8: 3000, 9: 3800, 10: 4700
     ]
 
@@ -135,25 +135,25 @@ class ProgressDataManager {
                 let profile = try await SupabaseManager.shared.loadUserProfile()
 
                 // 1. Sync core stats — trust cloud completely
-                UserDefaults.standard.set(profile.totalXP,              forKey: "user_total_xp")
+                UserDefaults.standard.set(profile.totalXP, forKey: "user_total_xp")
                 UserDefaults.standard.set(max(profile.currentLevel, 1), forKey: "user_current_level")
-                UserDefaults.standard.set(profile.currentStreak,        forKey: "user_current_streak")
+                UserDefaults.standard.set(profile.currentStreak, forKey: "user_current_streak")
 
                 print("✅ Profile Overwritten — XP: \(profile.totalXP), Level: \(profile.currentLevel)")
 
                 // 2. Sync ALL badge stat counters — overwrite local data
-                UserDefaults.standard.set(profile.statQuizzesDone,   forKey: "stat_quizzes_done")
-                UserDefaults.standard.set(profile.statHighQuizzes,    forKey: "stat_high_quizzes")
-                UserDefaults.standard.set(profile.statDailySolved,    forKey: "stat_daily_solved")
-                UserDefaults.standard.set(profile.statCardsViewed,    forKey: "stat_cards_viewed")
-                UserDefaults.standard.set(profile.statNotesGen,       forKey: "stat_notes_gen")
-                UserDefaults.standard.set(profile.statCheatGen,       forKey: "stat_cheat_gen")
-                UserDefaults.standard.set(profile.statQuestsDone,     forKey: "stat_quests_done")
-                UserDefaults.standard.set(profile.statWordfillDone,   forKey: "stat_wordfill_done")
+                UserDefaults.standard.set(profile.statQuizzesDone, forKey: "stat_quizzes_done")
+                UserDefaults.standard.set(profile.statHighQuizzes, forKey: "stat_high_quizzes")
+                UserDefaults.standard.set(profile.statDailySolved, forKey: "stat_daily_solved")
+                UserDefaults.standard.set(profile.statCardsViewed, forKey: "stat_cards_viewed")
+                UserDefaults.standard.set(profile.statNotesGen, forKey: "stat_notes_gen")
+                UserDefaults.standard.set(profile.statCheatGen, forKey: "stat_cheat_gen")
+                UserDefaults.standard.set(profile.statQuestsDone, forKey: "stat_quests_done")
+                UserDefaults.standard.set(profile.statWordfillDone, forKey: "stat_wordfill_done")
                 UserDefaults.standard.set(profile.statConnectionsWin, forKey: "stat_connections_win")
-                UserDefaults.standard.set(profile.statFocusSessions,  forKey: "stat_focus_sessions")
-                UserDefaults.standard.set(profile.statMessagesSent,   forKey: "stat_messages_sent")
-                UserDefaults.standard.set(profile.statDocsUploaded,   forKey: "stat_docs_uploaded")
+                UserDefaults.standard.set(profile.statFocusSessions, forKey: "stat_focus_sessions")
+                UserDefaults.standard.set(profile.statMessagesSent, forKey: "stat_messages_sent")
+                UserDefaults.standard.set(profile.statDocsUploaded, forKey: "stat_docs_uploaded")
 
                 // 3. Overwrite Badge IDs — do NOT use .union here
                 UserDefaults.standard.set(profile.earnedBadgeIds, forKey: "earned_badge_ids")
@@ -437,7 +437,7 @@ class ProgressDataManager {
         let fmt = ISO8601DateFormatter()
         return raw.compactMap { dict -> XPEvent? in
             guard let desc   = dict["desc"],
-                  let amtStr = dict["amt"],  let amt = Int(amtStr),
+                  let amtStr = dict["amt"], let amt = Int(amtStr),
                   let dtStr  = dict["date"], let dt  = fmt.date(from: dtStr)
             else { return nil }
             return XPEvent(description: desc, amount: amt, date: dt)

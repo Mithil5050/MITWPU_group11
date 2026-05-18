@@ -1,0 +1,43 @@
+# SwiftLint Configuration File
+# Tailored for Group_11_Revisio with Supabase and Storyboard support
+
+# Rules to exclude from running
+disabled_rules:
+  - identifier_name                  # Allows snake_case variables (e.g., user_id, avatar_url for Supabase)
+  - line_length                      # Standard SwiftLint limits (120/200 chars) are too short for modern screens
+  - type_body_length                 # Large view controllers / manager classes are common in iOS storyboard apps
+  - file_length                      # Avoid warnings on long controller or manager files
+  - function_body_length             # Avoid warnings on complex logic routines
+  - nesting                          # Storyboards and delegates often lead to deeper type nesting
+  - multiple_closures_with_trailing_closure # Trailing closures are common in completion handlers
+  - cyclomatic_complexity            # Complex game logic / match statements trigger this unnecessarily
+  - force_cast                       # Storyboard view controller / cell casting uses 'as!' commonly
+  - force_try                        # Allow try! for simple loads in local files/JSON
+  - large_tuple                      # Avoid warnings on custom coordinate/state tuples
+  - for_where                        # Allow standard loops with simple 'if' conditions inside them
+  - vertical_parameter_alignment     # Allow parameters to be spaced naturally on separate lines
+  - inclusive_language               # Allow gaming terms like 'Master' for achievements and badges
+  - type_name                        # Allow brief custom local helper type names (e.g., FC)
+  - trailing_newline                 # Allow multiple trailing newlines in files without warnings
+  - todo                             # Allow TODO comments for unfinished ideas
+  - redundant_string_enum_value      # Allow explicit enum string values matching case name
+  - unused_optional_binding          # Allow unused optional bindings in matching code blocks
+
+# Paths to include in linting
+included:
+  - Group_11_Revisio
+
+# Paths to exclude from linting. Takes precedence over `included`.
+excluded:
+  - Pods
+  - Carthage
+  - Group_11_Revisio/Resources
+  - Group_11_Revisio/Assets.xcassets
+
+# Configure specific rules
+trailing_whitespace:
+  ignores_empty_lines: false
+  ignores_comments: true
+
+vertical_whitespace:
+  max_empty_lines: 2

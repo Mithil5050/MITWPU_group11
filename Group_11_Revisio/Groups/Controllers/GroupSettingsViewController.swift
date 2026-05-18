@@ -9,30 +9,30 @@ import Supabase
 class GroupSettingsViewController: UIViewController {
 
     @IBOutlet weak var segmentedControl: UISegmentedControl!
-    @IBOutlet weak var infoView:  UIView!
-    @IBOutlet weak var docsView:  UIView!
+    @IBOutlet weak var infoView: UIView!
+    @IBOutlet weak var docsView: UIView!
     @IBOutlet weak var mediaView: UIView!
     @IBOutlet weak var linksView: UIView!
 
-    @IBOutlet weak var groupImageView:    UIImageView!
-    @IBOutlet weak var groupNameLabel:    UILabel!
+    @IBOutlet weak var groupImageView: UIImageView!
+    @IBOutlet weak var groupNameLabel: UILabel!
     @IBOutlet weak var membersCountLabel: UILabel!
 
     @IBOutlet weak var membersCollectionView: UICollectionView!
-    @IBOutlet weak var docsCollectionView:    UICollectionView!
-    @IBOutlet weak var mediaCollectionView:   UICollectionView!
-    @IBOutlet weak var linksTableView:        UITableView!
-    @IBOutlet weak var hideAlertsSwitch:      UISwitch!
+    @IBOutlet weak var docsCollectionView: UICollectionView!
+    @IBOutlet weak var mediaCollectionView: UICollectionView!
+    @IBOutlet weak var linksTableView: UITableView!
+    @IBOutlet weak var hideAlertsSwitch: UISwitch!
 
     var group: Group!
-    weak var delegate:       LeaveGroupDelegate?
+    weak var delegate: LeaveGroupDelegate?
     weak var updateDelegate: GroupUpdateDelegate?
 
-    private var members:   [SupabaseManager.GroupMember] = []
+    private var members: [SupabaseManager.GroupMember] = []
     private var inviteCode = ""
-    private var documents:  [SupabaseManager.GroupFile] = []
+    private var documents: [SupabaseManager.GroupFile] = []
     private var mediaFiles: [SupabaseManager.GroupFile] = []
-    private var linkFiles:  [SupabaseManager.GroupFile] = []
+    private var linkFiles: [SupabaseManager.GroupFile] = []
     private var imageCache: [String: UIImage] = [:]
 
     override func viewDidLoad() {
@@ -256,7 +256,7 @@ class GroupSettingsViewController: UIViewController {
                 docsCollectionView.reloadData()
                 mediaCollectionView.reloadData()
                 linksTableView.reloadData()
-                applyEmptyState(docsCollectionView,  isEmpty: documents.isEmpty,
+                applyEmptyState(docsCollectionView, isEmpty: documents.isEmpty,
                                 message: "No documents shared yet")
                 applyEmptyState(mediaCollectionView, isEmpty: mediaFiles.isEmpty,
                                 message: "No media shared yet")
@@ -349,7 +349,7 @@ class GroupSettingsViewController: UIViewController {
                 guard let uid = SupabaseManager.shared.client.auth.currentUser?.id,
                       let gid = UUID(uuidString: group.id) else { return }
                 try await SupabaseManager.shared.client.from("group_members").delete()
-                    .eq("user_id",  value: uid)
+                    .eq("user_id", value: uid)
                     .eq("group_id", value: gid)
                     .execute()
                 await MainActor.run {
@@ -413,9 +413,9 @@ extension GroupSettingsViewController:
 
     func collectionView(_ cv: UICollectionView,
                         numberOfItemsInSection section: Int) -> Int {
-        if cv == membersCollectionView  { return members.count + 1 }
-        if cv == docsCollectionView     { return documents.count   }
-        if cv == mediaCollectionView    { return mediaFiles.count  }
+        if cv == membersCollectionView { return members.count + 1 }
+        if cv == docsCollectionView { return documents.count   }
+        if cv == mediaCollectionView { return mediaFiles.count  }
         return 0
     }
 
@@ -545,7 +545,7 @@ extension GroupSettingsViewController:
     func collectionView(_ cv: UICollectionView,
                         layout _: UICollectionViewLayout,
                         minimumLineSpacingForSectionAt _: Int) -> CGFloat {
-        if cv == docsCollectionView  { return 6 }
+        if cv == docsCollectionView { return 6 }
         if cv == mediaCollectionView { return 8 }
         return 0
     }

@@ -41,11 +41,11 @@ class QuestionSummaryCell: UITableViewCell {
 
         backgroundColor = .clear
         selectionStyle = .none
-        
+
         cardContainerView.backgroundColor = .secondarySystemGroupedBackground
         cardContainerView.layer.cornerRadius = 16 // Increased radius for modern look
         cardContainerView.clipsToBounds = true
-        
+
         // 2. Options Container Styling
         optionsContainerView.layer.cornerRadius = 12
         optionsContainerView.clipsToBounds = true
@@ -76,11 +76,11 @@ class QuestionSummaryCell: UITableViewCell {
         // 3. Reset & Configure Options
         let prefixes = ["A. ", "B. ", "C. ", "D. "]
         for (i, label) in optionLabels.enumerated() {
-            
+
             // ✅ FIX: Set a default background color (Adaptive Grey) instead of .clear
             optionViews[i].backgroundColor = UIColor.secondarySystemFill
             optionViews[i].layer.borderColor = UIColor.clear.cgColor
-            
+
             label.textColor = .label // Standard adaptive text color
             label.font = UIFont.systemFont(ofSize: 15)
             optionIcons[i].isHidden = true

@@ -22,10 +22,10 @@ class StreaksCalendarViewController: UIViewController {
     private var displayedYear: Int  = Calendar.current.component(.year, from: Date())
     private var displayedMonth: Int = Calendar.current.component(.month, from: Date())
     private var streakDateSet: Set<String> = []
-    private var selectedDay: Int? = nil
+    private var selectedDay: Int?
 
     private let calendar   = Calendar.current
-    private let daySymbols = ["SUN","MON","TUE","WED","THU","FRI","SAT"]
+    private let daySymbols = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
     override func viewDidLoad() {
         super.viewDidLoad()

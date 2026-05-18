@@ -96,7 +96,7 @@ final class MascotCelebrationView: UIView {
             subtitleLabel.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 6),
             subtitleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
             subtitleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 32),
-            subtitleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -32),
+            subtitleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -32)
         ])
 
         // Prepare 3D perspective on the mascot's layer
@@ -119,7 +119,7 @@ final class MascotCelebrationView: UIView {
             topAnchor.constraint(equalTo: parent.topAnchor),
             bottomAnchor.constraint(equalTo: parent.bottomAnchor),
             leadingAnchor.constraint(equalTo: parent.leadingAnchor),
-            trailingAnchor.constraint(equalTo: parent.trailingAnchor),
+            trailingAnchor.constraint(equalTo: parent.trailingAnchor)
         ])
         parent.layoutIfNeeded()
 
@@ -246,7 +246,7 @@ final class MascotCelebrationView: UIView {
             UIColor(red: 0.35, green: 0.78, blue: 0.98, alpha: 1),  // Cyan
             UIColor(red: 1.00, green: 0.76, blue: 0.27, alpha: 1),  // Gold
             UIColor(red: 0.53, green: 0.84, blue: 0.41, alpha: 1),  // Green
-            UIColor(red: 0.95, green: 0.40, blue: 0.53, alpha: 1),  // Pink
+            UIColor(red: 0.95, green: 0.40, blue: 0.53, alpha: 1)  // Pink
         ]
 
         var cells: [CAEmitterCell] = []

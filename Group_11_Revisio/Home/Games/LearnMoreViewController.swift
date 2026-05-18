@@ -17,7 +17,7 @@ final class LearnMoreViewController: UIViewController {
     required init?(coder: NSCoder) { fatalError() }
 
     // MARK: - UI
-    private let gradientLayer      = CAGradientLayer()
+    private let backgroundView     = GradientViews()
     private let mascotView         = UIImageView()
     private let glowView           = UIView()
     private let resultBadge        = UILabel()
@@ -45,7 +45,7 @@ final class LearnMoreViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        gradientLayer.frame = view.bounds
+        backgroundView.frame = view.bounds
         emitterLayer?.emitterPosition = CGPoint(x: view.bounds.midX, y: -10)
         emitterLayer?.emitterSize     = CGSize(width: view.bounds.width, height: 1)
         // Glow circle behind mascot
@@ -61,21 +61,14 @@ final class LearnMoreViewController: UIViewController {
     // MARK: - Build UI
     private func buildUI() {
         // ── Gradient background ──────────────────────────────────────────
-        let topColor    = UIColor(red: 0.05, green: 0.04, blue: 0.12, alpha: 1)
-        let bottomColor = UIColor(red: 0.08, green: 0.06, blue: 0.22, alpha: 1)
-        gradientLayer.colors    = [topColor.cgColor, bottomColor.cgColor]
-        gradientLayer.locations = [0, 1]
-        gradientLayer.startPoint = CGPoint(x: 0.3, y: 0)
-        gradientLayer.endPoint   = CGPoint(x: 0.7, y: 1)
-        view.layer.insertSublayer(gradientLayer, at: 0)
+        view.addSubview(backgroundView)
+        view.sendSubviewToBack(backgroundView)
 
         // ── Glow blob behind mascot ───────────────────────────────────────
         glowView.backgroundColor = didWin
-            ? UIColor(red: 109/255, green: 91/255, blue: 255/255, alpha: 0.25)
+            ? UIColor.systemBlue.withAlphaComponent(0.25)
             : UIColor(red: 0.4, green: 0.5, blue: 1.0, alpha: 0.18)
-        glowView.layer.shadowColor   = (didWin
-            ? UIColor(red: 109/255, green: 91/255, blue: 255/255, alpha: 1)
-            : UIColor.systemBlue).cgColor
+        glowView.layer.shadowColor   = UIColor.systemBlue.cgColor
         glowView.layer.shadowRadius  = 40
         glowView.layer.shadowOpacity = 0.6
         glowView.layer.shadowOffset  = .zero
@@ -88,7 +81,7 @@ final class LearnMoreViewController: UIViewController {
         view.addSubview(mascotView)
 
         // ── XP badge (win only) ───────────────────────────────────────────
-        xpBadge.backgroundColor  = UIColor(red: 109/255, green: 91/255, blue: 255/255, alpha: 1)
+        xpBadge.backgroundColor  = .systemBlue
         xpBadge.layer.cornerRadius = 14
         xpBadge.translatesAutoresizingMaskIntoConstraints = false
         xpBadge.isHidden = !didWin
@@ -130,7 +123,7 @@ final class LearnMoreViewController: UIViewController {
         view.addSubview(subtitleLabel)
 
         // ── Definition card ───────────────────────────────────────────────
-        defCard.backgroundColor    = UIColor.white.withAlphaComponent(0.07)
+        defCard.backgroundColor    = UIColor(red: 40/255, green: 44/255, blue: 55/255, alpha: 0.85)
         defCard.layer.cornerRadius = 22
         defCard.layer.cornerCurve  = .continuous
         defCard.layer.borderColor  = UIColor.white.withAlphaComponent(0.1).cgColor
@@ -157,7 +150,7 @@ final class LearnMoreViewController: UIViewController {
         var config = UIButton.Configuration.filled()
         config.title              = didWin ? "Awesome! 🙌" : "See You Tomorrow"
         config.baseForegroundColor = .white
-        config.baseBackgroundColor = UIColor(red: 109/255, green: 91/255, blue: 255/255, alpha: 1)
+        config.baseBackgroundColor = .systemBlue
         config.cornerStyle        = .capsule
         config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
             var out = incoming
@@ -168,7 +161,7 @@ final class LearnMoreViewController: UIViewController {
         doneButton.translatesAutoresizingMaskIntoConstraints = false
         doneButton.addTarget(self, action: #selector(handleDone), for: .touchUpInside)
         // Lift shadow
-        doneButton.layer.shadowColor   = UIColor(red: 109/255, green: 91/255, blue: 255/255, alpha: 1).cgColor
+        doneButton.layer.shadowColor   = UIColor.systemBlue.cgColor
         doneButton.layer.shadowOpacity = 0.55
         doneButton.layer.shadowRadius  = 14
         doneButton.layer.shadowOffset  = CGSize(width: 0, height: 6)
@@ -223,7 +216,7 @@ final class LearnMoreViewController: UIViewController {
             doneButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             doneButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             doneButton.heightAnchor.constraint(equalToConstant: 58),
-            doneButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -24),
+            doneButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -24)
         ])
 
         // Initial state for animation
@@ -280,7 +273,7 @@ final class LearnMoreViewController: UIViewController {
 
         let colors: [UIColor] = [
             .systemYellow, .systemPink, .systemCyan,
-            UIColor(red: 109/255, green: 91/255, blue: 255/255, alpha: 1),
+            .systemBlue,
             .systemGreen, .white, .systemOrange
         ]
         emitter.emitterCells = colors.map { color in

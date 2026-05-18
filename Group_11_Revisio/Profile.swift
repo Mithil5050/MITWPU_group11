@@ -12,7 +12,7 @@ struct Profile: Codable {
     var username: String?
     var total_xp: Int
     var current_streak: Int
-    
+
     enum CodingKeys: String, CodingKey {
         case id, username
         case total_xp = "total_xp"
