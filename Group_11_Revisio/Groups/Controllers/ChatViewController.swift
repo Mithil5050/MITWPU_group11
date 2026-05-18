@@ -1038,8 +1038,8 @@ extension ChatViewController: MessageCellDelegate {
         let fileUrl  = meta.fileUrl ?? ""
         let fileName = meta.fileName ?? "document"
 
-        // study material: revisio:// deep link OR no URL (optimistic bubble not yet confirmed)
-        if fileUrl.isEmpty || fileUrl.hasPrefix("revisio://") {
+        // study material: reviseq:// deep link OR no URL (optimistic bubble not yet confirmed)
+        if fileUrl.isEmpty || fileUrl.hasPrefix("reviseq://") {
             openStudyMaterial(meta: meta)
             return
         }

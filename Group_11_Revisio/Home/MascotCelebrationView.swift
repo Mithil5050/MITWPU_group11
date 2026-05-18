@@ -242,7 +242,7 @@ final class MascotCelebrationView: UIView {
         confettiLayer.renderMode = .additive
 
         let colors: [UIColor] = [
-            UIColor(red: 0.39, green: 0.40, blue: 0.94, alpha: 1),  // Revisio indigo
+            UIColor(red: 0.39, green: 0.40, blue: 0.94, alpha: 1),  // ReviseQ indigo
             UIColor(red: 0.35, green: 0.78, blue: 0.98, alpha: 1),  // Cyan
             UIColor(red: 1.00, green: 0.76, blue: 0.27, alpha: 1),  // Gold
             UIColor(red: 0.53, green: 0.84, blue: 0.41, alpha: 1),  // Green

@@ -25,7 +25,7 @@ final class SplashViewController: UIViewController {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.text = "Revisio"
+        l.text = "ReviseQ"
         l.font = UIFont.systemFont(ofSize: 42, weight: .heavy)
         l.textColor = .white
         l.textAlignment = .center

@@ -68,7 +68,7 @@ class SignupViewController: UIViewController {
                         "username": .string(name),
                         "institution": .string(institution)
                     ],
-                    redirectTo: URL(string: "revisio://login-callback")
+                    redirectTo: URL(string: "reviseq://login-callback")
                 )
 
 
