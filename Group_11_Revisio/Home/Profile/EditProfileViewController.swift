@@ -135,11 +135,8 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
                     // Upload to Storage
                     try await supabase.storage
                         .from("avatars")
-                        .upload(
-                            path: filePath,
-                            file: imageData,
-                            options: FileOptions(contentType: "image/jpeg", upsert: true)
-                        )
+                        .upload(filePath, data: imageData,
+                                options: FileOptions(contentType: "image/jpeg", upsert: true))
 
                     // Get the public URL
                     finalAvatarURL = try supabase.storage.from("avatars").getPublicURL(path: filePath).absoluteString

@@ -141,7 +141,7 @@ class QuizStartViewController: UIViewController {
 
             if let oldQuizVC = segue.destination as? QuizSessionViewController {
                 oldQuizVC.currentTopic = self.currentTopic
-                oldQuizVC.parentSubject = self.parentSubject
+                oldQuizVC.parentSubject = self.parentSubject ?? "General Study"
                 oldQuizVC.sourceName = nameToPass
                 return
             }

@@ -27,17 +27,10 @@ class MessageCell: UITableViewCell {
 
     func configure(with message: Message) {
         messageLabel.text = message.content
-        let isOutgoing = false
-        if isOutgoing {
-            bubbleLeadingConstraint.isActive = false
-            bubbleTrailingConstraint.isActive = true
-            bubbleView.backgroundColor = UIColor(red: 0.0/255, green: 122/255, blue: 255/255, alpha: 1)
-            messageLabel.textColor = .white
-        } else {
-            bubbleLeadingConstraint.isActive = true
-            bubbleTrailingConstraint.isActive = false
-            bubbleView.backgroundColor = UIColor(white: 0.95, alpha: 1)
-            messageLabel.textColor = .black
-        }
+        // Incoming style only — outgoing messages use a different cell type
+        bubbleLeadingConstraint.isActive = true
+        bubbleTrailingConstraint.isActive = false
+        bubbleView.backgroundColor = UIColor(white: 0.95, alpha: 1)
+        messageLabel.textColor = .black
     }
 }

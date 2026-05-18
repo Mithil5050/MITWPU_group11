@@ -86,7 +86,7 @@ class DataManager {
                 var options = q.answers
                 while options.count < 4 { options.append("-") }
                 let safeOptions = options.prefix(4).joined(separator: "|")
-                return "\(q.questionText)|\(safeOptions)|\(q.correctAnswerIndex)|\(q.hint ?? "No Hint")"
+                return "\(q.questionText)|\(safeOptions)|\(q.correctAnswerIndex)|\(q.hint)"
             }.joined(separator: "\n")
 
         } else if type == "Flashcards" {
@@ -459,7 +459,7 @@ class DataManager {
         let keys = [DataManager.materialsKey, DataManager.sourcesKey]
 
         for key in keys {
-            if var items = subjectDict[key] as? [StudyItem] {
+            if var items = subjectDict[key] {
                 if let index = items.firstIndex(where: { existingItem in
                     switch (existingItem, item) {
                     case (.topic(let t1), let t2 as Topic): return t1.name == t2.name && t1.materialType == t2.materialType

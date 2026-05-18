@@ -58,11 +58,13 @@ class GradientView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupGradient()
+        registerTraitChanges()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupGradient()
+        registerTraitChanges()
     }
 
     // MARK: - Lifecycle & Theme Changes
@@ -81,10 +83,19 @@ class GradientView: UIView {
      update their colors when the system switches between dark/light mode.
      We must detect the trait collection change and manually force the gradient update.
      */
+    private func registerTraitChanges() {
+        if #available(iOS 17.0, *) {
+            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { [weak self] (_: Self, _: UITraitCollection) in
+                self?.updateGradient()
+            }
+        }
+    }
+
+    // Fallback for iOS < 17 — deprecated in iOS 17, kept for backward compatibility
+    @available(iOS, deprecated: 17, message: "Handled by registerForTraitChanges on iOS 17+")
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-
-        // Check if the system's color appearance has changed
+        if #available(iOS 17.0, *) { return } // handled by registerTraitChanges
         if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
             updateGradient()
         }

@@ -21,7 +21,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
-    // Added to handle the "bounce back" from Google's login screen
+    // Handle URL schemes via the UIScene lifecycle (iOS 26+) and legacy app-level callback.
+    // UIApplication.OpenURLOptionsKey is deprecated in iOS 26; keep the signature but suppress
+    // the warning by annotating with @available.
+    @available(iOS, deprecated: 26, message: "Use UIScene lifecycle instead")
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         return GIDSignIn.sharedInstance.handle(url)
     }

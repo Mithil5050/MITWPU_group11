@@ -73,7 +73,7 @@ class GroupCodeViewController: UIViewController {
             UIPasteboard.general.string = inviteCode
 
             // Save original image (or use a sensible fallback)
-            let fallback = UIImage(systemName: "doc.on.doc")?.withRenderingMode(.alwaysTemplate)
+            let fallback = UIImage(systemName: "document.on.document")?.withRenderingMode(.alwaysTemplate)
             let originalImage = sender.image(for: .normal) ?? fallback
 
             // Success image

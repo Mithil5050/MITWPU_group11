@@ -110,7 +110,6 @@ class ProgressViewContoller: UIViewController {
             // Overlay transparent button for Streaks Chevron (44x44 Hit Test Area)
             let streaksButton = UIButton(type: .system)
             streaksButton.backgroundColor = .clear
-            streaksButton.showsTouchWhenHighlighted = true
             streaksButton.translatesAutoresizingMaskIntoConstraints = false
             streaksButton.addTarget(self, action: #selector(streaksChevronTapped), for: .touchUpInside)
             streaksCard.addSubview(streaksButton)
@@ -125,7 +124,6 @@ class ProgressViewContoller: UIViewController {
             // Overlay transparent button for Awards Chevron (44x44 Hit Test Area)
             let awardsButton = UIButton(type: .system)
             awardsButton.backgroundColor = .clear
-            awardsButton.showsTouchWhenHighlighted = true
             awardsButton.translatesAutoresizingMaskIntoConstraints = false
             awardsButton.addTarget(self, action: #selector(awardsChevronTapped), for: .touchUpInside)
             awardsCard.addSubview(awardsButton)

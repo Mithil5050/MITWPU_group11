@@ -36,7 +36,7 @@ class TextEditorViewController: UIViewController, UITextViewDelegate {
         // Example Save button; wire this to your upload flow as needed.
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Save",
-            style: .done,
+            style: .plain,
             target: self,
             action: #selector(saveTapped)
         )

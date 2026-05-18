@@ -64,7 +64,7 @@ class SelectMaterialViewController: UIViewController, UITableViewDelegate, UITab
             tf.autocapitalizationType = .words
         }
 
-        let addAction = UIAlertAction(title: "Create", style: .default) { [weak self] _ in
+        let addAction = UIAlertAction(title: "Create", style: .default) { _ in
             guard let name = alert.textFields?.first?.text,
                   !name.trimmingCharacters(in: .whitespaces).isEmpty else { return }
 

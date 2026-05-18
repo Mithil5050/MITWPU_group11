@@ -834,7 +834,7 @@ class SubjectViewController: UIViewController, UITableViewDelegate, UITableViewD
             case .topic(let topic):
                 infoVC.materialName = cleanName(topic.name)
                 infoVC.materialType = topic.materialType
-                infoVC.dateCreated = topic.createdDate ?? topic.lastAccessed ?? "Just now"
+                infoVC.dateCreated = topic.createdDate ?? topic.lastAccessed
                 infoVC.sourceName = cleanName(topic.sourceName ?? "Attached Document")
 
                 switch topic.materialType {

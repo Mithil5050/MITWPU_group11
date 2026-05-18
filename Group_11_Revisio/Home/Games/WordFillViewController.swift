@@ -84,7 +84,6 @@ class WordFillViewController: UIViewController {
     // MARK: - ✅ AI GENERATION LOGIC
     private func generateWordFill() {
         Task {
-            let topicName = currentTopic?.name ?? "General Knowledge"
             let contentBody = currentTopic?.largeContentBody ?? currentTopic?.notesContent ?? currentTopic?.cheatsheetContent ?? ""
             let safeContent = String(contentBody.prefix(15000))
 

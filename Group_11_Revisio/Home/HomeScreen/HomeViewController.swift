@@ -78,7 +78,7 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
         btn.imageView?.contentMode = .scaleAspectFit
         btn.contentVerticalAlignment = .fill
         btn.contentHorizontalAlignment = .fill
-        btn.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+
 
         btn.backgroundColor = .clear
         btn.layer.cornerRadius = 30
@@ -807,7 +807,7 @@ class NoteInputViewController: UIViewController {
         view.backgroundColor = .systemBackground
         title = "New Note"
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelTapped))
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(saveTapped))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(saveTapped))
         textView.font = .systemFont(ofSize: 18)
         textView.translatesAutoresizingMaskIntoConstraints = false
         textView.textContainerInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)

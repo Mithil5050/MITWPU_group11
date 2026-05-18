@@ -41,6 +41,7 @@ class StreaksCalendarViewController: UIViewController {
 
         NotificationCenter.default.addObserver(self, selector: #selector(onXPUpdate),
                                                name: .xpDidUpdate, object: nil)
+        registerTraitObserver()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -50,8 +51,22 @@ class StreaksCalendarViewController: UIViewController {
         calendarCollection?.reloadData()
     }
 
+    private func registerTraitObserver() {
+        if #available(iOS 17.0, *) {
+            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { [weak self] (_: Self, _: UITraitCollection) in
+                guard let self else { return }
+                applyCardShadow(to: streakInfoCardView)
+                applyCardShadow(to: calendarContainerView)
+                calendarCollection?.reloadData()
+            }
+        }
+    }
+
+    // Fallback for iOS < 17 — deprecated in iOS 17, kept for backward compatibility
+    @available(iOS, deprecated: 17, message: "Handled by registerForTraitChanges on iOS 17+")
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
+        if #available(iOS 17.0, *) { return }
         if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
             applyCardShadow(to: streakInfoCardView)
             applyCardShadow(to: calendarContainerView)

@@ -37,7 +37,7 @@ class LoginViewController: UIViewController {
                 let user = try await supabase.auth.session.user
 
                 guard user.emailConfirmedAt != nil else {
-                    try? await supabase.auth.signOut()
+                    _ = try? await supabase.auth.signOut()
                     DispatchQueue.main.async {
                         let alert = UIAlertController(title: "Email Not Verified", message: "Please check your inbox.", preferredStyle: .alert)
                         alert.addAction(UIAlertAction(title: "OK", style: .default))
@@ -127,7 +127,7 @@ class LoginViewController: UIViewController {
                         "current_level": .integer(1),
                         "current_streak": .integer(0)
                     ]
-                    try? await supabase.from("profiles").insert(newProfileData).execute()
+                    _ = try? await supabase.from("profiles").insert(newProfileData).execute()
                 }
 
                 DispatchQueue.main.async { self.transitionToMainApp() }

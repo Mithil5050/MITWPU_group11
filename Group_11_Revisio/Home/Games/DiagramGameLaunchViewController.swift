@@ -74,7 +74,9 @@ class DiagramGameLaunchViewController: UIViewController {
         topicDropdownButton.layer.cornerRadius = 16
         topicDropdownButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
         topicDropdownButton.semanticContentAttribute = .forceLeftToRight
-        topicDropdownButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: -8, bottom: 0, right: 0)
+        var dropdownConfig = topicDropdownButton.configuration ?? UIButton.Configuration.plain()
+        dropdownConfig.imagePadding = 8
+        topicDropdownButton.configuration = dropdownConfig
         topicDropdownButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(topicDropdownButton)
 

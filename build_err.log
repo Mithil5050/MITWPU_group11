@@ -1,0 +1,812 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project Group_11_Revisio.xcodeproj -scheme Group_11_Revisio -destination "platform=iOS Simulator,name=iPhone 17" build
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  GoogleSignIn: https://github.com/google/GoogleSignIn-iOS @ 9.1.0
+  swift-clocks: https://github.com/pointfreeco/swift-clocks @ 1.0.6
+  Promises: https://github.com/google/promises.git @ 2.4.0
+  swift-concurrency-extras: https://github.com/pointfreeco/swift-concurrency-extras @ 1.3.2
+  swift-crypto: https://github.com/apple/swift-crypto.git @ 4.2.0
+  swift-http-types: https://github.com/apple/swift-http-types.git @ 1.5.1
+  AppCheck: https://github.com/google/app-check.git @ 11.2.0
+  xctest-dynamic-overlay: https://github.com/pointfreeco/xctest-dynamic-overlay @ 1.8.1
+  AppAuth: https://github.com/openid/AppAuth-iOS.git @ 2.0.0
+  GTMAppAuth: https://github.com/google/GTMAppAuth.git @ 5.0.0
+  InputBarAccessoryView: https://github.com/nathantannar4/InputBarAccessoryView @ 7.0.4
+  GTMSessionFetcher: https://github.com/google/gtm-session-fetcher.git @ 3.5.0
+  MessageKit: https://github.com/MessageKit/MessageKit @ 5.0.0
+  swift-asn1: https://github.com/apple/swift-asn1.git @ 1.5.1
+  GoogleUtilities: https://github.com/google/GoogleUtilities.git @ 8.1.0
+  Supabase: https://github.com/supabase/supabase-swift @ 2.41.1
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (60 targets)
+    Target 'Group_11_Revisio' in project 'Group_11_Revisio'
+        ➜ Explicit dependency on target 'MessageKit' in project 'MessageKit'
+        ➜ Explicit dependency on target 'InputBarAccessoryView' in project 'InputBarAccessoryView'
+        ➜ Explicit dependency on target 'GoogleSignInSwift' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'GoogleSignIn' in project 'GoogleSignIn'
+    Target 'GoogleSignIn' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'GoogleSignIn' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'GoogleSignIn_GoogleSignIn' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'AppAuth' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppAuthCore' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppCheckCore' in project 'AppCheck'
+        ➜ Explicit dependency on target 'GTMAppAuth' in project 'GTMAppAuth'
+        ➜ Explicit dependency on target 'GTMSessionFetcherCore' in project 'GTMSessionFetcher'
+    Target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+    Target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'swift-crypto_Crypto' in project 'swift-crypto'
+    Target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'swift-crypto_Crypto' in project 'swift-crypto'
+    Target 'swift-crypto_Crypto' in project 'swift-crypto' (no dependencies)
+    Target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+    Target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay'
+    Target 'IssueReportingPackageSupport' in project 'xctest-dynamic-overlay' (no dependencies)
+    Target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+    Target 'HTTPTypes' in project 'swift-http-types' (no dependencies)
+    Target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+    Target 'ConcurrencyExtras' in project 'swift-concurrency-extras' (no dependencies)
+    Target 'GoogleSignInSwift' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'GoogleSignInSwift' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'GoogleSignIn_GoogleSignInSwift' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'GoogleSignIn' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'AppAuth' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppAuthCore' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppCheckCore' in project 'AppCheck'
+        ➜ Explicit dependency on target 'GTMAppAuth' in project 'GTMAppAuth'
+        ➜ Explicit dependency on target 'GTMSessionFetcherCore' in project 'GTMSessionFetcher'
+    Target 'GoogleSignInSwift' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'GoogleSignIn_GoogleSignInSwift' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'GoogleSignIn' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'AppAuth' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppAuthCore' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppCheckCore' in project 'AppCheck'
+        ➜ Explicit dependency on target 'GTMAppAuth' in project 'GTMAppAuth'
+        ➜ Explicit dependency on target 'GTMSessionFetcherCore' in project 'GTMSessionFetcher'
+    Target 'GoogleSignIn' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'GoogleSignIn_GoogleSignIn' in project 'GoogleSignIn'
+        ➜ Explicit dependency on target 'AppAuth' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppAuthCore' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppCheckCore' in project 'AppCheck'
+        ➜ Explicit dependency on target 'GTMAppAuth' in project 'GTMAppAuth'
+        ➜ Explicit dependency on target 'GTMSessionFetcherCore' in project 'GTMSessionFetcher'
+    Target 'GTMAppAuth' in project 'GTMAppAuth'
+        ➜ Explicit dependency on target 'GTMAppAuth' in project 'GTMAppAuth'
+        ➜ Explicit dependency on target 'GTMAppAuth_GTMAppAuth' in project 'GTMAppAuth'
+        ➜ Explicit dependency on target 'GTMSessionFetcherCore' in project 'GTMSessionFetcher'
+        ➜ Explicit dependency on target 'AppAuthCore' in project 'AppAuth'
+    Target 'GTMAppAuth' in project 'GTMAppAuth'
+        ➜ Explicit dependency on target 'GTMAppAuth_GTMAppAuth' in project 'GTMAppAuth'
+        ➜ Explicit dependency on target 'GTMSessionFetcherCore' in project 'GTMSessionFetcher'
+        ➜ Explicit dependency on target 'AppAuthCore' in project 'AppAuth'
+    Target 'GTMSessionFetcherCore' in project 'GTMSessionFetcher'
+        ➜ Explicit dependency on target 'GTMSessionFetcherCore' in project 'GTMSessionFetcher'
+        ➜ Explicit dependency on target 'GTMSessionFetcher_GTMSessionFetcherCore' in project 'GTMSessionFetcher'
+    Target 'GTMSessionFetcherCore' in project 'GTMSessionFetcher'
+        ➜ Explicit dependency on target 'GTMSessionFetcher_GTMSessionFetcherCore' in project 'GTMSessionFetcher'
+    Target 'GTMSessionFetcher_GTMSessionFetcherCore' in project 'GTMSessionFetcher' (no dependencies)
+    Target 'GTMAppAuth_GTMAppAuth' in project 'GTMAppAuth' (no dependencies)
+    Target 'AppCheckCore' in project 'AppCheck'
+        ➜ Explicit dependency on target 'AppCheckCore' in project 'AppCheck'
+        ➜ Explicit dependency on target 'FBLPromises' in project 'Promises'
+        ➜ Explicit dependency on target 'GULEnvironment' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GULUserDefaults' in project 'GoogleUtilities'
+    Target 'AppCheckCore' in project 'AppCheck'
+        ➜ Explicit dependency on target 'FBLPromises' in project 'Promises'
+        ➜ Explicit dependency on target 'GULEnvironment' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GULUserDefaults' in project 'GoogleUtilities'
+    Target 'GULUserDefaults' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GoogleUtilities-UserDefaults' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GoogleUtilities_GoogleUtilities-UserDefaults' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'third-party-IsAppEncrypted' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GoogleUtilities-Environment' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GoogleUtilities-Logger' in project 'GoogleUtilities'
+    Target 'GoogleUtilities-UserDefaults' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GoogleUtilities_GoogleUtilities-UserDefaults' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'third-party-IsAppEncrypted' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GoogleUtilities-Environment' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GoogleUtilities-Logger' in project 'GoogleUtilities'
+    Target 'GoogleUtilities-Logger' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GoogleUtilities_GoogleUtilities-Logger' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'third-party-IsAppEncrypted' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GoogleUtilities-Environment' in project 'GoogleUtilities'
+    Target 'GoogleUtilities_GoogleUtilities-Logger' in project 'GoogleUtilities' (no dependencies)
+    Target 'GoogleUtilities_GoogleUtilities-UserDefaults' in project 'GoogleUtilities' (no dependencies)
+    Target 'GULEnvironment' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GoogleUtilities-Environment' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GoogleUtilities_GoogleUtilities-Environment' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'third-party-IsAppEncrypted' in project 'GoogleUtilities'
+    Target 'GoogleUtilities-Environment' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'GoogleUtilities_GoogleUtilities-Environment' in project 'GoogleUtilities'
+        ➜ Explicit dependency on target 'third-party-IsAppEncrypted' in project 'GoogleUtilities'
+    Target 'third-party-IsAppEncrypted' in project 'GoogleUtilities' (no dependencies)
+    Target 'GoogleUtilities_GoogleUtilities-Environment' in project 'GoogleUtilities' (no dependencies)
+    Target 'FBLPromises' in project 'Promises'
+        ➜ Explicit dependency on target 'FBLPromises' in project 'Promises'
+        ➜ Explicit dependency on target 'Promises_FBLPromises' in project 'Promises'
+    Target 'FBLPromises' in project 'Promises'
+        ➜ Explicit dependency on target 'Promises_FBLPromises' in project 'Promises'
+    Target 'Promises_FBLPromises' in project 'Promises' (no dependencies)
+    Target 'AppAuthCore' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppAuthCore' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppAuth_AppAuthCore' in project 'AppAuth'
+    Target 'AppAuth' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppAuth' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppAuth_AppAuth' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppAuthCore' in project 'AppAuth'
+    Target 'AppAuth' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppAuth_AppAuth' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppAuthCore' in project 'AppAuth'
+    Target 'AppAuthCore' in project 'AppAuth'
+        ➜ Explicit dependency on target 'AppAuth_AppAuthCore' in project 'AppAuth'
+    Target 'AppAuth_AppAuthCore' in project 'AppAuth' (no dependencies)
+    Target 'AppAuth_AppAuth' in project 'AppAuth' (no dependencies)
+    Target 'GoogleSignIn_GoogleSignIn' in project 'GoogleSignIn' (no dependencies)
+    Target 'GoogleSignIn_GoogleSignInSwift' in project 'GoogleSignIn' (no dependencies)
+    Target 'MessageKit' in project 'MessageKit'
+        ➜ Explicit dependency on target 'MessageKit' in project 'MessageKit'
+        ➜ Explicit dependency on target 'MessageKit_MessageKit' in project 'MessageKit'
+        ➜ Explicit dependency on target 'InputBarAccessoryView' in project 'InputBarAccessoryView'
+    Target 'MessageKit' in project 'MessageKit'
+        ➜ Explicit dependency on target 'MessageKit_MessageKit' in project 'MessageKit'
+        ➜ Explicit dependency on target 'InputBarAccessoryView' in project 'InputBarAccessoryView'
+    Target 'InputBarAccessoryView' in project 'InputBarAccessoryView'
+        ➜ Explicit dependency on target 'InputBarAccessoryView' in project 'InputBarAccessoryView'
+    Target 'InputBarAccessoryView' in project 'InputBarAccessoryView' (no dependencies)
+    Target 'MessageKit_MessageKit' in project 'MessageKit' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -x objective-c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/ibtool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+ReadFileContents /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/share/docc/features.json
+
+Build description signature: 54e5271b478c5f74703cd58a9ed09c9c
+Build description path: /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/XCBuildData/54e5271b478c5f74703cd58a9ed09c9c.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache
+
+ProcessInfoPlistFile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GoogleUtilities_GoogleUtilities-UserDefaults.bundle/Info.plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GoogleUtilities.build/Debug-iphonesimulator/GoogleUtilities_GoogleUtilities-UserDefaults.build/empty-GoogleUtilities_GoogleUtilities-UserDefaults.plist (in target 'GoogleUtilities_GoogleUtilities-UserDefaults' from project 'GoogleUtilities')
+    cd /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleUtilities
+    builtin-infoPlistUtility /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GoogleUtilities.build/Debug-iphonesimulator/GoogleUtilities_GoogleUtilities-UserDefaults.build/empty-GoogleUtilities_GoogleUtilities-UserDefaults.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GoogleUtilities_GoogleUtilities-UserDefaults.bundle/Info.plist
+
+ProcessInfoPlistFile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/Promises_FBLPromises.bundle/Info.plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Promises.build/Debug-iphonesimulator/Promises_FBLPromises.build/empty-Promises_FBLPromises.plist (in target 'Promises_FBLPromises' from project 'Promises')
+    cd /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/promises
+    builtin-infoPlistUtility /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Promises.build/Debug-iphonesimulator/Promises_FBLPromises.build/empty-Promises_FBLPromises.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/Promises_FBLPromises.bundle/Info.plist
+
+ProcessInfoPlistFile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GoogleSignIn_GoogleSignInSwift.bundle/Info.plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GoogleSignIn.build/Debug-iphonesimulator/GoogleSignIn_GoogleSignInSwift.build/empty-GoogleSignIn_GoogleSignInSwift.plist (in target 'GoogleSignIn_GoogleSignInSwift' from project 'GoogleSignIn')
+    cd /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleSignIn-iOS
+    builtin-infoPlistUtility /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GoogleSignIn.build/Debug-iphonesimulator/GoogleSignIn_GoogleSignInSwift.build/empty-GoogleSignIn_GoogleSignInSwift.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GoogleSignIn_GoogleSignInSwift.bundle/Info.plist
+
+ProcessInfoPlistFile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GoogleUtilities_GoogleUtilities-Environment.bundle/Info.plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GoogleUtilities.build/Debug-iphonesimulator/GoogleUtilities_GoogleUtilities-Environment.build/empty-GoogleUtilities_GoogleUtilities-Environment.plist (in target 'GoogleUtilities_GoogleUtilities-Environment' from project 'GoogleUtilities')
+    cd /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleUtilities
+    builtin-infoPlistUtility /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GoogleUtilities.build/Debug-iphonesimulator/GoogleUtilities_GoogleUtilities-Environment.build/empty-GoogleUtilities_GoogleUtilities-Environment.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GoogleUtilities_GoogleUtilities-Environment.bundle/Info.plist
+
+ProcessInfoPlistFile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/AppAuth_AppAuthCore.bundle/Info.plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/AppAuth.build/Debug-iphonesimulator/AppAuth_AppAuthCore.build/empty-AppAuth_AppAuthCore.plist (in target 'AppAuth_AppAuthCore' from project 'AppAuth')
+    cd /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/AppAuth-iOS
+    builtin-infoPlistUtility /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/AppAuth.build/Debug-iphonesimulator/AppAuth_AppAuthCore.build/empty-AppAuth_AppAuthCore.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/AppAuth_AppAuthCore.bundle/Info.plist
+
+ProcessInfoPlistFile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GTMAppAuth_GTMAppAuth.bundle/Info.plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GTMAppAuth.build/Debug-iphonesimulator/GTMAppAuth_GTMAppAuth.build/empty-GTMAppAuth_GTMAppAuth.plist (in target 'GTMAppAuth_GTMAppAuth' from project 'GTMAppAuth')
+    cd /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GTMAppAuth
+    builtin-infoPlistUtility /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GTMAppAuth.build/Debug-iphonesimulator/GTMAppAuth_GTMAppAuth.build/empty-GTMAppAuth_GTMAppAuth.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GTMAppAuth_GTMAppAuth.bundle/Info.plist
+
+ProcessInfoPlistFile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GoogleSignIn_GoogleSignIn.bundle/Info.plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GoogleSignIn.build/Debug-iphonesimulator/GoogleSignIn_GoogleSignIn.build/empty-GoogleSignIn_GoogleSignIn.plist (in target 'GoogleSignIn_GoogleSignIn' from project 'GoogleSignIn')
+    cd /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleSignIn-iOS
+    builtin-infoPlistUtility /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GoogleSignIn.build/Debug-iphonesimulator/GoogleSignIn_GoogleSignIn.build/empty-GoogleSignIn_GoogleSignIn.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GoogleSignIn_GoogleSignIn.bundle/Info.plist
+
+ProcessInfoPlistFile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GTMSessionFetcher_GTMSessionFetcherCore.bundle/Info.plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GTMSessionFetcher.build/Debug-iphonesimulator/GTMSessionFetcher_GTMSessionFetcherCore.build/empty-GTMSessionFetcher_GTMSessionFetcherCore.plist (in target 'GTMSessionFetcher_GTMSessionFetcherCore' from project 'GTMSessionFetcher')
+    cd /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/gtm-session-fetcher
+    builtin-infoPlistUtility /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GTMSessionFetcher.build/Debug-iphonesimulator/GTMSessionFetcher_GTMSessionFetcherCore.build/empty-GTMSessionFetcher_GTMSessionFetcherCore.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GTMSessionFetcher_GTMSessionFetcherCore.bundle/Info.plist
+
+ProcessInfoPlistFile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/swift-crypto_Crypto.bundle/Info.plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/swift-crypto_Crypto.build/empty-swift-crypto_Crypto.plist (in target 'swift-crypto_Crypto' from project 'swift-crypto')
+    cd /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/swift-crypto
+    builtin-infoPlistUtility /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/swift-crypto_Crypto.build/empty-swift-crypto_Crypto.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/swift-crypto_Crypto.bundle/Info.plist
+
+ProcessInfoPlistFile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GoogleUtilities_GoogleUtilities-Logger.bundle/Info.plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GoogleUtilities.build/Debug-iphonesimulator/GoogleUtilities_GoogleUtilities-Logger.build/empty-GoogleUtilities_GoogleUtilities-Logger.plist (in target 'GoogleUtilities_GoogleUtilities-Logger' from project 'GoogleUtilities')
+    cd /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleUtilities
+    builtin-infoPlistUtility /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GoogleUtilities.build/Debug-iphonesimulator/GoogleUtilities_GoogleUtilities-Logger.build/empty-GoogleUtilities_GoogleUtilities-Logger.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/GoogleUtilities_GoogleUtilities-Logger.bundle/Info.plist
+
+ProcessInfoPlistFile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/AppAuth_AppAuth.bundle/Info.plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/AppAuth.build/Debug-iphonesimulator/AppAuth_AppAuth.build/empty-AppAuth_AppAuth.plist (in target 'AppAuth_AppAuth' from project 'AppAuth')
+    cd /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/AppAuth-iOS
+    builtin-infoPlistUtility /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/AppAuth.build/Debug-iphonesimulator/AppAuth_AppAuth.build/empty-AppAuth_AppAuth.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/AppAuth_AppAuth.bundle/Info.plist
+
+CompileAssetCatalogVariant thinned /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/Group_11_Revisio.app /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Assets.xcassets (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    /Applications/Xcode.app/Contents/Developer/usr/bin/actool /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Assets.xcassets --compile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --filter-for-thinning-device-configuration iPhone18,3 --filter-for-device-os-version 26.1 --development-region en --target-device iphone --target-device ipad --minimum-deployment-target 26.1 --platform iphonesimulator
+
+SwiftDriver Group_11_Revisio normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Group_11_Revisio -Onone -enforce-exclusivity\=checked @/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal/arm64/Group_11_Revisio.SwiftFileList -DDEBUG -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/AppAuth.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/AppAuthCore.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/GoogleUtilities-Logger.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/GoogleUtilities-Environment.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/third-party-IsAppEncrypted.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/GoogleUtilities-UserDefaults.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/AppCheckCore.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/GTMSessionFetcherCore.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/GoogleSignIn.modulemap -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -target arm64-apple-ios26.1-simulator -g -module-cache-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -sanitize\=address -enable-testing -index-store-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64 -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache -output-file-map /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/Group_11_Revisio-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/Group_11_Revisio.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/Group_11_Revisio_const_extract_protocols.json -Xcc -iquote -Xcc /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Group_11_Revisio-generated-files.hmap -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Group_11_Revisio-own-target-headers.hmap -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Group_11_Revisio-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio-ae7ccd6061b1461002ad2bf33af0dd75-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Group_11_Revisio-project-headers.hmap -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/AppAuth-iOS/Sources/AppAuth -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/AppAuth-iOS/Sources/AppAuthCore -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/promises/Sources/FBLPromises/include -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleUtilities/GoogleUtilities/Logger/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleUtilities/GoogleUtilities/Environment/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleUtilities/third_party/IsAppEncrypted/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleUtilities/GoogleUtilities/UserDefaults/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/app-check/AppCheckCore/Sources/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/gtm-session-fetcher/Sources/Core/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleSignIn-iOS/GoogleSignIn/Sources/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/DerivedSources-normal/arm64 -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/DerivedSources/arm64 -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/Group_11_Revisio-Swift.h -working-directory /Users/ayaanatalwar/Desktop/MITWPU_group11 -experimental-emit-module-separately -disable-cmo
+
+SwiftDriver Auth normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Auth' from project 'Supabase')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio.xcodeproj
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Auth -Onone -enforce-exclusivity\=checked @/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/arm64/Auth.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE -DXcode -enable-upcoming-feature ExistentialAny -enable-experimental-feature StrictConcurrency -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -target arm64-apple-ios13.0-simulator -g -module-cache-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -sanitize\=address -enable-testing -suppress-warnings -index-store-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator -F /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk/Developer/Library/Frameworks -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache -output-file-map /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal-asan/arm64/Auth-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal-asan/arm64/Auth.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -package-name supabase_swift -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal-asan/arm64/Auth_const_extract_protocols.json -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/DerivedSources-normal/arm64 -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/DerivedSources/arm64 -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal-asan/arm64/Auth-Swift.h -working-directory /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio.xcodeproj -experimental-emit-module-separately -disable-cmo
+
+ProcessInfoPlistFile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/MessageKit_MessageKit.bundle/Info.plist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/MessageKit.build/Debug-iphonesimulator/MessageKit_MessageKit.build/empty-MessageKit_MessageKit.plist (in target 'MessageKit_MessageKit' from project 'MessageKit')
+    cd /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/MessageKit
+    builtin-infoPlistUtility /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/MessageKit.build/Debug-iphonesimulator/MessageKit_MessageKit.build/empty-MessageKit_MessageKit.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/MessageKit.build/Debug-iphonesimulator/MessageKit_MessageKit.build/assetcatalog_generated_info.plist -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/MessageKit_MessageKit.bundle/Info.plist
+
+SwiftCompile normal arm64 Compiling\ WinCredLocalStorage.swift /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/supabase-swift/Sources/Auth/Storage/WinCredLocalStorage.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/supabase-swift/Sources/Auth/Storage/WinCredLocalStorage.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio.xcodeproj
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ Auth (in target 'Auth' from project 'Supabase')
+
+EmitSwiftModule normal arm64 (in target 'Auth' from project 'Supabase')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio.xcodeproj
+    
+
+SwiftCompile normal arm64 Compiling\ Types.swift /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/supabase-swift/Sources/Auth/Types.swift (in target 'Auth' from project 'Supabase')
+SwiftCompile normal arm64 /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/supabase-swift/Sources/Auth/Types.swift (in target 'Auth' from project 'Supabase')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio.xcodeproj
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling WinCredLocalStorage.swift (in target 'Auth' from project 'Supabase')
+
+SwiftCompile normal arm64 Compiling\ ChatModels.swift,\ Group.swift,\ Message.swift,\ MKModels.swift,\ DocumentCell.swift,\ GroupCell.swift,\ MediaCell.swift,\ MemberCell.swift,\ MessageCell.swift,\ RoundedCardView.swift,\ AIChatSender.swift,\ AIChatViewController.swift,\ ConnectionsLaunchingScreenViewController.swift,\ ConnectionsResultsViewController.swift,\ ConnectionsViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Models/ChatModels.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Models/Group.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Models/Message.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Models/MKModels.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Views/DocumentCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Views/GroupCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Views/MediaCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Views/MemberCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Views/MessageCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Views/RoundedCardView.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Chatbot/AIChatSender.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Chatbot/AIChatViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/ConnectionsLaunchingScreenViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/ConnectionsResultsViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/ConnectionsViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Models/ChatModels.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Models/Group.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Models/Message.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Models/MKModels.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Views/DocumentCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Views/GroupCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Views/MediaCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Views/MemberCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Views/MessageCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Views/RoundedCardView.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Chatbot/AIChatSender.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Chatbot/AIChatViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/ConnectionsLaunchingScreenViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/ConnectionsResultsViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/ConnectionsViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 Compiling\ AttachmentFolderViewController.swift,\ AttachmentItemPickerViewController.swift,\ ChatViewController.swift,\ CreateGroupDelegate.swift,\ CreateGroupViewController.swift,\ DocumentPreviewViewController.swift,\ GroupCodeViewController.swift,\ GroupSettingsViewController.swift,\ GroupsViewController.swift,\ GroupUpdateDelegate.swift,\ JoinGroupDelegate.swift,\ JoinGroupViewController.swift,\ LeaveGroupDelegate.swift,\ MediaPreviewViewController.swift,\ StudyMaterialPreviewViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/AttachmentFolderViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/AttachmentItemPickerViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/ChatViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/CreateGroupDelegate.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/CreateGroupViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/DocumentPreviewViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupCodeViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupSettingsViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupsViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupUpdateDelegate.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/JoinGroupDelegate.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/JoinGroupViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/LeaveGroupDelegate.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/MediaPreviewViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/StudyMaterialPreviewViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c -filelist /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/sources-1 -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/AttachmentFolderViewController.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/AttachmentItemPickerViewController.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/ChatViewController.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/CreateGroupDelegate.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/CreateGroupViewController.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/DocumentPreviewViewController.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupCodeViewController.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupSettingsViewController.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupsViewController.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupUpdateDelegate.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/JoinGroupDelegate.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/JoinGroupViewController.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/LeaveGroupDelegate.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/MediaPreviewViewController.swift -primary-file /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/StudyMaterialPreviewViewController.swift -supplementary-output-file-map /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/supplementaryOutputs-1 -emit-localized-strings -emit-localized-strings-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64 -target arm64-apple-ios26.1-simulator -module-can-import-version DeveloperToolsSupport 23.0.4 23.0.4 -module-can-import-version SwiftUI 7.1.13.1 7.1.13 -module-can-import-version UIKit 9126.1.12.1 9126.1.12 -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/Group_11_Revisio-dependencies-1.json -Xllvm -aarch64-use-tbi -enable-objc-interop -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -I /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=5 -module-cache-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -sanitize\=address -swift-version 5 -enforce-exclusivity\=checked -Onone -D DEBUG -serialize-debugging-options -const-gather-protocols-file /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/Group_11_Revisio_const_extract_protocols.json -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -default-isolation\=MainActor -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/ayaanatalwar/Desktop/MITWPU_group11 -enable-anonymous-context-mangled-names -file-compilation-dir /Users/ayaanatalwar/Desktop/MITWPU_group11 -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/AppAuth.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/AppAuthCore.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/GoogleUtilities-Logger.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/GoogleUtilities-Environment.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/third-party-IsAppEncrypted.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/GoogleUtilities-UserDefaults.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/AppCheckCore.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/GTMSessionFetcherCore.modulemap -Xcc -fmodule-map-file\=/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/GoogleSignIn.modulemap -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Group_11_Revisio-generated-files.hmap -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Group_11_Revisio-own-target-headers.hmap -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Group_11_Revisio-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio-ae7ccd6061b1461002ad2bf33af0dd75-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Group_11_Revisio-project-headers.hmap -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/AppAuth-iOS/Sources/AppAuth -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/AppAuth-iOS/Sources/AppAuthCore -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/promises/Sources/FBLPromises/include -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleUtilities/GoogleUtilities/Logger/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleUtilities/GoogleUtilities/Environment/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleUtilities/third_party/IsAppEncrypted/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleUtilities/GoogleUtilities/UserDefaults/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/app-check/AppCheckCore/Sources/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/gtm-session-fetcher/Sources/Core/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/SourcePackages/checkouts/GoogleSignIn-iOS/GoogleSignIn/Sources/Public -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/DerivedSources-normal/arm64 -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/DerivedSources/arm64 -Xcc -I/Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/DerivedSources -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name Group_11_Revisio -frontend-parseable-output -disable-clang-spi -target-sdk-version 26.1 -target-sdk-name iphonesimulator26.1 -clang-target arm64-apple-ios26.1-simulator -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/AttachmentFolderViewController.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/AttachmentItemPickerViewController.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/ChatViewController.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/CreateGroupDelegate.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/CreateGroupViewController.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/DocumentPreviewViewController.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/GroupCodeViewController.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/GroupSettingsViewController.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/GroupsViewController.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/GroupUpdateDelegate.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/JoinGroupDelegate.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/JoinGroupViewController.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/LeaveGroupDelegate.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/MediaPreviewViewController.o -o /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Build/Intermediates.noindex/Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/StudyMaterialPreviewViewController.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/AttachmentFolderViewController.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/AttachmentItemPickerViewController.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/ChatViewController.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/CreateGroupDelegate.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/CreateGroupViewController.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/DocumentPreviewViewController.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/GroupCodeViewController.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/GroupSettingsViewController.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/GroupsViewController.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/GroupUpdateDelegate.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/JoinGroupDelegate.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/JoinGroupViewController.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/LeaveGroupDelegate.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/MediaPreviewViewController.o -index-unit-output-path /Group_11_Revisio.build/Debug-iphonesimulator/Group_11_Revisio.build/Objects-normal-asan/arm64/StudyMaterialPreviewViewController.o -index-store-path /Users/ayaanatalwar/Library/Developer/Xcode/DerivedData/Group_11_Revisio-emjearcvcgrftpgupnhlmpnleytt/Index.noindex/DataStore -index-system-modules
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/AttachmentFolderViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/AttachmentItemPickerViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/ChatViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+/Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/ChatViewController.swift:470:22: error: 'RealtimePostgresFilter' cannot be constructed because it has no accessible initializers
+            filter: .init(column: "group_id", operator: .eq, value: groupId))
+                    ~^~~~
+/Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/ChatViewController.swift:470:58: error: cannot infer contextual base in reference to member 'eq'
+            filter: .init(column: "group_id", operator: .eq, value: groupId))
+                                                        ~^~
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/CreateGroupDelegate.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/CreateGroupViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/DocumentPreviewViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupCodeViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupSettingsViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupsViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupUpdateDelegate.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/JoinGroupDelegate.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/JoinGroupViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/LeaveGroupDelegate.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/MediaPreviewViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/StudyMaterialPreviewViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 Compiling\ DailyChallengeViewController.swift,\ DiagramGameLaunchViewController.swift,\ DiagramGameViewController.swift,\ GameLoadingOverlayView.swift,\ GameModels.swift,\ LearnMoreViewController.swift,\ LetterTileView.swift,\ UIViewController+QuitConfirmation.swift,\ WordCell.swift,\ WordFillLaunchViewController.swift,\ WordFillViewController.swift,\ AddFlashcardViewController.swift,\ ChallengeSessionResultsViewController.swift,\ CheatsheetViewController.swift,\ FlashcardSharedUI.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/DailyChallengeViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/DiagramGameLaunchViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/DiagramGameViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/GameLoadingOverlayView.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/GameModels.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/LearnMoreViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/LetterTileView.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/UIViewController+QuitConfirmation.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/WordCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/WordFillLaunchViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/WordFillViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/AddFlashcardViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/ChallengeSessionResultsViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/CheatsheetViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/FlashcardSharedUI.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/DailyChallengeViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/DiagramGameLaunchViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/DiagramGameViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/GameLoadingOverlayView.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/GameModels.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/LearnMoreViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/LetterTileView.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/UIViewController+QuitConfirmation.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/WordCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/WordFillLaunchViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Games/WordFillViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/AddFlashcardViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/ChallengeSessionResultsViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/CheatsheetViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/FlashcardSharedUI.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 Compiling\ HomeViewController.swift,\ LearningTask.swift,\ LearningTaskCell.swift,\ QuestHistoryViewController.swift,\ QuestTableViewCell.swift,\ QuickGamesCollectionViewCell.swift,\ SideQuestModel.swift,\ SideQuestsCollectionViewCell.swift,\ UIImage+Gif.swift,\ UploadContentCollectionViewCell.swift,\ ContentItem.swift,\ SummaryModels.swift,\ EditProfileViewController.swift,\ LevelBadgeView.swift,\ LevelCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/HomeViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/LearningTask.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/LearningTaskCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/QuestHistoryViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/QuestTableViewCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/QuickGamesCollectionViewCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/SideQuestModel.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/SideQuestsCollectionViewCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/UIImage+Gif.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/UploadContentCollectionViewCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/json/ContentItem.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/json/SummaryModels.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/EditProfileViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/LevelBadgeView.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/LevelCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/HomeViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/LearningTask.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/LearningTaskCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/QuestHistoryViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/QuestTableViewCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/QuickGamesCollectionViewCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/SideQuestModel.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/SideQuestsCollectionViewCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/UIImage+Gif.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/UploadContentCollectionViewCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/json/ContentItem.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/json/SummaryModels.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/EditProfileViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/LevelBadgeView.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/LevelCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 Compiling\ FlashcardSummaryViewController.swift,\ FlashcardViewController.swift,\ GenerateHomeViewController.swift,\ NotesViewController.swift,\ QuestionSummaryCell.swift,\ QuizResultsViewController.swift,\ QuizSessionViewController.swift,\ QuizStartViewController.swift,\ SummaryViewController.swift,\ TextEditorViewController.swift,\ ContentExtractor.swift,\ ContinueLearningCollectionViewCell.swift,\ GradientView.swift,\ HeaderViewCollectionReusableView.swift,\ HiAlexCollectionViewCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/FlashcardSummaryViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/FlashcardViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/GenerateHomeViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/NotesViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/QuestionSummaryCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/QuizResultsViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/QuizSessionViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/QuizStartViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/SummaryViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/TextEditorViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/ContentExtractor.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/ContinueLearningCollectionViewCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/GradientView.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/HeaderViewCollectionReusableView.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/HiAlexCollectionViewCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/FlashcardSummaryViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/FlashcardViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/GenerateHomeViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/NotesViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/QuestionSummaryCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/QuizResultsViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/QuizSessionViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/QuizStartViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/SummaryViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Generated/TextEditorViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/ContentExtractor.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/ContinueLearningCollectionViewCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/GradientView.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/HeaderViewCollectionReusableView.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/HomeScreen/HiAlexCollectionViewCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 Compiling\ QuizViewController.swift,\ ResultsViewController.swift,\ ReviewDetailViewController.swift,\ StudyFolderViewController.swift,\ SubjectViewController.swift,\ Color.swift,\ Models.swift,\ QuizData.swift,\ Source.swift,\ Topic.swift,\ RenameAlerts.swift,\ ReviewQuestionCell.swift,\ TopicCardCell.swift,\ XPDetailsViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Controllers/QuizViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Controllers/ResultsViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Controllers/ReviewDetailViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Controllers/StudyFolderViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Controllers/SubjectViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Models/Color.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Models/Models.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Models/QuizData.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Models/Source.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Models/Topic.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Views/RenameAlerts.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Views/ReviewQuestionCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Views/TopicCardCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/XP/XPDetailsViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Controllers/QuizViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Controllers/ResultsViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Controllers/ReviewDetailViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Controllers/StudyFolderViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Controllers/SubjectViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Models/Color.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Models/Models.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Models/QuizData.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Models/Source.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Models/Topic.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Views/RenameAlerts.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Views/ReviewQuestionCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Study/Views/TopicCardCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/XP/XPDetailsViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ Group_11_Revisio (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+EmitSwiftModule normal arm64 (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 Compiling\ ProfileViewController.swift,\ SettingsCell.swift,\ StatCardCell.swift,\ UserInfoCellTableViewCell.swift,\ ExpandableFileCell.swift,\ SelectMaterialViewController.swift,\ UploadConfirmationViewController.swift,\ UploadedContent.swift,\ MascotCelebrationView.swift,\ UIViewController+GenerationOverlay.swift,\ ForgotPasswordViewController.swift,\ GradientViews.swift,\ LoginViewController.swift,\ OnboardingPage1ViewController.swift,\ OnboardingViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/ProfileViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/SettingsCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/StatCardCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/UserInfoCellTableViewCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/UploadContentScreens/ExpandableFileCell.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/UploadContentScreens/SelectMaterialViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/UploadContentScreens/UploadConfirmationViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/UploadContentScreens/UploadedContent.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/MascotCelebrationView.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/UIViewController+GenerationOverlay.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/OnBoarding/ForgotPasswordViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/OnBoarding/GradientViews.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/OnBoarding/LoginViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/OnBoarding/OnboardingPage1ViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/OnBoarding/OnboardingViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/ProfileViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/SettingsCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/StatCardCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/Profile/UserInfoCellTableViewCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/UploadContentScreens/ExpandableFileCell.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/UploadContentScreens/SelectMaterialViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/UploadContentScreens/UploadConfirmationViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/UploadContentScreens/UploadedContent.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/MascotCelebrationView.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Home/UIViewController+GenerationOverlay.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/OnBoarding/ForgotPasswordViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/OnBoarding/GradientViews.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/OnBoarding/LoginViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/OnBoarding/OnboardingPage1ViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/OnBoarding/OnboardingViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+    cd /Users/ayaanatalwar/Desktop/MITWPU_group11
+    
+
+** BUILD FAILED **
+
+
+The following build commands failed:
+	SwiftCompile normal arm64 Compiling\ AttachmentFolderViewController.swift,\ AttachmentItemPickerViewController.swift,\ ChatViewController.swift,\ CreateGroupDelegate.swift,\ CreateGroupViewController.swift,\ DocumentPreviewViewController.swift,\ GroupCodeViewController.swift,\ GroupSettingsViewController.swift,\ GroupsViewController.swift,\ GroupUpdateDelegate.swift,\ JoinGroupDelegate.swift,\ JoinGroupViewController.swift,\ LeaveGroupDelegate.swift,\ MediaPreviewViewController.swift,\ StudyMaterialPreviewViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/AttachmentFolderViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/AttachmentItemPickerViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/ChatViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/CreateGroupDelegate.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/CreateGroupViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/DocumentPreviewViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupCodeViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupSettingsViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupsViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/GroupUpdateDelegate.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/JoinGroupDelegate.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/JoinGroupViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/LeaveGroupDelegate.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/MediaPreviewViewController.swift /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/StudyMaterialPreviewViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+	SwiftCompile normal arm64 /Users/ayaanatalwar/Desktop/MITWPU_group11/Group_11_Revisio/Groups/Controllers/ChatViewController.swift (in target 'Group_11_Revisio' from project 'Group_11_Revisio')
+	Building project Group_11_Revisio with scheme Group_11_Revisio
+(3 failures)
