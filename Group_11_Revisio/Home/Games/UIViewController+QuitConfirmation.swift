@@ -59,9 +59,10 @@ extension UIViewController {
 }
 
 // MARK: - Associated Object Keys
-private struct AssociatedKeys {
-    static var quitTitle = "quitConfirm_title"
-    static var quitMessage = "quitConfirm_message"
-    static var quitButtonTitle = "quitConfirm_quit"
-    static var cancelButtonTitle = "quitConfirm_cancel"
+// Using a nonce-pointer approach avoids the UnsafeRawPointer-to-inout-String warning.
+private enum AssociatedKeys {
+    static var quitTitle:        UInt8 = 0
+    static var quitMessage:      UInt8 = 0
+    static var quitButtonTitle:  UInt8 = 0
+    static var cancelButtonTitle: UInt8 = 0
 }

@@ -12,13 +12,13 @@ class QuizSessionViewController: UIViewController {
 
     // MARK: - Properties
     var currentTopic: Topic?
-    var parentSubject: String?
+    var parentSubject: String = "General Study"
 
     var sessionQuestions: [QuizQuestion] = []
     var explanations: [String] = []
 
     var questionIndex = 0
-    var sourceName: String? = "Quiz"
+    var sourceName: String = "Quiz"
 
     var hintItem: UIBarButtonItem?
     var flagItem: UIBarButtonItem?
@@ -71,7 +71,7 @@ class QuizSessionViewController: UIViewController {
         if var topic = currentTopic, !sessionQuestions.isEmpty {
             topic.currentProgressIndex = questionIndex
             topic.totalItemsCount = sessionQuestions.count
-            DataManager.shared.updateTopic(subjectName: parentSubject ?? "General Study", topic: topic)
+            DataManager.shared.updateTopic(subjectName: parentSubject, topic: topic)
         }
 
         // ✅ Re-enable swipe-to-go-back for the rest of the app
@@ -82,7 +82,7 @@ class QuizSessionViewController: UIViewController {
     func loadData() {
         if let aiQuestions = currentTopic?.quizQuestions, !aiQuestions.isEmpty {
             self.sessionQuestions = aiQuestions
-            self.explanations = aiQuestions.map { $0.hint ?? "No explanation available." }
+            self.explanations = aiQuestions.map { $0.hint }
         } else {
             self.sessionQuestions = []
         }
@@ -162,7 +162,10 @@ class QuizSessionViewController: UIViewController {
         for btn in optionButtons {
             btn.layer.cornerRadius = 16
             btn.contentHorizontalAlignment = .leading
-            btn.contentEdgeInsets = UIEdgeInsets(top: 16, left: 20, bottom: 16, right: 20)
+            // Use configuration insets instead of deprecated contentEdgeInsets
+            var config = btn.configuration ?? UIButton.Configuration.plain()
+            config.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20)
+            btn.configuration = config
             btn.titleLabel?.numberOfLines = 0
         }
         backQButton.layer.cornerRadius = 24
@@ -212,7 +215,7 @@ class QuizSessionViewController: UIViewController {
     }
 
     @objc func showHint() {
-        let hintText = sessionQuestions[questionIndex].hint ?? "No hint available."
+        let hintText = sessionQuestions[questionIndex].hint
         let alert = UIAlertController(title: "Hint", message: hintText, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
@@ -251,7 +254,7 @@ class QuizSessionViewController: UIViewController {
             let isCorrect = (question.userAnswerIndex == question.correctAnswerIndex)
             if isCorrect { score += 1 }
 
-            let expl = (i < explanations.count) ? explanations[i] : (question.hint ?? "")
+            let expl = (i < explanations.count) ? explanations[i] : question.hint
 
             let summary = QuizSummaryItem(
                 questionText: question.questionText,
@@ -296,7 +299,7 @@ class QuizSessionViewController: UIViewController {
             finalScore: score,
             totalQuestions: sessionQuestions.count,
             timeElapsed: TimeInterval(timeSpent),
-            sourceName: sourceName ?? "Quiz",
+            sourceName: sourceName,
             details: details
         )
 
@@ -315,7 +318,7 @@ class QuizSessionViewController: UIViewController {
 
         self.currentTopic = topic
 
-        DataManager.shared.updateTopic(subjectName: parentSubject ?? "General Study", topic: topic)
+        DataManager.shared.updateTopic(subjectName: parentSubject, topic: topic)
         print("✅ Saved Quiz Attempt: \(attempt.score)")
     }
 

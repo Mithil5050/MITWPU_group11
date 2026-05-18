@@ -103,7 +103,6 @@ class ConnectionsViewController: UIViewController {
 
     private func generateConnectionsGame() {
         Task {
-            let topicName = currentTopic?.name ?? "General Knowledge"
             let contentBody = currentTopic?.largeContentBody ?? currentTopic?.notesContent ?? currentTopic?.cheatsheetContent ?? ""
             let safeContent = String(contentBody.prefix(15000))
 

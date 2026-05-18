@@ -3,7 +3,10 @@ import UIKit
 extension UIViewController {
 
     func showGenerationOverlay(message: String = "Our AI is reading your document and crafting questions...") {
-        let overlay = UIView(frame: UIScreen.main.bounds)
+        let screenBounds = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.screen.bounds ?? .zero
+        let overlay = UIView(frame: screenBounds)
         overlay.backgroundColor = UIColor.black.withAlphaComponent(0.88)
         overlay.tag = 9999
         overlay.alpha = 0

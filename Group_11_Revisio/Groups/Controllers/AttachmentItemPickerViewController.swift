@@ -46,7 +46,7 @@ class AttachmentItemPickerViewController: UIViewController {
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Send (\(selectedPaths.count))",
-            style: .done, target: self, action: #selector(sendTapped)
+            style: .plain, target: self, action: #selector(sendTapped)
         )
         navigationItem.rightBarButtonItem?.isEnabled = false
     }

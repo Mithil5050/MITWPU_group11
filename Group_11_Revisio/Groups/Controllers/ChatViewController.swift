@@ -239,7 +239,10 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         messagesCollectionView.scrollsToTop = false
         messagesCollectionView.contentInsetAdjustmentBehavior = .always
 
-        Task { await loadMessages(); await subscribeToMessages() }
+        Task {
+            await loadMessages()
+            await subscribeToMessages()
+        }
     }
 
     // MARK: - Input bar
@@ -368,10 +371,10 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         }
         built.sort { $0.sentDate < $1.sentDate }
 
-        await MainActor.run {
-            chatMessages = built
-            messagesCollectionView.reloadData()
-            messagesCollectionView.scrollToLastItem(animated: false)
+        DispatchQueue.main.async {
+            self.chatMessages = built
+            self.messagesCollectionView.reloadData()
+            self.messagesCollectionView.scrollToLastItem(animated: false)
         }
     }
 
@@ -460,12 +463,12 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
 
     private func subscribeToMessages() async {
         guard let groupId = group?.id else { return }
-        let channel = await SupabaseManager.shared.client.realtimeV2
+        let channel = SupabaseManager.shared.client.realtimeV2
             .channel("messages:\(groupId)")
-        let changes = await channel.postgresChange(
+        let changes = channel.postgresChange(
             InsertAction.self, schema: "public", table: "messages",
-            filter: "group_id=eq.\(groupId)")
-        await channel.subscribe()
+            filter: .eq("group_id", value: groupId))
+        _ = try? await channel.subscribeWithError()
         realtimeChannel = channel
 
         for await change in changes {
@@ -502,11 +505,12 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
             let meta = MessageMeta(fileType: fileType, fileUrl: fileUrl, fileName: fileName,
                                    content: content, materialType: mt)
 
-            await MainActor.run {
-                chatMessages.append(cm)
-                messageMeta[id] = meta
-                messagesCollectionView.reloadData()
-                messagesCollectionView.scrollToLastItem(animated: true)
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.chatMessages.append(cm)
+                self.messageMeta[id] = meta
+                self.messagesCollectionView.reloadData()
+                self.messagesCollectionView.scrollToLastItem(animated: true)
             }
         }
     }
@@ -760,10 +764,10 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
                     .insert(ImageInsert(group_id: gid, sender_id: sid, content: "📷 Image",
                                         file_url: publicUrl, file_name: "Image",
                                         file_type: "image")).execute()
-                await MainActor.run {
-                    self.messageMeta[msgId] = MessageMeta(fileType: "image", fileUrl: publicUrl,
-                                                          fileName: "Image", content: nil,
-                                                          materialType: nil)
+                DispatchQueue.main.async { [weak self] in
+                    self?.messageMeta[msgId] = MessageMeta(fileType: "image", fileUrl: publicUrl,
+                                                           fileName: "Image", content: nil,
+                                                           materialType: nil)
                 }
             } catch { print("❌ image upload: \(error)") }
         }
@@ -814,10 +818,10 @@ extension ChatViewController: UIDocumentPickerDelegate {
                     .insert(DocInsert(group_id: gid, sender_id: sid, content: fileName,
                                       file_url: publicUrl, file_name: fileName,
                                       file_type: "document")).execute()
-                await MainActor.run {
-                    self.messageMeta[msgId] = MessageMeta(fileType: "document", fileUrl: publicUrl,
-                                                          fileName: fileName, content: nil,
-                                                          materialType: nil)
+                DispatchQueue.main.async { [weak self] in
+                    self?.messageMeta[msgId] = MessageMeta(fileType: "document", fileUrl: publicUrl,
+                                                           fileName: fileName, content: nil,
+                                                           materialType: nil)
                 }
             } catch { print("❌ doc upload: \(error)") }
         }

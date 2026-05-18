@@ -11,7 +11,10 @@ class XPNotificationBanner: UIView {
     static func show(amount: Int, reason: String) {
 
         let bannerHeight: CGFloat = 70
-        let bannerWidth = UIScreen.main.bounds.width - 40
+        let screenWidth = (UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.screen.bounds.width ?? 390)
+        let bannerWidth = screenWidth - 40
         let banner = XPNotificationBanner(frame: CGRect(x: 20, y: -100, width: bannerWidth, height: bannerHeight))
 
         banner.setup(amount: amount, reason: reason)
