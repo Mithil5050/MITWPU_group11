@@ -4,8 +4,8 @@ class InstructionViewController: UIViewController {
     var quizTopic: Topic?
     var parentSubjectName: String?
     var sourceNameForQuiz: String?
-    var quizTimeLimit: Int = 15
-    var quizQuestionCount: Int = 10
+    var quizTimeLimit: Int?
+    var quizQuestionCount: Int?
 
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var metadataLabel: UILabel?
@@ -18,6 +18,13 @@ class InstructionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.hidesBackButton = false
+        
+        let actualQuestionCount = quizQuestionCount ?? (quizTopic?.quizQuestions?.count ?? 10)
+        quizQuestionCount = actualQuestionCount
+        if quizTimeLimit == nil {
+            quizTimeLimit = Int(ceil(Double(actualQuestionCount) * 1.5))
+        }
+        
         setupLabels()
         setupProgrammaticMetadataLabel()
         styleButtons()
@@ -41,10 +48,11 @@ class InstructionViewController: UIViewController {
     }
 
     func setupProgrammaticMetadataLabel() {
-        let questionCount = quizQuestionCount > 0 ? quizQuestionCount : (quizTopic?.quizQuestions?.count ?? 0)
+        let count = quizQuestionCount ?? (quizTopic?.quizQuestions?.count ?? 0)
+        let questionCount = count > 0 ? count : 10
 
         let metaLabel = UILabel()
-        metaLabel.text = "\(questionCount) Questions | \(quizTimeLimit) Minutes"
+        metaLabel.text = "\(questionCount) Questions | \(quizTimeLimit ?? 15) Minutes"
         metaLabel.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         metaLabel.textColor = .secondaryLabel
         metaLabel.textAlignment = .left
@@ -72,7 +80,7 @@ class InstructionViewController: UIViewController {
         return """
         1. This quiz is not marked and will not affect any official course grades or records. Use it as a self-assessment tool.
 
-        2. Time Limit: You have \(quizTimeLimit) minutes to complete this session.
+        2. Time Limit: You have \(quizTimeLimit ?? 15) minutes to complete this session.
 
         3. For Multiple Choice questions, select the best single answer.
 
@@ -135,7 +143,7 @@ class InstructionViewController: UIViewController {
                 quizVC.parentSubjectName = self.parentSubjectName
                 let nameToPass = self.sourceNameForQuiz ?? self.quizTopic?.name ?? "Quiz"
                 quizVC.selectedSourceName = nameToPass
-                quizVC.timeLimitInMinutes = self.quizTimeLimit
+                quizVC.timeLimitInMinutes = self.quizTimeLimit ?? 15
             }
         }
     }

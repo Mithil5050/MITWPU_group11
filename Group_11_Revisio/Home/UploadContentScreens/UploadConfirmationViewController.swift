@@ -175,52 +175,79 @@ class UploadConfirmationViewController: UIViewController, UITableViewDataSource,
     private func analyzeTopics(for url: URL, index: Int, attempt: Int = 1) async {
         let text = await ContentExtractor.shared.extractContent(from: url)
 
-        let prompt = """
-        Analyze the following text and identify 4 to 6 main topics.
-        Return ONLY the list of topic names, one per line. Do NOT use emojis, bullet points, or numbering.
-        TEXT TO ANALYZE:
-        \(String(text.prefix(4000)))
-        """
-
-        do {
-            let aiResponse = try await AIContentManager.shared.generateContent(
-                topic: prompt,
-                type: "Notes",
-                count: 5,
-                difficulty: "Medium"
-            )
-
-            let rawTopics = aiResponse.components(separatedBy: .newlines)
-            let extractedTopics = rawTopics
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .map { $0.replacingOccurrences(of: "^[0-9]+\\.\\s*", with: "", options: .regularExpression) }
-                .map { $0.replacingOccurrences(of: "^-\\s*", with: "", options: .regularExpression) }
-                .filter { !$0.isEmpty && $0.count < 60 }
-
-            DispatchQueue.main.async {
-                if index < self.filesData.count {
-                    self.filesData[index].topics = extractedTopics.isEmpty ? ["General Content"] : extractedTopics
-                    self.filesData[index].selectedTopicIndices = Set(0..<self.filesData[index].topics.count)
-                    self.filesData[index].isAnalyzing = false
-                    self.UploadedContent.reloadRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
-                    self.updateNextButtonState()
-                }
-            }
-
-        } catch {
-            if attempt < 3 {
-                try? await Task.sleep(nanoseconds: 5 * 1_000_000_000)
-                await analyzeTopics(for: url, index: index, attempt: attempt + 1)
-            } else {
-                DispatchQueue.main.async {
-                    if index < self.filesData.count {
-                        self.filesData[index].topics = ["General Content"]
-                        self.filesData[index].selectedTopicIndices = [0]
-                        self.filesData[index].isAnalyzing = false
-                        self.UploadedContent.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-                        self.updateNextButtonState()
+        // Chunk the text to respect free tier token limits (approx 4000 chars per chunk)
+        let chunkSize = 4000
+        var chunks: [String] = []
+        var currentIndex = text.startIndex
+        
+        // Process up to first 4 chunks (16,000 characters) to get a broad Table of Contents
+        while currentIndex < text.endIndex && chunks.count < 4 { 
+            let endIndex = text.index(currentIndex, offsetBy: chunkSize, limitedBy: text.endIndex) ?? text.endIndex
+            chunks.append(String(text[currentIndex..<endIndex]))
+            currentIndex = endIndex
+        }
+        
+        if chunks.isEmpty { chunks.append("General Content") }
+        
+        var allExtractedTopics: [String] = []
+        var successCount = 0
+        
+        for chunk in chunks {
+            let prompt = """
+            Read the text below and extract a list of the main subjects or topics it covers.
+            Return ONLY the topic names, one per line. Do NOT use markdown, numbers, or bullet points. Make them short and descriptive.
+            TEXT:
+            \(chunk)
+            """
+            
+            do {
+                let aiResponse = try await AIContentManager.shared.generateContent(
+                    topic: prompt,
+                    type: "topics", // Triggers the specific prompt for plain text topics
+                    count: 5,
+                    difficulty: "Medium"
+                )
+                
+                let rawTopics = aiResponse.components(separatedBy: .newlines)
+                let extracted = rawTopics
+                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                    .map { $0.replacingOccurrences(of: "^[0-9]+\\.\\s*", with: "", options: .regularExpression) }
+                    .map { $0.replacingOccurrences(of: "^-\\s*", with: "", options: .regularExpression) }
+                    .map { $0.replacingOccurrences(of: "^\\*\\*|\\*\\*$", with: "", options: .regularExpression) }
+                    .filter { !$0.isEmpty && $0.count < 60 && !$0.lowercased().contains("text to analyze") }
+                
+                for topic in extracted {
+                    if !allExtractedTopics.contains(topic) {
+                        allExtractedTopics.append(topic)
                     }
                 }
+                successCount += 1
+                
+                // Sleep for 2 seconds between requests to prevent hitting Groq API rate limits
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                
+            } catch {
+                print("❌ Failed to extract topics for a chunk: \(error)")
+            }
+        }
+        
+        // If all chunks failed and we haven't retried yet, retry the whole process once
+        if successCount == 0 && attempt < 2 {
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            await analyzeTopics(for: url, index: index, attempt: attempt + 1)
+            return
+        }
+
+        // Take up to 15 unique topics preserving original chronological order
+        let finalTopics = Array(allExtractedTopics.prefix(15))
+        
+        DispatchQueue.main.async {
+            if index < self.filesData.count {
+                self.filesData[index].topics = finalTopics.isEmpty ? ["General Content"] : finalTopics
+                self.filesData[index].selectedTopicIndices = Set(0..<self.filesData[index].topics.count)
+                self.filesData[index].isAnalyzing = false
+                self.UploadedContent.reloadRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+                self.updateNextButtonState()
             }
         }
     }
@@ -346,8 +373,17 @@ extension UploadConfirmationViewController: UIDocumentPickerDelegate, UIImagePic
 
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         if let url = urls.first {
+            let shouldStopAccessing = url.startAccessingSecurityScopedResource()
+            defer {
+                if shouldStopAccessing {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+            
             let tempDir = FileManager.default.temporaryDirectory
             let destURL = tempDir.appendingPathComponent(url.lastPathComponent)
+            
+            try? FileManager.default.removeItem(at: destURL)
             try? FileManager.default.copyItem(at: url, to: destURL)
             addFile(url: destURL, type: .document)
         }

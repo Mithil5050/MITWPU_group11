@@ -841,8 +841,8 @@
                             <constraint firstItem="qVn-lU-NWb" firstAttribute="leading" secondItem="5Tj-1s-UOF" secondAttribute="leading" constant="20" id="6TE-IM-CRx"/>
                             <constraint firstItem="5Tj-1s-UOF" firstAttribute="trailing" secondItem="qVn-lU-NWb" secondAttribute="trailing" constant="20" id="CR7-H9-gZi"/>
                             <constraint firstItem="kWL-c4-7bh" firstAttribute="top" secondItem="5Tj-1s-UOF" secondAttribute="top" constant="24" id="cX4-ah-eBa"/>
-                            <constraint firstItem="5Tj-1s-UOF" firstAttribute="bottom" secondItem="kWL-c4-7bh" secondAttribute="bottom" constant="50" id="fKn-pQ-DfU"/>
-                            <constraint firstItem="qVn-lU-NWb" firstAttribute="top" secondItem="5Tj-1s-UOF" secondAttribute="top" constant="600" id="hci-DT-SgV"/>
+                            <constraint firstItem="qVn-lU-NWb" firstAttribute="top" relation="greaterThanOrEqual" secondItem="kWL-c4-7bh" secondAttribute="bottom" constant="24" id="fKn-pQ-DfU"/>
+                            <constraint firstItem="5Tj-1s-UOF" firstAttribute="bottom" secondItem="qVn-lU-NWb" secondAttribute="bottom" constant="20" id="hci-DT-SgV"/>
                             <constraint firstItem="5Tj-1s-UOF" firstAttribute="trailing" secondItem="kWL-c4-7bh" secondAttribute="trailing" constant="20" id="nPA-nI-IhL"/>
                             <constraint firstItem="kWL-c4-7bh" firstAttribute="leading" secondItem="5Tj-1s-UOF" secondAttribute="leading" constant="20" id="v6f-vu-7jg"/>
                         </constraints>

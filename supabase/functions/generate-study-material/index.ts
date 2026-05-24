@@ -19,7 +19,9 @@ serve(async (req) => {
     const requestedType = (type || "").toLowerCase()
     let instructions = ""
 
-    if (requestedType.includes("note")) {
+    if (requestedType.includes("topic")) {
+      instructions = "Return ONLY a plain text list of topic names, one per line. DO NOT use markdown formatting, bullets, numbering, or emojis."
+    } else if (requestedType.includes("note")) {
       instructions = "Format: Comprehensive Academic Notes in Markdown. Use # for Title, ## for subtopics. DO NOT output a quiz. DO NOT output JSON."
     } else if (requestedType.includes("cheat")) {
       instructions = "Format: Quick-glance Cheatsheet in Markdown. Focus on key definitions and use tables. DO NOT output a quiz. DO NOT output JSON."
@@ -29,7 +31,7 @@ serve(async (req) => {
       instructions = `Format: RAW JSON ONLY. Create ${count || 10} flashcards. Format exactly: { "flashcards": [ { "front": "Term", "back": "Definition" } ] }`
     } else {
       // Fallback to Quiz
-      instructions = `Format: RAW JSON ONLY. Create a multiple-choice quiz with ${count || 5} questions. Format exactly: { "questions": [ { "question": "...", "options": ["A","B","C","D"], "answer": "A", "hint": "..." } ] }`
+      instructions = `Format: RAW JSON ONLY. Create a multiple-choice quiz with ${count || 5} questions. Format exactly: { "questions": [ { "question": "...", "options": ["Correct Answer Text", "Wrong Option 1", "Wrong Option 2", "Wrong Option 3"], "answer": "Correct Answer Text", "hint": "..." } ] }. Make sure to vary the position of the correct answer in the options array.`
     }
 
     // 3. Combine the raw document text with our strict instructions
@@ -43,8 +45,13 @@ serve(async (req) => {
 
     const url = "https://api.groq.com/openai/v1/chat/completions"
 
+    let modelToUse = "llama-3.3-70b-versatile"
+    if (requestedType.includes("topic")) {
+      modelToUse = "llama-3.1-8b-instant" // Use the smaller, higher TPM limit model for chunked topic extraction
+    }
+
     const requestBody = {
-      model: "llama-3.3-70b-versatile", // Valid Groq model. You can change this to llama3-8b-8192 or mixtral-8x7b-32768
+      model: modelToUse,
       messages: [
         {
           role: "system",

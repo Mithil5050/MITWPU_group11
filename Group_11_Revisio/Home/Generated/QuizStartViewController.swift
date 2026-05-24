@@ -12,8 +12,8 @@ class QuizStartViewController: UIViewController {
     var currentTopic: Topic?
     var parentSubject: String?
     var quizSourceName: String?
-    var quizTimeLimit: Int = 15
-    var quizQuestionCount: Int = 10
+    var quizTimeLimit: Int?
+    var quizQuestionCount: Int?
 
     @IBOutlet weak var quizTitleLabel: UILabel!
     @IBOutlet weak var rulesTextView: UITextView!
@@ -25,6 +25,13 @@ class QuizStartViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.hidesBackButton = false
+        
+        let actualQuestionCount = quizQuestionCount ?? (currentTopic?.quizQuestions?.count ?? 10)
+        quizQuestionCount = actualQuestionCount
+        if quizTimeLimit == nil {
+            quizTimeLimit = Int(ceil(Double(actualQuestionCount) * 1.5))
+        }
+        
         configureUI()
         setupSubtitleLabel()
         designButtons()
@@ -52,7 +59,7 @@ class QuizStartViewController: UIViewController {
 
     func setupSubtitleLabel() {
         let subtitleLabel = UILabel()
-        subtitleLabel.text = "\(quizQuestionCount) Questions | \(quizTimeLimit) minutes"
+        subtitleLabel.text = "\(quizQuestionCount ?? 10) Questions | \(quizTimeLimit ?? 15) minutes"
         subtitleLabel.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         subtitleLabel.textColor = .secondaryLabel
         subtitleLabel.textAlignment = .left
@@ -80,9 +87,9 @@ class QuizStartViewController: UIViewController {
         return """
         1. This quiz is not marked and will not affect any official course grades or records. Use it as a self-assessment tool.
 
-        2. Questions: You will be answering \(quizQuestionCount) questions.
+        2. Questions: You will be answering \(quizQuestionCount ?? 10) questions.
 
-        3. Time Limit: You have \(quizTimeLimit) minutes to complete this session.
+        3. Time Limit: You have \(quizTimeLimit ?? 15) minutes to complete this session.
 
         4. For Multiple Choice questions, select the best single answer.
 
@@ -135,7 +142,7 @@ class QuizStartViewController: UIViewController {
                 newQuizVC.quizTopic = self.currentTopic
                 newQuizVC.parentSubjectName = self.parentSubject
                 newQuizVC.selectedSourceName = nameToPass
-                newQuizVC.timeLimitInMinutes = self.quizTimeLimit
+                newQuizVC.timeLimitInMinutes = self.quizTimeLimit ?? 15
                 return
             }
 
