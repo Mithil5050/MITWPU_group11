@@ -162,6 +162,22 @@ class LoginViewController: UIViewController {
         controller.presentationContextProvider = self
         controller.performRequests()
     }
+
+    @IBAction func signUpTapped(_ sender: Any) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let signupVC = storyboard.instantiateViewController(withIdentifier: "SignupViewController") as? SignupViewController {
+            let navController = UINavigationController(rootViewController: signupVC)
+            present(navController, animated: true)
+        }
+    }
+
+    @IBAction func forgotPasswordTapped(_ sender: Any) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let forgotVC = storyboard.instantiateViewController(withIdentifier: "ForgotPasswordViewController") as? ForgotPasswordViewController {
+            let navController = UINavigationController(rootViewController: forgotVC)
+            present(navController, animated: true)
+        }
+    }
 }
 
 extension LoginViewController: ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {

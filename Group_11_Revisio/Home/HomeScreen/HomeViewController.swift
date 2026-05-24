@@ -781,7 +781,26 @@ extension HomeViewController: UploadContentCellDelegate, UIDocumentPickerDelegat
 
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
-        navigateToConfirmation(with: url.path)
+        
+        let shouldStopAccessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if shouldStopAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+        
+        let tempDir = FileManager.default.temporaryDirectory
+        let destURL = tempDir.appendingPathComponent(url.lastPathComponent)
+        
+        try? FileManager.default.removeItem(at: destURL)
+        do {
+            try FileManager.default.copyItem(at: url, to: destURL)
+            navigateToConfirmation(with: destURL.path)
+        } catch {
+            print("Failed to copy document: \(error)")
+            // Fallback just in case
+            navigateToConfirmation(with: url.path)
+        }
     }
 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {

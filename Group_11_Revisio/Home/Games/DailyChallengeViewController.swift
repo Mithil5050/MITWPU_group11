@@ -138,12 +138,12 @@ class DailyChallengeViewController: UIViewController {
             CRITICAL RULES:
             1. The word MUST be EXACTLY 5 letters long.
             2. NO special characters, NO numbers, NO spaces.
-            3. Generate 2 helpful hints for guessing this word.
+            3. Generate 2 helpful hints for guessing this word. Make the hints very easy and directly related to the word. One hint should describe its core function/meaning simply, and the second hint could give away the starting letter or a very strong clue.
             4. Generate a short, educational definition (1-2 sentences).
             5. Output ONLY valid JSON in this exact format:
             {
               "word": "APPLE",
-              "hints": ["A common red or green fruit.", "Keeps the doctor away."],
+              "hints": ["It's a common red or green fruit.", "Starts with the letter A and keeps the doctor away."],
               "definition": "A round fruit with red or green skin and a whitish interior."
             }
 
@@ -220,7 +220,15 @@ class DailyChallengeViewController: UIViewController {
             target: self,
             action: #selector(hintTapped)
         )
-        navigationItem.rightBarButtonItem = hintBtn
+        
+        let infoBtn = UIBarButtonItem(
+            image: UIImage(systemName: "info.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(infoTapped)
+        )
+        
+        navigationItem.rightBarButtonItems = [hintBtn, infoBtn]
     }
 
     // MARK: - Grid Setup
@@ -317,6 +325,23 @@ class DailyChallengeViewController: UIViewController {
     }
 
     // MARK: - Actions
+    @objc private func infoTapped() {
+        let message = """
+        Guess the Word in 6 tries.
+
+        • Each guess must be a valid 5-letter word.
+        • The color of the tiles will change to show how close your guess was.
+
+        🟩 Green: Letter is in the correct spot.
+        🟨 Yellow: Letter is in the word but wrong spot.
+        ⬛️ Gray: Letter is not in the word.
+        """
+        
+        let alert = UIAlertController(title: "How to Play", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Got It", style: .default))
+        present(alert, animated: true)
+    }
+
     @objc func hintTapped() {
         guard engine != nil else { return }
         guard currentHintIndex < hints.count else {

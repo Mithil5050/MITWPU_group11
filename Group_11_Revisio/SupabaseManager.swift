@@ -16,7 +16,13 @@ class SupabaseManager {
     let client: SupabaseClient
 
     private init() {
-        client = SupabaseClient(supabaseURL: projectURL, supabaseKey: apiKey)
+        client = SupabaseClient(
+            supabaseURL: projectURL,
+            supabaseKey: apiKey,
+            options: SupabaseClientOptions(
+                auth: .init(emitLocalSessionAsInitialSession: true)
+            )
+        )
     }
 
     // MARK: - 1. Sync XP + Level + Streak

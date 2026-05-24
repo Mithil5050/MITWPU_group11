@@ -995,8 +995,8 @@
                         <viewLayoutGuide key="safeArea" id="O30-cf-dTl"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="O30-cf-dTl" firstAttribute="bottom" secondItem="p4G-dF-jJ9" secondAttribute="bottom" constant="50" id="2KT-7G-tje"/>
-                            <constraint firstItem="Wqk-VU-V6f" firstAttribute="top" secondItem="O30-cf-dTl" secondAttribute="top" constant="600" id="6c2-O3-niE"/>
+                            <constraint firstItem="Wqk-VU-V6f" firstAttribute="top" relation="greaterThanOrEqual" secondItem="p4G-dF-jJ9" secondAttribute="bottom" constant="24" id="2KT-7G-tje"/>
+                            <constraint firstItem="O30-cf-dTl" firstAttribute="bottom" secondItem="Wqk-VU-V6f" secondAttribute="bottom" constant="20" id="6c2-O3-niE"/>
                             <constraint firstItem="p4G-dF-jJ9" firstAttribute="leading" secondItem="O30-cf-dTl" secondAttribute="leading" constant="20" id="NOI-XW-PcR"/>
                             <constraint firstItem="Wqk-VU-V6f" firstAttribute="leading" secondItem="O30-cf-dTl" secondAttribute="leading" constant="20" id="O0r-Mn-Gn6"/>
                             <constraint firstItem="O30-cf-dTl" firstAttribute="trailing" secondItem="Wqk-VU-V6f" secondAttribute="trailing" constant="20" id="qq6-fU-bTP"/>

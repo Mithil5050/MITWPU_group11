@@ -25,6 +25,13 @@ class ContentExtractor {
 
         // 2. If it's a URL (File), extract based on extension
         if let url = item as? URL {
+            let shouldStopAccessing = url.startAccessingSecurityScopedResource()
+            defer {
+                if shouldStopAccessing {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+            
             let fileExtension = url.pathExtension.lowercased()
 
             if fileExtension == "pdf" {

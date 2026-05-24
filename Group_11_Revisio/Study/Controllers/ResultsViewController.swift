@@ -141,6 +141,8 @@ class ResultsViewController: UIViewController {
 
         topic.lastAccessed = "Score: \(result.finalScore)/\(result.totalQuestions)"
         topic.largeContentBody = packedData
+        topic.currentProgressIndex = result.totalQuestions
+        topic.totalItemsCount = result.totalQuestions
 
         DataManager.shared.updateTopic(subjectName: folder, topic: topic)
 

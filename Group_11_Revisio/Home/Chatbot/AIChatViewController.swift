@@ -587,8 +587,13 @@ extension AIChatViewController {
         do {
             let wrapper = try JSONDecoder().decode(AIResponse.self, from: data)
             return wrapper.questions.map { aiQ in
-                let correctIndex = aiQ.options.firstIndex(of: aiQ.answer) ?? 0
-                return QuizQuestion(questionText: aiQ.question, answers: aiQ.options, correctAnswerIndex: correctIndex, userAnswerIndex: nil, isFlagged: false, hint: aiQ.hint ?? "No hint")
+                var uniqueOptions: [String] = []
+                for opt in aiQ.options {
+                    if !uniqueOptions.contains(opt) { uniqueOptions.append(opt) }
+                }
+                uniqueOptions.shuffle()
+                let correctIndex = uniqueOptions.firstIndex(of: aiQ.answer) ?? 0
+                return QuizQuestion(questionText: aiQ.question, answers: uniqueOptions, correctAnswerIndex: correctIndex, userAnswerIndex: nil, isFlagged: false, hint: aiQ.hint ?? "No hint")
             }
         } catch {
             if let directList = try? JSONDecoder().decode([QuizQuestion].self, from: data) { return directList }

@@ -253,10 +253,13 @@ class GenerateHomeViewController: UIViewController {
         quizStack.translatesAutoresizingMaskIntoConstraints = false
 
         quizConfigView.addSubview(quizStack)
+        let quizBottom = quizStack.bottomAnchor.constraint(equalTo: quizConfigView.bottomAnchor, constant: -8)
+        quizBottom.priority = .defaultHigh
         NSLayoutConstraint.activate([
             quizStack.leadingAnchor.constraint(equalTo: quizConfigView.leadingAnchor, constant: 4),
             quizStack.trailingAnchor.constraint(equalTo: quizConfigView.trailingAnchor, constant: -4),
-            quizStack.topAnchor.constraint(equalTo: quizConfigView.topAnchor, constant: 8)
+            quizStack.topAnchor.constraint(equalTo: quizConfigView.topAnchor, constant: 8),
+            quizBottom
         ])
 
         flashcardCountStepper.minimumValue = 5
@@ -278,10 +281,13 @@ class GenerateHomeViewController: UIViewController {
         fcMainStack.translatesAutoresizingMaskIntoConstraints = false
 
         flashcardConfigView.addSubview(fcMainStack)
+        let fcBottom = fcMainStack.bottomAnchor.constraint(equalTo: flashcardConfigView.bottomAnchor, constant: -8)
+        fcBottom.priority = .defaultHigh
         NSLayoutConstraint.activate([
             fcMainStack.leadingAnchor.constraint(equalTo: flashcardConfigView.leadingAnchor, constant: 4),
             fcMainStack.trailingAnchor.constraint(equalTo: flashcardConfigView.trailingAnchor, constant: -4),
-            fcMainStack.topAnchor.constraint(equalTo: flashcardConfigView.topAnchor, constant: 8)
+            fcMainStack.topAnchor.constraint(equalTo: flashcardConfigView.topAnchor, constant: 8),
+            fcBottom
         ])
     }
 
@@ -384,6 +390,12 @@ class GenerateHomeViewController: UIViewController {
         } else if sender == quizCountStepper {
             quizCountLabel.text = "\(intValue)"
             selectedCount = intValue
+            
+            // Auto-scale timer based on number of questions (1.5 mins per question)
+            let newTime = Int(ceil(Double(intValue) * 1.5))
+            quizTimerStepper.value = Double(newTime)
+            quizTimerLabel.text = "\(newTime)"
+            selectedTime = newTime
         } else if sender == quizTimerStepper {
             quizTimerLabel.text = "\(intValue)"
             selectedTime = intValue
@@ -695,8 +707,13 @@ extension GenerateHomeViewController {
         let decoder = JSONDecoder()
         if let wrapper = try? decoder.decode(AIResponse.self, from: data) {
             return wrapper.questions.map { aiQ in
-                let correctIndex = aiQ.options.firstIndex(of: aiQ.answer) ?? 0
-                return QuizQuestion(questionText: aiQ.question, answers: aiQ.options, correctAnswerIndex: correctIndex, userAnswerIndex: nil, isFlagged: false, hint: aiQ.hint ?? "No hint")
+                var uniqueOptions: [String] = []
+                for opt in aiQ.options {
+                    if !uniqueOptions.contains(opt) { uniqueOptions.append(opt) }
+                }
+                uniqueOptions.shuffle()
+                let correctIndex = uniqueOptions.firstIndex(of: aiQ.answer) ?? 0
+                return QuizQuestion(questionText: aiQ.question, answers: uniqueOptions, correctAnswerIndex: correctIndex, userAnswerIndex: nil, isFlagged: false, hint: aiQ.hint ?? "No hint")
             }
         } else if let directList = try? decoder.decode([QuizQuestion].self, from: data) {
             return directList

@@ -13,12 +13,14 @@ class QuizSessionViewController: UIViewController {
     // MARK: - Properties
     var currentTopic: Topic?
     var parentSubject: String = "General Study"
+    var sourceName: String = "Quiz"
+    
+    private var isQuizFinished = false
 
     var sessionQuestions: [QuizQuestion] = []
     var explanations: [String] = []
 
     var questionIndex = 0
-    var sourceName: String = "Quiz"
 
     var hintItem: UIBarButtonItem?
     var flagItem: UIBarButtonItem?
@@ -69,7 +71,7 @@ class QuizSessionViewController: UIViewController {
 
         // Save current progress before quitting
         if var topic = currentTopic, !sessionQuestions.isEmpty {
-            topic.currentProgressIndex = questionIndex
+            topic.currentProgressIndex = isQuizFinished ? sessionQuestions.count : questionIndex
             topic.totalItemsCount = sessionQuestions.count
             DataManager.shared.updateTopic(subjectName: parentSubject, topic: topic)
         }
@@ -244,6 +246,7 @@ class QuizSessionViewController: UIViewController {
 
     // MARK: - Finish & Save
     func finishQuiz() {
+        isQuizFinished = true
         sessionTimer?.invalidate()
 
         var score = 0
