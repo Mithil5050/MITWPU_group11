@@ -176,6 +176,7 @@ class PersonalizationViewController: UIViewController {
     private func finishPersonalization(subCategory: String) {
         UserDefaults.standard.set(selectedCategory, forKey: "user_category")
         UserDefaults.standard.set(subCategory, forKey: "user_subcategory")
+        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
 
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         guard let loginVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController") as? LoginViewController else { return }
