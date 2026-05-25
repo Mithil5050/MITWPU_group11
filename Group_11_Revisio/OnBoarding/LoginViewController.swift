@@ -163,13 +163,13 @@ class LoginViewController: UIViewController {
         controller.performRequests()
     }
 
-    @IBAction func signUpTapped(_ sender: Any) {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        if let signupVC = storyboard.instantiateViewController(withIdentifier: "SignupViewController") as? SignupViewController {
-            let navController = UINavigationController(rootViewController: signupVC)
-            present(navController, animated: true)
-        }
-    }
+//    @IBAction func signUpTapped(_ sender: Any) {
+//        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+//        if let signupVC = storyboard.instantiateViewController(withIdentifier: "SignupViewController") as? SignupViewController {
+//            let navController = UINavigationController(rootViewController: signupVC)
+//            present(navController, animated: true)
+//        }
+//    }
 
     @IBAction func forgotPasswordTapped(_ sender: Any) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
