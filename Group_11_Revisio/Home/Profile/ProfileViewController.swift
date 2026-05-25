@@ -230,8 +230,8 @@ class ProfileViewController: UIViewController {
 
     private func transitionToLoginScreen() {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let onboardingVC = storyboard.instantiateViewController(withIdentifier: "OnboardingViewController")
-        let nav = UINavigationController(rootViewController: onboardingVC)
+        let loginVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
+        let nav = UINavigationController(rootViewController: loginVC)
         nav.isNavigationBarHidden = true
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else { return }

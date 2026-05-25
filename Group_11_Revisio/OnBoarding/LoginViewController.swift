@@ -127,7 +127,7 @@ class LoginViewController: UIViewController {
                         "current_level": .integer(1),
                         "current_streak": .integer(0)
                     ]
-                    try? await supabase.from("profiles").insert(newProfileData).execute()
+                    _ = try? await supabase.from("profiles").insert(newProfileData).execute()
                 }
 
                 DispatchQueue.main.async { self.transitionToMainApp() }
@@ -185,3 +185,4 @@ extension LoginViewController: ASAuthorizationControllerDelegate, ASAuthorizatio
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) { print(error) }
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {}
 }
+

@@ -58,10 +58,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     let tabBarVC = storyboard.instantiateViewController(withIdentifier: "MainTabBarController")
                     window.rootViewController = tabBarVC
                 } else {
-                    let onboardingVC = storyboard.instantiateViewController(withIdentifier: "OnboardingViewController")
-                    let nav = UINavigationController(rootViewController: onboardingVC)
-                    nav.isNavigationBarHidden = true
-                    window.rootViewController = nav
+                    if UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+                        let loginVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
+                        let nav = UINavigationController(rootViewController: loginVC)
+                        nav.isNavigationBarHidden = true
+                        window.rootViewController = nav
+                    } else {
+                        let onboardingVC = storyboard.instantiateViewController(withIdentifier: "OnboardingViewController")
+                        let nav = UINavigationController(rootViewController: onboardingVC)
+                        nav.isNavigationBarHidden = true
+                        window.rootViewController = nav
+                    }
                 }
 
                 UIView.transition(with: window, duration: 0.4, options: .transitionCrossDissolve, animations: nil, completion: nil)
