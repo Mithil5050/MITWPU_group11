@@ -47,7 +47,7 @@ serve(async (req) => {
 
     let modelToUse = "llama-3.3-70b-versatile"
     if (requestedType.includes("topic")) {
-      modelToUse = "llama-3.1-8b-instant" // Use the smaller, higher TPM limit model for chunked topic extraction
+      modelToUse = "llama3-8b-8192" // Use the smaller, higher TPM limit model for chunked topic extraction
     }
 
     const requestBody = {
