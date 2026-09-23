@@ -29,9 +29,12 @@ serve(async (req) => {
       instructions = "Format: Topic Index in Markdown. List the main themes with a 1-sentence summary for each. DO NOT output a quiz. DO NOT output JSON."
     } else if (requestedType.includes("flashcard")) {
       instructions = `Format: RAW JSON ONLY. Create ${count || 10} flashcards. Format exactly: { "flashcards": [ { "front": "Term", "back": "Definition" } ] }`
-    } else {
+    } else if (requestedType.includes("quiz") || requestedType === "") {
       // Fallback to Quiz
       instructions = `Format: RAW JSON ONLY. Create a multiple-choice quiz with ${count || 5} questions. Format exactly: { "questions": [ { "question": "...", "options": ["Correct Answer Text", "Wrong Option 1", "Wrong Option 2", "Wrong Option 3"], "answer": "Correct Answer Text", "hint": "..." } ] }. Make sure to vary the position of the correct answer in the options array.`
+    } else {
+      // For games and custom prompts (Word Fill, Wordle, Filter), follow instructions in context
+      instructions = `Please follow the instructions provided in the context directly.`
     }
 
     // 3. Combine the raw document text with our strict instructions
@@ -45,9 +48,9 @@ serve(async (req) => {
 
     const url = "https://api.groq.com/openai/v1/chat/completions"
 
-    let modelToUse = "llama-3.3-70b-versatile"
+    let modelToUse = "openai/gpt-oss-120b"
     if (requestedType.includes("topic")) {
-      modelToUse = "llama3-8b-8192" // Use the smaller, higher TPM limit model for chunked topic extraction
+      modelToUse = "openai/gpt-oss-20b" // Using the 20B model for topic extraction
     }
 
     const requestBody = {
