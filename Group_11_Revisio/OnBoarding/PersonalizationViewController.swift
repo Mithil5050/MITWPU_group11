@@ -95,13 +95,13 @@ class PersonalizationViewController: UIViewController {
             self.subtitleLabel.text = "This helps us personalize your AI study companion."
 
             let options = [
-                ("🏫 School Student", "School"),
-                ("🎓 College Student", "College"),
-                ("📚 Preparing for Entrance Exam", "Entrance Exam")
+                ("School Student", "building.columns", "School"),
+                ("College Student", "graduationcap", "College"),
+                ("Preparing for Entrance Exam", "book.closed", "Entrance Exam")
             ]
 
-            for (title, value) in options {
-                let btn = self.createOptionButton(title: title)
+            for (title, icon, value) in options {
+                let btn = self.createOptionButton(title: title, systemImage: icon)
                 btn.addAction(UIAction { [weak self] _ in
                     self?.selectedCategory = value
                     self?.showSubCategoryOptions()
@@ -160,11 +160,23 @@ class PersonalizationViewController: UIViewController {
         }
     }
 
-    private func createOptionButton(title: String) -> UIButton {
+    private func createOptionButton(title: String, systemImage: String? = nil) -> UIButton {
         let btn = UIButton(type: .system)
-        btn.setTitle(title, for: .normal)
-        btn.setTitleColor(.white, for: .normal)
-        btn.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        
+        var config = UIButton.Configuration.plain()
+        var attTitle = AttributedString(title)
+        attTitle.font = .systemFont(ofSize: 18, weight: .semibold)
+        config.attributedTitle = attTitle
+        
+        if let sysImg = systemImage {
+            let symbolConfig = UIImage.SymbolConfiguration(pointSize: 18, weight: .regular)
+            config.image = UIImage(systemName: sysImg, withConfiguration: symbolConfig)
+            config.imagePadding = 12
+        }
+        
+        config.baseForegroundColor = .white
+        btn.configuration = config
+        
         btn.backgroundColor = UIColor(red: 40/255, green: 44/255, blue: 55/255, alpha: 0.85)
         btn.layer.cornerRadius = 16
         btn.layer.borderWidth = 1
