@@ -18,11 +18,9 @@ class AIContentManager {
     }
 
     func generateContent(topic: String, type: String, count: Int, difficulty: String) async throws -> String {
-        let noteInstructions = "Format: Comprehensive Academic Notes. Use # for Title, ## for main topics, and bullet points. START IMMEDIATELY with \(topic)."
-
-        let cheatsheetInstructions = "Format: Online Cheatsheet. Use ## for sections and a Markdown table for definitions. START IMMEDIATELY with \(topic)."
-
-        let selectedInstructions = (type.lowercased() == "notes") ? noteInstructions : cheatsheetInstructions
+        let lowerType = type.lowercased()
+        let isNote = lowerType.contains("note")
+        let isCheatsheet = lowerType.contains("cheat")
 
         let userCategory = UserDefaults.standard.string(forKey: "user_category") ?? ""
         let userSubcategory = UserDefaults.standard.string(forKey: "user_subcategory") ?? ""
@@ -38,15 +36,28 @@ class AIContentManager {
             personaContext += " Tailor the tone, depth, and examples in the content to fit their educational level."
         }
 
-        let trainedPrompt = """
-        ACTUAL TOPIC TO WRITE ABOUT: \(topic)
-        \(personaContext)
+        var trainedPrompt = ""
+        
+        if isNote || isCheatsheet {
+            let noteInstructions = "Format: Comprehensive Academic Notes. Use # for Title, ## for main topics, and bullet points. START IMMEDIATELY with \(topic)."
+            let cheatsheetInstructions = "Format: Online Cheatsheet. Use ## for sections and a Markdown table for definitions. START IMMEDIATELY with \(topic)."
+            let selectedInstructions = isNote ? noteInstructions : cheatsheetInstructions
+            
+            trainedPrompt = """
+            ACTUAL TOPIC TO WRITE ABOUT: \(topic)
+            \(personaContext)
 
-        INSTRUCTIONS:
-        \(selectedInstructions)
-        NEVER mention "Note Taker" or "AI instructions" in the output.
-        Only output study material for \(topic).
-        """
+            INSTRUCTIONS:
+            \(selectedInstructions)
+            NEVER mention "Note Taker" or "AI instructions" in the output.
+            Only output study material for \(topic).
+            """
+        } else {
+            trainedPrompt = """
+            ACTUAL TOPIC TO WRITE ABOUT: \(topic)
+            \(personaContext)
+            """
+        }
 
         let requestBody = AIRequest(
             topic: trainedPrompt,

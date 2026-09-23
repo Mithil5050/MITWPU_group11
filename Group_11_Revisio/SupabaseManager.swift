@@ -47,16 +47,36 @@ class SupabaseManager {
     // Called by ProgressDataManager.recordXPEvent — syncs XP delta to Supabase
     func syncXPEvent(reason: String, amount: Int) async {
         guard let userId = client.auth.currentUser?.id else { return }
-        struct XPUpdate: Encodable { let total_xp: Int }
+        struct XPLogInsert: Encodable {
+            let user_id: UUID
+            let reason: String
+            let amount: Int
+        }
         do {
-            struct Row: Decodable { let total_xp: Int? }
-            let rows: [Row] = try await client.from("profiles")
-                .select("total_xp").eq("id", value: userId).limit(1).execute().value
-            let current = rows.first?.total_xp ?? 0
-            try await client.from("profiles")
-                .update(XPUpdate(total_xp: current + amount))
-                .eq("id", value: userId).execute()
+            try await client.from("xp_log")
+                .insert(XPLogInsert(user_id: userId, reason: reason, amount: amount))
+                .execute()
         } catch { print("❌ syncXPEvent failed: \(error)") }
+    }
+
+    // Fetch XP History from Supabase
+    struct XPLogRow: Decodable {
+        let reason: String
+        let amount: Int
+        let created_at: Date
+    }
+
+    func fetchXPLog() async throws -> [XPLogRow] {
+        guard let userId = client.auth.currentUser?.id else { return [] }
+        let result: [XPLogRow] = try await client
+            .from("xp_log")
+            .select("reason, amount, created_at")
+            .eq("user_id", value: userId)
+            .order("created_at", ascending: false)
+            .limit(50)
+            .execute()
+            .value
+        return result
     }
 
     // MARK: - 2. Backup Topic

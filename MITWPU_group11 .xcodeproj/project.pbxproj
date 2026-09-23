@@ -17,6 +17,7 @@
 
 /* Begin PBXFileReference section */
 		546963BE2ED6CB31001C03B8 /* ReviseQ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReviseQ.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		549B259630AD7764003CFDDD /* ReviseQ.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ReviseQ.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -60,6 +61,7 @@
 		546963B52ED6CB31001C03B8 = {
 			isa = PBXGroup;
 			children = (
+				549B259630AD7764003CFDDD /* ReviseQ.entitlements */,
 				546963C02ED6CB31001C03B8 /* Group_11_Revisio */,
 				567819982F504621006623B6 /* Frameworks */,
 				546963BF2ED6CB31001C03B8 /* Products */,
@@ -179,9 +181,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ReviseQ.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 32C5NG7QRW;
+				DEVELOPMENT_TEAM = FS8622R56Y;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Group_11_Revisio/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -200,8 +204,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "Group-11-Revisiooo";
+				PRODUCT_BUNDLE_IDENTIFIER = com.mitwpu.reviseq;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -217,9 +222,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ReviseQ.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 32C5NG7QRW;
+				DEVELOPMENT_TEAM = FS8622R56Y;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Group_11_Revisio/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -238,8 +245,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "Group-11-Revisiooo";
+				PRODUCT_BUNDLE_IDENTIFIER = com.mitwpu.reviseq;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;

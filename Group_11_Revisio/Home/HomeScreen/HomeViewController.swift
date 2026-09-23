@@ -64,7 +64,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource, UICollec
     var isLearningExpanded: Bool = false
 
     var userName: String = "User" // Default until fetched
-    var userProfileImage: UIImage? = UIImage(named: "profile_placeholder")
+    var userProfileImage: UIImage? = UIImage(systemName: "person.crop.circle.fill")?
+        .withTintColor(.systemGray3, renderingMode: .alwaysOriginal)
 
     @IBOutlet weak var collectionView: UICollectionView!
 

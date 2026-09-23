@@ -2,11 +2,14 @@ import UIKit
 import AuthenticationServices
 import Supabase
 import GoogleSignIn
+import CryptoKit
 
 class LoginViewController: UIViewController {
 
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
+    
+    private var currentNonce: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -114,7 +117,8 @@ class LoginViewController: UIViewController {
                 )
                 
                 let user = try await supabase.auth.session.user
-                let googleName = user.userMetadata["full_name"]?.value as? String ?? "New Student"
+                let defaultName = user.email?.components(separatedBy: "@").first?.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "_", with: " ").capitalized ?? "Student"
+                let googleName = user.userMetadata["full_name"]?.value as? String ?? (user.userMetadata["name"]?.value as? String ?? defaultName)
                 
                 // Ensure profile exists in the 'profiles' table
                 do {
@@ -154,13 +158,57 @@ class LoginViewController: UIViewController {
     @IBAction func appleSignInTapped(_ sender: UIButton) { startAppleSignIn() }
 
     private func startAppleSignIn() {
+        let nonce = randomNonceString()
+        currentNonce = nonce
         let provider = ASAuthorizationAppleIDProvider()
         let request = provider.createRequest()
         request.requestedScopes = [.fullName, .email]
+        request.nonce = sha256(nonce)
+        
         let controller = ASAuthorizationController(authorizationRequests: [request])
         controller.delegate = self
         controller.presentationContextProvider = self
         controller.performRequests()
+    }
+    
+    // MARK: - Helper Methods for Apple Sign-In
+    
+    private func randomNonceString(length: Int = 32) -> String {
+        precondition(length > 0)
+        let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        var result = ""
+        var remainingLength = length
+        
+        while remainingLength > 0 {
+            let randoms: [UInt8] = (0 ..< 16).map { _ in
+                var random: UInt8 = 0
+                let errorCode = SecRandomCopyBytes(kSecRandomDefault, 1, &random)
+                if errorCode != errSecSuccess {
+                    fatalError("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+                }
+                return random
+            }
+            
+            randoms.forEach { random in
+                if remainingLength == 0 {
+                    return
+                }
+                if random < charset.count {
+                    result.append(charset[Int(random)])
+                    remainingLength -= 1
+                }
+            }
+        }
+        return result
+    }
+
+    private func sha256(_ input: String) -> String {
+        let inputData = Data(input.utf8)
+        let hashedData = SHA256.hash(data: inputData)
+        let hashString = hashedData.compactMap {
+            String(format: "%02x", $0)
+        }.joined()
+        return hashString
     }
 
 //    @IBAction func signUpTapped(_ sender: Any) {
@@ -182,7 +230,77 @@ class LoginViewController: UIViewController {
 
 extension LoginViewController: ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor { return view.window! }
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) { print(error) }
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {}
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        let authError = error as? ASAuthorizationError
+        if authError?.code != .canceled {
+            DispatchQueue.main.async { [weak self] in
+                let alert = UIAlertController(title: "Apple Sign In Error", message: error.localizedDescription, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                self?.present(alert, animated: true)
+            }
+        }
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+            guard let nonce = currentNonce else {
+                fatalError("Invalid state: A login callback was received, but no login request was sent.")
+            }
+            guard let appleIDToken = appleIDCredential.identityToken else {
+                print("Unable to fetch identity token")
+                return
+            }
+            guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
+                print("Unable to serialize token string from data: \(appleIDToken.debugDescription)")
+                return
+            }
+            
+            let givenName = appleIDCredential.fullName?.givenName
+            let familyName = appleIDCredential.fullName?.familyName
+            let fullName = [givenName, familyName].compactMap({ $0 }).joined(separator: " ")
+            
+            Task {
+                do {
+                    try await supabase.auth.signInWithIdToken(credentials: .init(provider: .apple, idToken: idTokenString, nonce: nonce))
+                    
+                    let user = try await supabase.auth.session.user
+                    let defaultName = user.email?.components(separatedBy: "@").first?.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "_", with: " ").capitalized ?? "Student"
+                    let appleName: String
+                    if !fullName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        appleName = fullName
+                    } else if let metaName = user.userMetadata["full_name"]?.value as? String, !metaName.isEmpty {
+                        appleName = metaName
+                    } else if let metaName = user.userMetadata["name"]?.value as? String, !metaName.isEmpty {
+                        appleName = metaName
+                    } else {
+                        appleName = defaultName
+                    }
+                    
+                    // Ensure profile exists in the 'profiles' table
+                    do {
+                        let _ = try await supabase.from("profiles").select("id").eq("id", value: user.id).single().execute()
+                    } catch {
+                        let newProfileData: [String: AnyJSON] = [
+                            "id": .string(user.id.uuidString),
+                            "username": .string(appleName),
+                            "total_xp": .integer(0),
+                            "current_level": .integer(1),
+                            "current_streak": .integer(0)
+                        ]
+                        _ = try? await supabase.from("profiles").insert(newProfileData).execute()
+                    }
+                    
+                    DispatchQueue.main.async { self.transitionToMainApp() }
+                    
+                } catch {
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Apple Sign In Error", message: error.localizedDescription, preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "OK", style: .default))
+                        self.present(alert, animated: true)
+                    }
+                }
+            }
+        }
+    }
 }
 

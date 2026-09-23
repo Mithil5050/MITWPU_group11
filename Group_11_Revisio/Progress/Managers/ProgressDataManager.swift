@@ -164,7 +164,15 @@ class ProgressDataManager {
                 // 5. Sync streak calendar dot-dates from cloud
                 UserDefaults.standard.set(profile.streakDotDates, forKey: "streak_dot_dates")
 
-                // 6. Refresh the UI
+                // 6. Sync XP Log History
+                let cloudXPLogs = try await SupabaseManager.shared.fetchXPLog()
+                let restoredEvents = cloudXPLogs.map { XPEvent(description: $0.reason, amount: $0.amount, date: $0.created_at) }
+                DispatchQueue.main.async {
+                    self.xpHistory = restoredEvents
+                    self.persistXPHistory()
+                }
+
+                // 7. Refresh the UI
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .xpDidUpdate, object: nil)
                 }
