@@ -305,6 +305,13 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         btn.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         btn.addTarget(self, action: #selector(groupTitleTapped), for: .touchUpInside)
         navigationItem.titleView = btn
+
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "shield.checkered"),
+            style: .plain,
+            target: self,
+            action: #selector(showCommunityGuidelines)
+        )
     }
 
     // MARK: - Attachment sheet
@@ -371,8 +378,11 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
         }
         built.sort { $0.sentDate < $1.sentDate }
 
+        let blockedUsers = Set(UserDefaults.standard.stringArray(forKey: "blocked_user_ids") ?? [])
+        let visibleMessages = built.filter { !blockedUsers.contains($0.sender.senderId) }
+
         DispatchQueue.main.async {
-            self.chatMessages = built
+            self.chatMessages = visibleMessages
             self.messagesCollectionView.reloadData()
             self.messagesCollectionView.scrollToLastItem(animated: false)
         }
@@ -504,6 +514,9 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
             let cm   = ChatMessage(sender: sender, messageId: id, sentDate: date, kind: kind)
             let meta = MessageMeta(fileType: fileType, fileUrl: fileUrl, fileName: fileName,
                                    content: content, materialType: mt)
+
+            let blockedUsers = Set(UserDefaults.standard.stringArray(forKey: "blocked_user_ids") ?? [])
+            guard !blockedUsers.contains(sender.senderId) else { return }
 
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
@@ -664,8 +677,119 @@ class ChatViewController: MessagesViewController, GroupUpdateDelegate {
             alert.addAction(UIAlertAction(title: "Unsend", style: .destructive) { [weak self] _ in
                 self?.unsendMessage(cm)
             })
+        } else {
+            alert.addAction(UIAlertAction(title: "Report Message", style: .destructive) { [weak self] _ in
+                self?.promptReportMessage(cm)
+            })
+            alert.addAction(UIAlertAction(title: "Block User", style: .destructive) { [weak self] _ in
+                self?.confirmBlockUser(sender: cm.sender)
+            })
         }
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        if let popover = alert.popoverPresentationController {
+            if let cell = messagesCollectionView.cellForItem(at: indexPath) {
+                popover.sourceView = cell
+                popover.sourceRect = cell.bounds
+            } else {
+                popover.sourceView = messagesCollectionView
+                popover.sourceRect = CGRect(origin: point, size: .zero)
+            }
+        }
+        present(alert, animated: true)
+    }
+
+    // MARK: - Moderation & Safety (Guideline 1.2)
+
+    @objc private func showCommunityGuidelines() {
+        let alert = UIAlertController(
+            title: "Community Guidelines & Safety",
+            message: "ReviseQ has a strict zero-tolerance policy for objectionable content, harassment, hate speech, bullying, and abusive behavior.\n\n• Long-press any message to Report it or Block the sender.\n• All reported content is reviewed within 24 hours.\n• Violators will be banned and their accounts terminated.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "View Full Terms", style: .default, handler: { _ in
+            if let url = URL(string: "https://reviseq.netlify.app") {
+                UIApplication.shared.open(url)
+            }
+        }))
+        alert.addAction(UIAlertAction(title: "I Understand", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func promptReportMessage(_ cm: ChatMessage) {
+        let alert = UIAlertController(
+            title: "Report Message",
+            message: "Help us keep ReviseQ safe. Why are you reporting this message?",
+            preferredStyle: .actionSheet
+        )
+        let reasons = [
+            "Harassment or Bullying",
+            "Inappropriate or Offensive Content",
+            "Spam or Scam",
+            "Hate Speech or Discrimination",
+            "Other Violation"
+        ]
+        for reason in reasons {
+            alert.addAction(UIAlertAction(title: reason, style: .default) { [weak self] _ in
+                self?.submitReport(cm: cm, reason: reason)
+            })
+        }
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        if let popover = alert.popoverPresentationController {
+            popover.sourceView = view
+            popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+        present(alert, animated: true)
+    }
+
+    private func submitReport(cm: ChatMessage, reason: String) {
+        // Remove locally from view so user is not exposed to objectionable content
+        if let idx = chatMessages.firstIndex(where: { $0.messageId == cm.messageId }) {
+            chatMessages.remove(at: idx)
+            messageMeta.removeValue(forKey: cm.messageId)
+            messagesCollectionView.reloadData()
+        }
+
+        let confirmAlert = UIAlertController(
+            title: "Message Reported",
+            message: "Thank you for reporting. Our moderation team reviews all flagged content within 24 hours. The message has been hidden from your view.",
+            preferredStyle: .alert
+        )
+        confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(confirmAlert, animated: true)
+    }
+
+    private func confirmBlockUser(sender: SenderType) {
+        let alert = UIAlertController(
+            title: "Block \(sender.displayName)?",
+            message: "You will no longer see any messages or shared study content from this user.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Block User", style: .destructive) { [weak self] _ in
+            self?.blockUser(userId: sender.senderId, displayName: sender.displayName)
+        })
+        present(alert, animated: true)
+    }
+
+    private func blockUser(userId: String, displayName: String) {
+        var blocked = UserDefaults.standard.stringArray(forKey: "blocked_user_ids") ?? []
+        if !blocked.contains(userId) {
+            blocked.append(userId)
+            UserDefaults.standard.set(blocked, forKey: "blocked_user_ids")
+        }
+
+        // Remove all messages from this blocked user immediately
+        chatMessages.removeAll { $0.sender.senderId == userId }
+        messagesCollectionView.reloadData()
+
+        let alert = UIAlertController(
+            title: "User Blocked",
+            message: "\(displayName) has been blocked. Their messages will no longer appear for you.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
 

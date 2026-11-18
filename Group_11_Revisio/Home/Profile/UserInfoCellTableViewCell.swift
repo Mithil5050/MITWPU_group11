@@ -13,7 +13,11 @@ class UserInfoCell: UICollectionViewCell { // Changed from UITableViewCell
            super.awakeFromNib()
            pfp.layer.cornerRadius = pfp.frame.height / 2
            pfp.layer.borderWidth = 1
-           pfp.layer.borderColor = UIColor.systemGray2.cgColor
+           pfp.layer.borderColor = UIColor.systemGray4.cgColor
+           pfp.clipsToBounds = true
+           pfp.tintColor = .systemGray3
+           pfp.image = UIImage(systemName: "person.crop.circle.fill")?
+               .withTintColor(.systemGray3, renderingMode: .alwaysOriginal)
 
            editButton.layer.cornerRadius = editButton.frame.height / 2
            editButton.addTarget(self, action: #selector(editTapped), for: .touchUpInside)
