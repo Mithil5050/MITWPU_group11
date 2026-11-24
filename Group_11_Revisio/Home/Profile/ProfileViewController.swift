@@ -204,8 +204,6 @@ class ProfileViewController: UIViewController {
 
     struct SettingItem { let title: String; let icon: String; let color: UIColor; let isSwitch: Bool }
     let settingsData = [
-        SettingItem(title: "Study Reminder", icon: "book", color: .systemBlue, isSwitch: true),
-        SettingItem(title: "Notifications", icon: "bell", color: .systemRed, isSwitch: true),
         SettingItem(title: "Privacy & Security", icon: "lock", color: .systemGray, isSwitch: false),
         SettingItem(title: "Help & Support", icon: "questionmark.circle", color: .systemGray, isSwitch: false)
     ]
@@ -710,8 +708,8 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
             }
 
         } else if indexPath.section == 3 {
-            // "Privacy & Security" (item 2) or "Help & Support" (item 3)
-            if indexPath.item == 2 || indexPath.item == 3 {
+            // "Privacy & Security" (item 0) or "Help & Support" (item 1)
+            if indexPath.item == 0 || indexPath.item == 1 {
                 if let url = URL(string: "https://reviseq.netlify.app") {
                     let safariVC = SFSafariViewController(url: url)
                     present(safariVC, animated: true)

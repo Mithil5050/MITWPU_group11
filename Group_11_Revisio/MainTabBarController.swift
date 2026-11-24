@@ -15,12 +15,34 @@ class MainTabBarController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupTabBarAppearance()
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleBadgeEvent(_:)),
             name: NSNotification.Name("BadgeEvent"),
             object: nil
         )
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tabBar.tintColor = .systemIndigo
+    }
+
+    private func setupTabBarAppearance() {
+        let violetColor = UIColor.systemIndigo
+        tabBar.tintColor = violetColor
+
+        let appearance = tabBar.standardAppearance
+        appearance.stackedLayoutAppearance.selected.iconColor = violetColor
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: violetColor]
+        appearance.inlineLayoutAppearance.selected.iconColor = violetColor
+        appearance.inlineLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: violetColor]
+        appearance.compactInlineLayoutAppearance.selected.iconColor = violetColor
+        appearance.compactInlineLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: violetColor]
+
+        tabBar.standardAppearance = appearance
+        tabBar.scrollEdgeAppearance = appearance
     }
 
     @objc private func handleBadgeEvent(_ notification: Notification) {
